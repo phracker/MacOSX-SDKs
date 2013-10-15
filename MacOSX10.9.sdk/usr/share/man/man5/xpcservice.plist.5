@@ -1,0 +1,98 @@
+.Dd February 8, 2011
+.Dt xpcservice.plist 5
+.Os Darwin
+.Sh NAME
+.Nm xpcservice.plist
+.Nd XPC Service configuration keys and values
+.Sh DESCRIPTION
+This document describes the keys-value pairs which configure an XPC Service. 
+An XPC Service is a process which implements the server-side of an 
+.Nm XPC 
+connection.
+The service program is contained inside a Mac OS X bundle. 
+The bundle contains an Info.plist.
+The XPC Service configuration settings are specified by keys and values defined in a dictionary
+included within the Info.plist.
+.Sh OVERVIEW
+An application has a namespace which maps a service name to a running instance of the service program.
+The namespace is created dynamically and is unique to each application. 
+The namespace is populated with the set of services embedded in the application bundle and embedded in the
+frameworks used by the application. 
+.Pp
+System frameworks may have embedded XPC Services. 
+Typically, a developer would not connect to this service directly. 
+Instead, the developer would call an API function in the framework and that would contact the service. 
+However, the name of XPC Service must be in the application's namespace so that the 
+framework code can "see" and connect to the service. 
+.Pp
+XPC Services are "launched-on-demand". They are only started when an application creates a connection to the service
+and sends a message to it. The service process can be terminated when it is inactive and has been idle for a 
+a period of time.  The service process can be started again upon receipt of a new message or connection request. 
+XPC Services should be state-less so that they can come and go as needed.
+.Pp
+The results of a connection request to an XPC Service from two different applications depends upon the type of the service. 
+The service type controls the policy used to create a new instance of the service. 
+For example, a new connection request from two different applications to an Application-type service in a framework 
+will result in a new instance of the service being created for each application.
+However, if two applications request the same User-type service, then only one instance of 
+the service will be created for each user. 
+.Pp
+Services embedded in an application bundle will only be visible to the containing application and will be, by definition,
+Applicaton-type services. A subsequent connection request from an application to a service 
+will result in a new connection to an existing service. 
+.Sh CF Bundle Keys
+These top-level Info.plist keys are required to be defined in the Info.plist file:
+.Pp
+.Bl -ohang
+.It Sy CFBundleIdentifier <string>
+This key defines the name of the service; clients use this name to connect to the service. 
+.It Sy CFBundlePackageType \(dqXPC!\(dq
+This key identifies the bundle as being an XPC Service. 
+.It Sy XPCService <dictionary>
+This key defines a dictionary which contains the settings to configure the XPC Service. 
+.El
+.Sh XPCService Dictionary Keys
+The XPC Service may be configured by setting these keys in the \fIXPCService\fP dictionary:
+.Bl -ohang
+.It Sy ServiceType <string> (default: "Application")
+The type of the XPC Service specifies how the service is instantiated. The values are:
+.Bl -bullet 
+.It 
+Application
+.br
+Each application will have a unique instance of this service.
+.It 
+User
+.br
+There is one instance of the service process created for each user.
+.It 
+System
+.br
+There is one instance of the service process for the whole system. 
+System XPC Services are restricted to reside in system frameworks and must be owned by root. 
+.\".It 
+.\"Session
+.\".br
+.\"There is one instance of the service process for the audit session of the requesting application. 
+.El
+.It Sy RunLoopType <string> (default: dispatch_main)
+The RunLoop type specifies which style of runloop will be started once xpc_main has finished initializing. The values are:
+.Bl -bullet
+.It
+dispatch_main
+.br
+xpc_main will call dispatch_main().
+.It
+NSRunLoop
+.br
+xpc_main will call [[NSRunLoop currentRunLoop] run].
+.El
+.It Sy JoinExistingSession <bool> (default: False)
+By default XPC Services are placed into their own unique audit session.  
+If this key is true, then the service is placed into the session of the application requesting a connection to the service.
+.It Sy EnvironmentVariables <dictionary> (default: none)
+A dictionary containing environment variables (represented as key-value pairs) which are 
+set in the environment of the service process.
+.El
+.Sh SEE ALSO 
+.Xr plist 5

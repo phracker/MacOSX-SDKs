@@ -1,0 +1,386 @@
+.Dd October 13, 2009
+.Dt reg 1
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm reg
+.Nd hardware register and address space access
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl -verbose Ns Op = Ns Ar BOOL
+list
+.Op Ar THING
+.Nm
+.Op Fl -verbose Ns Op = Ns Ar BOOL
+info
+.Op Ar THING
+.Nm
+.Op Fl -verbose Ns Op = Ns Ar BOOL
+.Op Fl -format Ar FORMAT
+read
+.Ar THING
+.Nm
+.Op Fl -verbose Ns Op = Ns Ar BOOL
+.Op Fl -format Ar FORMAT
+.Op Fl -verify-writes Ns Op = Ns Ar BOOL
+write
+.Ar THING Ns = Ns Ar VALUE
+.Nm
+.Fl -help
+.Nm
+.Fl -version
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+provides access to the registers and memory within the machine, ranging from CPU registers to those in chipsets and PCI devices, to physical memory and I/O space.  It is strictly a developer and engineering tool, and is not for the feint of heart -
+.Sy misuse can very easily panic your machine, or potentially even do permanent, physical damage.
+.Pp
+You can run
+.Nm
+as any user, but results may be suboptimal, and you will not be able to read or write anything.  In general you will always needs to run
+.Nm
+as root, typically via
+.Xr sudo 1 Ns
+.No .
+.Sh OPTIONS				 \" Section Header - required - don't modify
+There are a handful of optional flags you may use, documented below.  All flags may be specified, regardless of which commands you subsequently use, excepting the special flags
+.Fl -help
+and
+.Fl -version
+which exit immediately after being processed.
+.Pp
+Note that command line arguments are processed strictly in order.  That is, any flags you specify affect only subsequent commands, and only until overridden by a second use of those flags.  Since you may in fact use multiple commands in a single invocation, this can be very useful as you may specify different formats or options for differant commands.
+.Bl -tag -width -indent -compact
+.Pp
+.It Fl f Ar FORMATS
+.It Fl -format Ar FORMATS
+Specifies the format(s) to display values in.  This is a comma-separated list, where each entry is a format type, one of:
+.Bl -tag -width -indent -compact
+.Pp
+.It default
+Use the default format for the item.
+.Pp
+.It raw
+Print the raw bytes straight to stdout.
+.Pp
+.It mnemonic
+Print the mnemonic of the value.  May be used at any time, but only the values of register fields may have mnemonics associated with them.  Prints an empty line if no mnemonic is known.
+.Pp
+.It name
+Print the name of the value.  May be used at any time, but only the values of register fields may have names associated with them.  Prints an empty line if no name is known.
+.Pp
+.It data
+Prints the value as 'data', that is each byte's value, in order, in hex.  A
+.Sq @
+suffix is included before the value to denote this particular format.  You may optionally append a number after the word
+.Sq data Ns
+.No , indicating how many bits of data to display between spaces.  e.g.
+.Sq data32
+will print the data in four byte chunks such as
+.Sq @0020ffee dd6590a1 0030dde0d Ns
+.No .
+.Pp
+.It ASCII
+Prints the value as an ASCII string.  Characters which are not valid ASCII will be printed as periods.
+.Pp
+.It UTF8
+Prints the value as a UTF-8 string.  Characters which are not valid UTF-8 will be printed as periods.
+.Pp
+.It UTF16
+Prints the value as a UTF-16 string.  Characters which are not valid UTF-8 will be printed as periods.
+.Pp
+.It string
+Prints the value as a string, using whatever encoding
+.Nm
+determines is most appropriate.  Characters which are not valid in the encoding chosen will be printed as periods.
+.Pp
+.It unsigned
+.It signed
+.It float
+Prints the value as a number (or numbers, if the value is longer than the word size) in the specified type.  You may abbreviated the types to just
+.Sq u Ns
+,
+.Sq s
+or
+.Sq f Ns
+, respectively.  You may also use
+.Sq -
+or
+.Sq +
+to indicate signed.
+.Pp
+You may use an
+.Sq e
+prefix before
+.Sq float
+(or, abbreviated, just
+.Sq e
+by itself) to specify use of scientific notation.
+.Pp
+As unsigned is the default mode you may leave it out entirely.
+.Pp
+Following the number type you may specify the base, using any of
+.Sq hexadecimal Ns
+.No / Ns
+.Sq hex Ns
+.No / Ns
+.Sq h Ns
+,
+.Sq decimal Ns
+.No / Ns
+.Sq dec Ns
+.No / Ns
+.Sq d Ns
+,
+.Sq octal Ns
+.No / Ns
+.Sq oct Ns
+.No / Ns
+.Sq o
+or
+.Sq binary Ns
+.No / Ns
+.Sq bin Ns
+.No / Ns
+.Sq b Ns
+.  You may include whitespace between the number type and its base, though it is not required.  Note also that since unsigned is the default, you may simply leave off
+.Sq unsigned
+and simply specify the base.
+.Pp
+.No Lastly, after the base you may specify the word width in bits, as a number.  This can be used to divide up large values (e.g. a whole section of memory) into individual words, each one presented individually with appropriate markup (e.g.
+.Sq 0x
+prefixes) and with space between them.
+.Pp
+.No Note that characters in the output, such as in prefixes or the letters A through F used in hexadecimal numbers, are by default lowercase unless the first character of either the number type or the number's base is uppercase.  e.g.
+.Sq uhex32
+implies lowercase,
+.Sq Uhex32
+or
+.Sq uHex32
+implies uppercase.
+.El
+.Pp
+Note that each separate use of the
+.Fl -format
+option completely overrides any previous specifications.  Since argument ordering is strictly obeyed, this is useful as it lets you specify different formats for different commands.
+.Pp
+.It Fl h
+.It Fl -help
+Prints brief usage information and exits.
+.Pp
+.It Fl -verbose Ns Op = Ns Ar BOOL
+If used with no argument, enables verbose mode.  Otherwise enables or disables verbose mode based on
+.Ar BOOL Ns
+.No , which may be any typical boolean specifier, e.g.
+.Sq off Ns
+,
+.Sq true Ns
+,
+.Sq 0 Ns
+,
+.Sq yes Ns
+, etc.
+.Pp
+In verbose mode additional information may be provided, or existing information provided in a more verbose fashion (e.g. with additional whitespace and other formatting niceties).  The most obvious example is the descriptions of things - by default only summaries are provided, if any, while in verbose mode the full description is shown if available.
+.Pp
+.It Fl v Ns Op = Ns Ar BOOL
+.It Fl -verify-writes Ns Op = Ns Ar BOOL
+If used with no argument, turns on write verification.  Otherwise enables or disables write verification based on
+.Ar BOOL Ns
+.No , which may be any typical boolean specifier, e.g.
+.Sq off Ns
+,
+.Sq true Ns
+,
+.Sq 0 Ns
+,
+.Sq yes Ns
+, etc.
+.Pp
+Write verification means that any values written are then immediately read back and compared, the write operation considered failed if the values differ in any way.  This can be useful in certain scenarios, though in general it's not something you want to use unequivocally - some registers simply don't read back the same as written, or intentionally change shortly after a write, or just generally over time, etc.  Also be aware that reads may have side-effects and so enabling verification may have unintended consequences for some registers.
+.Pp
+.It Fl V
+.It Fl -version
+Prints version information and exits.
+.El
+.Sh COMMANDS
+There are four commands you can use to perform actions with
+.Nm Ns
+:
+.Bl -tag -width -indent
+.It Sy list
+Lists all things matching
+.Ar THING
+(or, if
+.Ar THING
+is not specified, all devices and address spaces in the current system).  Listing is intended for perusing the contents of things and discovering what is available, not for providing specific information about items.  For that, use the
+.Sq info
+command.
+.It Sy info
+Provides detailed information about all things matching
+.Ar THING Ns
+.No .  This information may include things like defined settings (if
+.Ar THING
+specifies register fields), names and mnemonics, descriptions or summaries (depending on verbosity settings), etc.
+.Pp
+Like the
+.Sq list
+command,
+.Sq info
+may be used without a
+.Ar THING
+parameter.  However, in that case it provides information about the system itself, not all the devices and address spaces within it.
+.It Sy read
+Prints the value(s) of all things matching
+.Ar THING Ns
+, whether registers, register fields or sections of address spaces.  The value(s) are printed according to the format(s) specified by the most recent preceeding
+.Fl -format
+flag, or using the default format if not explicitly defined.  The default format may vary based on many factors.  As such, if you are using
+.Nm
+programmatically you should always specify the desired format explicitly, regardless of whether the default happens to be what you want at the current time.
+.It Sy write
+Sets the value of all things matching
+.Ar THING
+to
+.Ar VALUE
+.No .  The values set will be printed to stdout in a similar way to reading values using the
+.Sq read
+command.  If write verification has been enabled using
+.Fl -verify-writes Ns
+, any verification failures will result in the actual value being printed immediately after the value that was
+.Pq supposedly
+written.
+.El
+.Pp
+You may specify multiple commands, optionally interspersed with option flags, that will be executed in left to right order.  Note however that
+.Nm
+will stop and exit upon the first failure - including failures related to printing of results or interpretation of input, not just the raw hardware access itself - so be wary of sequences which might leave hardware in a bad state if aborted midway.
+.Pp
+The
+.Ar THING
+argument specifies what hardware to perform the operation on.  It is a potentially complex pattern that can match multiple entities, but always homogenously - that is, you can select some number of devices, or some number of registers, but not both devices and registers at once.  As such, there are actually only several key modes:
+.Bl -tag -width -indent
+.It Sy System
+This is a special case that applies only to the
+.Sq info
+command when you do not in fact provide a
+.Ar THING
+argument - in that case the target is assumed as the system as a whole, and information such as its manufacturer, model name and number, etc provided.
+.It Sy Devices
+You may select devices in any of three ways:
+.Pp
+.Bl -enum -compact
+.It
+Select all devices using an asterisk, i.e.
+.Sq * Ns
+, or - for the
+.Sq list
+command only - by not providing a
+.Ar THING
+argument.
+.It
+Select a particular category of devices, listed below.
+.It
+Select devices with names matching the provided argument, in which you may use asterisks,
+.Sq * Ns
+, as wildcards.
+.El
+.Pp
+When requesting a specific category of devices you can optionally specify particular devices within those categories by providing further matching information in square brackets.  The form of this information varies by category, as detailed in the category list below.
+.Pp
+Known categories are:
+.Bl -tag -width -indent -compact
+.Pp
+.It cpu
+.It cpus
+Logical processor cores.  You may use brackets to specify the logical core index of the particular processor core of interest.
+.Pp
+.Dl "e.g. cpu" Ns Bq 0
+.Pp
+.It pci
+PCI devices.  You may use the brackets to specify the vendor ID, device ID, segment number, bus number, device number and function number, in that order.  Each number should be separated by a delimiter such as a comma, a slash, a hyphen, a vertical bar or a colon.  You may intermingle delimiter styles however you wish.  You are also not required to provide all six values - any not specified will simply be treated as if you'd specified
+.Sq * Ns
+, meaning of course to match any value for that attribute.
+.Pp
+.Dl "e.g. pci" Ns Bq "0x1048:0xa13, */*/3/5"
+.Dl "     pci" Ns Bq "0x1048, 0xa13"
+.Pp
+.It os
+Operating systems.  Today there will naturally be just one operating system, so the use of brackets is not supported with this category.
+.Pp
+.It memory
+Physical memory.  Today there is just one physical memory space, so the use of brackets is not supported with this category.
+.Pp
+.It io
+I/O space.  Today there is just one I/O space, so the use of brackets is not supported with this category.
+.Pp
+.It model
+.It models
+Models of arbitrary devices.  This allows you to look at any known type of device - that is, use the
+.Sq list
+and
+.Sq info
+commands.  Models are abstract - even if there are instances of that device in the current machine - and so cannot be used with the
+.Sq read
+or
+.Sq write
+commands.  You may specify the model of interest within square brackets.
+.Pp
+.Dl "e.g. model" Ns Bq "Core 2"
+.Dl "     model" Ns Bq "Mac OS X 10.6"
+.Pp
+Note that you can only model devices, not address spaces - address spaces are a very low level abstraction and as such do not have any meaningful information in the abstract.
+.El
+.It Sy Registers
+You may select one or more registers within one or more devices by providing a device specifier as above, and then appending to that, separated by a period, the name of the register(s) of interest.  The name is in fact a glob pattern - that is, you may use an asterisk, 
+.Sq * Ns
+, as a wildcard that matches any zero or more characters.
+.Pp
+You may also optionally select a specific bit range in square brackets.  Eventually this will mean the read or write operation applies only to that bit range, though today this does not work correctly.  It does however filter the fields that will match - only those fields that intersect the selected range will be considered for further matching against the mnemonic/name pattern provided, if applicable.
+.Pp
+You may also enclose the pattern in double (or single) quotes in order to use spaces or prevent misinterpretation by your shell, as shown in the examples below.
+.Pp
+.Dl "e.g. model" Ns Bo "Core 2" Po Penryn Pc Bc Ns ".*"
+.Dl "     cpu" Ns Bo 3 Bc Ns ".IA32_PERF_CTL"
+.Dl "     cpu" Ns Bo 0 Bc Ns ".IA32_*"
+.Dl "     pci" Ns Bo "0x10de/0xa89" Bc Ns "." Ns Dq "Vendor Identifier"
+.It Sy Fields
+In the same way as selected registers within a device, you may select fields within a register.  The same glob pattern semantics apply for matching names or mnemonics, and again you may wish to quote the pattern to prevent misinterpretation by your shell.
+.Pp
+Note also that, as documented in the Registers section above, you may restrict to set of fields matched to only those intersect a given bit range within the register.
+.Pp
+.Dl "e.g. cpu" Ns Bo 1 Bc Ns ".IA32_FIXED_CTR_CTRL.*"
+.Dl "     cpu" Ns Bo 15 Bc Ns ".IA32_FIXED_CTR_CTRL.EN*_OS"
+.Dl "     cpu" Ns Bo 7 Bc Ns ".IA32_FIXED_CTR_CTRL" Ns Bo "0:7" Bc Ns ".*"
+.It Sy Address ranges
+You may access the raw address spaces of a device or address space by using a colon,
+.Sq :
+followed by the address range of interest.  There are two types of address space - flat ones, like physical memory, and indexed ones, like register address spaces underlying processors.  You can think of flat address spaces as one-dimensional: the range 0 to 10 selects 11 bytes.  Indexed address spaces are in this sense two-dimensional: the range 0 to 10 selects 11 entries in the address space, where each entry is one or more bytes deep, such that the total is at least 11 bytes and likely much more.
+.Pp
+As such you need to be aware which you are using, as they behave slightly differently.  A flat address space will read (or write) as one big stream of bytes.  An indexed address space will read as multiple individual values, and when written to will use the same
+.Ar VALUE
+for each index independently.
+.Pp
+.No You may specify the range of interest in a variety of formats, the most common two being via boundaries or via a location and length pair.  The former style sees the two end points separated by a delimiter such as a colon or a hyphen, while the later separates the location and the length via a comma.  i.e.
+.Sq 0x1000-0x10ff Ns
+,
+.Sq 0x1000:0x10ff
+and
+.Sq 0x1000,0x100
+are all equivalent.  You may also select just a single index by providing just one number.  You may also use formal range notation using square brackets and parenthesis.
+.Pp
+.Dl "e.g. memory:0x0-0x100"
+.Dl "     memory:" Ns Bq "0x100, 0x1ff"
+.Dl "     memory:" Ns Brq "0x200, 0x100"
+.Dl "     memory:" Ns Pq "0x300, 256"
+.Dl "     memory:" Ns "[0x400, 0x500)"
+.Dl "     cpu" Ns Bo 3 Bc Ns ":1280"
+.El
+.Sh BUGS                 \" Section Header - required - don't modify
+While some address spaces can be accessed explicitly (memory, io) others can only be accessed implicitly via their corresponding devices (e.g. pci, cpu).  If those devices are missing, or not all such address spaces are covered by a device, there is no way to access those orphaned address spaces.
+.Pp
+Input does not pay any attention to the current format options (though in any case you should use appropriate prefixes like
+.Sq 0x
+or
+.Sq @
+to remove ambiguity).
+.Pp
+You can provide raw input in an analagous way to raw output.  In a more general sense, you cannot provide input via stdin rather than a command line argument.

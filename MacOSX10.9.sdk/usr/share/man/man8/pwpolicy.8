@@ -1,0 +1,197 @@
+.\"	$Id: pwpolicy.8,v 1.7 2006/05/02 23:06:14 snsimon Exp $
+.\"
+.\" Copyright (c) 2002 Apple Computer, Inc., all rights reserved.
+.\" Distributed as unsupported software for Mac OS X Server
+.Dd 13 November 2002
+.Dt pwpolicy 8
+.Os "Mac OS X Server"
+.sp
+.Sh NAME
+.Nm pwpolicy
+.Nd gets and sets password policies
+.Sh SYNOPSIS
+.Nm
+.Op Fl h
+.Nm
+.Op Fl v
+.Op Fl a Ar authenticator
+.Op Fl p Ar password
+.Op Fl u Ar username | Fl c Ar computername
+.Op Fl n Ar nodename
+command command-arg
+.Nm
+.Op Fl v
+.Op Fl a Ar authenticator
+.Op Fl p Ar password
+.Op Fl u Ar username | Fl c Ar computername
+.Op Fl n Ar nodename
+command "policy1=value1 policy2=value2 ..."
+.sp
+.Sh DESCRIPTION
+.Nm
+manipulates password policies.
+.Pp
+.Ss Options
+.Bl -tag -width flag
+.It Fl a
+name of the authenticator
+.It Fl c
+name of the computer account to modify
+.It Fl p
+password (omit this option for a secure prompt)
+.It Fl u
+name of the user account to modify
+.It Fl n
+use a specific directory node; the search node is used by default.
+.It Fl v
+verbose
+.It Fl h
+help
+.El
+.Ss Commands
+.Bl -tag -width getglobalpolicystrleneffect -compact
+.It Fl getglobalpolicy
+Get global policies
+.It Fl setglobalpolicy
+Set global policies
+.It Fl getpolicy
+Get policies for a user
+.It Fl -get-effective-policy
+Gets the combination of global and user policies that apply to the user.
+.It Fl setpolicy
+Set policies for a user
+.It Fl setpolicyglobal
+Set a user account to use global policies
+.It Fl setpassword
+Set a new password for a user. Non-administrators can use this command to change their own passwords.
+.It Fl enableuser
+Enable a user account that was disabled by a password policy event.
+.It Fl disableuser
+Disable a user account.
+.It Fl getglobalhashtypes
+Returns the default list of password hashes stored on disk for this system.
+.It Fl setglobalhashtypes
+Edits the default list of password hashes stored on disk for this system.
+.It Fl gethashtypes
+Returns a list of password hashes stored on disk for a user account.
+.It Fl sethashtypes
+Edits the list of password hashes stored on disk for a user account.
+.It Fl 0 Li through Fl 7
+Shortcuts for the above commands (in order).
+.El
+.Ss Global Policies
+.Bl -tag -width maxMinutesUntilChangePasswordlen -compact
+.It Ev usingHistory
+0 = user can reuse the current password, 1 = user cannot reuse the current password, 2-15 = user cannot reuse the last n passwords.
+.It Ev usingExpirationDate
+If 1, user is required to change password on the date in expirationDateGMT
+.It Ev usingHardExpirationDate
+If 1, user's account is disabled on the date in hardExpireDateGMT
+.It Ev requiresAlpha
+If 1, user's password is required to have a character in [A-Z][a-z].
+.It Ev requiresNumeric
+If 1, user's password is required to have a character in [0-9].
+.It Ev expirationDateGMT
+Date for the password to expire, format must be: mm/dd/yy
+.It Ev hardExpireDateGMT
+Date for the user's account to be disabled, format must be: mm/dd/yy
+.It Ev validAfter
+Date for the user's account to be enabled, format must be: mm/dd/yy
+.It Ev maxMinutesUntilChangePassword
+user is required to change the password at this interval
+.It Ev maxMinutesUntilDisabled
+user's account is disabled after this interval
+.It Ev maxMinutesOfNonUse
+user's account is disabled if it is not accessed by this interval
+.It Ev maxFailedLoginAttempts
+user's account is disabled if the failed login count exceeds this number
+.It Ev minChars
+passwords must contain at least minChars
+.It Ev maxChars
+passwords are limited to maxChars
+.El
+.Ss Additional User Policies
+.Bl -tag -width canModifyPasswordforSelflen -compact
+.It Ev isDisabled
+If 1, user account is not allowed to authenticate, ever.
+.It Ev isAdminUser
+If 1, this user can administer accounts on the password server.
+.It Ev newPasswordRequired
+If 1, the user will be prompted for a new password at the next authentication. Applications that do not
+support change password will not authenticate.
+.It Ev canModifyPasswordforSelf
+If 1, the user can change the password.
+.El
+.Ss Stored Hash Types
+.Bl -tag -width SALTED-SHA512-PBKDF2 -compact
+.It Ev CRAM-MD5
+Required for IMAP.
+.It Ev RECOVERABLE
+Required for APOP and WebDAV. Only available on Mac OS X Server edition.
+.It Ev SALTED-SHA512-PBKDF2
+The default for loginwindow.
+.It Ev SALTED-SHA512
+Legacy hash for loginwindow.
+.It Ev SMB-NT
+Required for compatibility with Windows NT/XP file sharing.
+.It Ev SALTED-SHA1
+Legacy hash for loginwindow.
+.It Ev SHA1
+Legacy hash for loginwindow.
+.El
+.sp
+.Sh EXAMPLES
+.Pp
+To get global policies:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-getglobalpolicy
+.El
+.Pp
+To set global policies:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-a authenticator -setglobalpolicy "minChars=4 maxFailedLoginAttempts=3"
+.El
+.Pp
+To get policies for a specific user account:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-u user -getpolicy
+.It
+.Nm
+-u user -n /NetInfo/DefaultLocalNode -getpolicy
+.El
+.Pp
+To set policies for a specific user account:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-a authenticator -u user -setpolicy "minChars=4 maxFailedLoginAttempts=3"
+.El
+.Pp
+To change the password for a user:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-a authenticator -u user -setpassword newpassword
+.El
+.Pp
+To set the list of hash types for local accounts:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-a authenticator -setglobalhashtypes SMB-LAN-MANAGER off SMB-NT on
+.El
+.sp
+.Sh SEE ALSO
+.Xr PasswordService 8

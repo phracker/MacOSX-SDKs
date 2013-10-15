@@ -1,0 +1,102 @@
+.\" Copyright (c) 2008 Apple Inc.
+.\" All rights reserved.
+.\"
+.\" @APPLE_OSREFERENCE_LICENSE_HEADER_START@
+.\"
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. The rights granted to you under the License
+.\" may not be used to create, or enable the creation or redistribution of,
+.\" unlawful or unlicensed copies of an Apple operating system, or to
+.\" circumvent, violate, or enable the circumvention or violation of, any
+.\" terms of an Apple operating system software license agreement.
+.\"
+.\" Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this file.
+.\"
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\"
+.\" @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+.\"
+.Dd August 14, 2008 
+.Dt AMT 8
+.Os
+.Sh NAME
+.Nm amt
+.Nd Abstract Machine Test Utility
+.Sh SYNOPSIS
+.Nm
+.Op Fl m
+.Op Fl p
+.Op Fl q
+.Op Fl s
+.Sh DESCRIPTION
+The
+.Nm
+utility is used to verify that the low level functions necessary to enforce
+requirements of the Controlled Access Protection Profile (CAPP) are working
+correctly. 
+.Pp
+The
+.Nm 
+utility must be executed with sufficient privileges and 
+performs the following tests:
+.Bl -tag -width indent
+.It Memory Read and Write
+This test allocates between 5% to 10% of physical memory and writes data to it, then
+reads the memory back to ensure the values written remain unchanged.
+.It Memory Separation and Protection
+This test ensures that user space programs cannot read and write to areas of memory 
+that is protected or is not shared.
+.It Privileged Instructions
+This test ensures that the enforcement of the property that privileged instructions 
+should only be in supervisor mode is still in effect. 
+The set of privileged instructions tested to confirm this is 
+architecture dependent.
+.El
+.Pp
+The options are as follows:
+.Bl -tag -width indent
+.It Fl m
+Skip the memory test.
+.It Fl p
+Skip the privileged instructions test.
+.It Fl q
+Suppress the screen output.
+.It Fl s
+Skip the memory separation and protection test.
+.El
+.Sh EXIT CODES
+.Bl -tag -width indent 
+.It <0 
+An error occured in executing the tests.
+.It =0
+All the tests passed.
+.It >0 
+The number of tests that failed or were skipped.
+.El
+.Sh NOTES
+The overall result (pass or fail) is logged in the audit trail and system log.
+The
+.Xr auditd 8
+daemon must already be running for the results to be stored in the 
+audit trail file.
+.Pp
+One of the above test may be skipped without getting a negative result. 
+A test is skipped either with one of the above command-line options or 
+automatically if there is not a test compatiable with the Target Of 
+Evaluation (TOE). The audit administrator may want to perform the memory
+test only on startup since it can have large negative impact on the system
+performance.
+.Sh SEE ALSO
+.Xr audit 2
+.Xr auditd 8
+.Xr syslog 3
+.Xr syslogd 8

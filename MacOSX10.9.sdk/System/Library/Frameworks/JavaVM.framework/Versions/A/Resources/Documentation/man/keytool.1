@@ -1,0 +1,2412 @@
+'\" t
+.\" @(#)keytool.1 1.9 00/06/13 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.TH keytool 1 "22 June 2004"
+.SH NAME
+keytool \- key and certificate management tool
+.SH SYNOPSIS
+.B keytool
+[
+.IR commands " ]"
+.SH DESCRIPTION
+.IX "key and certificate management tool" "" "key and certificate management tool \(em \fLkeytool\fP"
+.IX "keytool" "" "\fLkeytool\fP \(em key and certificate management tool"
+.B keytool
+is a key and certificate management utility. It enables
+users to administer their own public/private key pairs and
+associated certificates for use in self-authentication (where the
+user authenticates himself/herself to other users/services) or
+data integrity and authentication services, using digital
+signatures. It also allows users to cache the public keys (in the
+form of certificates) of their communicating peers.
+.LP
+A certificate is a digitally signed statement from one entity
+(person, company, and so forth), saying that the public key (and some
+other information) of some other entity has a particular value.
+(See Certificates.) When data is digitally signed, the signature
+can be verified to check the data integrity and authenticity.
+Integrity means that the data has not been modified or tampered
+with, and authenticity means the data indeed comes from whoever
+claims to have created and signed it.
+.LP
+.B keytool
+stores the keys and certificates in a so-called keystore.
+The 
+.B keytool
+default keystore implementation implements the keystore as a
+file. It protects private keys with a password.
+.LP
+The 
+.BR jarsigner (1)
+tool uses information from a keystore to generate or
+verify digital signatures for Java ARchive (JAR) files. (A JAR
+file packages class files, images, sounds, and/or other digital
+data in a single file). 
+.BR jarsigner (1)
+verifies the digital signature
+of a JAR file, using the certificate that comes with it (it is
+included in the signature block file of the JAR file), and then
+checks whether or not the public key of that certificate is
+"trusted", that is, is contained in the specified keystore.
+.LP
+Please note: the 
+.B keytool
+and 
+.BR jarsigner (1)
+tools completely replace
+the javakey tool provided in JDK 1.1. These new tools provide more
+features than javakey, including the ability to protect the
+keystore and private keys with passwords, and the ability to
+verify signatures in addition to generating them. The new keystore
+architecture replaces the identity database that javakey created
+and managed. It is possible to import the information from an
+identity database into a keystore, via the 
+.B \-identitydb
+subcommand.
+.SS Keystore Entries
+.IX "keytool" "Keystore Entries" "\fLkeytool\fP \(em key and certificate management tool"
+There are two different types of entries in a keystore:
+.TP 5
+1. 
+key entries\(emeach holds very sensitive
+cryptographic key information, which is stored in a
+protected format to prevent unauthorized access.
+Typically, a key stored in this type of entry is a
+secret key, or a private key accompanied by the
+certificate "chain" for the corresponding public
+key. The 
+.B keytool
+and 
+.BR jarsigner (1)
+tools only handle
+the latter type of entry, that is, private keys and
+their associated certificate chains.
+.TP 5
+2. 
+trusted certificate entries\(emeach contains a
+single public key certificate belonging to another
+party. It is called a "trusted certificate" because
+the keystore owner trusts that the public key in
+the certificate indeed belongs to the identity
+identified by the "subject" (owner) of the
+certificate. The issuer of the certificate vouches
+for this, by signing the certificate.
+.SS Keystore Aliases
+.IX "keytool" "Keystore Aliases" "\fLkeytool\fP \(em key and certificate management tool"
+All keystore entries (key and trusted certificate
+entries) are accessed via unique aliases. Aliases are
+case-insensitive; the aliases Hugo and hugo would refer
+to the same keystore entry.
+.LP
+An alias is specified when you add an entity to the
+keystore using the 
+.B \-genkey
+subcommand to generate a key
+pair (public and private key) or the 
+.B \-import
+subcommand to
+add a certificate or certificate chain to the list of
+trusted certificates. Subsequent 
+.B keytool
+commands must
+use this same alias to refer to the entity.
+.LP
+For example, suppose you use the alias duke to generate
+a new public/private key pair and wrap the public key
+into a self-signed certificate (see Certificate Chains)
+via the following command:
+.LP
+.ft 3
+.nf
+keytool \-genkey \-alias duke \-keypass dukekeypasswd
+.fi
+.ft 1
+.LP
+This specifies an inital password of 
+.B dukekeypasswd
+required by subsequent commands to access the private
+key assocated with the alias 
+.BR duke . 
+If you later want to
+change
+.BR duke 's
+private key password, you use a command
+like the following:
+.LP
+.ft 3
+.nf
+.if t keytool \-keypasswd \-alias duke \-keypass dukekeypasswd \-new newpass
+.if n keytool \-keypasswd \-alias duke \-keypass\\
+.if n		 dukekeypasswd \-new newpass
+.fi
+.ft 1
+.LP
+This changes the password from "dukekeypasswd" to
+"newpass".
+.LP
+Please note: A password should not actually be specified
+on a command line or in a script unless it is for
+testing purposes, or you are on a secure system. If you
+don't specify a required password option on a command
+line, you will be prompted for it.
+When typing in a
+password at the password prompt, the password is
+currently echoed (displayed exactly as typed), so be
+careful not to type it in front of anyone.
+.SS Keystore Location
+.IX "keytool" "Keystore Location" "\fLkeytool\fP \(em key and certificate management tool"
+Each 
+.B keytool
+command has a 
+.B \-keystore
+option for
+specifying the name and location of the persistent
+keystore file for the keystore managed by 
+.BR keytool .
+The
+keystore is by default stored in a file named 
+.B .keystore
+in the user's home directory, as determined by the
+"user.home" system property.
+.LP
+Note that the input stream from the \-keystore 
+option is passed to the
+KeyStore.load method. If NONE is specified as the 
+URL, then a null stream is passed
+to the KeyStore.load method. NONE should be specified 
+if the KeyStore is not
+file-based, for example, if it resides on a hardware token device. 
+.SS Keystore Creation
+.IX "keytool" "Keystore Creation" "\fLkeytool\fP \(em key and certificate management tool"
+A keystore is created whenever you use a 
+.BR \-genkey ,
+.BR \-import , 
+or 
+.B \-identitydb
+subcommand to add data to a
+keystore that doesn't yet exist.
+.LP
+More specifically, if you specify, in the 
+.B \-keystore
+option, a keystore that doesn't yet exist, that keystore
+will be created.
+.LP
+If you don't specify a 
+.B \-keystore
+option, the default
+keystore is a file named 
+.B .keystore 
+in your home
+directory.
+If that file does not yet exist, it will be created.
+.SS Keystore Implementation
+.IX "keytool" "Keystore Implementation" "\fLkeytool\fP \(em key and certificate management tool"
+The 
+.B KeyStore
+class provided in the java.security package
+supplies well-defined interfaces to access and modify
+the information in a keystore.
+It is possible for there
+to be multiple different concrete implementations, where
+each implementation is that for a particular type of
+keystore.
+.LP
+Currently, there are two command-line tools (\f3keytool\fP
+and 
+.BR jarsigner (1))
+and also a GUI-based tool named
+.BR policytool .
+Since
+.B KeyStore
+is publicly available, JDK users can write
+additional security applications that use it.
+.LP
+There is a built-in default implementation, provided by
+Sun Microsystems.
+It implements the keystore as a file,
+utilizing a proprietary keystore type (format) named
+"JKS".
+It protects each private key with its individual
+password, and also protects the integrity of the entire
+keystore with a (possibly different) password.
+.LP
+Keystore implementations are provider-based.
+More specifically, the application interfaces supplied by
+.B KeyStore
+are implemented in terms of a "Service Provider
+Interface" (SPI).
+That is, there is a corresponding abstract 
+.B KeystoreSpi 
+class, also in the java.security
+package, which defines the Service Provider Interface
+methods that "providers" must implement.
+(The term "provider" refers to a package or a set of packages that
+supply a concrete implementation of a subset of services
+that can be accessed by the Java Security API.)  Thus, to
+provide a keystore implementation, clients must
+implement a "provider" and supply a 
+.B KeystoreSpi
+subclass
+implementation, as described in How to Implement a
+Provider for the Java Cryptography Architecture.
+.LP
+Applications can choose different types of keystore
+implementations from different providers, using the
+"getInstance" factory method supplied in the 
+.B KeyStore
+class. A keystore type defines the storage and data
+format of the keystore information, and the algorithms
+used to protect private keys in the keystore and the
+integrity of the keystore itself. Keystore
+implementations of different types are not compatible.
+.LP
+.B keytool
+works on any file-based keystore implementation.
+(It treats the keytore location that is passed to it at
+the command line as a filename and converts it to a
+FileInputStream, from which it loads the keystore
+information.) The 
+.BR jarsigner (1)
+and policytool tools, on the
+other hand, can read a keystore from any location that
+can be specified using a URL.
+.LP
+For 
+.B keytool
+and 
+.BR jarsigner (1),
+you can specify a keystore
+type at the command line, via the 
+.B \-storetype
+option.
+For
+.BR "Policy Tool" ,
+you can specify a keystore type via the
+"Change Keystore" command in the Edit menu.
+.LP
+If you don't explicitly specify a keystore type, the
+tools choose a keystore implementation based simply on
+the value of the keystore.type property specified in the
+security properties file.
+The security properties file is called 
+.BR java.security , 
+and it resides in the JDK
+security properties directory, 
+.BR java.home/lib/security ,
+where java.home is the JDK installation directory.
+.LP
+Each tool gets the keystore.type value and then examines
+all the currently-installed providers until it finds one
+that implements keystores of that type. It then uses the
+keystore implementation from that provider.
+.LP
+The 
+.B KeyStore
+class defines a static method named
+getDefaultType that lets applications and applets
+retrieve the value of the 
+.B keystore.type 
+property. The
+following line of code creates an instance of the
+default keystore type (as specified in the 
+.B keystore.type
+property):
+.LP
+.ft 3
+.nf
+KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+.fi
+.ft 1
+.LP
+The default keystore type is "jks" (the proprietary type
+of the keystore implementation provided by Sun). This is
+specified by the following line in the security
+properties file:
+.LP
+.ft 3
+.nf
+keystore.type=jks
+.fi
+.ft 1
+.LP
+To have the tools utilize a keystore implementation
+other than the default, you can change that line to
+specify a different keystore type.
+.LP
+For example, if you have a provider package that
+supplies a keystore implementation for a keystore type
+called "pkcs12", change the line to
+.LP
+.ft 3
+.nf
+keystore.type=pkcs12
+.fi
+.ft 1
+.LP
+Note: case doesn't matter in keystore type designations.
+For example, "JKS" would be considered the same as
+"jks".
+.SS Supported Algorithms and Key Sizes
+.IX "keytool" "Supported Algorithms and Key Sizes" "\fLkeytool\fP \(em key and certificate management tool"
+.B keytool
+allows users to specify any key pair generation
+and signature algorithm supplied by any of the
+registered cryptographic service providers. That is, the
+.B \-keyalg
+and 
+.B \-sigalg
+options for various subcommands must be
+supported by a provider implementation. The default key
+pair generation algorithm is "DSA". The signature
+algorithm is derived from the algorithm of the
+underlying private key: If the underlying private key is
+of type "DSA", the default signature algorithm is
+"SHA1withDSA", and if the underlying private key is of
+type "RSA", the default signature algorithm is
+"MD5withRSA".
+.LP
+When generating a DSA key pair, the key size must be in
+the range from 512 to 1024 bits, and must be a multiple
+of 64. The default key size for any algorithm is 1024
+bits.
+.SS Certificates
+.IX "keytool" "Certificates" "\fLkeytool\fP \(em key and certificate management tool"
+A certificate (also known as a public-key certificate)
+is a digitally signed statement from one entity (the
+issuer), saying that the public key (and some other
+information) of another entity (the subject) has some
+.LP
+Let us expand on some of the key terms used in this
+sentence:
+.TP 20
+.B Public Keys
+These are numbers associated with a particular
+entity, and are intended to be known to everyone
+who needs to have trusted interactions with that
+entity. Public keys are used to verify signatures.
+.TP
+.B Digitally Signed
+If some data is digitally signed it has been stored
+with the "identity" of an entity, and a signature
+that proves that entity knows about the data. The
+data is rendered unforgeable by signing with the
+entity's private key.
+.TP
+.B Identity
+A known way of addressing an entity. In some
+systems the identity is the public key, in others
+it can be anything from a Unix UID to an Email
+address to an X.509 Distinguished Name.
+.TP
+.B Signature
+A signature is computed over some data using the
+private key of an entity (the signer, which in the
+case of a certificate is also known as the issuer).
+.TP
+.B Private Keys
+These are numbers, each of which is supposed to be
+known only to the particular entity whose private
+key it is (that is, it's supposed to be kept
+secret). Private and public keys exist in pairs in
+all public key cryptography systems (also referred
+to as "public key crypto systems"). In a typical
+public key crypto system, such as DSA, a private
+key corresponds to exactly one public key. Private
+keys are used to compute signatures.
+.TP
+.B Entity
+An entity is a person, organization, program,
+computer, business, bank, or something else you are
+trusting to some degree.
+.LP
+Basically, public key cryptography requires access to
+users' public keys. In a large-scale networked
+environment it is impossible to guarantee that prior
+relationships between communicating entities have been
+established or that a trusted repository exists with all
+used public keys. Certificates were invented as a
+solution to this public key distribution problem. Now a
+Certification Authority (CA) can act as a trusted third
+party. CAs are entities (for example, businesses) that
+are trusted to sign (issue) certificates for other
+entities. It is assumed that CAs will only create valid
+and reliable certificates, as they are bound by legal
+agreements. There are many public Certification
+Authorities, such as VeriSign, Thawte, Entrust, and so
+on. You can also run your own Certification Authority
+using products such as the Netscape/Microsoft
+Certificate Servers or the Entrust CA product for your
+organization.
+.LP
+Using 
+.BR keytool ,
+it is possible to display, import, and
+export certificates. It is also possible to generate
+self-signed certificates.
+.LP
+.B keytool 
+currently handles X.509 certificates.
+.SS X.509 Certificates
+.IX "keytool" "X.509 Certificates" "\fLkeytool\fP \(em key and certificate management tool"
+The X.509 standard defines what information
+can go into a certificate, and describes how
+to write it down (the data format). All X.509
+certificates have the following data, in
+addition to the signature:
+.if t .TP 20
+.if n .TP 15
+Version
+This identifies which version of the
+X.509 standard applies to this
+certificate, which affects what
+information can be specified in it. Thus
+far, three versions are defined. 
+.B keytool
+can import and export v1, v2, and v3
+certificates. It generates v1
+certificates.
+.if t .TP 20
+.if n .TP 15
+Serial Number
+The entity that created the certificate
+is responsible for assigning it a serial
+number to distinguish it from other
+certificates it issues. This information
+is used in numerous ways, for example
+when a certificate is revoked its serial
+number is placed in a Certificate
+Revocation List (CRL).
+.if t .TP 20
+.if n .TP 15
+Signature Algorithm Identifier
+This identifies the algorithm used by the
+CA to sign the certificate.
+.if t .TP 20
+.if n .TP 15
+Issuer Name
+The X.500 Distinguished Name of the
+entity that signed the certificate. This
+is normally a CA. Using this certificate
+implies trusting the entity that signed
+this certificate. (Note that in some
+cases, such as root or top-level CA
+certificates, the issuer signs its own
+certificate.)
+.if t .TP 20
+.if n .TP 15
+Validity Period
+Each certificate is valid only for a
+limited amount of time. This period is
+described by a start date and time and an
+end date and time, and can be as short as
+a few seconds or almost as long as a
+century. The validity period chosen
+depends on a number of factors, such as
+the strength of the private key used to
+sign the certificate or the amount one is
+willing to pay for a certificate. This is
+the expected period that entities can
+rely on the public value, if the
+associated private key has not been
+compromised.
+.if t .TP 20
+.if n .TP 15
+Subject Name
+The name of the entity whose public key
+the certificate identifies. This name
+uses the X.500 standard, so it is
+intended to be unique across the
+Internet. This is the X.500 Distinguished
+Name (DN) of the entity, for example,
+.LP
+.ft 3
+.nf
+CN=Java Duke, OU=Java Software Division, O=Sun Microsystems Inc, C=US
+.fi
+.ft 1
+.LP
+(These refer to the subject's Common
+Name, Organizational Unit, Organization,
+and Country.)
+.if t .TP 20
+.if n .TP 15
+Subject Public Key Information
+This is the public key of the entity
+being named, together with an algorithm
+identifier which specifies which public
+key crypto system this key belongs to and
+any associated key parameters.
+.LP
+.I X.509 Version 1 
+has been available since 1988,
+is widely deployed, and is the most generic.
+.LP
+.I X.509 Version 2 
+introduced the concept of
+subject and issuer unique identifiers to
+handle the possibility of reuse of subject
+and/or issuer names over time. Most
+certificate profile documents strongly
+recommend that names not be reused, and that
+certificates should not make use of unique
+identifiers. Version 2 certificates are not
+widely used.
+.LP
+.I  X.509 Version 3 
+is the most recent (1996) and
+supports the notion of extensions, whereby
+anyone can define an extension and include it
+in the certificate. Some common extensions in
+use today are: KeyUsage (limits the use of the
+keys to particular purposes such as
+"signing-only") and AlternativeNames (allows
+other identities to also be associated with
+this public key, for example, DNS names, Email
+addresses, IP addresses). Extensions can be
+marked critical to indicate that the extension
+should be checked and enforced/used. For
+example, if a certificate has the KeyUsage
+extension marked critical and set to
+"keyCertSign" then if this certificate is
+presented during SSL communication, it should
+be rejected, as the certificate extension
+indicates that the associated private key
+should only be used for signing certificates
+and not for SSL use.
+.LP
+All the data in a certificate is encoded using
+two related standards called ASN.1/DER.
+.I Abstract Syntax Notation 1 
+describes data. The
+Definite Encoding Rules describe a single way
+to store and transfer that data.
+.SS X.500 Distinguished Names
+.IX "keytool" "X.500 Distinguished Names" "\fLkeytool\fP \(em key and certificate management tool"
+X.500 Distinguished Names are used to identify
+entities, such as those which are named by the
+subject and issuer (signer) fields of X.509
+certificates. 
+.B keytool
+supports the following subparts:
+.TP 2
+\(bu
+commonName\(emcommon name of a person,
+for example, "Susan Jones"
+.TP 2
+\(bu
+organizationUnit\(emsmall organization
+(for example, department or division) name, such as, "Purchasing"
+.TP 2
+\(bu organizationName\(emlarge organization
+name, for example, "ABCSystems, Inc."
+.TP 2
+\(bu
+localityName\(emlocality (city) name,
+for example, "Palo Alto"
+.TP 2
+\(bu
+stateName\(emstate or province name, for example,
+"California"
+.TP 2
+\(bu
+country\(emtwo-letter country code, for example,
+"CH"
+.LP
+When supplying a distinguished name string as
+the value of a
+.B \-dname
+option, as for the
+.B \-genkey 
+or
+.B \-selfcert
+subcommands, the string must
+be in the following format:
+.LP
+.ft 3
+.nf
+CN=cName, OU=orgUnit, O=org, L=city, S=state, C=countryCode
+.fi
+.ft 1
+.LP
+where all the italicized items represent
+actual values and the above keywords are
+abbreviations for the following:
+.LP
+.ft 3
+.nf
+CN=commonName
+OU=organizationUnit
+O=organizationName
+L=localityName
+S=stateName
+C=country
+.fi
+.ft 1
+.LP
+A sample distinguished name string is
+.LP
+.ft 3
+.nf
+CN=Mark Smith, OU=Java, O=Sun, L=Cupertino, S=California, C=US
+.fi
+.ft 1
+.LP
+and a sample command using such a string is
+.LP
+.ft 3
+.nf
+keytool \-genkey \-dname "CN=Mark Smith, OU=Java, 
+O=Sun, L=Cupertino, S=California, C=US" \-alias mark
+.fi
+.ft 1
+.LP
+Case does not matter for the keyword
+abbreviations. For example, 
+.BR CN , 
+.BR cn , 
+and
+.B Cn
+ are all treated the same.
+.LP
+Order matters; each subcomponent must appear
+in the designated order. However, it is not
+necessary to have all the subcomponents. You
+may use a subset, for example:
+.LP
+.ft 3
+.nf
+CN=Steve Meier, OU=SunSoft, O=Sun, C=US
+.fi
+.ft 1
+.LP
+If a distinguished name string value contains
+a comma, it must be escaped by a "\\"
+character when you specify the string on
+a command line, as in
+.LP
+.ft 3
+.nf
+cn=peter schuster, o=Sun Microsystems\\, Inc., o=sun, c=us
+.fi
+.ft 1
+.LP
+It is never necessary to specify a
+distinguished name string on a command line.
+If it is needed for a command, but not
+supplied on the command line, the user is
+prompted for each of the subcomponents.
+In this case, a comma does not need to be escaped
+by a "\\"
+.SS The Internet RFC 1421 Certificate Encoding Standard
+.IX "keytool" "The Internet RFC 1421 Certificate Encoding Standard" "\fLkeytool\fP \(em key and certificate management tool"
+Certificates are often stored using the
+printable encoding format defined by the
+Internet RFC 1421 standard, instead of their
+binary encoding. This certificate format, also
+known as "Base 64 encoding", facilitates
+exporting certificates to other applications
+by email or through some other mechanism.
+.LP
+Certificates read by the 
+.B \-import
+and
+.B \-printcert
+subcommands can be in either this
+format or binary encoded.
+.LP
+The 
+.B \-export
+subcommand by default outputs a
+certificate in binary encoding, but will
+instead output a certificate in the printable
+encoding format, if the 
+.B \-rfc
+option is
+specified.
+.LP
+The 
+.B \-list
+subcommand by default prints the MD5
+fingerprint of a certificate. If the 
+.B -v
+option
+is specified, the certificate is printed in
+human-readable format, while if the 
+.B \-rfc
+option is specified, the certificate is output
+in the printable encoding format.
+.LP
+In its printable encoding format, the encoded
+certificate is bounded at the beginning by
+.LP
+.ft 3
+.nf
+-----BEGIN CERTIFICATE-----
+.fi
+.ft 1
+.LP
+and at the end by
+.LP
+.ft 3
+.nf
+-----END CERTIFICATE-----
+.fi
+.ft 1
+.SS Certificate Chains
+.IX "keytool" "Certificate Chains" "\fLkeytool\fP \(em key and certificate management tool"
+.B keytool
+can create and manage keystore "key"
+entries that each contain a private key and an
+associated certificate "chain". The first
+certificate in the chain contains the public
+key corresponding to the private key.
+.LP
+When keys are first generated (see the 
+.B \-genkey
+subcommand), the chain starts off containing a
+single element, a self-signed certificate. A
+self-signed certificate is one for which the
+issuer (signer) is the same as the subject
+(the entity whose public key is being
+authenticated by the certificate). Whenever
+the 
+.B \-genkey
+subcommand is called to generate a
+new public/private key pair, it also wraps the
+public key into a self-signed certificate.
+.LP
+Later, after a Certificate Signing Request
+(CSR) has been generated (see the 
+.B \-certreq
+subcommand) and sent to a Certification Authority
+(CA), the response from the CA is imported
+(see 
+.BR \-import ), 
+and the self-signed certificate
+is replaced by a chain of certificates. At the
+bottom of the chain is the certificate (reply)
+issued by the CA authenticating the subject's
+public key. The next certificate in the chain
+is one that authenticates the CA's public key.
+.LP
+In many cases, this is a self-signed
+certificate (that is, a certificate from the
+CA authenticating its own public key) and the
+last certificate in the chain. In other cases,
+the CA may return a chain of certificates. In
+this case, the bottom certificate in the chain
+is the same (a certificate signed by the CA,
+authenticating the public key of the key
+entry), but the second certificate in the
+chain is a certificate signed by a different
+CA, authenticating the public key of the CA
+you sent the CSR to. Then, the next
+certificate in the chain will be a certificate
+authenticating the second CA's key, and so on,
+until a self-signed "root" certificate is
+reached. Each certificate in the chain (after
+the first) thus authenticates the public key
+of the signer of the previous certificate in
+the chain.
+.LP
+Many CAs only return the issued certificate,
+with no supporting chain, especially when
+there is a flat hierarchy (no intermediates
+CAs). In this case, the certificate chain must
+be established from trusted certificate
+information already stored in the keystore.
+.LP
+A different reply format (defined by the
+PKCS#7 standard) also includes the supporting
+certificate chain, in addition to the issued
+certificate. Both reply formats can be handled
+by 
+.BR keytool .
+.LP
+The top-level (root) CA certificate is
+self-signed. However, the trust into the
+root's public key does not come from the root
+certificate itself (anybody could generate a
+self-signed certificate with the distinguished
+name of say, the VeriSign root CA!), but from
+other sources like a newspaper. The root CA
+public key is widely known. The only reason it
+is stored in a certificate is because this is
+the format understood by most tools, so the
+certificate in this case is only used as a
+"vehicle" to transport the root CA's public
+key. Before you add the root CA certificate to
+your keystore, you should view it (using the
+-printcert option) and compare the displayed
+fingerprint with the well-known fingerprint
+(obtained from a newspaper, the root CA's
+webpage, and so forth).
+.SS Importing Certificates
+.IX "keytool" "Importing Certificates" "\fLkeytool\fP \(em key and certificate management tool"
+To import a certificate from a file, use the
+.B \-import
+subcommand, as in
+.LP
+.ft 3
+.nf
+keytool \-import \-alias joe \-file jcertfile.cer
+.fi
+.ft 1
+.LP
+This sample command imports the certificate(s)
+in the file
+.I jcertfile.cer 
+and stores it in the
+keystore entry identified by the alias 
+.BR joe .
+.LP
+You import a certificate for two reasons:
+.TP 5
+1. 
+to add it to the list of trusted
+certificates, or
+.TP 5
+2. 
+to import a certificate reply received
+from a CA as the result of submitting a
+Certificate Signing Request (see the
+.B -certreq
+subcommand) to that CA.
+.LP
+Which type of import is intended is indicated
+by the value of the 
+.B \-alias
+option. 
+.LP
+.TP 2
+\(bu If the alias points to a key entry, 
+then keytool assumes you
+are importing a certificate reply. 
+keytool checks whether the
+public key in the certificate reply 
+matches the public key stored
+with the alias, and exits if they are different. 
+.LP
+.TP 2
+\(bu If the alias does not point to a key entry,
+then keytool assumes you are adding a trusted 
+certificate entry. In this case,
+the alias should not already exist in the 
+keystore. If the alias
+does already exist, then keytool 
+outputs an error, since there
+is already a trusted certificate 
+for that alias, and does not
+import the certificate. If the 
+alias does not exist in the
+keystore, keytool creates a 
+trusted certificate entry with the
+specified alias and associates it 
+with the imported certificate. 
+.LP
+.ft 3
+WARNING Regarding Importing Trusted Certificates
+.LP
+IMPORTANT: Be sure to check a
+certificate very carefully before
+importing it as a trusted
+certificate!
+.ft 1
+.LP
+View it first (using the 
+.B \-printcert
+subcommand, or the
+.B \-import
+subcommand without the
+.B \-noprompt
+option), and
+make sure that the displayed
+certificate fingerprint(s) match the
+expected ones. For example, suppose
+someone sends or emails you a
+certificate, and you put it in a
+file named 
+.BR /tmp/cert . Before you
+consider adding the certificate to
+your list of trusted certificates,
+you can execute a 
+.B \-printcert
+subcommand
+to view its fingerprints, as in
+.LP
+.ft 3
+.nf
+keytool -printcert -file /tmp/cert
+Owner: CN=ll, OU=ll, O=ll, L=ll, S=ll, C=ll
+Issuer: CN=ll, OU=ll, O=ll, L=ll, S=ll, C=ll
+Serial Number: 59092b34
+Valid from: Thu Sep 25 18:01:13 PDT 1997 until: Wed Dec 24 17:01:13 PST 1997
+Certificate Fingerprints:
+MD5:  11:81:AD:92:C8:E5:0E:A2:01:2E:D4:7A:D7:5F:07:6F
+SHA1: 20:B6:17:FA:EF:E5:55:8A:D0:71:1F:E8:D6:9D:C0:37:13:0E:5E:FE
+.fi
+.ft 1
+.LP
+Then call or otherwise contact the
+person who sent the certificate, and
+compare the fingerprint(s) that you
+see with the ones that they show.
+Only if the fingerprints are equal
+is it guaranteed that the
+certificate has not been replaced in
+transit with somebody else's (for
+example, an attacker's) certificate.
+If such an attack took place, and
+you did not check the certificate
+before you imported it, you would
+end up trusting anything the
+attacker has signed (for example, a
+JAR file with malicious class files
+inside).
+.LP
+Note: it is not required that you
+execute a 
+.B \-printcert
+subcommand prior
+to importing a certificate, since
+before adding a certificate to the
+list of trusted certificates in the
+keystore, the
+.B \-import
+subcommand prints
+out the certificate information and
+prompts you to verify it. You then
+have the option of aborting the
+import operation. Note, however,
+this is only the case if you invoke
+the
+.B \-import
+subcommand without the
+.B \-noprompt
+option. If the 
+.B \-noprompt
+option is given, there is no
+interaction with the user.
+.SS Exporting Certificates
+.IX "keytool" "Exporting Certificates" "\fLkeytool\fP \(em key and certificate management tool"
+To export a certificate to a file, use the
+.B \-export
+subcommand, as in
+.LP
+.ft 3
+.nf
+keytool \-export \-alias jane \-file janecertfile.cer
+.fi
+.ft 1
+.LP
+This sample command exports jane's certificate
+to the file 
+.IR janecertfile.cer . 
+That is, if 
+.B jane
+is the alias for a key entry, the command
+exports the certificate at the bottom of the
+certificate chain in that keystore entry. This
+is the certificate that authenticates jane's
+public key.
+.LP
+If, instead, 
+.B jane 
+is the alias for a trusted
+certificate entry, then that trusted
+certificate is exported.
+.SS Displaying Certificates
+.IX "keytool" "Displaying Certificates" "\fLkeytool\fP \(em key and certificate management tool"
+To print out the contents of a keystore entry,
+use the
+.B \-list
+subcommand, as in
+.LP
+.ft 3
+.nf
+keytool \-list \-alias joe
+.fi
+.ft 1
+.LP
+If you don't specify an alias, as in
+.LP
+.ft 3
+.nf
+keytool \-list
+.fi
+.ft 1
+.LP
+the contents of the entire keystore are printed.
+.LP
+To display the contents of a certificate
+stored in a file, use the
+.B \-printcert
+subcommand,
+as in
+.LP
+.ft 3
+.nf
+keytool \-printcert \-file certfile.cer
+.fi
+.ft 1
+.LP
+This displays information about the
+certificate stored in the file 
+.IR certfile.cer .
+.LP
+Note: This works independently of a keystore,
+that is, you do not need a keystore in order to
+display a certificate that's stored in a file.
+.SS Generating a Self-signed Certificate
+.IX "keytool" "Generating a Self-signed Certificate" "\fLkeytool\fP \(em key and certificate management tool"
+A self-signed certificate is one for which the
+issuer (signer) is the same as the subject
+(the entity whose public key is being
+authenticated by the certificate). Whenever
+the
+.B \-genkey
+subcommand is called to generate a
+new public/private key pair, it also wraps the
+public key into a self-signed certificate.
+.LP
+You may occasionally wish to generate a new
+self-signed certificate. For example, you may
+want to use the same key pair under a
+different identity (distinguished name). For
+example, suppose you change departments. You
+can then:
+.TP 5
+1. 
+copy (clone) the original key entry. See
+.BR \-keyclone .
+.TP
+2.
+generate a new self-signed certificate
+for the cloned entry, using your new
+distinguished name. See below.
+.TP
+3. 
+generate a Certificate Signing Requests
+for the cloned entry, and import the
+reply certificate or certificate chain.
+See the
+.B \-certreq
+and
+.B \-import
+subcommand.
+.TP
+4.
+delete the original (now obsolete) entry.
+See
+.BR \-delete .
+.LP
+To generate a self-signed certificate, use the
+.B \-selfcert
+subcommand, as in
+.LP
+.ft 3
+.nf
+keytool \-selfcert \-alias dukeNew \-keypass b92kqmp
+\-dname "cn=Duke Smith, ou=Purchasing, o=BlueSoft, c=US"
+.fi
+.ft 1
+.LP
+The generated certificate is stored as a
+single-element certificate chain in the
+keystore entry identified by the specified
+alias (in this case \f3dukeNew\f1) where it
+replaces the existing certificate chain.
+.SH COMMAND AND OPTION NOTES
+The various subcommands and their
+options are listed and described below.
+Note:
+.TP 2
+\(bu
+All subcommand and option names are preceded by a minus sign
+(-).
+.TP 2
+\(bu
+The options for each subcommand may be provided in any order.
+.LP
+.TP 2
+\(bu
+All items not italicized or in braces or square brackets are
+required to appear as is.
+.TP 2
+\(bu
+Braces surrounding an option generally signify that a default
+value will be used if the option is not specified on the
+command line. Braces are also used around the 
+.BR \-v , 
+.BR \-rfc , 
+and
+.B \-J
+options, which only have meaning if they appear on the
+command line (that is, they don't have any "default" values
+other than not existing).
+.TP 2
+\(bu
+Brackets surrounding an option signify that the user is
+prompted for the value(s) if the option is not specified on
+the command line. (For a
+.B \-keypass
+option, if you do not
+specify the option on the command line, 
+.B keytool
+will first
+attempt to use the keystore password to recover the private
+key, and if this fails, will then prompt you for the private
+key password.)
+.TP 2
+\(bu
+Items in italics (option values) represent the actual values
+that must be supplied. For example, here is the format of the
+.B \-printcert
+subcommand:
+.LP
+.ft 3
+.nf
+keytool \-printcert {\-file cert_file} {\-v}
+.fi
+.ft 1
+.LP
+When specifying a
+.B \-printcert
+subcommand, replace 
+.I cert_file 
+with
+the actual file name, as in:
+.LP
+.ft 3
+.nf
+keytool \-printcert \-file VScert.cer
+.fi
+.ft 1
+.LP
+.TP 2
+\(bu
+Option values must be quoted if they contain a blank (space).
+.LP
+.TP 2
+\(bu
+The
+.B -help
+subcommand is the default. Thus, the command line
+.LP
+.ft 3
+.nf
+keytool
+.fi
+.ft 1
+.LP
+is equivalent to
+.LP
+.ft 3
+.nf
+keytool \-help
+.fi
+.ft 1
+.SS Option Defaults
+.IX "keytool" "Option Defaults" "\fLkeytool\fP \(em key and certificate management tool"
+Below are the defaults for various option values.
+.LP
+.ft 3
+.nf
+\-alias "mykey"
+\-keyalg "DSA"
+\-keysize 1024
+\-validity 90
+\-keystore the file named .keystore in the user's home directory
+\-file stdin if reading, stdout if writing
+.fi
+.ft 1
+.LP
+The signature algorithm (
+.B \-sigalg
+option) is derived from
+the algorithm of the underlying private key: If the
+underlying private key is of type "DSA", the 
+.B \-sigalg
+private key is of type "RSA",
+.B \-sigalg
+defaults to
+"MD5withRSA".
+.SS Options that Appear for Most Subcommands
+.IX "keytool" "Options that Appear for Most Subcommands" "\fLkeytool\fP \(em key and certificate management tool"
+The
+.B \-v
+option can appear for all subcommands except 
+.BR \-help .
+If it appears, it signifies "verbose" mode; detailed
+certificate information will be output.
+.LP
+There is also a
+.BI \-J javaoption
+option that may appear for
+any subcommand.
+If it appears, the specified 
+.I \-javaoption
+string is passed through directly to the Java
+interpreter.
+.RB ( keytool
+is actually a "wrapper" around the
+interpreter.)  This option should not contain any spaces.
+It is useful for adjusting the execution environment or
+memory usage.
+For a list of possible interpreter options, type
+.B java \-h
+or
+.B java \-X
+at the command line.
+.LP
+These options may appear for all commands
+operating on a keystore:
+.TP
+.BI  \-storetype " storetype"
+This qualifier specifies the type of keystore to be
+instantiated. The default keystore type is the one
+that is specified as the value of the
+"keystore.type" property in the security properties
+file, which is returned by the static
+.B getDefaultType 
+method in 
+.BR java.security.KeyStore .
+.TP
+.BI \-keystore " keystore"
+The keystore (database file) location.
+Defaults to
+the file 
+.B .keystore 
+in the user's home directory, as
+determined by the 
+.B user.home 
+system property.
+.TP
+.BI \-storepass " storepass"
+The password which is used to protect the integrity
+of the keystore.
+.LP
+.I storepass 
+must be at least 6 characters long.
+It must be provided to all subcommands that access the
+keystore contents.
+For such subcommands, if a
+.B \-storepass
+option is not provided at the command
+line, the user is prompted for it.
+.LP
+When retrieving information from the 
+keystore, the password is optional; if
+no password is given, the integrity of 
+the retrieved information cannot be
+checked and a warning is displayed. 
+.LP
+Be careful with passwords - see Warning Regarding Passwords. 
+.TP
+.BI \-provider " provider_class_name"
+Used to specify the name of the cryptographic service provider's
+master class file when the service provider is not listed in
+the security properties file.
+.SS Warning Regarding Passwords
+.IX "keytool" "Warning Regarding Passwords" "\fLkeytool\fP \(em key and certificate management tool"
+Most commands operating on a keystore require the store
+password. Some commands require a private key password.
+.LP
+Passwords can be specified on the command line (in the
+.B \-storepass
+and
+.B \-keypass
+options, respectively).
+However, a password should not be specified on a command line or
+in a script unless it is for testing purposes, or you
+are on a secure system.
+.LP
+If you don't specify a required password option on a
+command line, you will be prompted for it.
+When typing
+in a password at the password prompt, the password is
+currently echoed (displayed exactly as typed), so be
+careful not to type it in front of anyone.
+.SS COMMANDS
+.IX "keytool" "SUBCOMMANDS" "\fLkeytool\fP \(em key and certificate management tool"
+See also 
+.BR "COMMAND AND OPTION NOTES" .
+.SS Adding Data to the Keystore
+.IX "keytool" "Adding Data to the Keystore" "\fLkeytool\fP \(em key and certificate management tool"
+.TP
+\f3\-genkey {\-alias \f2alias\f3} {\-keyalg \f2keyalg\f3} {\-keysize \f2keysize}
+.ti +5n
+\f3{\-sigalg \f2sigalg\f3} [\-dname \f2dname\f3] [\-keypass \f2keypass\f3] 
+.if n .ti +5n
+\f3{\-validity \f2valDays\f3} 
+.if t .ti +5n
+{\-storetype \f2storetype\f3} 
+.if n .ti +5n
+\f3{\-keystore \f2keystore\f3} [\-storepass \f2storepass\f3]
+.ti +5n
+.BI [\-provider " provider_class_name" ]
+.B {\-v}
+.if n .ti +5n
+\f3{\-J\f2javaoption\f3}
+.RS
+.LP
+Generates a key pair (a public key and associated
+private key). Wraps the public key into an X.509 v1
+self-signed certificate, which is stored as a
+single-element certificate chain. This certificate
+chain and the private key are stored in a new
+keystore entry identified by 
+.IR alias .
+.LP
+keyalg specifies the algorithm to be used to
+generate the key pair, and 
+.I keysize 
+specifies the
+size of each key to be generated. 
+.I sigalg 
+specifies the algorithm that should be used to sign the
+self-signed certificate; this algorithm must be
+compatible with keyalg. See Supported Algorithms
+and Key Sizes.
+.LP
+.I dname 
+specifies the X.500 Distinguished Name to be
+associated with 
+.IR alias , 
+and is used as the issuer
+and subject fields in the self-signed certificate.
+If no distinguished name is provided at the command
+line, the user will be prompted for one.
+.LP
+.I keypass 
+is a password used to protect the private
+key of the generated key pair. If no password is
+provided, the user is prompted for it. If you press
+RETURN at the prompt, the key password is set to
+the same password as that used for the keystore.
+.I keypass 
+must be at least 6 characters long. Be
+careful with passwords:
+See
+.BR "Warning Regarding Passwords" .
+.LP
+.I valDays 
+tells the number of days for which the
+certificate should be considered valid.
+.RE
+.TP
+\f3\-import {\-alias \f2alias\f3} {\-file \f2cert_file\f3} [\-keypass \f2keypass\f3] 
+.ti +5n
+\f3{\-noprompt} {\-trustcacerts} {\-storetype \f2storetype\f3} 
+.if n .ti +5n
+\f3{\-keystore \f2keystore\f3}
+.if t .ti +5n
+[\-storepass \f2storepass\f3]
+.if n .ti +5n
+.BI [\-provider " provider_class_name" ]
+.if n .ti +5n
+.BI "{\-v} {\-J" javaoption }
+.RS
+.LP
+Reads the certificate or certificate chain (where
+the latter is supplied in a PKCS#7 formatted reply)
+from the file 
+.IR cert_file , 
+and stores it in the
+keystore entry identified by 
+.IR alias
+. If no file is
+given, the certificate or PKCS#7 reply is read from
+stdin. 
+.LP
+.B keytool
+can import X.509 v1, v2, and v3
+certificates, and PKCS#7 formatted certificate
+chains consisting of certificates of that type. The
+data to be imported must be provided either in
+binary encoding format, or in printable encoding
+format (also known as Base64 encoding) as defined
+by the Internet RFC 1421 standard. In the latter
+case, the encoding must be bounded at the beginning
+by a string that starts with "-----BEGIN", and
+bounded at the end by a string that starts with
+"-----END".
+.LP
+You import a certification for two reasons:
+.LP
+1. to add it to the list of trusted certificates, or
+.LP
+2. to import a certificate reply received from 
+a CA as the result of
+submitting a Certificate Signing 
+Request (see the \-certreq command) to that CA. 
+.SH Importing a New Trusted Certificate
+When importing a new trusted certificate, 
+.I alias
+must not yet exist in the keystore. Before adding
+the certificate to the keystore, 
+.B keytool
+tries to
+verify it by attempting to construct a chain of
+trust from that certificate to a self-signed
+certificate (belonging to a root CA), using trusted
+certificates that are already available in the
+keystore.
+.LP
+If the
+.B \-trustcacerts
+option has been specified,
+additional certificates are considered for the
+chain of trust, namely the certificates in a file named 
+.BR cacerts . 
+.LP
+If keytool fails to establish a trust 
+path from the certificate to
+be imported up to a self-signed 
+certificate (either from the
+keystore or the "cacerts" file), 
+the certificate information is
+printed out, and the user is prompted 
+to verify it, e.g., by
+comparing the displayed certificate fingerprints with the
+fingerprints obtained from some other (trusted) source of
+information, which might be the certificate owner
+himself/herself. Be very careful to 
+ensure the certificate is valid
+prior to importing it as a "trusted" certificate! -- see WARNING
+Regarding Importing Trusted Certificates. The user then has the
+option of aborting the import operation. 
+If the \-noprompt option
+is given, however, there will be no interaction with the user. 
+.SH Importing a Certificate Reply
+When importing a certificate reply, the certificate
+reply is validated using trusted certificates from
+the keystore, and optionally using the certificates
+configured in the 
+.B cacerts
+keystore file (if the
+.B \-trustcacerts
+option was specified).
+.LP
+The methods of determining whether the certificate reply is
+trusted are described in the following: 
+.LP
+If the reply is a single X.509 certificate, 
+.B keytool
+attempts to establish a trust chain, starting at
+the certificate reply and ending at a self-signed
+certificate (belonging to a root CA). The
+certificate reply and the hierarchy of certificates
+used to authenticate the certificate reply form the
+new certificate chain of 
+.IR alias .
+.LP
+If the reply is a PKCS#7 formatted certificate
+chain, the chain is first ordered (with the user
+certificate first and the self-signed root CA
+certificate last), before 
+.B keytool
+attempts to match
+the root CA certificate provided in the reply with
+any of the trusted certificates in the keystore or
+the 
+.B cacerts
+keystore file (if the
+.B \-trustcacerts
+option was specified). If no match can be found,
+the information of the root CA certificate is
+printed out, and the user is prompted to verify it,
+for example, by comparing the displayed certificate
+fingerprints with the fingerprints obtained from
+some other (trusted) source of information, which
+might be the root CA itself. The user then has the
+option of aborting the import operation. If the
+-noprompt option is given, however, there will be
+no interaction with the user.
+.LP
+The new certificate chain of 
+.I alias 
+replaces the old
+certificate chain associated with this entry. The
+old chain can only be replaced if a valid keypass,
+the password used to protect the private key of the
+entry, is supplied. If no password is provided, and
+the private key password is different from the
+keystore password, the user is prompted for it.
+Be careful with passwords:
+See
+.BR "Warning Regarding Passwords" .
+.RE
+.SH The cacerts Certificates File
+A certificates file named "cacerts" resides in the security
+properties directory, java.home/lib/security, where java.home
+is the runtime environment's directory (the jre directory in the
+SDK or the top-level directory of the Java 2 Runtime Environment). 
+.LP
+The "cacerts" file represents a system-wide keystore with CA
+certificates. System administrators can configure and manage
+that file using keytool, specifying "jks" as the keystore type.
+The "cacerts" keystore file ships with several root CA certificates
+with the following aliases and X.500 owner distinguished names: 
+.LP
+.RS 5
+Alias: thawtepersonalfreemailca 
+Owner DN:
+EmailAddress=personal-freemail@thawte.com, 
+CN=Thawte Personal Freemail CA, 
+OU=Certification Services Division, 
+O=Thawte Consulting, L=Cape Town, ST=Western Cape,
+C=ZA 
+.LP
+Alias: thawtepersonalbasicca 
+Owner DN: EmailAddress=personal-basic@thawte.com, 
+CN=Thawte Personal Basic CA, 
+OU=Certification Services Division, 
+O=Thawte Consulting, L=Cape Town, ST=Western Cape,
+C=ZA 
+.LP
+Alias: thawtepersonalpremiumca 
+Owner DN:
+EmailAddress=personal-premium@thawte.com, 
+CN=Thawte Personal Premium CA, 
+OU=Certification Services Division, 
+O=Thawte Consulting, L=Cape Town, ST=Western Cape,
+C=ZA 
+.LP
+Alias: thawteserverca 
+Owner DN: EmailAddress=server-certs@thawte.com, 
+CN=Thawte Server CA, 
+OU=Certification Services Division,
+O=Thawte Consulting cc, L=Cape Town, ST=Western
+Cape, C=ZA 
+.LP
+Alias: thawtepremiumserverca 
+Owner DN: EmailAddress=premium-server@thawte.com,
+CN=Thawte Premium Server CA, 
+OU=Certification Services Division, 
+O=Thawte Consulting cc, L=Cape Town, ST=Western
+Cape, C=ZA 
+.LP
+Alias: verisignclass1ca 
+Owner DN: OU=Class 1 Public Primary Certification
+Authority, 
+O="VeriSign, Inc.", C=US 
+.LP
+Alias: verisignclass2ca
+Owner DN: OU=Class 2 Public Primary Certification
+Authority, 
+O="VeriSign, Inc.", C=US 
+.LP
+Alias: verisignclass3ca 
+Owner DN: OU=Class 3 Public Primary Certification
+Authority, 
+O="VeriSign, Inc.", C=US 
+.LP
+Alias: verisignclass4ca 
+Owner DN: OU=Class 4 Public Primary Certification
+Authority, 
+O="VeriSign, Inc.", C=US 
+.LP
+Alias: verisignserverca 
+Owner DN: OU=Secure Server Certification Authority, 
+O="RSA Data Security, Inc.", C=US 
+.LP
+Alias: baltimorecodesigningca 
+Owner DN: CN=Baltimore CyberTrust Code Signing Root, 
+OU=CyberTrust, O=Baltimore, C=IE 
+.LP
+Alias: gtecybertrustca 
+Owner DN: CN=GTE CyberTrust Root, 
+O=GTE Corporation, C=US 
+.LP
+Alias: gtecybertrust5ca 
+Owner DN: CN=GTE CyberTrust Root 5, 
+OU="GTE CyberTrust Solutions, Inc.", O=GTE Corporation,
+C=US 
+.RE
+.LP
+The initial password of the "cacerts" keystore file is "changeit".
+System administrators should change that password and the
+default access permission of that file upon installing the SDK. 
+.LP
+IMPORTANT: Verify Your cacerts File 
+Since you trust the CAs in the cacerts file as
+entities for signing and issuing certificates to other
+entities, you must manage the cacerts file
+carefully. The cacerts file should contain only
+certificates of the CAs you trust. It is your
+responsibility to verify the trusted root CA
+certificates bundled in the cacerts file and make
+your own trust decisions. To remove an untrusted
+CA certificate from the cacerts file, use the delete
+option of the keytool command. You can find the
+You can find the  cacerts file in the JRE installation directory.
+Contact your system administrator if you do not
+have permission to edit this file. 
+.TP
+\f3\-selfcert {\-alias \f2alias\f3} {\-sigalg \f2sigalg\f3} {\-dname \f2dname\f3}
+.ti +5n
+\f3{\-validity \f2valDays\f3}
+[\-keypass \f2keypass\f3] 
+.if n .ti +5n
+\f3{\-storetype \f2storetype\f3}
+.if t .ti +5n
+{\-keystore \f2keystore\f3}
+.if n .ti +5n
+\f3[\-storepass \f2storepass\f3]
+.if n .ti +5n
+.BI [\-provider " provider_class_name" ]
+.ti +5n
+\f3{\-v} {\-J\f2javaoption\f3}
+.RS
+.LP
+Generates an X.509 v1 self-signed certificate,
+using keystore information including the private
+key and public key associated with 
+.IR alias . 
+If 
+.I dname
+is supplied at the command line, it is used as the
+X.500 Distinguished Name for both the issuer and
+subject of the certificate. Otherwise, the X.500
+Distinguished Name associated with 
+.I alias 
+(at the
+bottom of its existing certificate chain) is used.
+.LP
+The generated certificate is stored as a
+single-element certificate chain in the keystore
+entry identified by 
+.IR alias , 
+where it replaces the
+existing certificate chain.
+.LP
+.I sigalg 
+specifies the algorithm that should be used
+to sign the certificate. See Supported Algorithms
+and Key Sizes.
+.LP
+In order to access the private key, the appropriate
+password must be provided, since private keys are
+protected in the keystore with a password. If
+.I keypass 
+is not provided at the command line, and is
+different from the password used to protect the
+integrity of the keystore, the user is prompted for
+it.
+Be careful with passwords:
+See
+.BR "Warning Regarding Passwords" .
+.LP
+.I valDays 
+tells the number of days for which the
+certificate should be considered valid.
+.RE
+.ne 2
+.br
+.TP
+.if t \f3\-identitydb {\-file \f2idb_file\f3} {\-storetype \f2storetype\f3} \f3{\-keystore \f2keystore\f3}
+.if n \f3\-identitydb {\-file \f2idb_file\f3} {\-storetype \f2storetype\f3}
+.ti +5n
+.if n \f3{\-keystore \f2keystore\f3}
+\f3[\-storepass \f2storepass\f3] 
+.if n .ti +5n
+.BI [\-provider " provider_class_name" ]
+.if n .ti +5n
+\f3{\-v} {\-J\f2javaoption\f3}
+.RS
+.LP
+Reads the JDK 1.1.x-style identity database from
+the file 
+.IR idb_file , 
+and adds its entries to the
+keystore. If no file is given, the identity
+database is read from stdin. If a keystore does not
+exist, it is created.
+.LP
+Only identity database entries ("identities") that
+were marked as trusted will be imported in the
+keystore. All other identities will be ignored. For
+each trusted identity, a keystore entry will be
+created. The identity's name is used as the 
+.I alias 
+for the keystore entry.
+.LP
+The private keys from trusted identities will all
+be encrypted under the same password, storepass.
+This is the same password that is used to protect
+the keystore's integrity. Users can later assign
+individual passwords to those private keys by using
+the 
+.B \-keypasswd 
+.B keytool
+command option.
+.LP
+An identity in an identity database may hold more
+than one certificate, each certifying the same
+public key. But a keystore key entry for a private
+key has that private key and a single "certificate
+chain" (initially just a single certificate), where
+the first certificate in the chain contains the
+public key corresponding to the private key. When
+importing the information from an identity, only
+the first certificate of the identity is stored in
+the keystore. This is because an identity's name in
+an identity database is used as the 
+.I alias 
+for its
+corresponding keystore entry, and 
+.I alias 
+names are
+unique within a keystore,
+.RE
+.SS Exporting Data
+.IX "keytool" "Exporting Data" "\fLkeytool\fP \(em key and certificate management tool"
+.TP
+.if t \f3\-certreq {\-alias \f2alias\f3} {\-sigalg \f2sigalg\f3} \f3{\-file \f2certreq_file\f3} [\-keypass \f2keypass\f3] 
+.if n \f3\-certreq {\-alias \f2alias\f3} {\-sigalg \f2sigalg\f3} \f3{\-file \f2certreq_file\f3}
+.if n .ti +5n
+.if n \f3[\-keypass \f2keypass\f3] 
+.ti +5n
+\f3{\-storetype \f2storetype\f3} {\-keystore \f2keystore\f3} 
+.if n .ti +5n
+\f3[\-storepass \f2storepass\f3]
+.ti +5n
+.BI [\-provider " provider_class_name" ]
+.if n .ti +5n
+\f3{\-v} {\-J\f2javaoption\f3}
+.RS
+.LP
+Generates a Certificate Signing Request (CSR),
+using the PKCS#10 format.
+.LP
+A CSR is intended to be sent to a certificate
+authority (CA). The CA will authenticate the
+certificate requestor (usually off-line) and will
+return a certificate or certificate chain, used to
+replace the existing certificate chain (which
+initially consists of a self-signed certificate) in
+the keystore.
+.LP
+The private key and X.500 Distinguished Name
+associated with 
+.I alias 
+are used to create the
+PKCS#10 certificate request. In order to access the
+private key, the appropriate password must be
+provided, since private keys are protected in the
+keystore with a password. If 
+.I keypass 
+is not
+provided at the command line, and is different from
+the password used to protect the integrity of the
+keystore, the user is prompted for it.
+.LP
+Be careful with passwords:
+See
+.BR "Warning Regarding Passwords" .
+.LP
+.I sigalg 
+specifies the algorithm that should be used
+to sign the CSR. See Supported Algorithms and Key
+Sizes.
+.LP
+The CSR is stored in the file 
+.IR certreq_file . 
+If no
+file is given, the CSR is output to stdout.
+.LP
+Use the import command to import the response from
+the CA.
+.RE
+.TP
+.if t \f3\-export {\-alias \f2alias\f3} {\-file \f2cert_file\f3} \f3{\-storetype \f2storetype\f3} {\-keystore \f2keystore\f3} 
+.if n \f3\-export {\-alias \f2alias\f3} {\-file \f2cert_file\f3} \f3{\-storetype \f2storetype\f3}
+.if n .ti +5n
+.if n \f3{\-keystore \f2keystore\f3} 
+.if t .ti +5n
+\f3[\-storepass \f2storepass\f3]
+.if n .ti +5n
+.BI [\-provider " provider_class_name" ]
+.ti +5n
+\f3{\-rfc} {\-v} {\-J\f2javaoption\f3}
+.RS
+.LP
+Reads (from the keystore) the certificate
+associated with 
+.IR alias , 
+and stores it in the file
+.IR cert_file .
+.LP
+If no file is given, the certificate is output to
+.BR stdout .
+.LP
+The certificate is by default output in binary
+encoding, but will instead be output in the
+printable encoding format, as defined by the
+Internet RFC 1421 standard, if the
+.B \-rfc
+option is
+specified.
+.LP
+If 
+.I alias 
+refers to a trusted certificate, that
+certificate is output. Otherwise, 
+.I alias 
+refers to a
+key entry with an associated certificate chain. In
+that case, the first certificate in the chain is
+returned. This certificate authenticates the public
+key of the entity addressed by 
+.IR alias .
+.SS Displaying Data
+.IX "keytool" "Displaying Data" "\fLkeytool\fP \(em key and certificate management tool"
+.TP
+.if t \f3\-list {\-alias \f2alias\f3} {\-storetype \f2storetype\f3} {\-keystore \f2keystore\f3} [\-storepass \f2storepass\f3] 
+.if n \f3\-list {\-alias \f2alias\f3} {\-storetype \f2storetype\f3} \f3{\-keystore \f2keystore\f3}
+.ti +5n
+.if n .BI [\-storepass " storepass" ] 
+.if n .ti +5n
+.BI [\-provider " provider_class_name" ]
+.if n .ti +5n
+\f3{\-v | \-rfc} {\-J\f2javaoption\f3}
+.RS
+.LP
+Prints (to stdout) the contents of the keystore
+entry identified by 
+.IR alias .
+If no 
+.I alias 
+is specified, the contents of the entire keystore are printed.
+.LP
+This command by default prints the MD5 fingerprint
+of a certificate.
+If the
+.B \-v
+option is specified,
+the certificate is printed in human-readable
+format, with additional information such as
+the owner, issuer, and serial number.
+If the
+.B \-rfc
+option is specified,
+certificate contents are printed using the
+printable encoding format, as defined by the
+Internet RFC 1421 standard
+.LP
+You cannot specify both
+.B \-v
+and
+.BR \-rfc .
+.RE
+.TP
+\f3\-printcert {\-file \f2cert_file\f3} {\-v} {\-J\f2javaoption\f3}
+.RS
+.LP
+Reads the certificate from the file 
+.IR cert_file , 
+and
+prints its contents in a human-readable format. If
+no file is given, the certificate is read from
+stdin.
+.LP
+The certificate may be either binary encoded or in
+printable encoding format, as defined by the
+Internet RFC 1421 standard.
+.LP
+Note: This option can be used independently of a
+keystore.
+.RE
+.SS Managing the Keystore
+.IX "keytool" "Managing the Keystore" "\fLkeytool\fP \(em key and certificate management tool"
+.TP
+.if t \f3\-keyclone {\-alias \f2alias\f3} [\-dest \f2dest_alias\f3] [\-keypass \f2keypass\f3] {\-new \f2new_keypass\f3} 
+.if n \f3\-keyclone {\-alias \f2alias\f3} [\-dest \f2dest_alias\f3] [\-keypass \f2keypass\f3]
+.if n .ti +5n
+.if n \f3{\-new \f2new_keypass\f3} 
+.if t .ti +5n
+\f3{\-storetype \f2storetype\f3}
+.if n .ti +5n
+{\-keystore \f2keystore\f3} 
+\f3[\-storepass \f2storepass\f3]
+.ti +5n
+.BI [\-provider " provider_class_name" ]
+.if n .ti +5n
+\f3{\-v} {\-J\f2javaoption\f3}
+.RS
+.LP
+Creates a new keystore entry, which has the same
+private key and certificate chain as the original
+entry.
+.LP
+The original entry is identified by 
+.I alias 
+(which
+defaults to 
+"mykey" if not provided). The new
+(destination) entry is identified by 
+.IR dest_alias . 
+If no destination 
+.I alias 
+is supplied at the command
+line, the user is prompted for it.
+.LP
+If the private key password is different from the
+keystore password, then the entry will only be
+cloned if a valid 
+.I keypass 
+is supplied.
+This is the
+password used to protect the private key associated with 
+.IR alias .
+If no key password is supplied at the
+command line, and the private key password is
+different from the keystore password, the user is
+prompted for it.
+The private key in the cloned
+entry may be protected with a different password,
+if desired. If no
+.B \-new
+option is supplied at the
+command line, the user is prompted for the new
+entry's password (and may choose to let it be the
+same as for the cloned entry's private key).
+.LP
+Be careful with passwords:
+See
+.BR "Warning Regarding Passwords" .
+.LP
+This command can be used to establish multiple
+certificate chains corresponding to a given key
+pair, or for backup purposes.
+.RE
+.TP
+\f3\-storepasswd {\-new \f2new_storepass\f3} {\-storetype \f2storetype\f3}
+.ti +5n
+\f3{\-keystore \f2keystore\f3} [\-storepass \f2storepass\f3]
+.if n .ti +5n
+.BI [\-provider " provider_class_name" ]
+.ti +5n
+\f3{\-v} {\-J\f2javaoption\f3}
+.RS
+.LP
+Changes the password used to protect the integrity
+of the keystore contents. The new password is
+.IR new_storepass , 
+which must be at least 6 characters long.
+.LP
+Be careful with passwords:
+.BR "Warning Regarding Passwords" .
+.RE
+.TP
+\f3\-keypasswd {\-alias \f2alias\f3} [\-keypass \f2old_keypass\f3] 
+.ti +5n
+\f3[\-new \f2new_keypass\f3] {\-storetype \f2storetype\f3} 
+.if n .ti +5n
+\f3{\-keystore \f2keystore\f3}
+.if t .ti +5n
+[\-storepass \f2storepass\f3] 
+.if n .ti +5n
+.BI [\-provider " provider_class_name" ]
+.if n .ti +5n
+\f3{\-v} {\-J\f2javaoption\f3}
+.RS
+.LP
+Changes the password under which the private key
+identified by 
+.I alias 
+is protected, from 
+.I old_keypass
+to 
+.IR new_keypass .
+.LP
+If the
+.B \-keypass
+option is not provided at the
+command line, and the private key password is
+different from the keystore password, the user is
+prompted for it.
+.LP
+If the
+.B \-new
+option is not provided at the command
+line, the user is prompted for it.
+.LP
+Be careful with passwords:
+See
+.BR " Warning Regarding Passwords" .
+.RE
+.TP
+\f3\-delete [\-alias \f2alias\f3] {\-storetype \f2storetype\f3} 
+.ti +5n
+\f3{\-keystore \f2keystore\f3} [\-storepass \f2storepass\f3]
+.if n .ti +5n
+.BI [\-provider " provider_class_name" ]
+.ti +5n
+\f3{\-v} \f3{\-J\f2javaoption\f3}
+.RS
+.LP
+Deletes from the keystore the entry identified by
+.IR alias . 
+The user is prompted for the 
+.IR alias , 
+if no
+.I alias 
+is provided at the command line.
+.RE
+.SS Getting Help
+.IX "keytool" "Getting Help" "\fLkeytool\fP \(em key and certificate management tool"
+.TP
+.B \-help
+Lists all the command and their options.
+.SH EXAMPLES
+Suppose you want to create a keystore for managing your
+public/private key pair and certificates from entities you trust.
+.SS Generating Your Key Pair
+.IX "keytool" "Generating Your Key Pair" "\fLkeytool\fP \(em key and certificate management tool"
+The first thing you need to do is create a keystore and
+generate the key pair. You could use a command such as
+the following:
+.LP
+.ft 3
+.nf
+keytool \-genkey \-dname "cn=Mark Jones, ou=Java, o=Sun, c=US"
+\-alias business \-keypass kpi135 \-keystore /working/mykeystore
+\-storepass ab987c \-validity 180
+.fi
+.ft 1
+.LP
+(Please note: This must be typed as a single line.
+Multiple lines are used in the examples just for
+legibility purposes.)
+.LP
+This command creates the keystore named 
+.B mykeystore
+in the 
+.B working
+directory (assuming it does not already
+exist), and assigns it the password 
+.BR ab987c . 
+It
+generates a public/private key pair for the entity whose
+"distinguished name" has a common name of 
+.BR Mark Jones ,
+organizational unit of 
+.BR Java , 
+organization of 
+.B Sun
+and two-letter country code of 
+.BR US . 
+It uses the default
+"DSA" key generation algorithm to create the keys, both
+1024 bits long.
+.LP
+It creates a self-signed certificate (using the default
+"SHA1withDSA" signature algorithm) that includes the
+public key and the distinguished name information. This
+certificate will be valid for 
+.B 180 
+days, and is
+associated with the private key in a keystore entry
+referred to by the alias 
+.BR business . 
+The private key is
+assigned the password 
+.BR kpi135 .
+.LP
+The command could be significantly shorter if option
+defaults were accepted. As a matter of fact, no options
+are required; defaults are used for unspecified options
+that have default values, and you are prompted for any
+required values. Thus, you could simply have the
+following:
+.LP
+.ft 3
+.nf
+keytool \-genkey
+.fi
+.ft 1
+.LP
+In this case, a keystore entry with alias 
+.B mykey  
+is
+created, with a newly-generated key pair and a
+certificate that is valid for 90 days. This entry is
+placed in the keystore named 
+.B .keystore
+in your home
+directory. (The keystore is created if it doesn't
+already exist.) You will be prompted for the
+distinguished name information, the keystore password,
+and the private key password.
+.LP
+The rest of the examples assume you executed the
+.B \-genkey
+command without options specified, and that you
+responded to the prompts with values equal to those
+given in the first
+.B \-genkey
+command, above (a private key
+password of 
+.BR  kpi135 , 
+and so forth.)
+.SS Requesting a Signed Certificate 
+.SS from a Certification Authority
+.IX "keytool" "Requesting a Signed Certificate from a Certification Authority" "\fLkeytool\fP \(em key and certificate management tool"
+So far all we've got is a self-signed certificate. A
+certificate is more likely to be trusted by others if it
+is signed by a Certification Authority (CA). To get such
+a signature, you first generate a Certificate Signing
+Request (CSR), via the following:
+.LP
+.ft 3
+.nf
+keytool \-certreq \-file MarkJ.csr
+.fi
+.ft 1
+.LP
+This creates a CSR (for the entity identified by the
+default alias \f3mykey\f1 and puts the request in the file
+named 
+.BR  MarkJ.csr . 
+Submit this file to a CA, such as
+VeriSign, Inc. The CA will authenticate you, the
+requestor (usually off-line), and then will return a
+certificate, signed by them, authenticating your public
+key. (In some cases, they will actually return a chain
+of certificates, each one authenticating the public key
+of the signer of the previous certificate in the chain.)
+.SS Importing a Certificate for the CA
+.IX "keytool" "Importing a Certificate for the CA" "\fLkeytool\fP \(em key and certificate management tool"
+You need to replace your self-signed certificate with a
+certificate chain, where each certificate in the chain
+authenticates the public key of the signer of the
+previous certificate in the chain, up to a "root" CA.
+.LP
+Before you import the certificate reply from a CA, you
+need one or more "trusted certificates" in your keystore
+or in the cacerts keystore file (which is described in
+.BR import command ):
+.TP 2
+\(bu
+If the certificate reply is a certificate chain,
+you just need the top certificate of the chain
+(that is, the "root" CA certificate authenticating
+that CA's public key).
+.TP 2
+\(bu
+If the certificate reply is a single certificate,
+you need a certificate for the issuing CA (the one
+that signed it), and if that certificate is not
+self-signed, you need a certificate for its signer,
+and so on, up to a self-signed "root" CA
+certificate.
+.LP
+The 
+.B cacerts 
+keystore file ships with five VeriSign
+root CA certificates, so you probably won't need to
+import a VeriSign certificate as a trusted certificate
+in your keystore. But if you request a signed
+certificate from a different CA, and a certificate
+authenticating that CA's public key hasn't been added to
+.BR cacerts , 
+you will need to import a certificate from
+the CA as a "trusted certificate".
+.LP
+A certificate from a CA is usually either self-signed,
+or signed by another CA (in which case you also need a
+certificate authenticating that CA's public key).
+Suppose company ABC, Inc., is a CA, and you obtain a
+file named 
+.B ABCCA.cer
+that is purportedly a self-signed
+certificate from ABC, authenticating that CA's public
+key.
+.LP
+Be very careful to ensure the certificate is valid prior
+to importing it as a "trusted" certificate! View it
+first (using the 
+.B \-printcert 
+subcommand, or the
+.B \-import 
+subcommand without the 
+.B \-noprompt
+option),
+and make sure that the displayed certificate
+fingerprint(s) match the expected ones. You can call the
+person who sent the certificate, and compare the
+fingerprint(s) that you see with the ones that they show
+(or that a secure public key repository shows). Only if
+the fingerprints are equal is it guaranteed that the
+certificate has not been replaced in transit with
+somebody else's (for example, an attacker's)
+certificate. If such an attack took place, and you did
+not check the certificate before you imported it, you
+would end up trusting anything the attacker has signed.
+.LP
+If you trust that the certificate is valid, then you can
+add it to your keystore via the following:
+.LP
+.ft 3
+.nf
+keytool \-import \-alias abc \-file ABCCA.cer
+.fi
+.ft 1
+.LP
+This creates a "trusted certificate" entry in the
+keystore, with the data from the file 
+.BR  ABCCA.cer , 
+and assigns the alias 
+.B abc  
+to the entry.
+.SS Importing the Certificate 
+.SS Reply from the CA
+.IX "keytool" "Importing the Certificate Reply from the CA" "\fLkeytool\fP \(em key and certificate management tool"
+Once you've imported a certificate authenticating the
+public key of the CA you submitted your certificate
+signing request to (or there's already such a
+certificate in the 
+.B cacerts
+file), you can import the
+certificate reply and thereby replace your self-signed
+certificate with a certificate chain. This chain is the
+one returned by the CA in response to your request (if
+the CA reply is a chain), or one constructed (if the CA
+reply is a single certificate) using the certificate
+reply and trusted certificates that are already
+available in the keystore where you import the reply or
+in the 
+.BR cacerts
+keystore file.
+.LP
+For example, suppose you sent your certificate signing
+request to VeriSign. You can then import the reply via
+the following, which assumes the returned certificate is
+named 
+.BR VSMarkJ.cer :
+.LP
+.ft 3
+.nf
+keytool \-import \-trustcacerts \-file VSMarkJ.cer
+.fi
+.ft 1
+.SS Exporting a Certificate Authenticating Your 
+.SS Public Key
+.IX "keytool" "Exporting a Certificate Authenticating Your Public Key" "\fLkeytool\fP \(em key and certificate management tool"
+Suppose you have used the 
+.BR jarsigner (1)
+tool to sign a Java
+ARchive (JAR) file. Clients that want to use the file
+will want to authenticate your signature.
+.LP
+One way they can do this is by first importing your
+public key certificate into their keystore as a
+"trusted" entry. You can export the certificate and
+supply it to your clients. As an example, you can copy
+your certificate to a file named 
+.B MJ.cer 
+via the
+following, assuming the entry is aliased by 
+.BR  mykey :
+.LP
+.ft 3
+.nf
+keytool \-export \-alias mykey \-file MJ.cer
+.fi
+.ft 1
+.LP
+Given that certificate, and the signed JAR file, a
+client can use the 
+.BR jarsigner (1)
+tool to authenticate your
+signature.
+.SS Changing Your Distinguished 
+.SS Name but Keeping your Key Pair
+.IX "keytool" "Changing Your Distinguished Name but Keeping your Key Pair" "\fLkeytool\fP \(em key and certificate management tool"
+Suppose your distinguished name changes, for example
+because you have changed departments or moved to a
+different city. If desired, you may still use the
+public/private key pair you've previously used, and yet
+update your distinguished name. For example, suppose
+your name is Susan Miller, and you created your initial
+key entry with the alias 
+.B sMiller 
+and the distinguished
+name
+.LP
+.ft 3
+.nf
+"cn=Susan Miller, ou=Finance Department, o=BlueSoft, c=us"
+.fi
+.ft 1
+.LP
+Suppose you change from the Finance Department to the
+Accounting Department. You can still use the
+previously-generated public/private key pair and yet
+update your distinguished name by doing the following.
+First, copy (clone) your key entry:
+.LP
+.ft 3
+.nf
+keytool \-keyclone \-alias sMiller \-dest sMillerNew
+.fi
+.ft 1
+.LP
+(This prompts for the store password and for 
+the initial and destination private
+key passwords, since they aren't provided at the command
+line.) Now you need to change the certificate chain
+associated with the copy, so that the first certificate
+in the chain uses your different distinguished name.
+Start by generating a self-signed certificate with the
+appropriate name:
+.LP
+.ft 3
+.nf
+keytool \-selfcert \-alias sMillerNew
+\-dname "cn=Susan Miller, ou=Accounting Department, o=BlueSoft, c=us"
+.fi
+.ft 1
+.LP
+Then generate a Certificate Signing Request based on the
+information in this new certificate:
+.LP
+.ft 3
+.nf
+keytool \-certreq \-alias sMillerNew
+.fi
+.ft 1
+.LP
+When you get the CA certificate reply, import it:
+.LP
+.ft 3
+.nf
+keytool \-import \-alias sMillerNew \-file VSSMillerNew.cer
+.fi
+.ft 1
+.LP
+After importing the certificate reply, you may want to
+remove the initial key entry that used your old
+distinguished name:
+.LP
+.ft 3
+.nf
+keytool \-delete \-alias sMiller
+.fi
+.ft 1
+.br
+.ne 11
+.SH SEE ALSO
+.BR jar (1),
+.BR jarsigner (1)
+.LP
+See (or search
+.BR java.sun.com )
+for the following:
+.TP 10
+.B Security in the Java 2 Platform @
+http://java.sun.com/docs/books/tutorial/security1.2/index.html

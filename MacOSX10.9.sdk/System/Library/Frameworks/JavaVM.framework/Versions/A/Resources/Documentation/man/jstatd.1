@@ -1,0 +1,222 @@
+'\" t
+.\" @(#)jstatd.1 1.10 04/06/13 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.TH jstatd 1 "13 June 2004" 
+.SH NAME
+jstatd \- Virtual Machine jstat Daemon  
+.\"
+.SH SYNOPSIS
+.B jstatd 
+[
+.I options   
+]
+.SH DESCRIPTION
+The
+.B jstatd
+tool is an RMI server application that monitors for the 
+creation and termination of instrumented HotSpot Java virtual
+machines (JVMs) and provides a interface to allow remote 
+monitoring tools to attach to JVMs running on the local host. 
+.LP
+The jstatd server requires the presence of an RMI registry on the 
+local host. The jstatd server will attempt to attach to the RMI registry
+on the default port, or on the port indicated by the \-p port option. 
+If an RMI registry is not found, one will be created within the jstatd
+application bound to the port indicated by the \-p port option or 
+to the default RMI registry port if \-p port is omitted. Creation of an
+internal RMI registry can be inhibited by specifying the \-nr option. 
+.LP
+.B NOTE -
+This utility is unsupported and may or may not be 
+available in future versions of the J2SE SDK. 
+It is not currently available on the Windows 98 and
+Windows ME platforms.
+.SH PARAMETERS 
+.if t .TP 20
+.if n .TP 15
+.BI options
+Command-line options. The options may be in any order. If there 
+are redundant or contradictory options, the last option 
+specified will take precedence. 
+.SH OPTIONS
+The
+.B jstatd
+command supports the following options:
+.if t .TP 20
+.if n .TP 15
+.BI \-nr
+Do not attempt to create an internal RMI registry within the 
+jstatd process when an existing RMI registry is not found. 
+.if t .TP 20
+.if n .TP 15
+.BI \-p " port" 
+Port number where the RMI registry is expected to be found, or, 
+if not found, created if \-nr is not specified. 
+.if t .TP 20
+.if n .TP 15
+.BI \-n " rminame"
+Name to which the remote RMI object is bound in the RMI registry. The default name is JStatRemoteHost. If multiple jstatd servers are started
+on the same host, the name of the exported RMI object for each server can be made unique by by specifying this option. However, doing so will
+require that the unique server name be included in the monitoring client's hostid and vmid strings. 
+.if t .TP 20
+.if n .TP 15
+.BI \-J option
+Pass option to the java launcher called by javac. For example, \f3\-J\fP-Xms48m 
+sets the startup memory to 48 megabytes. It is a common
+convention for \f3\-J\fP to pass options to the underlying VM 
+executing applications written in Java. 
+.SH SECURITY
+The
+.B jstatd
+server installs an instance of RMISecurityPolicy if no other 
+security manager has been
+installed and therefore requires a security policy file to be 
+specified. The policy file must conform to
+the default policy implementation's Policy File Syntax. 
+The policy file can be specified with 
+the \f3\-J-D\fPjava.security.policy=file 
+.LP
+The following policy file will allow the jstatd server to run 
+without any security exceptions. This policy is less liberal 
+then granting all permissions to all codebases, but is more liberal 
+than a policy that grants the minimal permissions to run the jstatd server. 
+.LP
+.RS
+.ft 3
+.nf
+grant codebase "file:${java.home}/../lib/tools.jar" {
+	 permission java.security.AllPermission;
+};
+.fi
+.ft 1
+.RE
+.LP
+To use this policy, copy the text into a file 
+called jstatd.all.policy 
+and run the jstatd server as follows: 
+.LP
+.RS
+.ft 3
+.nf
+jstatd -J-Djava.security.policy=jstatd.all.policy
+.fi
+.ft 1
+.RE
+.LP
+For sites with more restrictive security practices, Sun 
+recommends that 
+the jstatd security policy be customized to meet your specific
+needs. 
+.LP
+The 
+.B jstatd 
+server can only monitor JVMs for which it has the 
+appropriate access permissions. However, jstatd does not 
+perform any user level authentication or authorization checking. 
+Therefore, it opens access to the instrumentation exported by 
+the JVMs for which the jstatd server has the appropriate access 
+permissions, allowing arbitrary users on the network to 
+monitor JVMs that might otherwise be
+inaccessible. Such exposure may be unacceptable in your 
+environment. Particular care should be exercised when 
+running the jstatd server with credentials that allow 
+wide exposure, such as running the server with root 
+permissions on UNIX based systems. 
+.LP
+The exposure introduced by the jstatd server can be eliminated by 
+not running the server, thus requiring all monitoring 
+activities to be performed locally. Alternatively, the security 
+policy file can be customized to limit access to specific trusted hosts. 
+.SH REMOTE INTERFACE
+The interface exported by the 
+.B jstatd 
+process is proprietary and is
+guaranteed to change. Users and developers are discouraged from writing
+to this interface.
+.SH EXAMPLES
+Here are some examples of starting \f3jstatd\fP. Note that the jstatd 
+scripts automatically start the server in the background. 
+.SS Using Internal RMI Registry
+This example demonstrates starting jstatd with an internal RMI 
+registry. This example assumes that no other server is bound to the
+default RMI Registry port (port 1099). 
+.LP
+.RS
+.ft 3
+.nf
+jstatd -J-Djava.security.policy=all.policy
+.fi
+.ft 1
+.RE
+.SS Using External RMI Registry
+This example demonstrates starting jstatd with a external RMI registry. 
+.LP
+.RS
+.ft 3
+.nf
+rmiregistry&
+jstatd -J-Djava.security.policy=all.policy
+.fi
+.ft 1
+.RE
+.LP
+This example demonstrates starting jstatd with an external RMI 
+registry server on port 2020. 
+.LP
+.RS
+.ft 3
+.nf
+rmiregistry 2020&
+jstatd -J-Djava.security.policy=all.policy -p 2020
+.fi
+.ft 1
+.RE
+.LP
+This example demonstrates starting jstatd with an 
+external RMI registry on 
+port 2020, bound to name AlternateJstatdServerName. 
+.LP
+.RS
+.ft 3
+.nf
+rmiregistry 2020&
+jstatd -J-Djava.security.policy=all.policy -p 2020 -n AlternateJstatdServerName
+.fi
+.ft 1
+.RE
+.SS Inhibiting creation of an in-process RMI registry
+This example demonstrates starting jstatd such that it will not create 
+a RMI registry if one is not found. This example assumes an RMI
+registry is already running. If it is not, an appropriate error 
+message is emitted. 
+.LP
+.RS
+.ft 3
+.nf
+jstatd -nr
+.fi
+.ft 1
+.RE
+.SS Enabling RMI logging capabilities
+This example demonstrates starting jstatd with RMI logging capabilities 
+enabled. This technique is useful as a troubleshooting aid or for
+monitoring server activities. 
+.LP
+.RS
+.ft 3
+.nf
+jstatd -J-Djava.security.policy=all.policy -J-Djava.rmi.server.logCalls=true
+.fi
+.ft 1
+.RE
+.LP
+This example uses the Bourne Shell syntax for setting environment 
+variables, other shells or command interpreters may require different
+syntax. 
+.SH SEE ALSO
+.BR java (1)
+.BR jps (1)
+.BR jstat (1)
+.BR rmiregistry (1)

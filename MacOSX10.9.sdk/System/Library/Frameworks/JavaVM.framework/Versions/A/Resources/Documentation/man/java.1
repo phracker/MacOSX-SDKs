@@ -1,0 +1,610 @@
+'\" t
+.\" @(#)java.1 1.20 00/06/13 SMI;
+.\" Copyright 2003 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2003 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.TH java 1 "23 June 2004"
+.SH NAME
+java \- Java application launcher
+.SH SYNOPSIS
+.B java 
+[ 
+.IB options 
+] 
+.I class 
+[ 
+.I argument...
+]
+.LP
+.B java 
+[ 
+.I options 
+] 
+.BI \-jar " file.jar"
+.if n .ti +5n
+[ 
+.I argument...
+]
+.SH  PARAMETERS
+.TP 15
+.I options
+Command-line options.
+.TP
+.I class
+Name of the class to be invoked.
+.TP
+.I file.jar
+Name of the jar 
+file to be invoked.
+Used only with the 
+.B \-jar
+option.
+.TP
+.I argument
+Argument passed to the
+.B main
+function.
+.SH DESCRIPTION
+.IX "Java interpreter" "" "Java interpreter \(em \fLjava\fP"
+.IX "java" "" "\fLjava\fP \(em Java interpreter"
+The 
+.B java 
+tool launches a Java application.
+It does this by
+starting a Java runtime environment, loading a specified class,
+and invoking that class's 
+.B main 
+method.
+The method must be declared 
+.B public
+and
+.B static ,
+it must not return any value, and it must
+accept a
+.B String
+array as a parameter. The method declaration
+must look like the following:
+.LP
+.ft 3
+.nf
+   public static void main(String args[])
+.fi
+.ft 1
+.LP
+By default, the first non-option argument is the name of the class
+to be invoked.
+A fully-qualified class name should be used.
+If the
+.B \-jar
+option is specified, the first non-option argument is the
+name of a JAR archive containing class and resource files for the
+application, with the startup class indicated by the Main-Class
+manifest header.
+.LP
+The Java runtime searches for the startup class, and other classes
+used, in three sets of locations: the bootstrap class path, the
+installed extensions, and the user class path.
+.LP
+Non-option arguments after the class name or JAR file name are
+passed to the main function.
+.SH OPTIONS
+The launcher has a set of standard options that are supported on
+the current runtime environment and will be supported in future
+releases.
+In addition, the current impletmentations of
+the virtual machines support a 
+set of non-standard options that are 
+subject to
+change in future releases.
+.SS Standard Options
+.IX "java" "Standard Options" "\fLjava\fP \(em Java interpreter"
+.TP 20
+.B \-client
+Selects the Java HotSpot Client
+.SM VM\s0.
+For more information see Server-Class Machine Detection at
+http://java.sun.com/j2se/1.5.0/docs/guide/vm/server-class.html
+.TP
+.B \-server
+Selects the Java HotSpot Server
+.SM VM\s0.
+For more information see Server-Class Machine Detection at
+http://java.sun.com/j2se/1.5.0/docs/guide/vm/server-class.html
+.TP
+.BI \-agentlib:libname\fR[= options \fR]
+Load native agent library
+.IR libname ,
+e.g.,
+.LP
+.RS 5
+.nf
+\-agentlib:hprof 
+\-agentlib:jdwp=help 
+\-agentlib:hprof=help 
+.fi
+.RE
+.LP
+For more information, see JVMTI Agent Command Line Options at
+http://java.sun.com/j2se/1.5.0/docs/guide/jvmti/jvmti.html
+.TP
+.BI \-agentpath:pathname\fR[= options \fR]
+Load a native agent library by full pathname. For more
+information, see JVMTI Agent Command Line Options at
+http://java.sun.com/j2se/1.5.0/docs/guide/jvmti/jvmti.html
+.TP
+.BI \-classpath " classpath"
+.PD 0
+.TP
+.BI \-cp " classpath"
+.PD
+Specifies a list of directories, JAR archives, and ZIP archives
+to search for class files.
+Class path entries are separated
+by colons (:). Specifying
+.B \-classpath 
+or 
+.B \-cp 
+overrides any
+setting of the 
+.SB CLASSPATH 
+environment variable.
+.sp 1n
+If 
+.B \-classpath 
+and 
+.B \-cp 
+are not used and 
+.SB CLASSPATH 
+is not set,
+the user class path consists of the current directory (.).
+.TP
+.BI \-D property=value
+Sets a system property value.
+.TP
+.BR \-d32 ", " \-d64
+Specified whether the program is to be run in a 32-bit 
+or 64-bit environment if available. 
+.LP
+.RS 7
+Currently, only the Java HotSpot Server VM supports
+64-bit operations and the
+.B \-server
+option is implicit with the use of 
+.B \-d64 .
+This is subject to change in a future release.
+.LP
+If neither
+.B \-d32
+nor
+.B \-d64
+is specified, the default is to run in a 32-bit 
+environment, except for 64-bit only systems.
+This is subject to change in a future release.
+.RE
+.TP
+.BR \-enableassertions " :\f2<package name>\fR... |:\f2<class name>\fR"
+.PD 0
+.TP
+.BR \-ea " :\f2<package name>\fR... |:\f2<class name>\fR"
+Enable assertions. Assertions are disabled by default.
+.sp 1n
+With no arguments,
+.BR enableassertions
+or
+.BR \-ea 
+enable assertions. With one argument ending in "...",
+the switch enables assertions in the specified package and any
+subpackages. If the argument is simply "...", the switch
+enables assertions in the unnamed package in the current
+working directory. With one argument not ending in "...",
+the switch enables assertions in the specified class.
+.sp 1n
+If a single command line contains multiple instances 
+of these switches, they are processed in order before 
+loading any classes. So, for example, to run a program
+with assertions enabled only in 
+.BR package " com.wombat.fruitbat"
+(and any subpackages), the following command could be used:
+.sp 1n
+.B java -ea:com.wombat.fruitbat... <Main Class>
+.sp 1n
+The 
+.BR \-enableassertions 
+and 
+.BR \-ea 
+switches apply to all 
+.BR s 
+loaders and to system
+classes (which do not have a class loader). There 
+is one exception to this rule: in
+their no-argument form, the switches do not apply to system. 
+This makes it easy to turn on asserts in all classes 
+except for system classes. A separate switch
+is provided to enable asserts in all system classes; see
+.BR \-enablesystemassertions 
+below.
+.sp 1n
+.TP
+.BR \-disableassertions " :\f2<package name>\fR... |:\f2<class name>\fR"
+.PD 0
+.TP
+.BR \-da " :\f2<package name>\fR... |:\f2<class name>/fR"
+Disable assertions. This is the default.
+.sp 1n
+With no arguments, 
+.BR disableassertions 
+or 
+.BR \-da 
+disables assertions. With one
+argument ending in "...", the switch 
+disables assertions in the specified
+package and any subpackages. If the 
+argument is simply "...", the switch
+disables assertions in the unnamed package 
+in the rent working directory. With
+one argument not ending in "...", the 
+switch disables assertions in the
+specified class.
+.sp 1n
+To run a program with assertions enabled in package 
+.BR com.wombat.fruitbat 
+but
+disabled in class 
+.BR com.wombat.fruitbat.Brickbat , 
+the following command could
+be used:
+.sp 1n
+.B java -ea:com.wombat.fruitbat... -da:com.wombat.fruitbat.Brickbat <Main Class>
+.sp 1n
+The 
+.BR \-disableassertions 
+and 
+.BR \-da 
+switches apply to all 
+.BR ss 
+loaders and to
+system classes (which do not have a class loader). 
+There is one exception to this
+rule: in their no-argument form, the switches do 
+not apply to system. This
+makes it easy to turn on asserts in all classes 
+except for system classes. A
+separate switch is provided to enable asserts 
+in all system classes; see
+.BR \-disablesystemassertions 
+below. 
+.sp 1n
+.TP
+.BR \-enablesystemassertions
+.PD 0
+.TP
+.BR \-esa
+Enable asserts in all system classes (sets the default assertion status
+for system classes to true).
+.sp 1n
+.TP
+.BR \-disablesystemassertions
+.PD 0
+.TP
+.BR \-dsa
+Disables asserts in all system classes
+.sp 1n
+.PD
+.TP
+.B \-jar
+Execute a program encapsulated in a JAR archive.
+The first
+argument is the name of a JAR file instead of a
+startup class name. 
+In order for this option to work, the manifest of the
+JAR file must contain a line of the form 
+\f3Main-Class:\f1\f2classname\f1. 
+Here, 
+.I classname 
+identifies the class having the
+.B public static void main(String[] args) 
+method that serves as
+your application's starting point.
+See the Jar tool reference
+page and the Jar trail of the Java Tutorial for information
+about working with Jar files and Jar-file manifests.
+.LP
+.IP "" 7
+When you use this option, the JAR file is the source of all
+user classes, and other user class path settings are ignored.
+.LP
+.IP "" 7
+Note that JAR files that can be run with 
+the "java \-jar" option can have their execute
+permissions set so they can be run without 
+using "java \-jar". Refer to Java Archive (JAR) Files. 
+.sp 1n
+.TP
+.BI \-javaagent:jarpath\fR[= options \fR]
+Load a Java programming language agent, see java.lang.instrument. 
+.TP
+.B \-verbose
+.PD 0
+.TP
+.BI \-verbose: class
+Displays information about each class loaded.
+.PD
+.TP
+.B \-verbose:gc
+Reports on each garbage collection event.
+.TP
+.B \-verbose:jni
+Reports information about use of native methods and other Java
+Native Interface activity.
+.TP
+.B \-version
+Displays version information and exit.
+.TP
+.B \-showversion
+Displays version information and continues.
+.TP
+.B \-?
+.PD 0
+.TP
+.B \-help
+Displays usage information and exit.
+.PD
+.TP
+.B \-X
+Displays information about non-standard options and exit.
+.SS Non-Standard Options
+.IX "java" "Non-Standard Options" "\fLjava\fP \(em Java interpreter"
+.TP 20
+.B \-Xint
+Operates in interpreted-only mode.
+Compilation to native code is disabled, and all bytecodes are
+executed by the interpreter.
+The performance benefits offered by the
+Java HotSpot VMs' adaptive compiler will not
+be present in this mode.
+.TP 20
+.B \-Xbatch
+Disable background compilation. Normally the 
+VM will compile the method as a
+background task, running the method in interpreter 
+mode until the background
+compilation is finished. The \-Xbatch flag 
+disables background compilation so that
+compilation of all methods proceeds as 
+a foreground task until completed. 
+.TP 20
+.B \-Xdebug
+Start with support for JVMDI enabled. JVMDI has 
+been deprecated and is not used for
+debugging in J2SE 5.0, so this option isn't 
+needed for debugging in J2SE 5.0. 
+.TP 20
+.BI \-Xbootclasspath: bootclasspath
+Specify a colon-separated list of directories, JAR
+archives, and ZIP archives to search for boot class files.
+These are used in place of the boot class files included in
+the Java 2 SDK. Note: Applications that use this option 
+for the purpose of overriding a class in rt.jar should
+not be deployed as doing so would contravene the 
+Java 2 Runtime Environment binary code license. 
+.TP
+.BI \-Xbootclasspath/a: path
+Specifies a colon-separated
+.I path
+of directories,
+.SM JAR
+archives, and
+.SM ZIP
+archives to append to the
+default bootstrap class path.
+.TP
+.BI \-Xbootclasspath/p: path
+Specifies a colon-separated
+.I path
+of directories,
+.SM JAR
+archives, and
+.SM ZIP
+archives to prepend in
+front of the default bootstrap class path.
+Note: Applications that use this option for the purpose of
+overriding a class in
+.B rt.jar
+should not be deployed,
+as doing so would contravene the Java 2 Runtime
+Environment binary code license.
+.TP
+.B \-Xcheck:jni
+Perform additional checks for Java Native Interface (JNI) functions. 
+Specifically, the Java Virtual Machine validates the parameters passed to
+the JNI function as well as the runtime environment data before
+processing the JNI request. Any invalid data encountered indicates a
+problem in the native code, and the Java Virtual Machine will terminate with
+a fatal error in such cases. Expect a performance degradation when this
+option is used.
+.TP
+.B \-Xfuture
+Performs strict class-file format checks.
+For purposes of backwards compatibility,
+the default format checks performed by the
+Java 2 SDK's virtual machine are no stricter than
+the checks performed by 1.1.x versions of the JDK software.
+The
+.B \-Xfuture
+flag turns on stricter class-file format checks
+that enforce closer conformance to the class-file format
+specification.
+Developers are encouraged to use this flag
+when developing new code because the stricter checks will
+become the default in future releases of the Java application launcher.
+.TP
+.B \-Xnoclassgc
+Disables class garbage collection
+.TP
+.BI \-Xincgc
+Enable the incremental garbage collector. The incremental 
+garbage collector, which is off by default,
+will reduce the occasional garbage-collection pauses 
+during program execution. The incremental garbage
+collector will at times execute concurrently with the
+program and during such times will reduce the
+processor capacity available to the program.
+.TP
+.BI \-Xloggc: " file"
+Report on each garbage collection event, as with 
+.BR \-verbose:gc , 
+but log this data to 
+.IR file . 
+In addition to the information 
+.BR \-verbose:gc 
+gives, each reported event will be preceeded by the time (in seconds)
+since the first garbage-collection event. 
+.sp 1
+Always use a local file system for storage of this file to 
+avoid stalling the JVM due to network latency.
+The file may be truncated in the case of a full file system 
+and logging will continue on the truncated file.
+This option overrides 
+.BR \-verbose:gc 
+if both are given on the command line. 
+.TP
+.BI \-Xms n
+Specifies the initial size of the memory allocation pool.
+This value must be a multiple of 1024 greater than 1 MB.
+Append the letter 
+.B k 
+or
+.B K
+to indicate kilobytes, the letter 
+.B m 
+or
+.B M
+to indicate megabytes, the letter
+.BR g " or " G
+to indicate gigabytes, or the letter
+.BR t " or " T
+to indicate terabytes.
+The default value is 2MB. Examples:
+.LP
+.RS 20
+.nf
+\-Xms6291456
+\-Xms6144k
+\-Xms6m
+.fi
+.RE
+.TP 20
+.BI \-Xmx n
+Specifies the maximum size, in bytes, of the memory allocation pool.
+This value must be a multiple of 1024 greater than 2 MB.
+Append the letter 
+.B k 
+or
+.B K
+to indicate kilobytes, the letter 
+.B m 
+or
+.B M
+to indicate megabytes, the letter
+.BR g " or " G
+to indicate gigabytes, or the letter
+.BR t " or " T
+to indicate terabytes.
+The default value is 64MB. Examples:
+.LP
+.RS 20
+.nf
+\-Xmx83886080
+\-Xmx81920k
+\-Xmx80m
+.fi
+.RE
+.LP
+.IP "" 20
+On Mac OS X platforms, the upper limit for this value when running in 32-bit mode (\f3-d32\fR) 
+is approximately 2100m minus overhead amounts, 
+and approximately 127t minus overhead amounts when running in 64-bit mode (\f3-d64\fR).
+On Solaris 7 and Solaris 8 SPARC platforms, 
+the upper limit for this value is approximately
+4000m minus overhead amounts. On Solaris 2.6 
+and x86 platforms, the upper limit is
+approximately 2000m minus overhead amounts. On 
+Linux platforms, the upper limit is
+approximately 2000m minus overhead amounts. 
+.TP
+.BI \-Xprof
+Profiles the running program, and sends profiling
+data to standard output.
+This option is provided as
+a utility that is useful in program development
+and is not intended to be be used in production systems.
+.TP
+\f3\-Xrunhprof\f1[:help][:\f2suboption\f3=\f2value\f1,...]
+Enables cpu, heap, or monitor profiling.
+This option is
+typically followed by a list of comma-separated
+.IR suboption = value
+pairs.
+Run the command
+.B java \-Xrunhprof:help 
+to obtain a list of suboptions and their
+default values.
+.TP
+.BI \-Xrs
+Reduce usage of operating-system signals by Java virtual machine (JVM).
+.sp 1n
+In a previous release, the Shutdown Hooks 
+facility was added to allow orderly shutdown of
+a Java application. The intent was to allow user 
+cleanup code (such as closing database
+connections) to run at shutdown, even if the JVM terminates abruptly. 
+.sp 1n
+Sun's JVM catches signals to implement shutdown hooks for abnormal JVM 
+termination. The JVM uses SIGHUP, SIGINT, and SIGTERM to initiate the 
+running of shutdown hooks. 
+.sp 1n
+The JVM uses a similar mechanism to implement the
+pre-1.2 feature of dumping thread stacks for debugging
+purposes. Sun's JVM uses SIGQUIT to perform thread dumps.
+.sp 1n
+Applications that embed the JVM frequently need to trap signals like 
+SIGINT or SIGTERM, which can lead to 
+interference with the JVM's own signal handlers. The
+\f3\-Xrs\fR command line option is available to address this issue.
+When \f3\-Xrs\fR is used on Sun's JVM, the signal masks for
+SIGINT, SIGTERM, SIGHUP, and SIGQUIT are not changed by the JVM,
+and signal handlers for these signals are not installed. 
+.sp 1n
+There are two consequences of specifying \f3\-Xrs\fR:
+.RS 20
+.IP \(bu 2
+SIGQUIT thread dumps are not available.
+.IP \(bu 2
+User code is responsible for causing shutdown hooks to run, for example by calling System.exit() when the JVM is to be terminated. 
+.RE
+.TP
+.BI \-Xss n
+Set thread stack size.
+.TP
+.BI \-XX:+UseAltSigs
+The VM uses SIGUSR1 and SIGUSR2 by default, 
+which can sometimes conflict with
+applications that signal-chain SIGUSR1 and SIGUSR2. 
+The \f3\-XX:+UseAltSigs\fR option will
+cause the VM to use signals other 
+than SIGUSR1 and SIGUSR2 as the default. 
+.SH SEE ALSO
+.BR javac (1),
+.BR jdb (1),
+.BR javah (1),
+.BR jar (1),
+.LP
+See (or search
+.BR java.sun.com )
+for the following:
+.TP 2
+.B The Java Extensions Framework @
+http://java.sun.com/j2se/1.5.0/docs/guide/extensions/index.html
+.TP
+.B Security Features @ 
+http://java.sun.com/j2se/1.5.0/docs/guide/security/index.html

@@ -1,0 +1,367 @@
+.\" Copyright (c) 2001-2007 Apple Inc. All Rights Reserved.
+.\" The contents of this file constitute Original Code as defined in and are 
+.\" subject to the Apple Public Source License Version 1.2 (the 'License'). 
+.\" You may not use this file except in compliance with the
+.\" License. Please obtain a copy of the License at 
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\"
+.\" This Original Code and all software distributed under the License are 
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER 
+.\" EXPRESS OR IMPLIED, AND APPLE
+.\" HEREBY DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT LIMITATION, ANY 
+.\" WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+.\" QUIET ENJOYMENT OR NON-INFRINGEMENT. Please see the License for the 
+.\" specific language governing rights and limitations under the License."
+.\"
+.Dd April 19, 2007
+.Dt INSTALLER 8          
+.Os "Mac OS X"
+.Sh NAME                  
+.Nm installer
+.Nd system software and package installer tool.
+.\"																				SYNOPSIS 
+.Sh SYNOPSIS             
+.Nm 
+.Op Fl dominfo
+.Op Fl volinfo
+.Op Fl pkginfo
+.Op Fl showChoicesXML
+.Op Fl showChoicesAfterApplyingChangesXML Ar <pathToXMLFile>
+.Op Fl applyChoiceChangesXML Ar <pathToXMLFile>
+.Op Fl query Ar <flag>
+.Op Fl allow
+.Op Fl dumplog
+.Op Fl help
+.Op Fl verbose | verboseR
+.Op Fl vers
+.Op Fl config
+.Op Fl plist
+.Op Fl file Ar <pathToFile>
+.Op Fl lang Ar <ISOLanguageCode>
+.Op Fl listiso
+.Fl package Ar <pathToPackage>
+.Fl target Ar device
+.\"																				DESCRIPTION 
+.Sh DESCRIPTION
+The 
+.Nm 
+command is used to install Mac OS X installer packages to a specified domain
+or volume.
+The 
+.Nm 
+command installs a single package per invocation, which is specified with the
+.Fl package
+parameter (
+.Fl pkg
+is accepted as a synonym).
+It may be either a single package or a metapackage.
+In the case of the metapackage, the packages which are part of the default
+install will be installed unless disqualified by a package's check tool(s). 
+.Pp
+The target volume is specified with the
+.Fl target
+parameter (
+.Fl tgt
+is accepted as a synonym).
+It must already be mounted when the
+.Nm 
+command is invoked.
+.Pp
+For system software installs, the target volume must be a different volume than the one currently running the booted system.
+See 
+.Ar systemsetup
+(only available on Mac OS X Server) to set the boot volume.
+.Pp
+The 
+.Nm 
+command requires root privileges to run.
+If a package requires authentication (set in a package's .info file) the
+.Nm 
+must be either run as root or with the
+.Xr sudo 8
+command (but see further discussion under the
+.Fl store
+option).
+.Pp
+The
+.Nm 
+is not responsible for rebooting the machine after installing.
+Use 
+.Xr reboot 8
+or
+.Xr shutdown 8
+-r now to reboot the system.
+.Pp
+The
+.Nm 
+displays two forms of output.
+The default terse output is intended for parsing by scripting languages for
+automating (or scripting) installs and verbose output providing additional
+information and descriptive error messages.
+.Pp
+A list of flags and their descriptions:
+.Bl -tag -width indent 
+.It Fl dominfo
+Displays a list of domains into which the software package can be installed.
+For example:
+.Ar LocalSystem
+or
+.Ar CurrentUserHomeDirectory .
+The domains listed are those which are available and enabled when the command
+is run.
+.It Fl volinfo
+Displays a list of volumes onto which the software package can be installed.
+The volumes listed are the mounted volumes available when the command is run.
+.It Fl pkginfo
+Displays a list of packages that can be installed onto the target volume.
+If a metapackage is given as the package source, all of its subpackages are
+listed.
+.It Fl query Ar flag
+Queries a package for information about the metadata.
+See 
+.Ar -help
+for supported flags.
+.It Fl allowUntrusted
+Allow install of a package signed by an untrusted (or expired) certificate.
+.It Fl dumplog
+Detailed log information is always sent to syslog using the LOG_INSTALL
+facility (and will wind up in /var/log/install.log).
+.Fl dumplog
+additionally writes this log to standard error output.
+.It Fl help                 
+Displays the help screen describing the list of parameters.
+.It Fl verbose            
+Displays more descriptive information than the default output.
+Use this parameter in conjunction with 
+.Ar -pkginfo
+and
+.Ar -volinfo 
+information requests to see more readable output.
+The default output is formatted for scripting.
+.It Fl verboseR            
+Displays same information as 
+.Ar -verbose
+except the output is formatted for easy parsing.
+.It Fl vers
+Displays the version of this command.
+.It Fl config
+Formats the command line installation arguments for later use.
+The output is sent to stdout, but can be redirected to a file to create a
+configuration file.
+When specifying this option, an installation is not actually performed.
+This configuration file can be supplied as the argument to the
+.Ar -file
+parameter instead of typing a long series of installation arguments.
+The config file can be used to perform multiple identical installs.
+You can create a config file as follows:
+.Pp
+.Nm
+-pkg ~/Documents/Foo.pkg -target /
+.Fl config 
+> /tmp/configfile.plist
+.It Fl plist
+Formats the 
+.Nm
+output into an XML file, which is sent by default to stdout.
+Use this parameter for
+.Ar -dominfo,
+.Ar -volinfo,
+and
+.Ar -pkginfo
+.
+.It Fl file Ar pathToFile
+Specifies the path to the XML file containing parameter information in the
+key/value dictionary.
+This file can be used instead of the command line parameters, and supersedes
+any parameters on the command line.
+When you type this parameter, you type the path to the XML file.  Use with config file generated by
+.Ar -config
+.
+For example:
+.Pp
+.Nm
+.Fl file
+/tmp/configfile.plist
+.It Fl lang Ar ISOLanguageCode
+Default language of installed system (ISO format).
+This is only necessary when performing a system (OS) install, otherwise is it
+ignored.
+There is no verification done to make sure that the language being set
+actually exists on the machine, however the ISO language code is verified to
+ensure that it is valid.
+.It Fl listiso
+Display the list of valid ISO language codes the
+.Nm
+recognizes.
+.It Fl showChoiceChangesXML
+Prints to stdout the install choices for the package (specified with
+.Fl pkg )
+in an XML format. This allows choice attributes to be modified and applied at install-time using
+.Fl applyChoiceChangesXML .
+See
+.Sx CHOICE CHANGES FILE
+for details of this XML format.
+.It Fl applyChoiceChangesXML Ar pathToXMLFile
+Applies the install choice changes specified in
+.Ar pathToXMLFile
+to the default choices in the package before installation. This allows the command-line installer
+to customize choice what gets installed. See
+.Sx CHOICE CHANGES FILE
+for details of this XML format. Any problems encountered while applying the choice changes will be
+reported to the LOG_INSTALL facility (i.e. to /var/log/install.log), and also to stdout if 
+.Fl dumplog
+is used.
+.It Fl showChoicesAfterApplyingChangesXML Ar pathToXMLFile
+Applies the install choice changes specified in
+.Ar pathToXMLFile
+to the default choices in the package, and then dumps the resulting choice state to stdout.
+The input and output XML format is as described in
+.Sx CHOICE CHANGES FILE .
+Since changing one choice in a package can implicitly change other choices, this option allows
+you to confirm that a particular choiceChanges file will have the intended effect. You must specify a
+.Fl target
+when using this option, since the evaluated choices can also change with the state of the target disk. 
+.It Fl showChoicesXML
+Prints to stdout the install choices for the package (specified with
+.Fl pkg )
+in a hierarchical XML format. This is
+.Sy not
+the same format as used with
+.Fl applyChoiceChangesXML .
+This option is provided for System Image Utility only.
+.It Fl store
+Install the product archive specified by
+.Fl package ,
+in the same way that it would be installed through the Mac App Store. In this mode, no
+other options are supported. (You can specify
+.Fl target ,
+but the only allowable value is the root volume mount point, /). For best Mac App Store fidelity, run
+.Nm
+as an admin user (not using sudo); you will prompted for your admin user's password before the install begins.
+.Pp
+This mode is provided for testing a product archive before submission to the Mac App Store. See
+.Xr productbuild 1
+for how to create a product archive.
+.El
+.Pp
+.\"																				DEVICES 
+.Sh DEVICES
+A device parameter for the target is any one of the following:
+.Pp
+1) Any of the values returned by
+.Ar -dominfo
+.br
+2) The device node entry.
+Any entry of the form of /dev/disk*.
+ex: /dev/disk2
+.br
+3) The disk identifier.
+Any entry of the form of disk*.
+ex: disk1s9
+.br
+4) The volume mount point.
+Any entry of the form of /Volumes/Mountpoint.
+ex: /Volumes/Untitled
+.br
+5) The volume UUID.
+ex: 376C4046-083E-334F-AF08-62FAFBC4E352
+.\"																				CHOICE CHANGES FILE 
+.Sh CHOICE CHANGES FILE
+A
+.Dq choiceChanges
+file allows individual installer choices to be selected or deselected. A template choiceChanges
+file for a given package can be generated with the
+.Cm -showChoiceChangesXML
+option, and is interpreted as follows.
+.Pp
+The choiceChanges file is a property list containing an array of dictionaries. Each dictionary
+has the following three keys:
+.Bl -column ".Sy choiceIdentifier" A012345678901234567890123456789012345678901234567890123456789
+.It Sy Key Ta Sy Description
+.It Sy choiceIdentifier Ta "Identifier for the choice to be modified (string)"
+.It Sy choiceAttribute Ta "One of the attribute names described below (string)"
+.It Sy attributeSetting Ta "A setting that depends on the choiceAttribute, described below (number or string)"
+.El
+.Pp
+The 
+.Sy choiceAttribute
+and
+.Sy attributeSetting
+values are as follows:
+.Bl -column ".Sy choiceIdentifier" A012345678901234567890123456789012345678901234567890123456789
+.It Sy choiceAttribute Ta Sy attributeSetting Description
+.It Sy selected Ta "(number) 1 to select the choice, 0 to deselect it"
+.It Sy enabled Ta "(number) 1 to enable the choice, 0 to disable it"
+.It Sy visible Ta "(number) 1 to show the choice, 0 to hide it"
+.It Sy customLocation Ta "(string) path at which to install the choice (see below)"
+.El
+.Pp
+Note that there can be multiple dictionaries for the same 
+.Sy choiceIdentifier ,
+since there can be multiple attributes set for a single choice.
+.Pp
+The
+.Sy customLocation
+attribute can be set for a choice only if that choice explicitly allows a user-defined path. That is,
+if the choice would have a Location popup when viewed in the Customize pane of the Installer application,
+it can be set via
+.Sy customLocation .
+(Otherwise, installation paths cannot be arbitrarily modified, since the package author must account
+for custom install locations for the installation to work properly.)
+.\"																				EXAMPLES 
+.Sh EXAMPLES
+.Nm
+-dominfo -pkg InstallMe.pkg
+.Pp
+.Nm
+-volinfo -pkg InstallMe.pkg
+.Pp
+.Nm
+-pkginfo -pkg DeveloperTools.mpkg
+.Pp
+.Nm
+-pkg OSInstall.mpkg -target
+LocalSystem
+.Pp
+.Nm
+-pkg OSInstall.mpkg -target / -lang en 
+.Pp
+.Nm
+-pkg DeveloperTools.mpkg -target / 
+.Pp
+.Nm
+-pkg InstallMe.pkg -target "/Volumes/Macintosh HD2"
+.Pp
+.Nm
+-pkg InstallMe.pkg -file /tmp/InstallConfigFile
+.Pp
+.Nm
+-pkg InstallMe.pkg -target /dev/disk0s5
+.Pp
+.\"																				ENVIRONMENT 
+.Sh ENVIRONMENT      
+.Bl -tag -width "COMMAND_LINE_INSTALL"
+.It Ev COMMAND_LINE_INSTALL
+Set when performing an installation using the 
+.Nm
+command.
+.El
+.\"																				FILES 
+.Sh FILES
+.Bl -tag -width "/usr/sbin/installer" -compact
+.It Pa /usr/sbin/installer
+Software package installer tool
+.El
+.\"																				SEE ALSO 
+.Sh SEE ALSO 
+.Xr syslog.conf 5
+.Xr reboot 8
+.Xr shutdown 8
+.Xr softwareupdate 8
+.Xr sudo 8
+.Xr systemsetup 8
+.\"																				HISTORY 
+.Sh HISTORY
+The command line
+.Nm
+tool first appeared in the 10.2 release of Mac OS X.

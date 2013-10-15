@@ -1,0 +1,109 @@
+.\" Copyright (c) 2000-2013 Apple Inc. All rights reserved.
+.Dd Mar. 16, 2013
+.Dt "leaks" 1
+.Os
+.Sh NAME
+.Nm leaks
+.Nd Search a process's memory for unreferenced malloc buffers
+.Sh SYNOPSIS
+.Nm leaks
+.Ar pid | partial-executable-name
+.Op Fl nocontext
+.Op Fl nostacks
+.Op Fl exclude Ar symbol
+.Op Fl trace Ar address
+.Sh DESCRIPTION
+.Nm leaks
+identifies leaked memory -- memory that the application has allocated, but has been lost and cannot be freed.
+Specifically,
+.Nm leaks
+examines a specified process's memory for values that may be pointers to malloc-allocated buffers.
+Any buffer reachable from a pointer in writable global memory (e.g., __DATA segments), a register, or on the stack is assumed to be memory in use.
+Any buffer reachable from a pointer in a reachable malloc-allocated buffer is also assumed to be in use.
+The buffers which are not reachable are leaks; the buffers could never be freed because no pointer exists in memory to the buffer, and thus free()
+could never be called for these buffers.
+Such buffers waste memory; removing
+them can reduce swapping and memory usage.
+Leaks are particularly dangerous for long-running programs, for eventually the leaks could fill memory and cause the application to crash.
+.Pp
+.Nm leaks
+requires one parameter -- either the process ID or executable name of
+the process to examine.  It also takes several arguments for modifying its
+behavior.
+.Pp
+For each leaked buffer that is found,
+.Nm leaks
+prints the address
+of the leaked memory and its size.  If 
+.Nm leaks
+can determine that the
+object is an instance of an Objective-C, CoreFoundation, or C++ class,
+or a CFType, it also specifies the name and type of the class, and
+the binary image that implements the class.
+It then prints a string or hexadecimal representation of the contents of the memory,
+unless the 
+.Fl nocontext
+option was specified.
+.Pp
+If the MallocStackLogging environment variable was set when the
+application was launched, 
+.Nm leaks
+also prints
+a stack trace describing where the buffer was allocated.
+.Pp
+.Sh OPTIONS
+.Bl -tag -width "-allSplitLibs"
+.It Fl nocontext
+Do not print the string or hex representation of leaked memory.
+Although that information
+can be useful for recognizing the contents of the buffer and understanding
+why it might be leaked, it can also provide overwhelming detail,
+and could expose confidential information from your process if
+you, for example, file bug reports with that output included.
+.It Fl nostacks
+Do not print backtraces of leaked blocks even if the target process has the
+MallocStackLogging environment variable set.
+.It Fl exclude Ar symbol
+Exclude leaked blocks whose backtraces include the specified symbol.  This option
+can be repeated for multiple symbols.  This allows ignoring leaks that, for
+example, are allocated in libraries for which you do not have source code.
+.It Fl trace Ar address
+Print chains of references from process 'roots' (e.g., global data, registers,
+or locations on stacks) to the given block.  This is useful for determining
+what is holding onto a buffer such that it has not been freed.
+.El
+.Pp
+.Sh ENVIRONMENT
+The
+.Nm leaks
+command may detect more leaks if the target process is run with the MallocScribble environment variable.
+If this variable is set then when malloc blocks are deallocated they are filled with 0x55 bytes, thus
+overwriting any "stale" data such as pointers remaining in those blocks.  This reduces the number of
+false pointers remaining in the process memory.
+.Pp
+.Sh EXIT STATUS
+The
+.Nm leaks
+command exits with one of the following values:
+.Pp
+.Bl -tag -width flag -compact
+.It Li 0
+No leaks were detected.
+.It Li 1
+One or more leaks were detected.
+.It Li \*(Gt1
+An error occurred.
+.El
+.Sh SEE ALSO
+.Xr malloc 3 ,
+.Xr heap 1 , 
+.Xr malloc_history 1 ,
+.Xr stringdups 1 ,
+.Xr vmmap 1 ,
+.Xr DevToolsSecurity 1
+.Pp
+The Xcode developer tools also include Instruments, a graphical application that can give information similar to that provided by
+.Nm leaks.
+The Allocations instrument graphically displays dynamic, real-time
+information about the object and memory use in an application, including backtraces of where the allocations
+occurred.  The Leaks instrument performs memory leak analysis.

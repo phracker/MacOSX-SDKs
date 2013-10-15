@@ -1,0 +1,59 @@
+.Dd 29 Apr 2003
+.Os "Mac OS X"
+.Dt hdik 8
+.Pp
+.Sh NAME
+.Nm hdik
+.Nd lightweight tool to attach and mount disk images in-kernel
+.Sh SYNOPSIS
+.Nm hdik
+.Ar imagefile
+.Op options
+.Sh DESCRIPTION
+.Nm
+is a lightweight tool that can be used to attach disk images in-kernel (i.e. without a
+user-land process to provide the backing store).  Only a subset of disk images can be mounted
+in this manner including read/write disk images, UDIF disk images that use zlib compression, 
+shadowed disk images, and sparse disk images.
+.Pp
+.Nm 
+is intended for use in situations where linking against the DiskImages framework is problematic
+or an extremely lightweight mechanism for attaching a disk image is needed.
+.Pp
+You can specify that the image should not be processed by Disk Arbitration
+by specifying the
+.Fl nomount 
+option.  You can also specify that the image be mounted with a shadow file by using the 
+.Fl shadow
+option.
+.Pp
+The following argument must be specified:
+.Pp
+.Bl -tag -width "123456789A" -compact
+.It Ar imagefile
+the disk image to be mounted.
+.El
+.Sh OPTIONS
+.Bl -tag -width "123456789A" -compact
+.It Fl shadow Op Ar shadowfile 
+Use a shadow file in conjunction with the data in the image.  This option
+prevents modification of the original image and allows read-only images
+to be used as read/write images.  When blocks are being read from the
+image, blocks present in the shadow file override blocks in the base image.
+When blocks are being written, the writes will be redirected to the shadow
+file.  If not specified, 
+.Fl shadow 
+defaults to <imagename>.shadow.  If the
+shadow file does not exist, it is created.
+.It Fl nomount
+Suppress automatic mounting of the image or partitions on it.  This will
+result in /dev entries being created, but will not mount any volumes.
+.It Fl drivekey Ar keyname=value
+Specify a key/value pair for the IOHDIXHDDrive object created (shows up
+in the IOKit registry of devices which is viewable with ioreg(8)).
+.El
+.Sh SEE ALSO
+.Ns Xr hdiutil 1 ,
+.Ns Xr diskarbitrationd 8 ,
+.Ns Xr diskutil 8 ,
+.Ns Xr ioreg 8

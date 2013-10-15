@@ -1,0 +1,284 @@
+.\"PUT ME IN: /usr/share/man/man1/
+.\"To view me: "man allmemory"
+
+.Dd 10/22/07               \" DATE 
+.Dt allmemory 1      \" Program name and manual section number 
+.Os Apple Inc.
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm allmemory
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd User-program and framework memory analysis tool.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl f
+.Op Fl sections
+.Op Fl v
+.Op Fl vf Ar v_filter
+.Op Fl p
+.Op Fl n
+.Op Fl F
+.Op Fl FD
+.Op Fl purge
+.Op Fl noframework
+.Op Fl noprocess
+.Op Fl proc Ar pid | process_name
+.Op Fl noproc Ar pid | process_name
+.Op Fl 32bit
+.Op Fl 64bit
+.Op Fl i Ar path
+.Op Fl o Ar path
+.Op Fl d 
+.Pp
+.Nm
+diff
+.Ar path1
+.Ar path2
+.Op Fl p
+.Op Fl f
+.Op Fl F
+.Op Fl noframework
+.Op Fl noprocess
+.Op Fl ff Ar framework_filter
+.Op Fl pf Ar process_filter
+.Op Fl proc Ar pid | process_name
+.Op Fl noproc Ar pid | process_name
+.Op Fl 32bit
+.Op Fl 64bit
+.Op Fl no32v64
+.Sh DESCRIPTION (Normal mode)          \" Section Header - required - don't modify
+In its normal operating mode, the
+.Nm
+tool collects and analyses data on the resident memory usage of user processes.  
+Data from each run of allmemory is saved and can be viewed and analyzed at a later time.
+The save location of the collected data can be specified by the user. (See the \fB-i\fR and \fB-o\fR flags below). 
+By default
+.Nm
+presents top level summary information on all user processes and frameworks found on the system.  
+More or less data can be displayed using the Data Reporting options specified below.
+.Pp
+IMPORTANT NOTES:
+.Pp
+This is a completely new version of the allmemory tool.  To use the old version of allmemory, run /usr/local/bin/allmemory_old.
+.Pp
+If fresh data is being collected, new version of allmemory takes significantly longer to run than the old version (~30 seconds).  
+If the state of the system has not significantly changed since the last time allmemory data was collected, make sure to use the \fB-i\fR or \fB-d\fR flags to save time when viewing data.
+.Pp
+.ft B
+Data Reporting options (Specify zero or more):
+.ft
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl f                 
+Display a per-segment residency information breakdown for each framework.
+.It Fl sections                 
+Display a per-section residency information breakdown for each framework.
+.It Fl v
+Display information on address space layouts of each process (similar to vmmap).
+.It Fl vf Ar v_filter
+Filter the address space output from the \fB-v\fR flag to only show VM Regions with more resident pages than v_filter.
+.It Fl p
+Display detailed total residency information for each process on a per VM region category basis.
+.It Fl F
+Display summary information on per-process private pages that contribute to the total resident pages for each framework.
+.It Fl FD
+Display per-segment information on per-process private pages that contribute to the total resident pages for each framework.
+.It Fl purge
+Displays the NoVolatile resident column for all processes.  Purgeable volatile pages are not counted towards this total.
+.It Fl n
+Do NOT display collected data (i.e. when an automated test is running allmemory).  This lowers allmemory's highwater memory usage mark.
+.It Fl noframework
+Do NOT display data collected on frameworks.
+.It Fl noprocess
+Do NOT display data collected on processes.
+.It Fl proc Ar pid | process_name
+Display data about the process with the specified pid/name.  This option can be specified more than once to display data on more than one process.
+.It Fl 32bit
+Display data only for 32-bit processes.  Cannot be used in conjunction with the \fB-64bit\fR flag.
+.It Fl 64bit
+Display data only for 64-bit processes.  Cannot be used in conjunction with the \fB-32bit\fR flag.
+.El                      \" Ends the list
+.Pp
+.ft B
+Data Saving/Restoring options: (Specify one at most):
+.ft
+.Bl -tag -width -indent
+.It Fl d 
+Load and display the data from the default save directory (
+.Ar /tmp/allmemoryDataFiles/
+)
+.It Fl i Ar path
+Load and display the data from a previous run of allmemory stored in the <path> directory
+.It Fl o Ar path
+Specify a directory in which to store the data collected in this run of allmemory.  Defaults to: 
+.Ar /tmp/allmemoryDataFiles/
+.El
+.Pp
+.Sh DESCRIPTION (diff Mode)
+In diff mode, 
+.Nm
+is used to compare data taken at two different times.  This is useful when trying to track down the specifics of a memory-related regression and saves time that would be otherwise spent on tedious and error-prone arithmetic.  
+Since
+.Nm
+has knowledge of its own data structures, this mode is robust against output format changes.
+.Pp
+.ft B 
+Required (specify all):
+.Bl -tag -width -indent
+.It <path1> <path2>
+.ft
+.El
+Paths to the two data sets to compare.
+.ft B
+Options (Specify zero or more):
+.ft
+.Bl -tag -width -indent
+.It Fl proc Ar pid | process_name
+Display data about the process with the specified pid/name.  This option can be specified more than once to display data on more than one process.
+.It Fl f                 
+Display a per-segment residency information breakdown for each framework.
+.It Fl F
+Display summary information on per-process private pages that contribute to the total resident pages for each framework.
+.It Fl noframework
+Do NOT display data collected on frameworks.
+.It Fl noprocess
+Do NOT display data collected on processes.
+.It Fl ff Ar framework_filter
+Only displays frameworks for which the difference number of resident pages is equal to or above the framework_filter value.
+.It Fl pf Ar process_filter
+Only displays processes for which the difference number of resident pages is equal to or above the process_filter value.
+.It Fl p
+Provides a detailed breakdown of the differences between the specified data sets on a per VM-region category basis.
+.It Fl 32bit
+Display data only for 32-bit processes.  Cannot be used in conjunction with the \fB-64bit\fR flag.
+.It Fl 64bit
+Display data only for 64-bit processes.  Cannot be used in conjunction with the \fB-32bit\fR flag.
+.It Fl no32v64
+Do not compare 32-bit processes and frameworks versus 64-bit processes and frameworks. By default, the comparison will happen.
+.El
+.Pp
+.Sh EXPLANATION OF OUTPUT
+.ft B
+Individual Process Data Columns:
+.ft
+.Pp
+.Ar PrivateRes (In pages):
+.Pp
+The number of pages resident in physical memory in a given process's address space that are not shared with other processes.
+.Pp  
+This total includes private pages as well as copied pages in COW regions and resident pages in shared regions that are not used by other processes.  
+.Pp
+NoSpec PrivateRes is the number of pages resident in physical memory in a process's address space not counting pages brought in speculatively.
+.Pp
+If one were to simply count the total number of pages resident in a process's address space, that total would be the sum of Shared and Resident pages.
+.Pp
+.Ar Copied (In pages):
+.Pp
+The number of copied pages resident in physical memory in a given process's address space.
+.Pp  
+Copied pages are assumed to be private to the process and are counted towards the Resident total.  The Copied and Dirty columns are non-exclusive, as pages can be both dirty and copied.
+.Pp
+.Ar Dirty (In pages):
+.Pp
+The number of dirty pages resident in physical memory in a given process's address space.
+.Pp
+Dirty pages are not assumed to be private to the process and so do not automatically count towards the Resident total.  The Copied and Dirty columns are non-exclusive, as pages can be both dirty and copied.
+.Pp
+.Ar Swapped (In pages):
+.Pp
+Pages swapped out of a given process's address space.  These pages were previously resident in physical memory and are now swapped to disk.  
+.Pp
+Swapped pages do not count towards any other totals.
+.Pp
+.Ar Shared (In pages):
+.Pp
+The number of shared pages resident in physical memory in a given process's address space.  
+.Pp
+This total does not count towards the Resident pages category or any other category.
+.Pp  
+As was the case with NoSpec Resident pages, the NoSpec Shared pages total ignores shared pages brought in speculatively.
+.Pp
+If one were to simply count the total number of pages resident in a process's address space, that total would be the sum of Shared and Resident pages.
+.Pp
+.ft B 
+Total Process Data Columns:
+.ft
+.Pp
+.Ar TotalRes (In pages):
+.Pp
+The number of pages resident in physical memory across the entire system.
+.Pp  
+This total includes private pages as well as copied pages in COW regions.  Shared pages are counted towards this total once (i.e. double counting is avoided).  
+.Pp
+NoSpec TotalRes is the number of pages resident in physical memory across the system not counting pages brought in speculatively.
+.Pp
+.Ar Copied (In pages):
+.Pp
+The number of copied pages resident in physical memory in a given process's address space.
+.Pp  
+Copied pages are assumed to be private to the process and are counted towards the Resident total.  The Copied and Dirty columns are non-exclusive, as pages can be both dirty and copied.
+.Pp
+.Ar Dirty (In pages):
+.Pp
+The number of dirty pages resident in physical memory in a given process's address space.
+.Pp
+Dirty pages are not assumed to be private to the process and so do not automatically count towards the Resident total.  The Copied and Dirty columns are non-exclusive, as pages can be both dirty and copied.
+.Pp
+.Ar Swapped (In pages):
+.Pp
+Pages swapped out of a given process's address space.  These pages were previously resident in physical memory and are now swapped to disk.  
+.Pp
+Swapped pages do not count towards any other totals.
+.Pp
+.Ar Shared (In pages):
+.Pp
+The number of shared pages resident in physical memory across the entire system.  
+.Pp
+This total counts towards the TotalRes pages category and its subcategories (i.e. Copied, Dirty, Swapped).
+.Pp  
+As was the case with NoSpec Resident pages, the NoSpec Shared pages total ignores shared pages brought in speculatively.
+.Pp
+.ft B
+Framework Data Columns:
+.ft
+.Pp
+.Ar Resident (In pages):
+.Pp
+The number of pages resident in physical memory attributed to a given framework across the address spaces of all processes.  
+A heuristic is used to avoid double counting pages shared across several processes.  
+.Pp
+Any copied pages encountered are assumed to be private to the process being examined and are counted towards the Resident total.  
+In other words, Resident is the total number of private pages attributed to a given framework, plus the number of shared resident pages (avoiding double counting).
+.Pp
+NoSpec Resident total is calculated in the same way, ignoring speculative pages.
+.Pp
+.Ar Copied (In pages):
+.Pp
+The number of copied pages resident in physical memory attributed to the given framework across the address spaces of all processes.
+.Pp 
+As described above, this total is included in the total Resident and NoSpec Resident framework totals.
+.Pp
+The Copied and Dirty columns are non-exclusive, as pages can be both dirty and copied.
+.Pp
+.Ar Dirty (In pages):
+.Pp
+The number of dirty pages resident in physical memory attributed to the given framework across the address spaces of all processes. 
+.Pp
+The Copied and Dirty columns are non-exclusive, as pages can be both dirty and copied.
+.Pp
+.Ar Swapped (In pages):
+.Pp
+The number of pages swapped out of physical memory attributed to the given framework.
+These pages were previously resident in physical memory and are now swapped to disk.
+.Pp
+These pages do not count towrds any other total.  
+.Pp
+.Ar Filesize (In pages):
+.Pp
+The size in pages of the framework on disk.
+.Pp
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr heap 1 ,
+.Xr leaks 1 ,
+.Xr top 1 ,
+.Xr vmmap 1 

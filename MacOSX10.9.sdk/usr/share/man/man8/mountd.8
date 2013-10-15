@@ -1,0 +1,137 @@
+.\"
+.\" Copyright (c) 1999-2007 Apple Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.\" Copyright (c) 1989, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"     @(#)mountd.8	8.4 (Berkeley) 4/28/95
+.\"
+.Dd November 10, 2006
+.Dt MOUNTD 8
+.Os
+.Sh NAME
+.Nm mountd
+.Nd service remote
+.Tn NFS
+mount requests
+.Sh SYNOPSIS
+Obsolete.  See
+.Xr nfsd 8 .
+.Sh DESCRIPTION
+The
+.Nm
+daemon was formerly the server for
+.Tn NFS
+mount requests from NFS clients.
+This functionality has been moved into the NFS server daemon
+.Xr nfsd 8 .
+.Pp
+Please refer to
+.Xr nfsd 8
+for NFS server documenation.
+.Pp
+The following is a list of former
+.Nm
+options that are now available as
+.Xr nfsd 8
+options:
+.Bl -column -offset indent ".Sy mountd option" ".Sy new nfsd option" ".Sy Description"
+.It Sy mountd option Ta Sy nfsd option Ta Sy Description
+.It Fl n Ta Fl N Ta allow non-root mounts
+.It Fl r Ta Fl R Ta allow regular file mounts
+.It Pa exportsfile Ta Fl F Pa exportsfile Ta alternate exports file
+.El
+.Pp
+However, such configuration options are normally specified via
+.Xr nfs.conf 5 .
+.Pp
+When the NFS server is started, it loads the export host addresses and
+options into the kernel using the
+.Xr nfssvc 2
+system call.  After changing the list of exports (either directly or
+indirectly via a change in netgroup membership), the administrator
+should send a hangup signal to the nfsd daemon to get it to reload
+the export information:
+.Pp
+.Dl "kill \-s HUP `cat /var/run/nfsd.pid`
+.Pp
+For backwards compatibility, the following should also work:
+.Pp
+.Dl "kill \-s HUP `cat /var/run/mountd.pid`
+.Pp
+Any errors encountered while processing the export entries will
+be logged via
+.Xr syslog 3 .
+.Sh FILES
+.Bl -tag -width /var/run/mountd.pid -compact
+.It Pa /etc/exports
+the list of exported filesystems
+.It Pa /var/run/mountd.pid
+the pid of the currently running mountd
+.It Pa /var/run/mountdtab
+the current list of outstanding mounts served
+.It Pa /var/run/mountdexptab
+information about exported file systems
+and directories (UUIDs, handles, ...)
+.El
+.Sh SEE ALSO
+.Xr nfsd 8 ,
+.Xr exports 5 ,
+.Xr nfs.conf 5 ,
+.Xr nfsstat 1 ,
+.Xr portmap 8 ,
+.Xr showmount 8
+.Sh HISTORY
+The
+.Nm mountd
+utility first appeared in 4.4BSD.
+It's functionality was merged into
+.Xr nfsd 8
+in Darwin 9.

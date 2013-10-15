@@ -1,0 +1,837 @@
+'\" t
+.\" @(#)javac.1 1.9 00/06/13 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.TH javac 1 "05 March 2002"
+.SH NAME
+javac \- Java compiler
+.SH SYNOPSIS
+.B javac 
+[ 
+.I options
+]
+[
+.I sourcefiles
+]
+[
+.BI @ argfiles
+]
+.SH PARAMETERS
+Arguments may be in any order.
+.TP 15
+.I options
+Command line options.
+.TP 15
+.I sourcefiles
+One or more source files to be compiled (such as
+\f3MyClass.java\f1).
+.TP 15
+\f3@\f1\f2argfiles\f1
+One or more files that list source files.
+The -J options are not allowed in these files. 
+.SH DESCRIPTION
+The
+.B javac 
+tool reads class and interface definitions, written in
+the Java programming language, and compiles them into bytecode
+class files.
+.LP
+There are two ways to pass source code file names to 
+.BR javac :
+.TP 2
+\(bu
+For a small number of source files, simply list the file
+names on the command line.
+.TP 2
+\(bu
+For a large number of source files, list the file names
+in a file, separated by blanks or line breaks. Then use the
+list file name on the 
+.B javac 
+command line, preceded by an @
+character.
+.LP
+Source code file names must have 
+.B .java 
+suffixes, class file names
+must have
+.B .class
+suffixes, and both source and class files must
+have root names that identify the class.
+For example, a class
+called
+.B MyClass
+would be written in a source file called
+.B MyClass.java 
+and compiled into a bytecode class file called
+.BR MyClass.class .
+.LP
+Inner class definitions produce additional class files.
+These class files have names combining the inner and outer class names,
+such as 
+.BR MyClass$MyInnerClass.class .
+.LP
+You should arrange source files in a directory tree that reflects
+their package tree.
+For example, if you keep all your source files in 
+.BR /workspace , 
+the source code for 
+.B com.mysoft.mypack.MyClass
+should be in 
+.BR /workspace/com/mysoft/mypack/MyClass.java .
+.LP
+By default, the compiler puts each class file in the same
+directory as its source file.
+You can specify a separate
+destination directory with
+.B \-d 
+(see 
+.BR  OPTIONS , 
+below).
+.SS Searching for Types
+.IX "javac" "Searching for Types" "\fLjavac\fP \(em Java compiler"
+When compiling a source file, the compiler often needs information
+about a type whose definition did not appear in the source files given
+on the command line.
+The compiler needs type
+information for every class or interface used, extended, or
+implemented in the source file.
+This includes classes and
+interfaces not explicitly mentioned in the source file but which
+provide information through inheritance.
+.LP
+For example, when you subclass 
+.BR java.applet.Applet , 
+you are also
+using Applet's ancestor classes: 
+.BR java.awt.Panel ,
+.BR java.awt.Container , 
+.BR java.awt.Component , 
+and 
+.BR java.awt.Object .
+.LP
+When the compiler needs type information, it looks for a source
+file or class file which defines the type.
+The compiler searches
+first in the bootstrap and extension classes, then in the user
+class path (which by default is the current directory).
+The user class path is defined by setting the
+.SB CLASSPATH 
+environment variable or by using the
+.B \-classpath 
+command line option.
+(For details, see 
+.BR "Setting the Class Path" .)
+.LP
+If you use the 
+.B \-sourcepath 
+option, the compiler
+searches the indicated path for source files; otherwise the
+compiler searches the user class path both for class files and
+source files.
+You can specify different bootstrap or extension
+classes with the 
+.B \-bootclasspath 
+and 
+.B \-extdirs 
+options; see
+.B Cross-Compilation Options
+below.
+.LP
+A successful type search may produce a class file, a source file,
+or both.
+Here is how 
+.B javac 
+handles each situation:
+.TP 2
+\(bu
+Search produces a class file but no source file: 
+.B javac 
+uses the class file.
+.TP 2
+\(bu
+Search produces a source file but no class file: 
+.B javac
+compiles the source file and uses the resulting class file.
+.TP 2
+\(bu
+Search produces both a source file and a class file:
+.B javac
+determines whether the class file is out of date.
+If the class file is out of date, 
+.B javac 
+recompiles the source file
+and uses the updated class file.
+Otherwise, 
+.B javac 
+just uses the class file.
+.RS 2
+.LP
+By default, 
+.B javac 
+considers a class file out of date only if
+it is older than the source file.
+.RE
+.LP
+Note:
+.B javac 
+can silently compile source files not mentioned on
+the command line.
+Use the 
+.B \-verbose 
+option to trace automatic compilation.
+.SH OPTIONS
+The compiler has a set of standard options that are supported on
+the current development environment and will be supported in
+future releases.
+An additional set of non-standard options are
+specific to the current virtual machine implementation and are
+subject to change in the future.
+Non-standard options begin with
+.BR \-X .
+.SS Standard Options
+.IX "javac" "Standard Options" "\fLjavac\fP \(em Java compiler"
+.TP
+.BI \-classpath " classpath"
+Sets the user class path, overriding the user class path in
+the 
+.SB CLASSPATH 
+environment variable.
+If neither 
+.SB CLASSPATH 
+or
+.B \-classpath 
+is specified, the user class path consists of the
+current directory.
+See
+.B Setting the Class Path
+for more details.
+.RS
+.LP
+If the 
+.B \-sourcepath 
+option is not specified, the user class
+path is searched for both source files and class files.
+.RE
+.TP
+.BI \-Djava.ext.dirs= directories
+Override the location of installed extensions. 
+.TP
+.BI \-Djava.endorsed.dirs= directories
+Override the location of endorsed standards path. 
+.TP
+.BI \-d " directory"
+Sets the destination directory for class files. 
+The destination directory must already exist; javac 
+will not create the destination directory.
+If a class is part of a package, 
+.B javac 
+puts the class file in a
+subdirectory reflecting the package name, creating
+directories as needed.
+For example, if you specify 
+.B \-d /home/myclasses 
+and the class is called
+.BR com.mypackage.MyClass , 
+then the class file is called
+.BR /home/myclasses/com/mypackage/MyClass.class .
+.RS
+.LP
+If 
+.B \-d 
+is not specified, 
+.B javac 
+puts the class file in the same
+directory as the source file.
+.LP
+Note: The directory specified by 
+.B \-d 
+is not automatically
+added to your user class path.
+.RE
+.TP
+.B \-deprecation
+Shows a description of each use or override of a deprecated
+member or class.
+Without 
+.BR \-deprecation , 
+.B javac 
+shows the names
+of source files that use or override deprecated members or
+classes.
+.BR \- deprecation
+is shorthand for
+.BR \-Xlint:deprecation .
+.TP
+.BI \-encoding " encoding"
+Sets the source file encoding name, such as EUCJIS/SJIS/ISO8859-1/UTF8.
+If
+.B \-encoding 
+is not specified, the platform default converter is
+used.
+.TP
+.B \-g
+Generates all debugging information, including local variables.
+By default, only line number and source file
+information is generated.
+.TP
+.B \-g:none
+Does not generate any debugging information.
+.TP
+.BI \-g: keyword-list
+Generates only some kinds of debugging information, specified
+by a comma separated list of keywords. Valid keywords are:
+.RS
+.TP 10
+.B source
+Source file debugging information
+.TP
+.B lines
+Line number debugging information
+.TP
+.B vars
+Local variable debugging information
+.RE
+.TP 
+.B \-help
+Prints a synopsis of standard options.
+.TP
+.B \-nowarn
+Disables warning messages. This has the same
+meaning as 
+.BR \-Xlint:none .
+.TP
+.BI \-source " release"
+Enables support for compiling source code containing assertions.
+The following values for
+.I release
+are allowed:
+.RS 10
+.if t .TP 10
+.if n .TP 5
+1.5
+The compiler accepts code containing generics and other 
+language features introduced in JDK 1.5. The compiler 
+defaults to the 1.5 behavior if the \-source flag
+is not used. 
+.if t .TP 10
+.if n .TP 5
+5
+Synonym for 1.5
+.if t .TP 10
+.if n .TP 5
+1.4 
+The compiler accepts code containing assertions, which 
+were introduced in JDK 1.4. 
+.if t .TP 10
+.if n .TP 5
+1.3
+The compiler does not support assertions, generics, or 
+other language features introduced after JDK 1.3. 
+.RE
+.TP
+.BI \-sourcepath " sourcepath"
+Specify the source code path to search for class or interface
+definitions.
+As with the user class path, source path entries
+are separated by colons
+.RB ( : )
+and can be directories,
+.SM JAR
+archives, or
+.SM ZIP
+archives.
+If packages are used, the local
+path name within the directory or archive must reflect the
+package name.
+.RS
+.LP
+Note: Classes found through the classpath are subject to
+automatic recompilation if their sources are found.
+.RE
+.TP
+.B \-verbose
+Verbose output.
+This includes information about each class
+loaded and each source file compiled.
+.TP
+.B \-X
+Display information about non-standard options and exit.
+.SS Cross-Compilation Options
+.IX "javac" "Cross-Compilation Options" "\fLjavac\fP \(em Java compiler"
+By default, classes are compiled against the bootstrap and
+extension classes of the JDK that 
+.B javac 
+shipped with. But 
+.B javac
+also supports cross-compiling, where classes are compiled against
+a bootstrap and extension classes of a different Java platform
+implementation.
+It is important to use
+.B \-bootclasspath 
+and 
+.B \-extdirs
+when cross-compiling; see
+.B Cross-Compilation Example
+below.
+.TP
+.BI \-target " version"
+Generates class files that will work on
+.SM VM\s0s
+with the specified version.
+The default is to generate class files to be
+compatible with 1.2
+.SM VM\s0s, with one exception.  When the 
+.BR \-source " 1.4"
+option is used, the default target is 1.4. 
+The versions supported by \f3javac\fR are:
+.RS
+.TP
+1.1
+Ensures that generated class files will be compatible
+with 1.1 and later. 
+.SM VM\s0s.
+.TP
+1.2
+Generates class files that will run on 1.2 and later 
+.SM VM\s0s,
+but will not run on 1.1
+.SM VM\s0s. 
+.TP
+1.3
+Generates class files that run on 
+.SM VM\s0s
+in the Java 2 SDK, v1.3 and later, but
+will not run on 1.1 or 1.2
+.SM VM\s0s.
+.TP
+1.4
+Generates class files that will run on VMs
+in JDK 1.4 and later, but will not run on 1.1, 1.2, or 1.3 VMs.
+.TP
+1.5
+Generate class files that are compatible only with JDK 1.5 VMs. 
+.TP
+5 
+Synonym for 1.5
+.RE
+.TP
+.BI \-bootclasspath " bootclasspath"
+Cross-compiles against the specified set of boot classes.
+As with the user class path, boot class path entries are
+separated by colons
+.RB ( : )
+and can be directories,
+.SM JAR
+archives, or
+.SM ZIP
+archives.
+.TP
+.BI \-cldc1.0
+Use to compile CLDC programs. The compiler generates stack 
+maps making the use of the preverifier unnecessary. 
+.TP
+.BI \-extdirs " directories"
+Cross-compiles against the specified extension directories.
+\f2directories\fR are a colon-separated list of directories.
+Each
+.SM JAR
+archive in the specified directories is searched for class files.
+.RE
+.SS Non-Standard Options
+.IX "javac" "Non-Standard Options" "\fLjavac\fP \(em Java compiler"
+.TP
+.BI \-Xbootclasspath/p: path
+Prepend to the bootstrap class path. 
+.TP
+.BI \--Xbootclasspath/a: path
+Append to the bootstrap class path.
+.TP
+.BI \-Xbootclasspath/: path
+Override location of bootstrap class files. 
+.TP
+.B \-Xlint
+Enable all recommended warnings. In this release, 
+all available warnings are recommended. 
+.TP
+.B \-Xlint:none
+Disable all warnings not mandated by the Java Language Specification.
+.TP
+.BI \-Xlint:- xxx
+Disable warning \f2xxx\fR, where \f2xxx\fR is one of the warning 
+names supported for \f3\-Xlint:\f2xxx\fR, below.
+.TP
+.B \-Xlint:unchecked 
+Give more detail for unchecked conversion warnings 
+that are mandated by the Java Language Specification. 
+.TP
+.B \-Xlint:path 
+Warn about nonexistent path (classpath, sourcepath, etc) directories. 
+.TP
+.B \-Xlint:serial
+Warn about missing serialVersionUID definitions on serializable classes. 
+.TP
+.B \-Xlint:finally
+Warn about finally clauses that cannot complete normally. 
+.TP
+.B \-Xlint:fallthrough 
+Check switch blocks for fall-through cases and provide a 
+warning message for any that are
+found. Fall-through cases are cases in a switch 
+block, other than the last case in the block,
+whose code does not include a break statement, 
+allowing code execution to "fall through"
+from that case to the next case. For example, 
+the code following the case 1 label in this
+switch block does not contain a break statement: 
+.LP
+.RS
+.ft 3
+.nf
+switch (x) {
+case 1:
+	   System.out.println("1");
+	   //  No  break;  statement here.
+case 2:
+	   System.out.println("2");
+}
+.fi
+.ft 1
+.RE
+.LP
+If the \f3\-Xlint:fallthrough\fR flag were used when 
+compiling this code, the compiler would
+emit a warning about "possible fall-through into 
+case," along with the line number of the
+case in question. 
+.TP
+.BI \-Xmaxerrors " number"
+Set the maximum number of errors to print. 
+.TP
+.BI \-Xmaxwarns " number"
+Set the maximum number of warnings to print. 
+.TP
+.BI \-Xstdout " filename" 
+Send compiler messages to the named file.
+By default, compiler
+messages go to
+.BR System.err .
+.SH THE \-J OPTION
+.TP
+.BI \-J option
+Pass \f2option\fR to the java launcher called by \f3javac\fR. 
+For example, \f3\-J-Xms48m\fR sets the
+startup memory to 48 megabytes. Although it does 
+not begin with \f3\-X\fR, it is not a `standard
+option' of \f3javac\fR. It is a common convention 
+for \f3\-J\fR to pass options to the underlying VM
+executing applications written in Java. 
+.LP
+.RB "Note: " CLASSPATH ", " \-classpath ", " \-bootclasspath ", and " \-extdirs 
+do not specify the classes used to run \f3javac\fR. Fiddling with the 
+implementation of the compiler in this way is
+usually pointless and always risky. If you 
+do need to do this, use the \f3\-J\fR option to pass
+through options to the underlying java launcher. 
+.SH COMMAND LINE ARGUMENT FILES
+To shorten or simplify the \f3javac\fR command line, you can
+specify one or more files that themselves contain
+arguments to the 
+.BR javac
+command. This enables 
+you to create \f3javac\fR commands of any length on any operating
+system.
+.LP
+An argument file can include \f3javac\fR options and source filenames in any 
+combination.  The arguments within a file can be space-separated or 
+newline-separated.  Filenames within an argument file are relative to 
+the current directory, not the location of the argument file.
+Wildcards (*) are not allowed in these lists (such as for specifying
+.BR *.java ).
+Use of the 
+.BR @ 
+character to recursively 
+interpret files is not supported.  
+.LP
+When executing \f3javac\fR, pass in the path and name of each argument 
+file with the 
+.BR @
+leading character.
+When \f3javac\fR encounters an argument beginning with 
+the character 
+.BR @ ,
+it expands the contents of
+that file into the argument list.
+.SS Example - Single Arg File
+You could use a single argument file named 
+.BR argfile 
+to hold 
+all javac arguments:
+.LP
+.RS
+.ft 3
+.nf
+  % javac @argfile
+.fi
+.ft 1
+.RE
+.LP
+This argument file could contain the contents of both files shown
+in the next example.
+.SS Example - Two Arg Files
+You can create two argument files -- one for the \f3javac\fR 
+options and the other for the source filenames:
+(Notice the following lists have no line-continuation characters.)
+.LP
+Create a file named
+.BR options 
+containing:
+.LP
+.RS
+.ft 3
+.nf
+\-d classes
+\-g
+\-sourcepath /java/pubs/ws/1.3/src/share/classes
+.fi
+.ft 1
+.RE
+.TP
+Create a file named \f3classes\fR containing:
+.LP
+.RS
+.ft 3
+.nf
+MyClass1.java
+MyClass2.java
+MyClass3.java
+.fi
+.ft 1
+.RE
+.TP
+You would then run \f3javac\fR with:
+.LP
+.RS
+.ft 3
+.nf
+% javac @options @classes
+.fi
+.ft 1
+.RE
+.SS Example - Arg Files with Paths
+The argument files can have paths, but any filenames inside
+the files are relative to the current working directory (not 
+.BR path1
+or 
+.BR path2 ):
+.LP
+.RS
+.ft 3
+.nf
+% javac @path1/options @path2/classes
+.fi
+.ft 1
+.RE
+.SH EXAMPLES
+.SS Compiling a Simple Program
+.IX "javac" "Compiling a Simple Program" "\fLjavac\fP \(em Java compiler"
+One source file, 
+.BR Hello.java , 
+defines a class called
+.BR greetings.Hello . 
+The greetings directory is the package directory
+both for the source file and the class file and is off the current
+directory.
+This allows us to use the default user class path. It
+also makes it unnecessary to specify a separate destination
+directory with 
+.BR \-d .
+.LP
+.ft 3
+.nf
+   % ls
+      greetings/
+   % ls greetings
+      Hello.java
+   % cat greetings/Hello.java
+      package greetings;
+   
+      public class Hello {
+           public static void main(String[] args) {
+              for (int i=0; i < args.length; i++) {
+                  System.out.println("Hello " + args[i]);
+              }
+           }
+      }
+   % javac greetings/Hello.java
+   % ls greetings
+      Hello.class   Hello.java
+   % java greetings.Hello World Universe Everyone
+      Hello World
+      Hello Universe
+      Hello Everyone
+.fi
+.ft 1
+.SS Compiling Multiple Source Files
+.IX "javac" "Compiling Multiple Source Files" "\fLjavac\fP \(em Java compiler"
+This example compiles all the source files in the package
+greetings.
+.LP
+.ft 3
+.nf
+   % ls
+      greetings/
+   % ls greetings
+      Aloha.java     GutenTag.java     Hello.java      Hi.java
+   % javac greetings/*.java
+   % ls greetings
+      Aloha.class    GutenTag.class    Hello.class     Hi.class
+      Aloha.java     GutenTag.java     Hello.java      Hi.java
+.fi
+.ft 1
+.SS Specifying a User Class Path
+.IX "javac" "Specifying a User Class Path" "\fLjavac\fP \(em Java compiler"
+Having changed one of the source files in the previous example, we
+recompile it:
+.LP
+.ft 3
+.nf
+   % pwd
+      /examples
+   % javac greetings/Hi.java
+.fi
+.ft 1
+.LP
+Since the class
+.B greetings.Hi
+refers to other classes in the greetings
+package, the compiler needs to find these other classes.
+The example above works, because our default user class path happens
+to be the directory containing the package directory.
+But suppose
+we want to recompile this file and not worry about which directory
+we're in?
+Then we need to add 
+.B /examples 
+to the user class path.
+We can do this by setting \s-1\f3CLASSPATH\s0\f1, but here we'll use the
+.B \-classpath 
+option.
+.LP
+.ft 3
+.nf
+   % javac \-classpath /examples /examples/greetings/Hi.java
+.fi
+.ft 1
+.LP
+If we change
+.B greetings.Hi
+again, to use a banner utility, that
+utility also needs to be accessible through the user class path.
+.LP
+.ft 3
+.nf
+   % javac \-classpath /examples:/lib/Banners.jar /examples/greetings/Hi.java
+.fi
+.ft 1
+.LP
+To execute a class in greetings, we need access both to greetings
+and to the classes it uses.
+.LP
+.ft 3
+.nf
+   % java \-classpath /examples:/lib/Banners.jar greetings.Hi
+.fi
+.ft 1
+.SS Separating Source Files and Class Files
+.IX "javac" "Separating Source Files and Class Files" "\fLjavac\fP \(em Java compiler"
+It often makes sense to keep source files and class files in
+separate directories, especially on large projects.
+We use 
+.B \-d 
+to indicate the separate class file destination.
+Since the source files are not in the user class path, we use 
+.B \-sourcepath 
+to help the compiler find them.
+.LP
+.ft 3
+.nf
+   % ls
+      classes/  lib/      src/
+   % ls src
+      farewells/
+   % ls src/farewells
+      Base.java      GoodBye.java
+   % ls lib
+      Banners.jar
+   % ls classes
+   % javac \-sourcepath src \-classpath classes:lib/Banners.jar \\
+      src/farewells/GoodBye.java \-d classes
+   % ls classes
+      farewells/
+   % ls classes/farewells
+      Base.class      GoodBye.class
+.fi
+.ft 1
+.LP
+Note: The compiler compiled src/farewells/Base.java, even
+though we didn't specify it on the command line.
+To trace automatic compiles, use the 
+.B \-verbose 
+option.
+.SS Cross-Compilation Example
+.IX "javac" "Cross-Compilation Example" "\fLjavac\fP \(em Java compiler"
+Here we use  
+.B javac 
+to compile code that will run on a 1.4
+.SM VM\s0.
+.LP
+.ft 3
+.nf
+   % javac \-target 1.4 \-bootclasspath jdk1.4.2/lib/classes.zip \\
+        \-extdirs "" OldCode.java
+.fi
+.ft 1
+.LP
+The 
+.B \-target 1.4 
+option ensures that the generated class files will
+be compatible with 1.4
+.SM VM\s0s.
+BY default,
+.B javac
+compiles for 1.5.
+.LP
+The Java 2 SDk's
+.B javac 
+would also by default compile against its own
+bootstrap classes, so we need to tell 
+.B javac 
+to compile against
+JDK 1.4 bootstrap classes instead.
+We do this with 
+.B \-bootclasspath
+and 
+.BR \-extdirs . 
+Failing to do this might allow compilation against a
+Java 2 Platform
+.SM API
+that would not be present on a 1.4
+.SM VM
+and would fail at runtime.
+.br
+.ne 11
+.SH SEE ALSO
+.BR jar (1),
+.BR java (1),
+.BR javadoc (1),
+.BR javah (1),
+.BR javap (1),
+.BR jdb (1)
+.LP
+See or search the Java web site for the following:
+.TP 10
+.B The Java Extensions Mechanism @
+http://java.sun.com/j2se/1.5/docs/guide/extensions/index.html
+

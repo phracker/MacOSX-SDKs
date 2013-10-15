@@ -1,0 +1,90 @@
+.\" Copyright (c) 2003 Apple Computer, Inc.  All rights reserved.
+.\"
+.Dd July 8, 2003
+.Dt dynamic_pager 8
+.Os "Mac OS X"
+.Sh NAME
+.Nm dynamic_pager
+.Nd external storage manager for dynamic pager
+.Sh SYNOPSIS
+.Nm dynamic_pager
+.Op Fl F Ar filename
+.Op Fl S Ar filesize
+.Op Fl H Ar high-water-trigger
+.Op Fl L Ar low-water-trigger
+.Op Fl P Ar priority
+.Sh DESCRIPTION
+The
+.Nm dynamic_pager
+daemon manages a pool of external swap files
+which the kernel uses to support demand paging.
+This pool is expanded with new swap files
+as load on the system increases.
+It is contracted when the swapping resources are no longer needed.  The
+.Nm dynamic_pager
+daemon also provides a notification service
+for those applications which wish to receive notices
+when the external paging pool expands or contracts.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.\" ==========
+.It Fl F
+The base name of the
+.Ar filename
+to use for the external paging files.  By default this is
+.Pa /private/var/vm/swapfile .
+.\" ==========
+.It Fl H
+If there are less than
+.Ar high-water-trigger
+bytes free in the external paging files, the kernel will signal
+.Nm dynamic_pager
+to add a new external paging file.
+.\" ==========
+.It Fl L
+If there are more than
+.Ar low-water-trigger
+bytes free in the external paging files, the kernel will coalese in-use pages
+and signal
+.Nm dynamic_pager
+to discard an external paging file.
+.Ar Low-water-trigger
+must be greater than
+.Ar high-water-trigger
++
+.Ar filesize .
+.\" ==========
+.It Fl P
+This option is currently unimplemented.
+.\" ==========
+.It Fl S
+The fixed
+.Ar filesize
+[in bytes] to use for the paging files.  By default
+.Nm dynamic_pager
+uses variable sized paging files, using larger sized files as paging demands
+increase.  The
+.Fl S ,
+.Fl H
+and
+.Fl L
+options disable that default and cause
+.Nm dynamic_pager
+to use a series of fixed sized external paging files.
+.El
+.Sh FILES
+.Bl -tag -width /Library/Preferences/com.apple.virtualMemory.plist -compact
+.It Pa /private/var/vm/swapfile*
+Default external paging files.
+.It Pa /Library/Preferences/com.apple.virtualMemory.plist
+Configuration file.
+.El
+.Sh XML PROPERTY LIST KEYS
+The following keys can be specified in the configuration file.  Please see 
+.Xr plist 5
+for more information about property list files.
+.Pp
+.Bl -ohang
+.It Sy UseEncryptedSwap <boolean>
+This optional key activates encrypted swap (aka Secure VM), so that all data is encrypted before being written to a swap file.  The default is on for portable computers and off for other computers.
+.El
