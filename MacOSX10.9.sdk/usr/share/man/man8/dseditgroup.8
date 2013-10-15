@@ -1,0 +1,174 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd March 01 2004               \" DATE 
+.Dt dseditgroup 8      \" Program name and manual section number 
+.Os Mac OS X
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm dseditgroup
+.Nd group record manipulation tool.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op options
+.Op parameters
+.Ar groupname
+.Pp
+options:
+.Bl -tag -width "1234567890123" -compact -offset indent
+.It Fl o Ar operation
+perform (read, create, delete, edit, checkmember) operation with given groupname
+.It Fl p
+prompt for authentication password
+.It Fl q
+disables interactive verification
+.It Fl v
+verbose logging to stdout
+.El
+.Pp
+parameters:
+.Bl -tag -width "1234567890123" -compact -offset indent
+.It Fl m Ar member
+username to use for checkmember option
+.It Fl n Ar nodename
+directory node location of group record
+.It Fl u Ar username
+authenticate with admin username
+.It Fl P Ar password
+authentication password
+.It Fl a Ar recordname
+name of the record to add
+.It Fl d Ar recordname
+name of the record to delete
+.It Fl t Ar recordtype
+type of the record to add or delete
+.It Fl T Ar grouptype
+type of group to create or modify
+.It Fl L
+maintain ComputerLists in parallel with ComputerGroups
+.It Fl i Ar gid
+gid to add/replace
+.It Fl g Ar guid
+GUID to add/replace
+.It Fl S Ar sid
+SID to add/replace
+.It Fl r Ar realname
+realname to add/replace
+.It Fl k Ar keyword
+keyword to add
+.It Fl c Ar comment
+comment to add/replace
+.It Fl s Ar timetolive
+seconds to live to add/replace
+.It Fl f Ar n | l
+change the group's format - 'n' for the new group format and 'l' for the legacy group format
+.El
+.Pp
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+allows manipulation of a single named group record on either the default local node or the specified DirectoryService node. For the "read" operation the authentication search policy (/Search node) is consulted. Default behaviour is presented below after a discussion of each operation and the possible parameters.
+.Pp                      \" Inserts a space
+Options and their descriptions:
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl o Ar operation
+If "read" then the parameters of the specified groupname will be displayed. This is the default option. The authentication search policy (/Search node) will be used.
+.Pp
+If "create" then create a group with the specified groupname on either the default local node or the specified DirectoryService node.
+.Pp
+If "delete" then delete a group with the specified groupname on either the default local node or the specified DirectoryService node.
+.Pp
+If "edit" then edit a group with the specified groupname on either the default local node or the specified DirectoryService node.
+.Pp
+If "checkmember" then check if the user specified with -m or current logged in user is a member of the specified groupname. The authentication search policy (/Search node) is used to find the member. The specified node (defaults to the authentication search policy) is used to find the group. If the specified node is not on the authentication search policy the behaviour is undefined. 
+.It Fl p
+You will be prompted for a password to use in conjunction with the specified username.
+.It Fl q
+This disables interactive verification of replace or delete operations.
+.It Fl v
+This enables the logging of the DirectoryService API calls and their return codes.
+.El                      \" Ends the list
+.Pp                      \" Inserts a space
+Parameters and their descriptions:
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl m Ar member
+The username of the account to verify group membership when using 
+.Fl o Ar checkmember
+.option
+.It Fl n Ar nodename
+Directory Service node name such as /LDAPv3/ldap.company.com and whose default value is the local node. "." can also be used to specify the local node. 
+.It Fl u Ar username
+Username of a user that has administrative privileges on this computer.
+.It Fl P Ar password
+Password to use in conjunction with the specified username.  If this is not specified, you will be prompted for a password.
+.It Fl a Ar recordname
+The name of the record to be added to the group specified by groupname. This name is related to the first record found on the authentication search policy when a search is made with this recordname and the given recordtype.
+.It Fl d Ar recordname
+The name of the record to be deleted from the group specified by groupname. This name is related to the first record found on the authentication search policy when a search is made with this recordname and the given recordtype.
+.It Fl t Ar recordtype
+The type of the record to be added to or deleted from the group specified by groupname. Valid values are user, computer, group, or computergroup.
+.It Fl T Ar grouptype
+The type of the group record to be created or modified as specified by groupname. Valid values are group or computergroup.
+.It Fl L
+If used with computergroup will also maintain the computerlist if it exists or create it if a computergroup is created.
+.It Fl i Ar gid
+This is a group id. This will be automatically created if not specified for a create.
+.It Fl g Ar guid
+This is a text representation of an 128 bit id. This will be automatically created if not specified for a create.
+.It Fl r Ar realname
+This is a simple text string.
+.It Fl k Ar keyword
+This is a simple text string.
+.It Fl c Ar comment
+This is a simple text string.
+.It Fl s Ar timetolive
+The number of seconds that this record is deemed valid as a cached value. There will be no automatically created default value if not specified for a create.
+.El                      \" Ends the list
+.Pp                      \" Inserts a space
+.Sh DEFAULT BEHAVIOUR
+.Pp                      \" Inserts a space
+dseditgroup mygroup
+.Pp
+This simple version of the command will default to:
+.Pp
+dseditgroup -o read -n . -u $USER mygroup
+.Pp
+The output will be the parameters of the "mygroup" group record if the shell user has read access to the local node's group record of name "mygroup".
+.Pp
+.Sh EXAMPLES
+.Pp
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Nm Ar extragroup
+.Pp
+.It Nm Fl o Ar read Ar extragroup
+.Pp
+.D1 The attributes of the group "extragroup" from the local node are displayed.
+.It Nm Fl o Ar create Fl n Ar /LDAPv3/ldap.company.com Fl u Ar myusername Fl P Ar mypassword Fl r Qo "Extra Group" Qc Fl c Qo "a nice comment" Qc Fl s Ar 3600 Fl k Qo "some keyword" Qc Ar extragroup
+.Pp
+.D1 The group "extragroup" is created from the node "/LDAPv3/ldap.company.com" with the realname, comment, timetolive (instead of default of 14400 = 4 hours), and keyword atttribute values given above if the user "myusername" has supplied a correct password and has write access.
+.Pp
+.It Nm Fl o Ar delete Fl n Ar /LDAPv3/ldap.company.com Fl u Ar myusername Fl P Ar mypassword Ar extragroup
+.Pp
+.D1 The group "extragroup" is deleted from the node "/LDAPv3/ldap.company.com" if the user "myusername" has supplied a correct password and has write access.
+.Pp
+.It Nm Fl o Ar edit Fl n Ar /LDAPv3/ldap.company.com Fl u Ar myusername Fl p Fl a Ar username Fl t Ar user Ar extragroup
+.Pp
+.D1 The group "extragroup" from the node "/LDAPv3/ldap.company.com" will have the username added if the username is in a user record on the search policy and if the correct password is presented interactively for the user "myusername" which also need to have write access.
+.It Nm Fl o Ar edit Fl n Ar /LDAPv3/ldap.company.com Fl u Ar myusername Fl P Fl a Ar mysubgroup Fl t Ar group Ar extragroup
+.Pp
+.D1 The group "extragroup" from the node "/LDAPv3/ldap.company.com" will have the mysubgroup added if the mysubgroup is in a group record on the search policy and if the user "myusername" has supplied a correct password and has write access.
+.It Nm Fl o Ar edit Fl n Ar /LDAPv3/ldap.company.com Fl u Ar myusername Fl p Fl d Ar username Fl t Ar user Ar extragroup
+.Pp
+.D1 The group "extragroup" from the node "/LDAPv3/ldap.company.com" will have the username deleted if the correct password is presented interactively for the user "myusername" which also need to have write access.
+.It Nm Fl o Ar checkmember Ar extragroup
+.Pp
+.D1 Will write out a message specifying if the current user is a member of "extragroup" on the authentication search policy. 
+.It Nm Fl o Ar checkmember Fl n Ar \ . Ar extragroup
+.Pp
+.D1 Will write out a message specifying if the current user is a member of "extragroup" on the local node. 
+.It Nm Fl n Ar /LDAPv3/ldap.company.com Fl o Ar checkmember Fl m Ar user Ar extragroup
+.Pp
+.D1 Will write out a message specifying if "user" (found in /Search) is a member of "extragroup" on the specified node "/LDAPv3/ldap.company.com". The specified node "/LDAPv3/ldap.company.com" needs to be on the authentication search policy for a valid answer.
+.El                      \" Ends the list
+.Pp
+.Pp

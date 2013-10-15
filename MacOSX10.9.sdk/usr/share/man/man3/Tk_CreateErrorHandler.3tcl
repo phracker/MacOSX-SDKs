@@ -1,0 +1,411 @@
+'\"
+'\" Copyright (c) 1990 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tk_CreateErrorHandler 3 "" Tk "Tk Library Procedures"
+.BS
+.SH NAME
+Tk_CreateErrorHandler, Tk_DeleteErrorHandler \- handle X protocol errors
+.SH SYNOPSIS
+.nf
+\fB#include <tk.h>\fR
+.sp
+Tk_ErrorHandler
+\fBTk_CreateErrorHandler\fR(\fIdisplay, error, request, minor, proc, clientData\fR)
+.sp
+\fBTk_DeleteErrorHandler\fR(\fIhandler\fR)
+.SH ARGUMENTS
+.AS "Tk_ErrorHandler" clientData
+.AP Display *display in
+Display whose errors are to be handled.
+.AP int error in
+Match only error events with this value in the \fIerror_code\fR
+field.  If \-1, then match any \fIerror_code\fR value.
+.AP int request in
+Match only error events with this value in the \fIrequest_code\fR
+field.  If \-1, then match any \fIrequest_code\fR value.
+.AP int minor in
+Match only error events with this value in the \fIminor_code\fR
+field.  If \-1, then match any \fIminor_code\fR value.
+.AP Tk_ErrorProc *proc in
+Procedure to invoke whenever an error event is received for
+\fIdisplay\fR and matches \fIerror\fR, \fIrequest\fR, and \fIminor\fR.
+NULL means ignore any matching errors.
+.AP ClientData clientData in
+Arbitrary one-word value to pass to \fIproc\fR.
+.AP Tk_ErrorHandler handler in
+Token for error handler to delete (return value from a previous
+call to \fBTk_CreateErrorHandler\fR).
+.BE
+.SH DESCRIPTION
+.PP
+\fBTk_CreateErrorHandler\fR arranges for a particular procedure
+(\fIproc\fR) to be called whenever certain protocol errors occur on a
+particular display (\fIdisplay\fR).  Protocol errors occur when
+the X protocol is used incorrectly, such as attempting to map a window
+that does not exist.  See the Xlib documentation for \fBXSetErrorHandler\fR
+for more information on the kinds of errors that can occur.
+For \fIproc\fR to be invoked
+to handle a particular error, five things must occur:
+.IP [1]
+The error must pertain to \fIdisplay\fR.
+.IP [2]
+Either the \fIerror\fR argument to \fBTk_CreateErrorHandler\fR
+must have been \-1, or the \fIerror\fR argument must match
+the \fIerror_code\fR field from the error event.
+.IP [3]
+Either the \fIrequest\fR argument to \fBTk_CreateErrorHandler\fR
+must have been \-1, or the \fIrequest\fR argument must match
+the \fIrequest_code\fR field from the error event.
+.IP [4]
+Either the \fIminor\fR argument to \fBTk_CreateErrorHandler\fR
+must have been \-1, or the \fIminor\fR argument must match
+the \fIminor_code\fR field from the error event.
+.IP [5]
+The protocol request to which the error pertains must have been
+made when the handler was active (see below for more information).
+.PP
+\fIProc\fR should have arguments and result that match the
+following type:
+.CS
+typedef int Tk_ErrorProc(
+    ClientData \fIclientData\fR,
+    XErrorEvent *\fIerrEventPtr\fR);
+.CE
+The \fIclientData\fR parameter to \fIproc\fR is a copy of the \fIclientData\fR
+argument given to \fBTcl_CreateErrorHandler\fR when the callback
+was created.  Typically, \fIclientData\fR points to a data
+structure containing application-specific information that is
+needed to deal with the error.  \fIErrEventPtr\fR is
+a pointer to the X error event.
+The procedure \fIproc\fR should return an integer value.  If it
+returns 0 it means that \fIproc\fR handled the error completely and there
+is no need to take any other action for the error.  If it returns
+non-zero it means \fIproc\fR was unable to handle the error.
+.PP
+If a value of NULL is specified for \fIproc\fR, all matching errors
+will be ignored:  this will produce the same result as if a procedure
+had been specified that always returns 0.
+.PP
+If more than more than one handler matches a particular error, then
+they are invoked in turn.  The handlers will be invoked in reverse
+order of creation:  most recently declared handler first.
+If any handler returns 0, then subsequent (older) handlers will
+not be invoked.  If no handler returns 0, then Tk invokes X's
+default error handler, which prints an error message and aborts the
+program.  If you wish to have a default handler that deals with errors
+that no other handler can deal with, then declare it first.
+.PP
+The X documentation states that
+.QW "the error handler should not call any functions (directly or indirectly) on the display that will generate protocol requests or that will look for input events."
+This restriction applies to handlers declared by \fBTk_CreateErrorHandler\fR;
+disobey it at your own risk.
+.PP
+\fBTk_DeleteErrorHandler\fR may be called to delete a
+previously-created error handler.  The \fIhandler\fR argument
+identifies the error handler, and should be a value returned by
+a previous call to \fBTk_CreateEventHandler\fR.
+.PP
+A particular error handler applies to errors resulting
+from protocol requests generated between
+the call to \fBTk_CreateErrorHandler\fR and the call to
+\fBTk_DeleteErrorHandler\fR.  However, the actual callback
+to \fIproc\fR may not occur until after the \fBTk_DeleteErrorHandler\fR
+call, due to buffering in the client and server.
+If an error event pertains to
+a protocol request made just before calling \fBTk_DeleteErrorHandler\fR,
+then the error event may not have been processed
+before the \fBTk_DeleteErrorHandler\fR
+call.  When this situation arises, Tk will save information about
+the handler and
+invoke the handler's \fIproc\fR later when the error event
+finally arrives.
+If an application wishes to delete an error handler and know
+for certain that all relevant errors have been processed,
+it should first call \fBTk_DeleteErrorHandler\fR and then
+call \fBXSync\fR;  this will flush out any buffered requests and errors,
+but will result in a performance penalty because
+it requires communication to and from the X server.  After the
+\fBXSync\fR call Tk is guaranteed not to call any error
+handlers deleted before the \fBXSync\fR call.
+.PP
+For the Tk error handling mechanism to work properly, it is essential
+that application code never calls \fBXSetErrorHandler\fR directly;
+applications should use only \fBTk_CreateErrorHandler\fR.
+
+.SH KEYWORDS
+callback, error, event, handler

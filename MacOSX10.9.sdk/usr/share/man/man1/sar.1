@@ -1,0 +1,223 @@
+.\"Portions Copyright (c) 1999-2003 Apple Computer, Inc. All Rights
+.\"Reserved.
+.\"
+.\"This file contains Original Code and/or Modifications of Original Code
+.\"as defined in and that are subject to the Apple Public Source License
+.\"Version 2.0 (the 'License'). You may not use this file except in
+.\"compliance with the License. Please obtain a copy of the License at
+.\"http://www.opensource.apple.com/apsl/ and read it before using this
+.\"file.
+.\"
+.\"The Original Code and all software distributed under the License are
+.\"distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\"EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\"INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\"FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\"Please see the License for the specific language governing rights and
+.\"limitations under the License.
+.\" 
+.\"     @(#)sadc.8
+
+.Dd Jul 25, 2003               \" DATE 
+.Dt sar 1      \" Program name and manual section number 
+.Os "Mac OS X"
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm sar
+.Nd system activity reporter
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm sar
+.Op Fl dgpu              \" [-dgpu]
+.Op Fl n Ar mode         \" [-n mode]
+.Op Fl o Ar filename     \" [-o filename]
+t                        \" t
+.Op Ar n                 \" [ n ]
+.Nm sar
+.Op Fl dgpu              \" [-dgpu]
+.Op Fl n Ar mode         \" [-n mode]
+.Op Fl e Ar time         \" [-e time]
+.Op Fl f Ar filename     \" [-f filename]
+.Op Fl i Ar seconds      \" [-i seconds]
+.Op Fl s Ar time         \" [-s time]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+The
+.Nm sar
+command is used to sample and report various cumulative statistic counters
+maintained by the operating system.
+It can be invoked in two different ways.
+.Pp
+In the first usage instance,
+.Ar n
+samples are reported at
+.Ar t
+second intervals.
+If
+.Ar n
+is not specified, only one sample will be captured.
+When the -o option is specified,
+.Nm sar
+will write the binary sampling data to the output file specified by
+.Ar filename .
+.Pp
+In the second usage instance,
+there is no on-going sample interval to specify.
+This is because the sampling input comes
+from a previously recorded, binary activity file.
+The binary activity file can be specified using the
+.Fl f Ar filename
+option.
+When the
+.Fl f
+option isn't used,
+.Nm sar
+attempts to open a default binary activity file,
+/var/log/sa/sadd, where
+.Ar dd
+represents the current day of the month.
+.Pp
+The starting and ending time of the report can be restricted using the
+.Fl e
+and
+.Fl s
+options.  Here, the
+.Ar time
+field is specified in the form hh[:mm[:ss]].
+.Pp
+Finally, the
+.Fl i
+option can be used to select the sampling interval.  
+Only records at least
+.Ar seconds
+apart will be reported.
+When the
+.Fl i
+option is not used,
+all of the previously recorded interval samples are reported.
+.Pp
+Due to the nature of on-going sample collection,
+the data is reported in a verbose mode
+when more than one sampling option is specified.
+Column headers are printed at the beginning of the report;
+averages are printed when the 
+.Nm sar
+command terminates.
+.Sh OPTIONS
+The following options restrict the sample set that
+.Nm sar
+reports.
+.Pp                      \" Inserts a space
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl d
+Report disk activity.
+.Pp
+.Bl -tag -width -indent  \" Begins a tagged list 
+.It device
+The BSD name of the device.
+.It r+w/s
+The number of reads and writes per second.
+.It blks/s
+Number of blocks (in device's default blocksize) transferred to a device per second.
+.El
+.It Fl g
+Report page-out activity.
+.Pp
+.Bl -tag -width -indent  \" Begins a tagged list 
+.It pgout/s
+The number of pages paged out per second.
+.El
+.It Fl p
+Report page-in and page fault activity
+.Pp
+.Bl -tag -width -indent  \" Begins a tagged list 
+.It pgin/s
+The number of pages paged in per second.
+.It pflts/s
+The number of faults that caused a page to be copied in per second.
+.It vflts/s
+The number of times vm_fault routine has been called.
+.El
+.It Fl n Ar mode
+Report network activity with modes
+.Ar DEV ,
+.Ar EDEV ,
+or
+.Ar PPP .
+Multiple network modes can be specified.
+.Pp
+.Bl -tag -width -indent \" Begins a tagged list
+.It DEV
+The
+.Ar DEV
+mode reports network device statistics.  The following
+information is displayed for each interface.
+.Pp
+.Bl -tag -width "Obytes/s" \" Begins a tagged list
+.It IFACE
+The network interface name.
+.It Ipkts/s
+The number of packets received per second.
+.It Ibytes/s
+The number of bytes received per second.
+.It Opkts/s
+The number of packets sent per second.
+.It Obytes/s
+The number of bytes sent per second.
+.El
+.It EDEV
+The
+.Ar EDEV
+mode reports network device error statistics. The
+following information is displayed for each interface.
+.Pp
+.Bl -tag -width "Drops/s" \" Begins a tagged list
+.It IFACE
+The interface name.
+.It Ierrs/s
+The input errors per second.
+.It Oerrs/s
+The output errors per second.
+.It Coll/s
+The collisions that occurred per second.
+.It Drops/s
+The number of dropped packets per second.
+.El
+.It PPP
+The
+.Ar PPP
+mode must be specified in order to display ppp connections
+in the network statistics. This will also turn on the PPP modify
+mode in
+.Ar sadc
+(8) when sampling data is not being read from a file.
+By default, both the collection and reporting of ppp
+statistics is turned off.  See
+.Ar sadc
+(8).
+.El
+.Pp
+.It Fl u
+Report CPU activity (default)
+.Pp
+%usr, %sys, and %idle
+.Pp
+These report the percentage of time running in user mode,
+system mode and idle.
+.El
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "/var/log/sa/sadd" -compact
+.It Pa /var/log/sa/sadd
+Default daily activity file that holds the binary sampling data.
+.Ar dd
+are digits that represent the day of the month.
+.El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.Xr fs_usage 1 ,
+.Xr netstat 1 ,
+.Xr sc_usage 1 ,
+.Xr top 1 , 
+.Xr vm_stat 1 ,
+.Xr iostat 8 ,
+.Xr sa1 8 , 
+.Xr sa2 8 ,
+.Xr sadc 8
+.\" .Sh BUGS              \" Document known, unremedied bugs 

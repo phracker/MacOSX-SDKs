@@ -1,0 +1,165 @@
+.\"	$Id: xsanadmin.8,v 1.3 2005/01/05 07:16:27 cjalbert Exp $
+.\"
+.\" Copyright (c) 2000-2005 Apple Computer, Inc., all rights reserved.
+.\" Distributed only as part of Mac OS X Server
+.Dd 04 January 2005
+.Dt xsanadmin 8      \" Program name and manual section number 
+.Os "Mac OS X"
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm xsanadmin
+.Nd command-line interface to Mac OS X Server administrative daemon for Xsan
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\".Nm Other_name_for_same_program(),
+.\".Nm Yet another name for the same program.
+.\" Use .Nm macro to designate other names for the documented program.
+.\".Nd This line parsed for whatis database.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl d | Fl x
+.Ar command
+.Op Ar command_args
+.Pp
+.Nm
+.Op Fl h | Fl v
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is a utility for administering services.  In general, it gives you access to the same functionality
+present in the Xsan Admin application. It must be run by root.
+.Sh OPTIONS
+The following options are available:
+.Bl -tag -width ".Cm --version" -compact
+.It Fl d
+.It Cm --debug
+Print command to the terminal.
+.Pp
+.It Fl h
+.It Cm --help
+Print usage summary and exit.
+.Pp
+.It Fl v
+.It Cm --version
+Print build version and exit.
+.Pp
+.It Fl x
+.It Cm --xml
+Generate output as XML instead of key-value pairs.
+.El
+.Sh USAGE
+Except when requesting information with
+.Nm
+.Fl h
+or
+.Nm
+.Fl v ,
+you must specify a
+.Ar command
+to select a specific function to perform. Each command accepts its
+own arguments.
+.Sh COMMAND SUMMARY
+Here are brief descriptions of all the
+.Nm
+commands:
+.Bl -tag -width Ds
+.It Cm list
+Returns a list of all available services.
+.It Cm start Ar service
+Starts the specified service.
+.It Cm stop Ar service
+Stops the specified service.
+.It Cm status Ar service
+Returns whether or not the service is running.
+.It Cm fullstatus Ar service
+Returns service specific status information. This generally corresponds
+to the information shown in the status panel of the Xsan Admin application.
+.It Cm settings Ar command_args
+This command is used to read and write settings information. It can take
+arguments from the command line or standard input.
+.Cm set
+can be used instead of
+.Cm settings .
+.It Cm command Ar command_args
+Allows service specific commands to be performed.
+.Cm com
+can be used instead of
+.Cm command .
+.El
+.Sh COMMAND ARGUMENTS
+Input and output is done using key value pairs.  Keys are specified using colon separated strings,
+with the first element being the service name (eg. afp:idleDisconnectFlag:adminUsers).  Values have types.
+If the value is in quotes, it is always considered to be a string.  Otherwise numbers (5, 10, 8.2) and
+booleans (yes or no) are converted to the appropriate type.  Assignments are always of the form
+\fIkey\fP = \fIvalue\fP (eg. afp:guestAccess = yes).
+.Pp
+If only one key needs to be specified (or set), it can be placed on the command line after the command
+(eg. xsanadmin set afp:guestAccess = yes).  However, in some case when doing \fBsettings\fP or
+\fBcommand\fP, multiple key/value pairs need to be specified.  In this case, leaving them out of the
+argument list (eg. 
+.Nm
+\fBsettings\fP) will cause the program to read either keys or key/value pairs
+from the standard input until an end of file (EOF) is reached.  The keys or key/value pairs must be one
+per line.
+.Pp
+For \fBsettings\fP, if no values are specified for the keys, the key value will be read and printed.
+Otherwise if there is a key/value pair of the form \fIkey\fP = \fIvalue\fP, the value will be set
+and then echoed back to the output.  In general, the best approach is to fetch the settings for an 
+individual service (eg.
+.Nm
+\fBsettings afp > dumpfile\fP and then using the output as a template for changing settings.  Any output
+when fetching settings can be fed in to set values.
+.Pp
+When setting array values, special notation is needed.  There are two types of arrays.  Some arrays have
+special id keys that allow you to access individual array elements.  These are accessed using the
+special key _array_id followed by the value of the id tag (eg. web:Modules:_array_id:dav_module).
+To add a new element to such an array, you need to have a special line with a "create" value. For example,
+to add a new web site to the web configuration, you would need:
+.Bd -literal
+	web:Sites:_array_id:MySite = create
+	web:Sites:_array_id:MySite:enabled = yes
+            etc.
+.Ed
+.Pp
+To delete an element of an array, use the "delete" value (eg. web:Sites:_array_id:MySite = delete).
+.Pp
+For \fBcommand\fP, you always need to specify the command type (eg. afp:command = getConnectedUsers).  Commands
+are highly specific to the individual services.  See the examples sections for some possible commands.
+.Pp
+.Sh EXAMPLES
+.Bl -tag -width Ds
+.It xsanadmin settings all > outfile
+Stores settings from all services into a file.
+.It xsanadmin settings < outfile
+Will take any settings file and set the values.
+.It xsanadmin command < commandFile
+Will execute a command specified in commandFile. Some examples of commands are:
+.Bd -literal
+    info:command = getHardwareInfo
+    info:variant = withQuotaUsage
+.Ed
+.El
+.\"The action of each command is described below.
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "/usr/sbin/xsanadmin" -compact
+.It Pa /usr/sbin/xsanadmin
+.\"xsanadmin description
+.El
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr xsanmgrd 8
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

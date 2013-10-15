@@ -1,0 +1,181 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd Fri June 24 2008               \" DATE 
+.Dt dsimport 1      \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm dsimport
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\".Nm Other_name_for_same_program(),
+.\".Nm Yet another name for the same program.
+.\" Use .Nm macro to designate other names for the documented program.
+.\".Nd This line parsed for whatis database.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Ar filepath Ar nodepath Ar O|M|A|I|N
+.Op options
+.Nm
+.Fl -version
+.Nm
+.Fl -help
+.Pp
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is a tool for importing records into an Open Directory source.
+.Sh USAGE
+.\".Bl -tag -width stringtosetspacing12
+.Bl -tag -width abcefghij
+.It Ar filepath
+is the path of the file to be imported.
+.It Ar nodepath
+is the path of the Open Directory node where the records should be imported.
+.It A flag that specifies how to handle conflicting records:
+.Bl -tag -width abcdefg
+.It O
+overwrite of any existing records that have the same record name, UID or GID. All previous attribute values are deleted.
+.It M
+merge import data with existing records or create the record if it does not exist.
+.It I
+ignore the record if there is a conflicting name, UID or GID.
+.It A
+append the data to existing records, but do not create a record if it does not exist.
+.It N
+no duplicate checking should be done.  Note this could cause failures and/or a slower import process.
+.El
+.El
+.Pp                      \" Inserts a space
+A list of options and their descriptions:
+.Bl -tag -width \" Differs from above in tag removed 
+.It Fl -crypt
+is used to signify that all user passwords are crypt-based. Entries in the import file can also be prefixed with {CRYPT} on a per record basis if not all users are crypt-based.  By default all passwords are assumed to be provided as listed in the import file.
+.It Fl -force Ar attribute Ar value
+forces a specific value for the named attribute for all records during the import. The new value will overwrite any value specified in the import file. This option may be specified multiple times for forcing more than one attribute.
+.It Fl -groupid Ar value
+is the GID used for any records that do not specify a primary GID.
+.It Fl -grouppreset Ar value
+designate a preset record to be applied to imported group records.
+.It Fl -loglevel Ar value
+changes the amount of logging detail output to the log file.
+.It Fl -outputfile Ar value
+Outputs a plist to the specified file with a list of changed users or groups and rejected records due to name conflicts.
+Also includes a list of deleted records (overwrite mode), and lists of records that failed and succeeded during import.
+The format of this file is likely to change in a future release of Mac OS X.
+.It Fl -password Ar value
+is the admin's password for import operations. Used to authenticate to the directory node during import. A secure prompt will be used for interactive input if not supplied via parameter.  Using the prompt method is the most secure method of providing password to 
+.Nm .
+.It Fl -recordformat Ar string
+passes in the delimiters and attributes and record type to specify the order and names of attributes in the file to be imported. An example record format string: 
+.Pp
+0x0A 0x5C 0x3A 0x2C dsRecTypeStandard:Users 7 dsAttrTypeStandard:RecordName dsAttrTypeStandard:Password dsAttrTypeStandard:UniqueID dsAttrTypeStandard:PrimaryGroupID dsAttrTypeStandard:RealName dsAttrTypeStandard:NFSHomeDirectory dsAttrTypeStandard:UserShell
+.Pp
+A special value of IGNORE can be used for values that should be ignored in the import file on a record-by-record basis.
+.It Fl -recordtype Ar type
+Override the record type defined in the import file. For example, to import ComputerGroups as ComputerLists, use:
+.Pp
+.Fl -recordtype Ar dsRecTypeStandard:ComputerLists
+.Pp
+The opposite works for importing ComputerLists as ComputerGroups, and so on.
+.It Fl -remotehost Ar hostname | ipaddress
+connects to a remote host at the network address specified.  Commonly used to import to a remote Mac OS X Server.
+.It Fl -remoteusername Ar value
+specifies user name to use for the remote connection.
+.It Fl -remotepassword Ar value
+specifies password to use for the remote connection. A secure prompt will be used to ask for the password if
+.Fl -remoteusername
+is specified and
+.Fl -remotepassword
+is not.  Using the prompt method is the most secure method of providing password to 
+.Nm .
+.It Fl -startid Ar value
+indicates the ID number to start with when the import tool generates user or group IDs for any import file that lacks an ID as part of the import data. 
+.It Fl -template Ar StandardUser | StandardGroup
+is used for delimited import of files that lack field descriptions.
+.Pp
+.Ar StandardUser
+contains the following fields in the order: 
+.Bl -enum -offset indent -compact
+.It
+RecordName
+.It
+Password
+.It
+UniqueID
+.It
+PrimaryGroupID
+.It
+DistinguishedName
+.It
+NFSHomeDirectory
+.It
+UserShell 
+.El
+.Pp
+.Ar StandardGroup
+contains the following fields in the order:
+.Bl -enum -offset indent -compact
+.It
+RecordName
+.It
+Password
+.It
+PrimaryGroupID
+.It
+GroupMembership 
+.El
+.It Fl -username Ar value
+is the admin username to use when importing records. If this is not specified the current user is the default name.  Also, if used in conjunction with 
+.Fl -remotehost
+then this admin user will be used for the Open Directory node whereas the username provided in
+.Fl -remoteusername
+will be used for the remote connection.  If this option is left off but
+.Fl -remoteusername
+is provided, then the remote username will be used for both the connection and for importing records.
+.It Fl -userpreset Ar value
+designate a preset record to be applied to imported user records.
+.El
+.Sh EXAMPLES
+.Pp
+To import a standard dsexport file into the Local database:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+myimportFile /Local/Default I
+.Fl -username
+administrator
+.Fl -password
+adminpassword
+.El
+.Pp
+.\".Sh COMMANDS
+.\"The action of each command is described below.
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "~/Library/Logs/ImportExport" -compact
+.It Pa /usr/bin/dsimport
+.It Pa ~/Library/Logs/ImportExport
+.El
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr DirectoryService 8
+.Xr dsexport 1
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

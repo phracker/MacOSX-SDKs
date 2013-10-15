@@ -1,0 +1,149 @@
+.\" Process this file with
+.\" groff -man -Tascii pcscd.txt
+.\"
+.TH PCSCD 8 "March 2002" Linux "User Manual"
+.SH NAME
+pcscd \- PC/SC Smartcard Daemon
+.SH SYNOPSIS
+.BI "pcscd [" options "]"
+.SH OPTIONS
+.TP
+\fB\-a\fR, \fB\-\-apdu\fR
+log APDUs and SW using the debug method (see \fB\-d\fR)
+.TP
+\fB\-c\fR, \fB\-\-config\fR \fIfile\fR
+Specifies the file \fIfile\fR as an alternate location for
+\fIreader.conf\fR
+.TP
+\fB\-d\fR, \fB\-\-debug\fR \fIOUTPUT\fR
+display debug messages.
+
+\fIOUTPUT\fR may be:
+ \fBstdout\fR (imply \fB\-f\fR),
+ \fBstderr\fR (imply \fB\-f\fR),
+ or \fBsyslog\fR
+.TP
+\fB\-f\fR, \fB\-\-foreground\fR
+Runs pcscd in the foreground (no daemon)
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Displays information about the pcscd command line
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+Displays the program version number
+.SH DESCRIPTION
+pcscd is the daemon program for pcsc-lite and musclecard framework. It is 
+a resource manager that coordinates communications with smart-card readers 
+and smart cards and cryptographic tokens that are connected to the system.
+
+pcscd is normally started at boot time from 
+.IR /System/Library/StartupItems/SmartCardServices .
+It allows applications to access smart cards and readers without knowing
+details of the card or reader.  
+
+pcscd coordinates the loading of drivers for card readers and plug-ins 
+for different card types.
+
+The purpose of pcsc-lite is to provide both a cross compatible API for
+migrating Windows based PCSC applications to Unix and to provide a 
+pluggable architecture for supporting smartcards and cryptographic tokens 
+through high level API's.
+
+At startup, pcscd loads the smart card reader drivers specified in the 
+.I /etc/reader.conf 
+file (or specified using \fB-c\fR \fIfile\fR).
+
+When a smart card is inserted into a reader, pcscd uses the ATR string from 
+the card to identify this card.  The 
+.I /usr/libexec/SmartCardServices/services 
+directory contains plug-ins for the card.  These plug-ins are searched.  If 
+the ATR string matches, the client library loads that plug-in for that 
+token.
+
+.SH "USB SMART CARD READER DRIVERS"
+USB Smart card reader drivers are placed in the 
+.I /usr/libexec/SmartCardServices/drivers 
+directory. Each driver is simply a 
+bundle.  The bundle contains an XML file Info.plist
+which is parsed by pcscd.  This file contains the vendor
+and product id of the device.  This information allows
+pcscd to automatically determine when a reader is inserted
+or removed.
+
+.SH "SERIAL SMART CARD READER DRIVERS"
+Serial Smart card reader drivers are placed in the 
+.I /usr/libexec/SmartCardServices/drivers 
+directory. Each driver is simply a 
+.I shared object
+file.  The pcscd locates serial drivers with the 
+.I /etc/reader.conf 
+file.  The file has the following format:
+
+ # comment
+ FRIENDLYNAME <Descriptive name>
+ DEVICENAME   <Short name>
+ LIBPATH      <Location of the driver library>
+ CHANNELID    <Hexadecimal channel identificator>
+
+.IP FRIENDLYNAME 
+is a user-friendly name of the reader that is served by this driver.
+This name is displayed to the user when necessary.
+
+.IP DEVICENAME 
+is a driver specific value.  If you do not know this value,
+GEN_SMART_RDR is a good choice.
+	
+.IP LIBPATH 
+is the full path to the shared library. 
+
+.IP CHANNELID 
+is the channel ID for serial-port, smart-card readers.  This could vary 
+depending on the driver in which you are using - check the driver README
+for more information.  Some use the following:
+
+ \fI/dev/ttyS0\fR (COM1) ->  0x0103F8 or 1
+ \fI/dev/ttyS1\fR (COM2) ->  0x0102F8 or 2
+ \fI/dev/ttyS2\fR (COM3) ->  0x0103E8 or 3
+ \fI/dev/ttyS3\fR (COM4) ->  0x0102E8 or 4
+.PP
+Example:
+
+ # Configuration file for pcsc-lite
+ 
+ FRIENDLYNAME "My Smartcard Reader"
+ DEVICENAME   GEN_SMART_RDR
+ LIBPATH      /usr/libexec/SmartCardServices/drivers/my_reader.so
+ CHANNELID    0x0103F8
+ 
+ # End of file
+
+Multiple drivers can be listed in 
+.I /etc/reader.conf.
+
+Drivers are available at \fIhttp://www.musclecard.com/drivers.html\fR.
+.SH "SMART CARD PLUG-INS"
+pcsc-lite uses plug-ins to handle different types of smart cards. There is 
+a plug-in for each smart-card type. Plug-ins are installed in the 
+.I /usr/libexec/SmartCardServices/services 
+directory.  Plug-ins for cards/tokens are available from the MUSCLE
+web site \fIhttp://www.musclecard.com\fR.
+.SH FILES
+.I /etc/reader.conf
+: Reader configuration file
+.br
+.I /System/Library/StartupItems/SmartCardServices
+: pcscd startup script
+.br
+.I /var/run/pcscd.pid
+: process id of the running pcscd
+.br
+.I /usr/libexec/SmartCardServices/drivers/
+: directory containing bundles for USB
+drivers"
+.SH BUGS
+None known.
+.SH "SEE ALSO"
+.BR pcsctool (1),
+.SH AUTHORS
+David Corcoran <corcoran@identityalliance.com> and Ludovic Rousseau
+<ludovic.rousseau@free.fr>

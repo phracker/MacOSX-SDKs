@@ -1,0 +1,178 @@
+.\" 
+.\" Copyright (c) 2001-2002 Apple Computer, Inc. All rights reserved.
+.\" 
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" The contents of this file constitute Original Code as defined in and
+.\" are subject to the Apple Public Source License Version 1.1 (the
+.\" "License").  You may not use this file except in compliance with the
+.\" License.  Please obtain a copy of the License at
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\" 
+.\" This Original Code and all software distributed under the License are
+.\" distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+.\" License for the specific language governing rights and limitations
+.\" under the License.
+.\"
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.\" ****************************************
+.\" *
+.\" *  mount_afp [-o options] [-i] host[:port][/path] node
+.\" *
+.\" *  Created by randall on Wed May 8 2002.
+.\" *
+.\" ****************************************
+.\"
+.\" ****************************************
+.\" *  Required macros
+.\" ****************************************
+.Dd May 8, 2002
+.Dt MOUNT_AFP 8
+.Os Mac\ OS\ X
+.\"
+.\" ****************************************
+.\" *  NAME section
+.\" ****************************************
+.Sh NAME
+.Nm mount_afp
+.Nd mount an afp (AppleShare) filesystem
+.\"
+.\" ****************************************
+.\" *  SYNOPSIS section
+.\" ****************************************
+.Sh SYNOPSIS
+.Nm
+.Op Fl i
+.Op Fl s
+.Op Fl k
+.Op Fl o Ar options
+.Ar afp_url
+.Ar node
+.\"
+.\" ****************************************
+.\" *  DESCRIPTION section
+.\" ****************************************
+.Sh DESCRIPTION
+The
+.Nm
+command mounts the AFP volume denoted by the afp_url
+.Ar afp://[user[;AUTH=uamname][:password]@]host[:port]/volumename
+at the mount point indicated by
+.Ar node.
+.Pp
+This command is normally executed by mount(8) when the -t afp option is 
+used. If the -i option is not used,
+all the required information to establish a login to the remote server must
+be available in the afp URL, including username & password if needed.	 
+.Pp
+The arguments and options are:
+.Bl -tag -width indent
+.It Fl i
+Interactive mode, you are prompted for the password if you did not supply one
+in the url.
+.It Fl s
+Soft mount (default).
+Network errors, e.g. timeouts, will be retried for a much shorter amount of time.
+If the network errors persist, then the mount will be force unmounted.
+.It Fl k
+Hard mount.
+Network errors, e.g. timeouts, will be retried for an extended amount of time.
+If the network errors persist, then the mount will be force unmounted.
+.It Fl o
+Options passed to
+.Xr mount 2
+are specified with the
+.Fl o
+option followed by a comma separated string of options. See the
+.Xr mount 8
+man page for possible options and their meanings. Additional options supported by the AFP Client are as follows:
+.Bl -tag -width indent
+.It nobrowse
+Indicate to the Carbon subsystem that this volume is not to be displayed to the user.
+.It automounted
+Set flags on the mountpoint to indicate that the volume has been mounted by the automounter.
+.El
+.It Ar afp_url
+There are two forms of afp URL, one for TCP/IP and one for AppleTalk:
+.Pp
+afp://[user[;AUTH=uamname][:password]@]host[:port]/volume
+.Pp
+afp:/at/[user[;AUTH=uamname][:password]@]servername[:zonename]/volume
+.Pp
+Denotes the afp server and sharepoint to mount. It may also contain the username & password
+required to log into the server. uamname is the protocol name of the authentication method.
+If port is not specified, then port 548 is used. 
+.It Ar node
+Path to mount point, which must be a directory that the user has write permissions for.
+.El
+.\"
+.\" ****************************************
+.\" *  EXAMPLES section
+.\" ****************************************
+.Sh EXAMPLES
+The following example illustrates how to mount the afp volume
+server.company.com/volumename/ at the mount point /Volumes/mntpnt:
+.Bd -literal -offset indent
+mkdir /Volumes/mntpnt
+mount_afp afp://username:userpass@server.company.com/volumename/ /Volumes/mntpnt
+
+.Ed
+This example shows the proper url to use to mount the volume guestVolume from
+the afp server myserver as guest (if no uam and no username, then use guest uam):
+.Bd -literal -offset indent
+mkdir /Volumes/guest
+mount_afp "afp://myserver/guestVolume" /Volumes/guest
+
+.Ed
+This example shows the proper url to use to mount the volume myVolume from
+the afp server myserver using Kerberos authentication:
+.Bd -literal -offset indent
+mkdir /Volumes/myVolume
+mount_afp "afp://;AUTH=Client%20Krb%20v2@myserver/myVolume" /Volumes/myVolume
+
+.Ed
+.\"
+.\" ****************************************
+.\" *  SEE ALSO section
+.\" ****************************************
+.Sh SEE ALSO
+.Xr mount 2 ,
+.Xr unmount 2 ,
+.Xr mount 8
+.\"
+.\" ****************************************
+.\" *  HISTORY section
+.\" ****************************************
+.Sh HISTORY
+The
+.Nm
+command first appeared Mac OS X version 10.0. Kerberos authentication was added in Mac OS X version 10.2
+.\"
+.\" ****************************************
+.\" * RETURN VALUES section
+.\" * (errors that mount_afp could return)
+.\" ****************************************
+.Sh RETURN VALUES
+.Bl -tag -width Er
+.It 0
+.Nm
+successfully mounted the volume directory. 
+.It Bq Er ENODEV (19)
+The server volume could not be mounted by
+.Nm
+because the server was not found or because the sharepoint does not exist, or because node
+does not have proper access.
+.It Bq Er EACCES (13)
+The volume could not be mounted by
+.Nm
+because the user did not provide proper authentication credentials.
+.It Bq Er ENOTDIR (20)
+The volume could not be mounted by
+.Nm
+because the mountpoint was not a directory.
+.El
+.\"

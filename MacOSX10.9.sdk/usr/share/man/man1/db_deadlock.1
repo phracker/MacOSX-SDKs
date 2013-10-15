@@ -1,0 +1,102 @@
+.Dd December 3, 2003       \" DATE 
+.Dt db_deadlock 1       \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm db_deadlock
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl Vv
+.Op Fl a Ar e | m | n | o | w | y
+.Op Fl h Ar home
+.Op Fl L Ar file
+.Op Fl t Ar sec.usec
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+The
+.Nm
+utility traverses the database environment lock region, and aborts a lock request each time it detects a deadlock or a lock request that has timed out. By default, in the case of a deadlock, a random lock request is chosen to be aborted.
+.Pp
+This utility should be run as a background daemon, or the underlying Berkeley DB deadlock detection interfaces should be called in some other way, whenever there are multiple threads or processes accessing a database and at least one of them is modifying it.
+.Pp
+The options are as follows:
+.Bl -tag -width
+.It Fl a
+When a deadlock is detected, abort the locker:
+.Bl -tag -width
+.It m
+with the greatest number of locks
+.It n
+with the fewest number of locks
+.It o
+with the oldest locker ID
+.It w
+with the fewest number of write locks
+.It y
+with the youngest locker ID
+.El
+.Pp
+When lock or transaction timeouts have been specified:
+.Bl -tag -width
+.It e
+abort any lock request that has timed out
+.El
+.It Fl h
+Specify a home directory for the database environment; by default, the current working directory is used.
+.It Fl L
+Log the execution of the db_deadlock utility to the specified file in the following format, where ### is the process ID, and the date is the time the utility was started.
+.Pp
+.D1 db_deadlock: ### Wed Jun 15 01:23:45 EDT 1995
+.Pp
+This file will be removed if the db_deadlock utility exits gracefully.
+.It Fl t
+Check the database environment every sec seconds plus usec microseconds to see if a process has been forced to wait for a lock; if one has, review the database environment lock structures.
+.It Fl V
+Write the library version number to the standard output, and exit.
+.It Fl v
+Run in verbose mode, generating messages each time the detector runs.
+.El
+.Pp
+If the -t option is not specified, db_deadlock will run once and exit.
+.Pp
+The db_deadlock utility uses a Berkeley DB environment (as described for the -h option, the environment variable DB_HOME, or because the utility was run in a directory containing a Berkeley DB environment). In order to avoid environment corruption when using a Berkeley DB environment, db_deadlock should always be given the chance to detach from the environment and exit gracefully. To cause db_deadlock to release all environment resources and exit cleanly, send it an interrupt signal (SIGINT).
+.Pp
+The db_deadlock utility does not attempt to create the Berkeley DB shared memory regions if they do not already exist. The application which creates the region should be started first, and then, once the region is created, the db_deadlock utility should be started.
+.Pp
+The DB_ENV->lock_detect method is the underlying method used by the db_deadlock utility. See the db_deadlock utility source code for an example of using DB_ENV->lock_detect in a IEEE/ANSI Std 1003.1 (POSIX) environment.
+.Pp
+The 
+.Nm
+utility exits 0 on success, and >0 if an error occurs.
+.Pp
+.Sh ENVIRONMENT      \" May not be needed
+.Bl -tag -width "DB_HOME" \" ENV_VAR_1 is width of the string ENV_VAR_1
+.It Ev DB_HOME
+If the -h option is not specified and the environment variable DB_HOME is set, it is used as the path of the database home, as described in DB_ENV->open.
+.El                      
+.\" .Sh FILES                \" File used or created by the topic of the man page
+.\" .Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.\" .It Pa /usr/share/file_name
+.\" FILE_1description
+.\" .It Pa /Users/joeuser/Library/really_long_file_name
+.\" FILE_2 description
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.Xr db_archive 1 ,
+.Xr db_checkpoint 1 ,
+.Xr db_dump 1 ,
+.Xr db_load 1 ,
+.Xr db_printlog 1 ,
+.Xr db_recover 1 ,
+.Xr db_stat 1 ,
+.Xr db_upgrade 1 ,
+.Xr db_verify 1
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 
