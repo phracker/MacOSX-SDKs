@@ -1,0 +1,1 @@
+../../../../System/Library/Frameworks/QuickTime.framework/Headers/ImageCodec.k.h

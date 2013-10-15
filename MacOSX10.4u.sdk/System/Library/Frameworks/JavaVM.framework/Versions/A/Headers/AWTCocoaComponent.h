@@ -1,0 +1,1 @@
+../../CurrentJDK/Headers/AWTCocoaComponent.h

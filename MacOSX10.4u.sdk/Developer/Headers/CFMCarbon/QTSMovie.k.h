@@ -1,0 +1,1 @@
+../../../System/Library/Frameworks/QuickTime.framework/Headers/QTSMovie.k.h

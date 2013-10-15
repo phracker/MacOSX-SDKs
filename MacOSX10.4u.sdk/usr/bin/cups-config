@@ -1,0 +1,134 @@
+#!/bin/sh
+#
+# "$Id: cups-config,v 1.40 2005/01/04 22:10:35 jlovell Exp $"
+# 
+#   CUPS configuration utility.
+#
+#   Copyright 2001-2005 by Easy Software Products, all rights reserved.
+#
+#   These coded instructions, statements, and computer programs are the
+#   property of Easy Software Products and are protected by Federal
+#   copyright law.  Distribution and use rights are outlined in the file
+#   "LICENSE.txt" which should have been included with this file.  If this
+#   file is missing or damaged please contact Easy Software Products
+#   at:
+#
+#       Attn: CUPS Licensing Information
+#       Easy Software Products
+#       44141 Airport View Drive, Suite 204
+#       Hollywood, Maryland 20636 USA
+#
+#       Voice: (301) 373-9600
+#       EMail: cups-info@cups.org
+#         WWW: http://www.cups.org
+#
+
+VERSION="1.1.23"
+APIVERSION="1.1"
+
+prefix=/
+exec_prefix=/usr
+bindir=${exec_prefix}/bin
+includedir=/usr/include
+libdir=/usr/lib
+datadir=/usr/share
+sysconfdir=/private/etc
+cups_datadir=/usr/share/cups
+cups_serverbin=/usr/libexec/cups
+cups_serverroot=/private/etc/cups
+
+# flags for C++ compiler:
+CFLAGS=""
+LDFLAGS=""
+LIBS="   "
+IMGLIBS="   -lz"
+
+if test $includedir != /usr/include; then
+    CFLAGS="$CFLAGS -I$includedir"
+fi
+
+if test $libdir != /usr/lib -a $libdir != /usr/lib32; then
+    LDFLAGS="$LDFLAGS -L$libdir"
+fi
+
+usage ()
+{
+    echo "Usage: cups-config --api-version"
+    echo "       cups-config --cflags"
+    echo "       cups-config --datadir"
+    echo "       cups-config --help"
+    echo "       cups-config --ldflags"
+    echo "       cups-config [--image] [--static] --libs"
+    echo "       cups-config --serverbin"
+    echo "       cups-config --serverroot"
+    echo "       cups-config --version"
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+# Parse command line options
+static=no
+image=no
+
+while test $# -gt 0; do
+    case $1 in
+	--api-version)
+	    echo $APIVERSION
+	    ;;
+	--cflags)
+	    echo $CFLAGS
+	    ;;
+	--datadir)
+	    echo $cups_datadir
+	    ;;
+	--help)
+	    usage 0
+	    ;;
+	--image)
+	    image=yes
+	    ;;
+	--ldflags)
+	    echo $LDFLAGS
+	    ;;
+	--libs)
+	    if test $static = no; then
+	        if test $image = no; then
+	            echo -lcups $LIBS
+		else
+	            echo -lcupsimage $IMGLIBS -lcups $LIBS
+		fi
+	    else
+	        if test $image = no; then
+	            echo $libdir/libcups.a $LIBS
+		else
+	            echo $libdir/libcupsimage.a $IMGLIBS $libdir/libcups.a $LIBS
+		fi
+	    fi
+	    ;;
+	--serverbin)
+	    echo $cups_serverbin
+	    ;;
+	--serverroot)
+	    echo $cups_serverroot
+	    ;;
+	--static)
+	    static=yes
+	    ;;
+	--version)
+	    echo $VERSION
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    shift
+done
+
+#
+# End of "$Id: cups-config,v 1.40 2005/01/04 22:10:35 jlovell Exp $".
+#

@@ -1,0 +1,1 @@
+../../../../System/Library/Frameworks/CoreServices.framework/Frameworks/CFNetwork.framework/Headers/CFHTTPAuthentication.h

@@ -1,0 +1,300 @@
+/*
+ * ImageIO - CGImageProperties.h
+ * Copyright (c) 2004 Apple Computer, Inc. All rights reserved.
+ *
+ */
+
+#ifndef __CGIMAGEPROPERTIES__
+#define __CGIMAGEPROPERTIES__
+
+#include <CoreFoundation/CoreFoundation.h>
+
+
+/* Properties that, if returned by CGImageSourceCopyProperties or 
+ * CGImageSourceCopyPropertiesAtIndex, contain a dictionary of file-format 
+ * or metadata-format specific key-values. */
+
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGIFDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyJFIFDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyPNGDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyRawDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyCIFFDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImageProperty8BIMDictionary  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+
+/** Properties which may be returned by "CGImageSourceCopyProperties".  The
+ ** values apply to the container in general but not necessarily to any
+ ** individual image that it contains. **/
+
+/* The size of the image file in bytes, if known. If present, the value of
+ * this key is a CFNumberRef. */
+
+CF_EXPORT const CFStringRef kCGImagePropertyFileSize  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+
+/** Properties which may be returned by "CGImageSourceCopyPropertiesAtIndex".
+ ** The values apply to a single image of an image source file. **/
+
+/* The number of pixels in the x- and y-dimensions. The value of these keys 
+ * is a CFNumberRef. */
+
+CF_EXPORT const CFStringRef kCGImagePropertyPixelHeight  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyPixelWidth  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* The DPI in the x- and y-dimensions, if known. If present, the value of
+ * these keys is a CFNumberRef. */
+
+CF_EXPORT const CFStringRef kCGImagePropertyDPIHeight  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyDPIWidth  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* The number of bits in each color sample of each pixel. The value of this 
+ * key is a CFNumberRef. */
+
+CF_EXPORT const CFStringRef kCGImagePropertyDepth  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* The intended display orientation of the image. If present, the value 
+ * of this key is a CFNumberRef with the same value as defined by the 
+ * TIFF and Exif specifications.  That is:
+ *   1  =  0th row is at the top, and 0th column is on the left.  
+ *   2  =  0th row is at the top, and 0th column is on the right.  
+ *   3  =  0th row is at the bottom, and 0th column is on the right.  
+ *   4  =  0th row is at the bottom, and 0th column is on the left.  
+ *   5  =  0th row is on the left, and 0th column is the top.  
+ *   6  =  0th row is on the right, and 0th column is the top.  
+ *   7  =  0th row is on the right, and 0th column is the bottom.  
+ *   8  =  0th row is on the left, and 0th column is the bottom.  
+ * If not present, a value of 1 is assumed. */ 
+ 
+CF_EXPORT const CFStringRef kCGImagePropertyOrientation  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* The value of this key is kCFBooleanTrue if the image contains floating- 
+ * point pixel samples */ 
+ 
+CF_EXPORT const CFStringRef kCGImagePropertyIsFloat  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* The value of this key is kCFBooleanTrue if the image contains indexed 
+ * (a.k.a. paletted) pixel samples */ 
+ 
+CF_EXPORT const CFStringRef kCGImagePropertyIsIndexed  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* The value of this key is kCFBooleanTrue if the image contains an alpha 
+ * (a.k.a. coverage) channel */ 
+ 
+CF_EXPORT const CFStringRef kCGImagePropertyHasAlpha  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* The color model of the image such as "RGB", "CMYK", "Gray", or "Lab".
+ * The value of this key is CFStringRef. */ 
+
+CF_EXPORT const CFStringRef kCGImagePropertyColorModel  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* The name of the optional ICC profile embedded in the image, if known.  
+ * If present, the value of this key is a CFStringRef. */
+
+CF_EXPORT const CFStringRef kCGImagePropertyProfileName  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+
+/* Possible values for kCGImagePropertyColorModel property */
+
+CF_EXPORT const CFStringRef kCGImagePropertyColorModelRGB  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyColorModelGray  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyColorModelCMYK  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyColorModelLab  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+
+/* Possible keys for kCGImagePropertyTIFFDictionary */
+
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFCompression  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFPhotometricInterpretation  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFDocumentName  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFImageDescription  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFMake  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFModel  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFOrientation  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFXResolution  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFYResolution  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFResolutionUnit  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFSoftware  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFTransferFunction  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFDateTime  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFArtist  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFHostComputer  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFCopyright  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFWhitePoint  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyTIFFPrimaryChromaticities  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* Possible keys for kCGImagePropertyJFIFDictionary */
+
+CF_EXPORT const CFStringRef kCGImagePropertyJFIFVersion  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyJFIFXDensity  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyJFIFYDensity  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyJFIFDensityUnit  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyJFIFIsProgressive  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+
+/* Possible keys for kCGImagePropertyExifDictionary */
+
+CF_EXPORT const CFStringRef kCGImagePropertyExifExposureTime  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFNumber  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifExposureProgram  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSpectralSensitivity  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifISOSpeedRatings  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifOECF  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifVersion  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifDateTimeOriginal  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifDateTimeDigitized  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifComponentsConfiguration  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifCompressedBitsPerPixel  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifShutterSpeedValue  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifApertureValue  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifBrightnessValue  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifExposureBiasValue  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifMaxApertureValue  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSubjectDistance  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifMeteringMode  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifLightSource  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFlash  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFocalLength  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSubjectArea  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifMakerNote  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifUserComment  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSubsecTime  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSubsecTimeOrginal  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSubsecTimeDigitized  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFlashPixVersion  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifColorSpace  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifPixelXDimension  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifPixelYDimension  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifRelatedSoundFile  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFlashEnergy  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSpatialFrequencyResponse  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFocalPlaneXResolution  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFocalPlaneYResolution  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFocalPlaneResolutionUnit  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSubjectLocation  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifExposureIndex  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSensingMethod  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFileSource  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSceneType  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifCFAPattern  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifCustomRendered  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifExposureMode  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifWhiteBalance  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifDigitalZoomRatio  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifFocalLenIn35mmFilm  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSceneCaptureType  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifGainControl  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifContrast  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSaturation  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSharpness  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifDeviceSettingDescription  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifSubjectDistRange  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifImageUniqueID  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyExifGamma  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* Possible keys for kCGImagePropertyGIFDictionary */
+
+CF_EXPORT const CFStringRef kCGImagePropertyGIFLoopCount  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGIFDelayTime  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGIFImageColorMap  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGIFHasGlobalColorMap  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* Possible keys for kCGImagePropertyPNGDictionary */
+
+CF_EXPORT const CFStringRef kCGImagePropertyPNGGamma  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyPNGInterlaceType  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyPNGXPixelsPerMeter  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyPNGYPixelsPerMeter  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyPNGsRGBIntent  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyPNGChromaticities  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* Possible keys for kCGImagePropertyGPSDictionary */
+
+CF_EXPORT const CFStringRef kCGImagePropertyGPSVersion  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSLatitudeRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSLatitude  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSLongitudeRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSLongitude  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSAltitudeRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSAltitude  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSTimeStamp  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSSatellites  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSStatus  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSMeasureMode  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDOP  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSSpeedRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSSpeed  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSTrackRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSTrack  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSImgDirectionRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSImgDirection  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSMapDatum  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDestLatitudeRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDestLatitude  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDestLongitudeRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDestLongitude  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDestBearingRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDestBearing  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDestDistanceRef  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDestDistance  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSProcessingMethod  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSAreaInformation  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDateStamp  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyGPSDifferental  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+/* Possible keys for kCGImagePropertyIPTCDictionary */
+
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCObjectTypeReference  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCObjectAttributeReference  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCObjectName  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCEditStatus  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCEditorialUpdate  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCUrgency  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCSubjectReference  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCCategory  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCSupplementalCategory  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCFixtureIdentifier  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCKeywords  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCContentLocationCode  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCContentLocationName  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCReleaseDate  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCReleaseTime  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCExpirationDate  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCExpirationTime  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCSpecialInstructions  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCActionAdvised  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCReferenceService  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCReferenceDate  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCReferenceNumber  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCDateCreated  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCTimeCreated  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCDigitalCreationDate  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCDigitalCreationTime  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCOriginatingProgram  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCProgramVersion  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCObjectCycle  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCByline  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCBylineTitle  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCCity  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCSubLocation  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCProvinceState  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCCountryPrimaryLocationCode  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCCountryPrimaryLocationName  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCOriginalTransmissionReference  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCHeadline  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCCredit  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCSource  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCCopyrightNotice  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCContact  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCCaptionAbstract  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCWriterEditor  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCImageType  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCImageOrientation  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCLanguageIdentifier  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+CF_EXPORT const CFStringRef kCGImagePropertyIPTCStarRating  AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
+
+
+#endif	/* __CGIMAGEPROPERTIES__ */

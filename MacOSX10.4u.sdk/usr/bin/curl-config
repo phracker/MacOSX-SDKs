@@ -1,0 +1,141 @@
+#! /bin/sh
+#
+# The idea to this kind of setup info script was stolen from numerous
+# other packages, such as neon, libxml and gnome.
+#
+# $Id: curl-config.in,v 1.20 2004/12/24 08:59:44 bagder Exp $
+#
+prefix=/usr
+exec_prefix=${prefix}
+includedir=${prefix}/include
+
+usage()
+{
+    cat <<EOF
+Usage: curl-config [OPTION]
+
+Available values for OPTION include:
+
+  --ca        ca bundle install path
+  --cc        compiler
+  --cflags    pre-processor and compiler flags
+  --features  newline separated list of enabled features
+  --protocols newline separated list of enabled protocols
+  --help      display this help and exit
+  --libs      library linking information
+  --prefix    curl install prefix
+  --version   output version information
+  --vernum    output the version information as a number (hexadecimal)
+EOF
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+while test $# -gt 0; do
+    case "$1" in
+    # this deals with options in the style
+    # --option=value and extracts the value part
+    # [not currently used]
+    -*=*) value=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) value= ;;
+    esac
+
+    case "$1" in
+    --ca)
+	echo ""${prefix}/share/curl/curl-ca-bundle.crt""
+	;;
+
+    --cc)
+	echo "gcc"
+	;;
+
+    --prefix)
+	echo "$prefix"
+	;;
+
+    --feature|--features)
+	if test "1" = "1"; then
+          echo "SSL"
+        fi
+	if test "" = "1"; then
+          echo "KRB4"
+        fi
+	if test "1" = "1"; then
+          echo "IPv6"
+        fi
+	if test "1" = "1"; then
+          echo "libz"
+        fi
+	if test "" = "1"; then
+          echo "AsynchDNS"
+        fi
+	;;
+
+    --protocols)
+	if test "" != "1"; then
+          echo "HTTP"
+	  if test "1" = "1"; then
+            echo "HTTPS"
+          fi
+        fi
+	if test "" != "1"; then
+          echo "FTP"
+	  if test "1" = "1"; then
+            echo "FTPS"
+          fi
+        fi
+	if test "" != "1"; then
+          echo "GOPHER"
+        fi
+	if test "" != "1"; then
+          echo "FILE"
+        fi
+	if test "" != "1"; then
+          echo "TELNET"
+        fi
+	if test "" != "1"; then
+          echo "LDAP"
+        fi
+	if test "" != "1"; then
+          echo "DICT"
+        fi
+	;;
+    --version)
+	echo libcurl 7.13.1
+	exit 0
+	;;
+
+    --vernum)
+	echo 070d01
+	exit 0
+	;;
+
+    --help)
+	usage 0
+	;;
+
+    --cflags)
+       	if test "X${prefix}/include" = "X/usr/include"; then
+          echo ""
+        else
+          echo "-I${prefix}/include"
+        fi
+       	;;
+
+    --libs)
+       	echo -L${exec_prefix}/lib -lcurl -lssl -lcrypto  -lz
+       	;;
+
+    *)
+        echo "unknown option: $1"
+	usage 1
+	;;
+    esac
+    shift
+done
+
+exit 0
