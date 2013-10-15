@@ -1,0 +1,204 @@
+#! /bin/sh
+#***************************************************************************
+#                                  _   _ ____  _
+#  Project                     ___| | | |  _ \| |
+#                             / __| | | | |_) | |
+#                            | (__| |_| |  _ <| |___
+#                             \___|\___/|_| \_\_____|
+#
+# Copyright (C) 2001 - 2007, Daniel Stenberg, <daniel@haxx.se>, et al.
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution. The terms
+# are also available at http://curl.haxx.se/docs/copyright.html.
+#
+# You may opt to use, copy, modify, merge, publish, distribute and/or sell
+# copies of the Software, and permit persons to whom the Software is
+# furnished to do so, under the terms of the COPYING file.
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+# KIND, either express or implied.
+#
+# $Id: curl-config.in,v 1.28 2007-02-17 17:55:19 danf Exp $
+###########################################################################
+#
+# The idea to this kind of setup info script was stolen from numerous
+# other packages, such as neon, libxml and gnome.
+#
+prefix=/usr
+exec_prefix=${prefix}
+includedir=${prefix}/include
+
+usage()
+{
+    cat <<EOF
+Usage: curl-config [OPTION]
+
+Available values for OPTION include:
+
+  --ca        ca bundle install path
+  --cc        compiler
+  --cflags    pre-processor and compiler flags
+  --checkfor [version] check for (lib)curl of the specified version
+  --features  newline separated list of enabled features
+  --protocols newline separated list of enabled protocols
+  --help      display this help and exit
+  --libs      library linking information
+  --prefix    curl install prefix
+  --version   output version information
+  --vernum    output the version information as a number (hexadecimal)
+EOF
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+while test $# -gt 0; do
+    case "$1" in
+    # this deals with options in the style
+    # --option=value and extracts the value part
+    # [not currently used]
+    -*=*) value=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) value= ;;
+    esac
+
+    case "$1" in
+    --ca)
+	echo ""${prefix}/share/curl/curl-ca-bundle.crt""
+	;;
+
+    --cc)
+	echo "gcc"
+	;;
+
+    --prefix)
+	echo "$prefix"
+	;;
+
+    --feature|--features)
+	if test "1" = "1"; then
+          echo "SSL"
+          NTLM=1 # OpenSSL implies NTLM
+        elif test -n ""; then
+          echo "SSL"
+        fi
+	if test "" = "1"; then
+          echo "KRB4"
+        fi
+	if test "1" = "1"; then
+          echo "IPv6"
+        fi
+	if test "1" = "1"; then
+          echo "libz"
+        fi
+	if test "" = "1"; then
+          echo "AsynchDNS"
+        fi
+	if test "" = "1"; then
+          echo "IDN"
+        fi
+	if test "" = "1"; then
+          echo "SSPI"
+          NTLM=1
+        fi
+	if test "$NTLM" = "1"; then
+          echo "NTLM"
+        fi
+	;;
+
+    --protocols)
+	if test "" != "1"; then
+          echo "HTTP"
+	  if test "1" = "1"; then
+            echo "HTTPS"
+          fi
+        fi
+	if test "" != "1"; then
+          echo "FTP"
+	  if test "1" = "1"; then
+            echo "FTPS"
+          fi
+        fi
+	if test "" != "1"; then
+          echo "FILE"
+        fi
+	if test "" != "1"; then
+          echo "TELNET"
+        fi
+	if test "" != "1"; then
+          echo "LDAP"
+        fi
+	if test "" != "1"; then
+          echo "DICT"
+        fi
+	if test "" != "1"; then
+          echo "TFTP"
+        fi
+	;;
+    --version)
+	echo libcurl 7.16.3
+	exit 0
+	;;
+
+    --checkfor)
+        checkfor=$2
+        cmajor=`echo $checkfor | cut -d. -f1`
+        cminor=`echo $checkfor | cut -d. -f2`
+        # when extracting the patch part we strip off everything after a
+	# dash as that's used for things like version 1.2.3-CVS
+	cpatch=`echo $checkfor | cut -d. -f3 | cut -d- -f1`
+        checknum=`echo "$cmajor*256*256 + $cminor*256 + ${cpatch:-0}" | bc`
+        numuppercase=`echo 071003 | tr 'a-f' 'A-F'`
+        nownum=`echo "obase=10; ibase=16; $numuppercase" | bc`
+
+	if test "$nownum" -ge "$checknum"; then
+	  # silent success
+	  exit 0
+	else
+	  echo "requested version $checkfor is newer than existing 7.16.3"
+	  exit 1
+	fi
+	;;
+
+    --vernum)
+	echo 071003
+	exit 0
+	;;
+
+    --help)
+	usage 0
+	;;
+
+    --cflags)
+       	if test "X${prefix}/include" = "X/usr/include"; then
+          echo ""
+        else
+          echo "-I${prefix}/include"
+        fi
+       	;;
+
+    --libs)
+	if test "X${exec_prefix}/lib" != "X/usr/lib"; then
+	   CURLLIBDIR="-L${exec_prefix}/lib "
+	else
+	   CURLLIBDIR=""
+	fi
+	if test "Xyes" = "Xyes"; then
+	  echo ${CURLLIBDIR}-lcurl -lssl -lcrypto  -lz 
+	else
+	  echo ${CURLLIBDIR}-lcurl 
+	fi
+	;;
+
+    *)
+        echo "unknown option: $1"
+	usage 1
+	;;
+    esac
+    shift
+done
+
+exit 0

@@ -1,0 +1,471 @@
+/**
+ * @copyright
+ * ====================================================================
+ * Copyright (c) 2000-2004 CollabNet.  All rights reserved.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution.  The terms
+ * are also available at http://subversion.tigris.org/license-1.html.
+ * If newer versions of this license are posted there, you may use a
+ * newer version instead, at your option.
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals.  For exact contribution history, see the revision
+ * history and logs, available at http://subversion.tigris.org/.
+ * ====================================================================
+ * @endcopyright
+ *
+ * @file svn_path.h
+ * @brief A path manipulation library
+ *
+ * All incoming and outgoing paths are non-null and in UTF-8, unless
+ * otherwise documented.
+ * 
+ * No result path ever ends with a separator, no matter whether the
+ * path is a file or directory, because we always canonicalize() it.
+ *
+ * All paths passed to the @c svn_path_xxx functions, with the exceptions of
+ * the svn_path_canonicalize() and svn_path_internal_style() functions,
+ * must be in canonical form.
+ */
+
+#ifndef SVN_PATH_H
+#define SVN_PATH_H
+
+
+#include <apr_pools.h>
+#include <apr_tables.h>
+
+#include "svn_string.h"
+#include "svn_error.h"
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
+
+/** Convert @a path from the local style to the canonical internal style. */
+const char *svn_path_internal_style(const char *path, apr_pool_t *pool);
+
+/** Convert @a path from the canonical internal style to the local style. */
+const char *svn_path_local_style(const char *path, apr_pool_t *pool);
+
+
+/** Join a base path (@a base) with a component (@a component), allocated in 
+ * @a pool.
+ *
+ * If either @a base or @a component is the empty path, then the other 
+ * argument will be copied and returned.  If both are the empty path the 
+ * empty path is returned.
+ *
+ * If the @a component is an absolute path, then it is copied and returned.
+ * Exactly one slash character ('/') is used to joined the components,
+ * accounting for any trailing slash in @a base.
+ *
+ * Note that the contents of @a base are not examined, so it is possible to
+ * use this function for constructing URLs, or for relative URLs or
+ * repository paths.
+ *
+ * This function is NOT appropriate for native (local) file
+ * paths. Only for "internal" canonicalized paths, since it uses '/'
+ * for the separator. Further, an absolute path (for @a component) is
+ * based on a leading '/' character.  Thus, an "absolute URI" for the
+ * @a component won't be detected. An absolute URI can only be used
+ * for the base.
+ */
+char *svn_path_join(const char *base,
+                    const char *component,
+                    apr_pool_t *pool);
+
+/** Join multiple components onto a @a base path, allocated in @a pool. The
+ * components are terminated by a @c NULL.
+ *
+ * If any component is the empty string, it will be ignored.
+ *
+ * If any component is an absolute path, then it resets the base and
+ * further components will be appended to it.
+ *
+ * See svn_path_join() for further notes about joining paths.
+ */
+char *svn_path_join_many(apr_pool_t *pool, const char *base, ...);
+
+
+/** Get the basename of the specified canonicalized @a path.  The
+ * basename is defined as the last component of the path (ignoring any
+ * trailing slashes).  If the @a path is root ("/"), then that is
+ * returned.  Otherwise, the returned value will have no slashes in
+ * it.
+ *
+ * Example: svn_path_basename("/foo/bar") -> "bar"
+ *
+ * The returned basename will be allocated in @a pool.
+ *
+ * @note If an empty string is passed, then an empty string will be returned.
+ */
+char *svn_path_basename(const char *path, apr_pool_t *pool);
+
+/** Get the dirname of the specified canonicalized @a path, defined as
+ * the path with its basename removed.
+ *
+ * Get the dirname of the specified @a path, defined as the path with its
+ * basename removed.  If @a path is root ("/"), it is returned unchanged.
+ *
+ * The returned dirname will be allocated in @a pool.
+ */
+char *svn_path_dirname(const char *path, apr_pool_t *pool);
+
+/** Return the number of components in the canonicalized @a path.
+ *
+ * @since New in 1.1.
+*/
+apr_size_t
+svn_path_component_count(const char *path);
+
+/** Add a @a component (a null-terminated C-string) to the
+ * canonicalized @a path.  @a component is allowed to contain
+ * directory separators.
+ *
+ * If @a path is non-empty, append the appropriate directory separator
+ * character, and then @a component.  If @a path is empty, simply set it to
+ * @a component; don't add any separator character.
+ *
+ * If the result ends in a separator character, then remove the separator.
+ */
+void svn_path_add_component(svn_stringbuf_t *path, 
+                            const char *component);
+
+/** Remove one component off the end of the canonicalized @a path. */
+void svn_path_remove_component(svn_stringbuf_t *path);
+
+/** Remove @a n components off the end of the canonicalized @a path.
+ * Equivalent to calling svn_path_remove_component() @a n times.
+ *
+ * @since New in 1.1.
+ */
+void svn_path_remove_components(svn_stringbuf_t *path, apr_size_t n);
+
+/** Divide the canonicalized @a path into @a *dirpath and @a
+ * *base_name, allocated in @a pool.
+ *
+ * If @a dirpath or @a base_name is null, then don't set that one.
+ *
+ * Either @a dirpath or @a base_name may be @a path's own address, but they 
+ * may not both be the same address, or the results are undefined.
+ *
+ * If @a path has two or more components, the separator between @a dirpath
+ * and @a base_name is not included in either of the new names.
+ *
+ *   examples:
+ *             - <pre>"/foo/bar/baz"  ==>  "/foo/bar" and "baz"</pre>
+ *             - <pre>"/bar"          ==>  "/"  and "bar"</pre>
+ *             - <pre>"/"             ==>  "/"  and "/"</pre>
+ *             - <pre>"bar"           ==>  ""   and "bar"</pre>
+ *             - <pre>""              ==>  ""   and ""</pre>
+ */
+void svn_path_split(const char *path, 
+                    const char **dirpath,
+                    const char **base_name,
+                    apr_pool_t *pool);
+
+
+/** Return non-zero iff @a path is empty ("") or represents the current
+ * directory -- that is, if prepending it as a component to an existing
+ * path would result in no meaningful change.
+ */
+int svn_path_is_empty(const char *path);
+
+
+/** Return a new path (or URL) like @a path, but transformed such that
+ * some types of path specification redundancies are removed.
+ *
+ * This involves collapsing redundant "/./" elements, removing
+ * multiple adjacent separator characters, removing trailing
+ * separator characters, and possibly other semantically inoperative
+ * transformations.
+ *
+ * The returned path may be statically allocated, equal to @a path, or
+ * allocated from @a pool.
+ */
+const char *svn_path_canonicalize(const char *path, apr_pool_t *pool);
+
+
+/** Return an integer greater than, equal to, or less than 0, according
+ * as @a path1 is greater than, equal to, or less than @a path2.
+ */
+int svn_path_compare_paths(const char *path1, const char *path2);
+
+
+/** Return the longest common path shared by two canonicalized paths,
+ * @a path1 and @a path2.  If there's no common ancestor, return the
+ * empty path.
+ *
+ * @a path1 and @a path2 may be URLs.  In order for two URLs to have 
+ * a common ancestor, they must (a) have the same protocol (since two URLs 
+ * with the same path but different protocols may point at completely 
+ * different resources), and (b) share a common ancestor in their path 
+ * component, i.e. 'protocol://' is not a sufficient ancestor.
+ */
+char *svn_path_get_longest_ancestor(const char *path1,
+                                    const char *path2,
+                                    apr_pool_t *pool);
+
+/** Convert @a relative canonicalized path to an absolute path and
+ * return the results in @a *pabsolute, allocated in @a pool.
+ *
+ * @a relative may be a URL, in which case no attempt is made to convert it, 
+ * and a copy of the URL is returned. 
+ */
+svn_error_t *
+svn_path_get_absolute(const char **pabsolute,
+                      const char *relative,
+                      apr_pool_t *pool);
+
+/** Return the path part of the canonicalized @a path in @a
+ * *pdirectory, and the file part in @a *pfile.  If @a path is a
+ * directory, set @a *pdirectory to @a path, and @a *pfile to the
+ * empty string.  If @a path does not exist it is treated as if it is
+ * a file, since directories do not normally vanish.
+ */
+svn_error_t *
+svn_path_split_if_file(const char *path,
+                       const char **pdirectory, 
+                       const char **pfile,
+                       apr_pool_t *pool);
+
+/** Find the common prefix of the canonicalized paths in @a targets
+ * (an array of @a const char *'s), and remove redundant paths if @a
+ * remove_redundancies is true.
+ *
+ *   - Set @a *pcommon to the absolute path of the path or URL common to
+ *     all of the targets.  If the targets have no common prefix, or
+ *     are a mix of URLs and local paths, set @a *pcommon to the
+ *     empty string.
+ *
+ *   - If @a pcondensed_targets is non-null, set @a *pcondensed_targets
+ *     to an array of targets relative to @a *pcommon, and if 
+ *     @a remove_redundancies is true, omit any paths/URLs that are
+ *     descendants of another path/URL in @a targets.  If *pcommon
+ *     is empty, @a *pcondensed_targets will contain full URLs and/or
+ *     absolute paths; redundancies can still be removed (from both URLs 
+ *     and paths).  If @a pcondensed_targets is null, leave it alone.  
+ *
+ * Else if there is exactly one target, then
+ *
+ *   - Set @a *pcommon to that target, and
+ *
+ *   - If @a pcondensed_targets is non-null, set @a *pcondensed_targets
+ *     to an array containing zero elements.  Else if
+ *     @a pcondensed_targets is null, leave it alone.
+ *
+ * If there are no items in @a targets, set @a *pcommon and (if
+ * applicable) @a *pcondensed_targets to @c NULL.
+ *
+ * @note There is no guarantee that @a *pcommon is within a working
+ * copy.  */
+svn_error_t *
+svn_path_condense_targets(const char **pcommon,
+                          apr_array_header_t **pcondensed_targets,
+                          const apr_array_header_t *targets,
+                          svn_boolean_t remove_redundancies,
+                          apr_pool_t *pool);
+
+
+/** Copy a list of canonicalized @a targets, one at a time, into @a
+ * pcondensed_targets, omitting any targets that are found earlier in
+ * the list, or whose ancestor is found earlier in the list.  Ordering
+ * of targets in the original list is preserved in the condensed list
+ * of targets.  Use @a pool for any allocations.
+ *
+ * How does this differ in functionality from svn_path_condense_targets()?
+ *
+ * Here's the short version:
+ * 
+ * 1.  Disclaimer: if you wish to debate the following, talk to Karl. :-)
+ *     Order matters for updates because a multi-arg update is not
+ *     atomic, and CVS users are used to, when doing 'cvs up targetA
+ *     targetB' seeing targetA get updated, then targetB.  I think the
+ *     idea is that if you're in a time-sensitive or flaky-network
+ *     situation, a user can say, "I really *need* to update
+ *     wc/A/D/G/tau, but I might as well update my whole working copy if
+ *     I can."  So that user will do 'svn up wc/A/D/G/tau wc', and if
+ *     something dies in the middles of the 'wc' update, at least the
+ *     user has 'tau' up-to-date.
+ * 
+ * 2.  Also, we have this notion of an anchor and a target for updates
+ *     (the anchor is where the update editor is rooted, the target is
+ *     the actual thing we want to update).  I needed a function that
+ *     would NOT screw with my input paths so that I could tell the
+ *     difference between someone being in A/D and saying 'svn up G' and
+ *     being in A/D/G and saying 'svn up .' -- believe it or not, these
+ *     two things don't mean the same thing.  svn_path_condense_targets()
+ *     plays with absolute paths (which is fine, so does
+ *     svn_path_remove_redundancies()), but the difference is that it
+ *     actually tweaks those targets to be relative to the "grandfather
+ *     path" common to all the targets.  Updates don't require a
+ *     "grandfather path" at all, and even if it did, the whole
+ *     conversion to an absolute path drops the crucial difference
+ *     between saying "i'm in foo, update bar" and "i'm in foo/bar,
+ *     update '.'"
+ */
+svn_error_t *
+svn_path_remove_redundancies(apr_array_header_t **pcondensed_targets,
+                             const apr_array_header_t *targets,
+                             apr_pool_t *pool);
+
+
+/** Decompose the canonicalized @a path into an array of <tt>const
+ * char *</tt> components, allocated in @a pool.  If @a path is
+ * absolute, the first component will be a lone dir separator (the
+ * root directory).
+ */
+apr_array_header_t *svn_path_decompose(const char *path,
+                                       apr_pool_t *pool);
+
+
+/** Test that @a name is a single path component, that is:
+ *   - not @c NULL or empty.
+ *   - not a `/'-separated directory path
+ *   - not empty or `..'  
+ */
+svn_boolean_t svn_path_is_single_path_component(const char *name);
+
+
+/**
+ * Test to see if a backpath, i.e. '..', is present in @a path.
+ * If not, return @c FALSE.
+ * If so, return @c TRUE.
+ *
+ * @since New in 1.1.
+ */
+svn_boolean_t svn_path_is_backpath_present(const char *path);
+
+
+/** Test if @a path2 is a child of @a path1.
+ * If not, return @c NULL.
+ * If so, return a copy of the remainder path, allocated in @a pool.
+ * (The remainder is the component which, added to @a path1, yields
+ * @a path2.  The remainder does not begin with a dir separator.)  
+ *
+ * Both paths must be in canonical form, and must either be absolute,
+ * or contain no ".." components.
+ *
+ * If @a path2 is the same as @a path1, it is not considered a child, so the
+ * result is @c NULL; an empty string is never returned.
+ *
+ * ### todo: the ".." restriction is unfortunate, and would ideally
+ * be lifted by making the implementation smarter.  But this is not
+ * trivial: if the path is "../foo", how do you know whether or not
+ * the current directory is named "foo" in its parent?
+ */
+const char *svn_path_is_child(const char *path1,
+                              const char *path2,
+                              apr_pool_t *pool);
+
+/** Return true if @a path1 is an ancestor of @a path2 or the paths are equal
+ * and false otherwise.
+ *
+ * @since New in 1.3.
+ */
+svn_boolean_t
+svn_path_is_ancestor(const char *path1, const char *path2);
+
+/**
+ * Check whether @a path is a valid Subversion path.
+ *
+ * A valid Subversion pathname is a UTF-8 string without control
+ * characters.  "Valid" means Subversion can store the pathname in
+ * a repository.  There may be other, OS-specific, limitations on
+ * what paths can be represented in a working copy.
+ *
+ * ASSUMPTION: @a path is a valid UTF-8 string.  This function does
+ * not check UTF-8 validity.
+ *
+ * Return @c SVN_NO_ERROR if valid and @c SVN_ERR_FS_PATH_SYNTAX if
+ * invalid.
+ * 
+ * @since New in 1.2.
+ */
+svn_error_t *svn_path_check_valid(const char *path, apr_pool_t *pool);
+
+
+/** URI/URL stuff
+ *
+ * @defgroup svn_path_uri_stuff URI/URL stuff
+ * @{
+ */
+
+/** Return @c TRUE iff @a path looks like a valid URL, @c FALSE otherwise. */
+svn_boolean_t svn_path_is_url(const char *path);
+
+/** Return @c TRUE iff @a path is URI-safe, @c FALSE otherwise. */
+svn_boolean_t svn_path_is_uri_safe(const char *path);
+
+/** Return a URI-encoded copy of @a path, allocated in @a pool. */
+const char *svn_path_uri_encode(const char *path, apr_pool_t *pool);
+
+/** Return a URI-decoded copy of @a path, allocated in @a pool. */
+const char *svn_path_uri_decode(const char *path, apr_pool_t *pool);
+
+/** Extend @a url by a single @a component, URI-encoding that @a component
+ * before adding it to the @a url.  Return the new @a url, allocated in
+ * @a pool.  Notes: if @a component is @c NULL, just return a copy or @a url
+ * allocated in @a pool; if @a component is already URI-encoded, calling
+ * code should just use <tt>svn_path_join (url, component, pool)</tt>.  @a url
+ * does not need to be a canonical path, it may have trailing '/'.
+ */
+const char *svn_path_url_add_component(const char *url,
+                                       const char *component,
+                                       apr_pool_t *pool);
+
+/**
+ * Convert @a iri (Internationalized URI) to an URI.
+ * The return value may be the same as @a iri if it was already
+ * a URI.  Else, allocate the return value in @a pool.
+ *
+ * @since New in 1.1.
+ */
+const char *svn_path_uri_from_iri(const char *iri,
+                                  apr_pool_t *pool);
+
+/**
+ * URI-encode certain characters in @a uri that are not valid in an URI, but
+ * doesn't have any special meaning in @a uri at their positions.  If no
+ * characters need escaping, just return @a uri.
+ *
+ * @note Currently, this function escapes <, >, ", space, {, }, |, \, ^, and `.
+ * This may be extended in the future to do context-dependent escaping.
+ *
+ * @since New in 1.1.
+ */
+const char *svn_path_uri_autoescape(const char *uri,
+                                    apr_pool_t *pool);
+
+/** @} */
+
+/** Charset conversion stuff
+ *
+ * @defgroup svn_path_charset_stuff Charset conversion stuff
+ * @{
+ */
+
+/** Convert @a path_utf8 from UTF-8 to the internal encoding used by APR. */
+svn_error_t *svn_path_cstring_from_utf8(const char **path_apr,
+                                        const char *path_utf8,
+                                        apr_pool_t *pool);
+
+/** Convert @a path_apr from the internal encoding used by APR to UTF-8. */
+svn_error_t *svn_path_cstring_to_utf8(const char **path_utf8,
+                                      const char *path_apr,
+                                      apr_pool_t *pool);
+
+
+/** @} */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+
+#endif /* SVN_PATH_H */
