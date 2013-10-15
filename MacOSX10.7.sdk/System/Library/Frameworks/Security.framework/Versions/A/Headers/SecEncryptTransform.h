@@ -1,0 +1,157 @@
+/*
+ * Copyright (c) 2010 Apple Inc. All Rights Reserved.
+ * 
+ * @APPLE_LICENSE_HEADER_START@
+ * 
+ * This file contains Original Code and/or Modifications of Original Code
+ * as defined in and that are subject to the Apple Public Source License
+ * Version 2.0 (the 'License'). You may not use this file except in
+ * compliance with the License. Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this
+ * file.
+ * 
+ * The Original Code and all software distributed under the License are
+ * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+ * Please see the License for the specific language governing rights and
+ * limitations under the License.
+ * 
+ * @APPLE_LICENSE_HEADER_END@
+ */
+
+/*!
+ @header SecEncryptTransform
+
+ This file defines a SecTransform that will do both asynchronous and synchronous
+ encryption.
+ 
+ The key that is supplied to the SecTransform determines the type of encryption
+ to be used.
+ 
+ */
+#if !defined(__SEC_ENCRYPT_TRANSFORM__)
+#define __SEC_ENCRYPT_TRANSFORM__ 1
+
+#include <CoreFoundation/CoreFoundation.h>
+#include <Security/SecKey.h>
+#include "SecTransform.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+	
+	/*! @abstract Indicates that no padding will be used when encrypting or decrypting. */
+	extern CFStringRef kSecPaddingNoneKey;
+	/*! Indicates that PKCS1 padding will be used when encrypting or decrypting. */
+	extern CFStringRef kSecPaddingPKCS1Key;
+	/*! Indicates that PKCS5 padding will be used when encrypting or decrypting. */
+	extern CFStringRef kSecPaddingPKCS5Key;
+	/*! Indicates that PKCS7 padding will be used when encrypting or decrypting. */
+	extern CFStringRef kSecPaddingPKCS7Key;
+	
+	/*! Indicates that no mode will be used when encrypting or decrypting. */
+	extern CFStringRef kSecModeNoneKey;
+	/*! Indicates that ECB mode will be used when encrypting or decrypting. */
+	extern CFStringRef kSecModeECBKey;
+	/*! Indicates that CBC mode will be used when encrypting or decrypting. */
+	extern CFStringRef kSecModeCBCKey;
+	/*! Indicates that CFB mode will be used when encrypting or decrypting. */
+	extern CFStringRef kSecModeCFBKey;
+	/*! Indicates that OFB mode will be used when encrypting or decrypting. */
+	extern CFStringRef kSecModeOFBKey;
+	
+	/*!
+	    @abstract
+		This attribute holds the encryption key for the transform. (ReadOnly)
+	 */
+	extern CFStringRef kSecEncryptKey;
+
+	/*!
+	    @abstract
+		Key for setting padding.
+	    @discussion
+		This key is optional.  If you do not supply a value for this key,
+	 	an appropriate value will be supplied for you.
+	*/
+	extern CFStringRef kSecPaddingKey;
+
+	/*!
+	    @abstract
+		Key for setting an initialization vector.
+	    @discussion
+		This key is optional.  If you do not supply a
+	 	value for this key, an appropriate value will be supplied for you.
+	*/
+	extern CFStringRef kSecIVKey;
+
+	/*!
+	    @abstract
+		Specifies the encryption mode.
+	    @discussion
+		This key is optional.  If you do not supply this key,
+		an appropriate value will be supplied for you.
+	*/
+	extern CFStringRef kSecEncryptionMode;
+	
+	
+	/*!
+	 @function SecEncryptTransformCreate
+	 @abstract			Creates an encryption SecTransform  object.
+	 @param keyRef			The key for the encryption operation
+	 @param error		A pointer to a CFErrorRef.  This pointer will be set
+	 if an error occurred.  This value may be NULL if you
+	 do not want an error returned.
+	 @result				A pointer to a SecTransformRef object.  This object must
+	 be released with CFRelease when you are done with
+	 it.  This function will return NULL if an error
+	 occurred.
+	 @discussion			This function creates a transform which encrypts data.
+	 */
+	
+	SecTransformRef SecEncryptTransformCreate(SecKeyRef keyRef,
+											  CFErrorRef* error)
+	__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
+	
+	/*!
+	 @function SecDecryptTransformCreate
+	 @abstract			Creates an encryption SecTransform  object.
+	 @param keyRef			The key for the operation
+	 @param error		A pointer to a CFErrorRef.  This pointer will be set
+	 if an error occurred.  This value may be NULL if you
+	 do not want an error returned.
+	 @result				A pointer to a SecTransformRef object.  This object must
+	 be released with CFRelease when you are done with
+	 it.  This function will return NULL if an error
+	 occurred.
+	 @discussion			This function creates a transform which encrypts data.
+	 */
+	
+	SecTransformRef SecDecryptTransformCreate(SecKeyRef keyRef,
+											  CFErrorRef* error)
+	__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
+	
+/*!
+	@function SecDecryptTransformGetTypeID
+	@abstract			Returns the CFTypeID for a decrypt transform.
+	@return			the CFTypeID
+*/
+
+	CFTypeID SecDecryptTransformGetTypeID()
+	__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
+
+/*!
+	@function SecEncryptTransformGetTypeID
+	@abstract			Returns the CFTypeID for a decrypt transform.
+	@return			the CFTypeID
+*/
+
+	CFTypeID SecEncryptTransformGetTypeID()
+	__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif /* ! __SEC_ENCRYPT_TRANSFORM__ */

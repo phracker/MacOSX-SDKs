@@ -1,0 +1,73 @@
+/*-------------------------------------------------------------------------
+ *
+ * rewriteManip.h
+ *		Querytree manipulation subroutines for query rewriter.
+ *
+ *
+ * Portions Copyright (c) 1996-2010, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1994, Regents of the University of California
+ *
+ * $PostgreSQL: pgsql/src/include/rewrite/rewriteManip.h,v 1.53 2010/02/26 02:01:27 momjian Exp $
+ *
+ *-------------------------------------------------------------------------
+ */
+#ifndef REWRITEMANIP_H
+#define REWRITEMANIP_H
+
+#include "nodes/parsenodes.h"
+
+
+typedef struct replace_rte_variables_context replace_rte_variables_context;
+
+typedef Node *(*replace_rte_variables_callback) (Var *var,
+									 replace_rte_variables_context *context);
+
+struct replace_rte_variables_context
+{
+	replace_rte_variables_callback callback;	/* callback function */
+	void	   *callback_arg;	/* context data for callback function */
+	int			target_varno;	/* RTE index to search for */
+	int			sublevels_up;	/* (current) nesting depth */
+	bool		inserted_sublink;		/* have we inserted a SubLink? */
+};
+
+
+extern void OffsetVarNodes(Node *node, int offset, int sublevels_up);
+extern void ChangeVarNodes(Node *node, int old_varno, int new_varno,
+			   int sublevels_up);
+extern void IncrementVarSublevelsUp(Node *node, int delta_sublevels_up,
+						int min_sublevels_up);
+extern void IncrementVarSublevelsUp_rtable(List *rtable,
+							   int delta_sublevels_up, int min_sublevels_up);
+
+extern bool rangeTableEntry_used(Node *node, int rt_index,
+					 int sublevels_up);
+extern bool attribute_used(Node *node, int rt_index, int attno,
+			   int sublevels_up);
+
+extern Query *getInsertSelectQuery(Query *parsetree, Query ***subquery_ptr);
+
+extern void AddQual(Query *parsetree, Node *qual);
+extern void AddInvertedQual(Query *parsetree, Node *qual);
+
+extern bool contain_aggs_of_level(Node *node, int levelsup);
+extern int	locate_agg_of_level(Node *node, int levelsup);
+extern int	locate_windowfunc(Node *node);
+extern bool checkExprHasAggs(Node *node);
+extern bool checkExprHasWindowFuncs(Node *node);
+extern bool checkExprHasSubLink(Node *node);
+
+extern Node *replace_rte_variables(Node *node,
+					  int target_varno, int sublevels_up,
+					  replace_rte_variables_callback callback,
+					  void *callback_arg,
+					  bool *outer_hasSubLinks);
+extern Node *replace_rte_variables_mutator(Node *node,
+							  replace_rte_variables_context *context);
+
+extern Node *ResolveNew(Node *node, int target_varno, int sublevels_up,
+		   RangeTblEntry *target_rte,
+		   List *targetlist, int event, int update_varno,
+		   bool *outer_hasSubLinks);
+
+#endif   /* REWRITEMANIP_H */

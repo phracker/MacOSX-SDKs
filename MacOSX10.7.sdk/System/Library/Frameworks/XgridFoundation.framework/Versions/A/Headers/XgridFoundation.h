@@ -1,0 +1,11 @@
+#import <XgridFoundation/XGActionMonitor.h>
+#import <XgridFoundation/XGAuthenticator.h>
+#import <XgridFoundation/XGConnection.h>
+#import <XgridFoundation/XGController.h>
+#import <XgridFoundation/XGFile.h>
+#import <XgridFoundation/XGFileDownload.h>
+#import <XgridFoundation/XGGrid.h>
+#import <XgridFoundation/XGGSSAuthenticator.h>
+#import <XgridFoundation/XGJob.h>
+#import <XgridFoundation/XGResource.h>
+#import <XgridFoundation/XGTwoWayRandomAuthenticator.h>
