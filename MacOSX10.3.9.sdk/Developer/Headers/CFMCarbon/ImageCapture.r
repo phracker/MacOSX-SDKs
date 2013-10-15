@@ -1,0 +1,1 @@
+../../../System/Library/Frameworks/Carbon.framework/Frameworks/ImageCapture.framework/Headers/ImageCapture.r

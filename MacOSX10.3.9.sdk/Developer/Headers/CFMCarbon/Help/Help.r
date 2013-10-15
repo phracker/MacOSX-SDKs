@@ -1,0 +1,1 @@
+../../../../System/Library/Frameworks/Carbon.framework/Frameworks/Help.framework/Headers/Help.r
