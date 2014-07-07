@@ -1,0 +1,71 @@
+/*
+ * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
+ *
+ * @APPLE_LICENSE_HEADER_START@
+ * 
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
+ * 
+ * The Original Code and all software distributed under the License are
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * 
+ * @APPLE_LICENSE_HEADER_END@
+ */
+/* 
+ * Lookup protocol specification - internal to NeXT
+ * Copyright (C) 1989 by NeXT, Inc.
+ *
+ * History:
+ * 25-Jun-1998	Umesh Vaishampayan (umeshv@apple.com)
+ *	Ported to MacOSX.
+ */
+
+subsystem lookup 4241775;
+serverprefix _;
+
+import <netinfo/lookup_types.h>;
+
+
+type int = MACH_MSG_TYPE_INTEGER_32;
+type mach_port_t = MACH_MSG_TYPE_COPY_SEND;
+type lookup_name = array [256] of MACH_MSG_TYPE_CHAR;
+type unit = array [4] of MACH_MSG_TYPE_CHAR;
+
+/*
+ * Can't reduce the size of the following without blowing binary compatibility
+ * with libc (but not libsys, since it is always shared).
+ */
+type inline_data = array [ * : 4096 ] of unit; 
+type ooline_data = ^ array [] of unit;
+
+
+routine _lookup_link(	server : mach_port_t;
+			name : lookup_name;
+		out	procno: int);
+
+routine _lookup_all(	server : mach_port_t;
+			proc : int;
+			indata : inline_data;
+		out	outdata  : ooline_data);
+
+routine _lookup_one(	server : mach_port_t;
+			proc : int;
+			indata : inline_data;
+		out	outdata  : inline_data);
+
+
+routine _lookup_ooall(	server : mach_port_t;
+			proc : int;
+			indata : ooline_data;
+		out	outdata  : ooline_data);
+

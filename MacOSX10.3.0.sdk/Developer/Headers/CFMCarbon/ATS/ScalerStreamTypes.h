@@ -1,0 +1,1 @@
+../../../../System/Library/Frameworks/ApplicationServices.framework/Frameworks/ATS.framework/Headers/ScalerStreamTypes.h
