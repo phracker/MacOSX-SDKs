@@ -1,0 +1,1 @@
+../../../../../include/gcc/darwin/4.2/ppc_intrinsics.h
