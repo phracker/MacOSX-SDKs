@@ -4,7 +4,7 @@ MacOSX-SDKs
 A collection of those pesky SDK folders.  Compiled from various releases of XCode.
 
 If you don't need this entire repository, you can download a compressed tarball of each individual SDK à la carte via:
-**[mediafire](http://www.mediafire.com/?abr89fy4uaz3z)** / **[mega.co.nz](https://mega.co.nz/#F!4U4SXAxa!ZVltflL2O_5q57R0BVsPTg)**.
+**[mediafire](http://www.mediafire.com/?a4g384ysgy5rg)** / **[mega.co.nz](https://mega.co.nz/#F!H8xGhaDD!Uv5BTPr0LP7IU5pj0WGCKg)**.
 
 *Please file an issue if these links die.*
 
