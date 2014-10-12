@@ -6,7 +6,7 @@ TARGET="$(pwd)";
 LOGFILE="$(mktemp)";
 
 log() {
-  log "$@" 2>&1 | tee "$LOGFILE";
+  echo "$@" 2>&1 | tee "$LOGFILE";
 }
 
 log "Current Directory: $TARGET";
