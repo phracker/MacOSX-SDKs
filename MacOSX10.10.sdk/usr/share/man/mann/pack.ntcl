@@ -1,0 +1,552 @@
+'\"
+'\" Copyright (c) 1990-1994 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH pack n 4.0 Tk "Tk Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+pack \- Geometry manager that packs around edges of cavity
+.SH SYNOPSIS
+\fBpack \fIoption arg \fR?\fIarg ...\fR?
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBpack\fR command is used to communicate with the packer,
+a geometry manager that arranges the children of a parent by
+packing them in order around the edges of the parent.
+The \fBpack\fR command can have any of several forms, depending
+on the \fIoption\fR argument:
+.TP
+\fBpack \fIslave \fR?\fIslave ...\fR? ?\fIoptions\fR?
+If the first argument to \fBpack\fR is a window name (any value
+starting with
+.QW . ),
+then the command is processed in the same way as \fBpack configure\fR.
+.TP
+\fBpack configure \fIslave \fR?\fIslave ...\fR? ?\fIoptions\fR?
+The arguments consist of the names of one or more slave windows
+followed by pairs of arguments that specify how
+to manage the slaves.
+See \fBTHE PACKER ALGORITHM\fR below for details on how the options
+are used by the packer.
+The following options are supported:
+.RS
+.TP
+\fB\-after \fIother\fR
+\fIOther\fR must the name of another window.
+Use its master as the master for the slaves, and insert
+the slaves just after \fIother\fR in the packing order.
+.TP
+\fB\-anchor \fIanchor\fR
+\fIAnchor\fR must be a valid anchor position such as \fBn\fR
+or \fBsw\fR; it specifies where to position each slave in its
+parcel.
+Defaults to \fBcenter\fR.
+.TP
+\fB\-before \fIother\fR
+\fIOther\fR must the name of another window.
+Use its master as the master for the slaves, and insert
+the slaves just before \fIother\fR in the packing order.
+.TP
+\fB\-expand \fIboolean\fR
+Specifies whether the slaves should be expanded to consume
+extra space in their master.
+\fIBoolean\fR may have any proper boolean value, such as \fB1\fR
+or \fBno\fR.
+Defaults to 0.
+.TP
+\fB\-fill \fIstyle\fR
+If a slave's parcel is larger than its requested dimensions, this
+option may be used to stretch the slave.
+\fIStyle\fR must have one of the following values:
+.RS
+.TP
+\fBnone\fR
+Give the slave its requested dimensions plus any internal padding
+requested with \fB\-ipadx\fR or \fB\-ipady\fR.  This is the default.
+.TP
+\fBx\fR
+Stretch the slave horizontally to fill the entire width of its
+parcel (except leave external padding as specified by \fB\-padx\fR).
+.TP
+\fBy\fR
+Stretch the slave vertically to fill the entire height of its
+parcel (except leave external padding as specified by \fB\-pady\fR).
+.TP
+\fBboth\fR
+Stretch the slave both horizontally and vertically.
+.RE
+.TP
+\fB\-in \fIother\fR
+Insert the slave(s) at the end of the packing order for the master
+window given by \fIother\fR.
+.TP
+\fB\-ipadx \fIamount\fR
+\fIAmount\fR specifies how much horizontal internal padding to
+leave on each side of the slave(s).
+\fIAmount\fR must be a valid screen distance, such as \fB2\fR or \fB.5c\fR.
+It defaults to 0.
+.TP
+\fB\-ipady \fIamount\fR
+\fIAmount\fR specifies how much vertical internal padding to
+leave on each side of the slave(s).
+\fIAmount\fR  defaults to 0.
+.TP
+\fB\-padx \fIamount\fR
+\fIAmount\fR specifies how much horizontal external padding to
+leave on each side of the slave(s).  \fIAmount\fR may be a list
+of two values to specify padding for left and right separately.
+\fIAmount\fR defaults to 0.
+.TP
+\fB\-pady \fIamount\fR
+\fIAmount\fR specifies how much vertical external padding to
+leave on each side of the slave(s).  \fIAmount\fR may be a list
+of two values to specify padding for top and bottom separately.
+\fIAmount\fR defaults to 0.
+.TP
+\fB\-side \fIside\fR
+Specifies which side of the master the slave(s) will be packed against.
+Must be \fBleft\fR, \fBright\fR, \fBtop\fR, or \fBbottom\fR.
+Defaults to \fBtop\fR.
+.LP
+If no \fB\-in\fR, \fB\-after\fR or \fB\-before\fR option is specified
+then each of the slaves will be inserted at the end of the packing list
+for its parent unless it is already managed by the packer (in which
+case it will be left where it is).
+If one of these options is specified then all the slaves will be
+inserted at the specified point.
+If any of the slaves are already managed by the geometry manager
+then any unspecified options for them retain their previous values rather
+than receiving default values.
+.RE
+.TP
+\fBpack forget \fIslave \fR?\fIslave ...\fR?
+Removes each of the \fIslave\fRs from the packing order for its
+master and unmaps their windows.
+The slaves will no longer be managed by the packer.
+.TP
+\fBpack info \fIslave\fR
+Returns a list whose elements are the current configuration state of
+the slave given by \fIslave\fR in the same option-value form that
+might be specified to \fBpack configure\fR.
+The first two elements of the list are
+.QW "\fB\-in \fImaster\fR"
+where \fImaster\fR is the slave's master.
+.TP
+\fBpack propagate \fImaster\fR ?\fIboolean\fR?
+If \fIboolean\fR has a true boolean value such as \fB1\fR or \fBon\fR
+then propagation is enabled for \fImaster\fR, which must be a window
+name (see \fBGEOMETRY PROPAGATION\fR below).
+If \fIboolean\fR has a false boolean value then propagation is
+disabled for \fImaster\fR.
+In either of these cases an empty string is returned.
+If \fIboolean\fR is omitted then the command returns \fB0\fR or
+\fB1\fR to indicate whether propagation is currently enabled
+for \fImaster\fR.
+Propagation is enabled by default.
+.TP
+\fBpack slaves \fImaster\fR
+Returns a list of all of the slaves in the packing order for \fImaster\fR.
+The order of the slaves in the list is the same as their order in
+the packing order.
+If \fImaster\fR has no slaves then an empty string is returned.
+.SH "THE PACKER ALGORITHM"
+.PP
+For each master the packer maintains an ordered list of slaves
+called the \fIpacking list\fR.
+The \fB\-in\fR, \fB\-after\fR, and \fB\-before\fR configuration
+options are used to specify the master for each slave and the slave's
+position in the packing list.
+If none of these options is given for a slave then the slave
+is added to the end of the packing list for its parent.
+.PP
+The packer arranges the slaves for a master by scanning the
+packing list in order.
+At the time it processes each slave, a rectangular area within
+the master is still unallocated.
+This area is called the \fIcavity\fR;  for the first slave it
+is the entire area of the master.
+.PP
+For each slave the packer carries out the following steps:
+.IP [1]
+The packer allocates a rectangular \fIparcel\fR for the slave
+along the side of the cavity given by the slave's \fB\-side\fR option.
+If the side is top or bottom then the width of the parcel is
+the width of the cavity and its height is the requested height
+of the slave plus the \fB\-ipady\fR and \fB\-pady\fR options.
+For the left or right side the height of the parcel is
+the height of the cavity and the width is the requested width
+of the slave plus the \fB\-ipadx\fR and \fB\-padx\fR options.
+The parcel may be enlarged further because of the \fB\-expand\fR
+option (see \fBEXPANSION\fR below)
+.IP [2]
+The packer chooses the dimensions of the slave.
+The width will normally be the slave's requested width plus
+twice its \fB\-ipadx\fR option and the height will normally be
+the slave's requested height plus twice its \fB\-ipady\fR
+option.
+However, if the \fB\-fill\fR option is \fBx\fR or \fBboth\fR
+then the width of the slave is expanded to fill the width of the parcel,
+minus twice the \fB\-padx\fR option.
+If the \fB\-fill\fR option is \fBy\fR or \fBboth\fR
+then the height of the slave is expanded to fill the width of the parcel,
+minus twice the \fB\-pady\fR option.
+.IP [3]
+The packer positions the slave over its parcel.
+If the slave is smaller than the parcel then the \fB\-anchor\fR
+option determines where in the parcel the slave will be placed.
+If \fB\-padx\fR or \fB\-pady\fR is non-zero, then the given
+amount of external padding will always be left between the
+slave and the edges of the parcel.
+.PP
+Once a given slave has been packed, the area of its parcel
+is subtracted from the cavity, leaving a smaller rectangular
+cavity for the next slave.
+If a slave does not use all of its parcel, the unused space
+in the parcel will not be used by subsequent slaves.
+If the cavity should become too small to meet the needs of
+a slave then the slave will be given whatever space is
+left in the cavity.
+If the cavity shrinks to zero size, then all remaining slaves
+on the packing list will be unmapped from the screen until
+the master window becomes large enough to hold them again.
+.SS "EXPANSION"
+.PP
+If a master window is so large that there will be extra space
+left over after all of its slaves have been packed, then the
+extra space is distributed uniformly among all of the slaves
+for which the \fB\-expand\fR option is set.
+Extra horizontal space is distributed among the expandable
+slaves whose \fB\-side\fR is \fBleft\fR or \fBright\fR,
+and extra vertical space is distributed among the expandable
+slaves whose \fB\-side\fR is \fBtop\fR or \fBbottom\fR.
+.SS "GEOMETRY PROPAGATION"
+.PP
+The packer normally computes how large a master must be to
+just exactly meet the needs of its slaves, and it sets the
+requested width and height of the master to these dimensions.
+This causes geometry information to propagate up through a
+window hierarchy to a top-level window so that the entire
+sub-tree sizes itself to fit the needs of the leaf windows.
+However, the \fBpack propagate\fR command may be used to
+turn off propagation for one or more masters.
+If propagation is disabled then the packer will not set
+the requested width and height of the packer.
+This may be useful if, for example, you wish for a master
+window to have a fixed size that you specify.
+.SH "RESTRICTIONS ON MASTER WINDOWS"
+.PP
+The master for each slave must either be the slave's parent
+(the default) or a descendant of the slave's parent.
+This restriction is necessary to guarantee that the
+slave can be placed over any part of its master that is
+visible without danger of the slave being clipped by its parent.
+.SH "PACKING ORDER"
+.PP
+If the master for a slave is not its parent then you must make sure
+that the slave is higher in the stacking order than the master.
+Otherwise the master will obscure the slave and it will appear as
+if the slave has not been packed correctly.
+The easiest way to make sure the slave is higher than the master is
+to create the master window first:  the most recently created window
+will be highest in the stacking order.
+Or, you can use the \fBraise\fR and \fBlower\fR commands to change
+the stacking order of either the master or the slave.
+.SH EXAMPLE
+.CS
+# Make the widgets
+label .t \-text "This widget is at the top"    \-bg red
+label .b \-text "This widget is at the bottom" \-bg green
+label .l \-text "Left\enHand\enSide"
+label .r \-text "Right\enHand\enSide"
+text .mid
+\.mid insert end "This layout is like Java's BorderLayout"
+# Lay them out
+\fBpack\fR .t   \-side top    \-fill x
+\fBpack\fR .b   \-side bottom \-fill x
+\fBpack\fR .l   \-side left   \-fill y
+\fBpack\fR .r   \-side right  \-fill y
+\fBpack\fR .mid \-expand 1    \-fill both
+.CE
+
+.SH "SEE ALSO"
+grid(n), place(n)
+
+.SH KEYWORDS
+geometry manager, location, packer, parcel, propagation, size

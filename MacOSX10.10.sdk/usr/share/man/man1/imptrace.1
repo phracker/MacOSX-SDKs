@@ -1,0 +1,77 @@
+.\" Copyright (c) 2013 Apple Inc.  All rights reserved.
+.\"
+.Dd May 01, 2013
+.Dt IMPTRACE 1
+.Os "OS X"
+.Sh NAME
+.Nm imptrace
+.Nd report importance donation events in real time
+.Sh SYNOPSIS
+.Nm
+.Op Fl i Op Fl s
+.Op Fl p Ar pid
+.Op Fl d
+.Sh DESCRIPTION
+The
+.Nm imptrace
+utility displays a trace of importance donation events. Importance donation is used by adaptive jobs on the system to manage their priority on the system. See
+.Xr xpc_transaction_begin 3
+and
+.Xr launchd.plist 5
+for more information about the mechanism and its use.
+.Pp
+The options are as follows:
+.Bl -tag -width "-p pid "
+.It Fl i
+Show internal kernel boosts
+.It Fl s
+Show stacks for internal boosts.
+.It Fl p Ar pid
+Limit events to the process identified by
+.Ar pid .
+.It Fl d
+Display raw Dtrace output; do not reformat timestamps and sort output.
+.El
+.Pp
+The traced events are as follows:
+.Bl -tag -width "Recv Int Boost"
+.It BOOSTED
+The specified process has received a boost and transitioned out of the
+background.
+.It UNBOOST
+The specified process has dropped its last remaining boost and transitioned
+back into the background.
+.It Recv Boost
+The specified process has received a boost and accepted ownership of that boost
+in userspace, usually by dequeuing the boosting message.
+.It Drop Boost
+The specified process has dropped a boost.
+.It ____ Int Boost
+Internal boost events are only emitted when tracking of kernel internal boosts is
+activated with the 
+.Fl i
+option. Their use and meaning is subject to change and dependent on the
+implementation details of importance donation.
+.El
+.Sh EXAMPLES
+The
+.Nm imptrace
+script will output one line for each event, for example a typical boosting exchange might look as follows:
+.Bd -literal -offset indent
+0000:00:00.000000000 EVENT            PROCESS                BOOSTS NOTES
+0023:15:13.844332886   BOOSTED            22:configd
+0023:15:13.844372519   Recv Boost         22:configd              1 from    275:SystemUIServer 
+0023:15:13.844497860   UNBOOST            22:configd                Boosted for 0 ms
+0023:15:13.844509452   Drop Boost         22:configd              0
+.Ed
+.Pp
+In this case, SystemUIServer (PID 275) has sent a message to configd (PID 22)
+which caused it to be boosted. configd then dropped the boost causing it to be
+become unboosted and return to background state. Boosted and unboost events may
+appear before the triggering recv or drop boost.
+.Sh NOTES
+.Nm imptrace
+is implemented using Dtrace.  For information about the probes used, see comments in the
+.Nm imptrace
+source.  When debugging an adaptive service, it may be helpful to combine
+these probes with other Dtrace providers; however, they should be considered unstable.

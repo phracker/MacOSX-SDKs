@@ -1,0 +1,229 @@
+'\" t
+.\" @(#)servertool.1 1.20 01/03/10 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits riservis.
+.\" 
+.TH servertool 1 "10 March 2001"
+.SH NAME
+servertool - The Java(TM) IDL Server Tool
+.LP
+.B servertool
+provides an ease-of-use interface for application
+programmers to register, unregister, startup and shutdown
+a server.
+.SH SYNOPSIS
+.B servertool
+.BI \-ORBInitialPort " nameServerPort" 
+[ 
+.I options 
+]
+.LP
+The command-line tool displays with
+a 
+.B servertool > 
+prompt. Enter commands at the 
+.B servertool > 
+prompt. 
+.LP
+The 
+.BI \-ORBInitialPort " nameServerPort"
+option is required. 
+The value for 
+.I nameServerPort 
+must
+specify the port on which orbd is running and 
+listening for incoming requests.
+You must become root to start a process on 
+a port under 1024. For this reason, we
+recommend that you use a port number greater than 
+or equal to 1024 for the nameServerPort. 
+.SH DESCRIPTION
+The 
+.BR servertool 
+provides the
+command-line interface for the application programmers to
+register, unregister, startup, and shutdown a server. 
+Other commands are provided to
+obtain various statistical information about the server. 
+.SH OPTIONS
+.TP
+.BI \-ORBInitialHost " nameServerHost"
+Specifies the host machine on which the name server 
+is running and listening for incoming
+requests. The nameServerHost defaults to localhost 
+if this option is not specified. If orbd
+and servertool are running on different machines, 
+you must specify the name or IP
+address of the host on which orbd is running. 
+.TP
+.BI \-J option
+Pass 
+.I option 
+to the Java virtual machine, where 
+option is one of the options described on
+the reference page for the java application launcher. 
+For example, \f3\-J-Xms48m\fP sets the
+startup memory to 48 megabytes. It is a common 
+convention for \f3\-J\fP to pass options to the
+underlying virtual machine. 
+.SH COMMANDS
+.TP
+.B register
+.BI \-server " serverClassName"
+.BI \-classpath " classpathToServer "
+[ 
+.BI \-applicationName " alternateServerName"
+.BI \-args " argsToServer"
+.BI \-vmargs " flagsToBePassedToJavaVM"
+]
+.RS
+.LP
+Register a new server with the Object Request Broker Daemon (ORBD).
+If the server is not already registered, it is registered and
+activated.
+This command causes an
+install method to be invoked in the main class 
+of the server identified by the \f3\-server\fP
+option. The install method must be public static 
+void install(org.omg.CORBA.ORB).
+The install method is optional and enables the 
+developer to provide their own server
+installation behavior (for example, creating database schema). 
+.RE
+.TP
+.B unregister 
+.BI \-serverid " serverId"
+| 
+.BI \-applicationName " name"
+.RS
+.LP
+Unregister a server from the ORBD
+by using either its server id or its application name.
+This command causes an uninstall method to be invoked 
+in the main class of the server
+identified by the \f3\-server\fP option. The uninstall method 
+must be public static void
+uninstall(org.omg.CORBA.ORB). The uninstall method 
+is optional and enables the
+developer to provide their own server uninstall 
+behavior (for example, undoing the
+behavior of the install method). 
+.RE
+.TP
+.B getserverid 
+.BI \-applicationName " applicationName"
+.LP
+.RS
+Return the server id that corresponds with an application.
+.RE
+.TP
+.B list 
+.br
+List all information about all persistent servers registered with the
+ORBD. 
+.TP
+.B listappnames
+List the application names for all server currently registered with 
+the ORBD.
+.TP
+.B listactive
+List all information about all persistent servers 
+that have been launched by the
+ORBD and are currently running. 
+.TP
+.B locate    
+.PD 0
+.LP
+.RS
+.BI \-serverid " serverId" 
+| 
+.BI \-applicationName " applicationName"
+[
+.BI \-endpointType " endpointType" 
+]
+.PD
+.LP
+Locate the endpoints (ports) of a specific type for all ORBs
+created by a registered server. If a server is not already
+running, it is activated. If an endpoint type is not
+specified, then the plain/non-protected endpoint
+associated with each ORB in a server is returned. 
+.RE
+.TP
+.B locateperorb
+.BI \-serverid " serverId" 
+| 
+.BI \-applicationName " applicationName" 
+[
+.BI \-orbid " ORB_name" 
+]
+.RS
+.LP
+Locate all the endpoints (ports) registered by a specific
+ORB of registered server. If a server is not already running,
+then it is activated. If an 
+.BR orbid 
+is not specified, the
+default value of "" is assigned to the 
+.BR orbid . 
+If any ORBs
+are created with an 
+.BR orbid 
+of empty string, all ports
+registered by it are returned. 
+.RE
+.TP
+.B orblist 
+.BI \-serverid " serverId" 
+| 
+.BI \-applicationName " applicationName"
+]
+.RS
+.LP
+Lists the ORBId of the ORBs defined on a server. 
+An ORBId is the string name for the ORB
+created by the server. If the server is not 
+already running, it is activated. 
+.RE
+.TP
+.B shutdown 
+.BI \-serverid " serverId" 
+| 
+.BI \-applicationName " applicationName" 
+]
+.RS
+.LP
+Shutdown an  active server that is registered with ORBD. 
+During execution of
+this command, the 
+.BR shutdown() 
+method defined in the
+the class specified by either the \f3\-serverid\fP
+or \f3\-applicationName\fP parameter is also invoked to shutdown
+the server process appropriately. 
+.RE
+.TP
+.B startup 
+.BI \-serverid " serverId" 
+| 
+.BI \-applicationName " applicationName" 
+.RS
+.LP
+Startup or activate a server that is registered with ORBD. 
+If the server is not
+running, this command launches the server. If the server
+is already running, an error message is returned to the
+user. 
+.RE
+.TP
+.B help
+.br
+List all the commands available to the server through the
+server tool. 
+.TP
+.B quit 
+.br
+Exit the server tool.
+.RE
+.SS SEE ALSO
+.BR orbd

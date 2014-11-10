@@ -1,0 +1,222 @@
+'\" t
+.\"     Title: glBlitFramebuffer
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 03/08/2011
+.\"    Manual: OpenGL 3.3
+.\"    Source: OpenGL 3.3
+.\"  Language: English
+.\"
+.TH "GLBLITFRAMEBUFFER" "3G" "03/08/2011" "OpenGL 3.3" "OpenGL 3\&.3"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+glBlitFramebuffer \- copy a block of pixels from the read framebuffer to the draw framebuffer
+.SH "C SPECIFICATION"
+.HP \w'void\ glBlitFramebuffer('u
+.BI "void glBlitFramebuffer(GLint\ " "srcX0" ", GLint\ " "srcY0" ", GLint\ " "srcX1" ", GLint\ " "srcY1" ", GLint\ " "dstX0" ", GLint\ " "dstY0" ", GLint\ " "dstX1" ", GLint\ " "dstY1" ", GLbitfield\ " "mask" ", GLenum\ " "filter" ");"
+.SH "PARAMETERS"
+.PP
+\fIsrcX0\fR, \fIsrcY0\fR, \fIsrcX1\fR, \fIsrcY1\fR
+.RS 4
+Specify the bounds of the source rectangle within the read buffer of the read framebuffer\&.
+.RE
+.PP
+\fIdstX0\fR, \fIdstY0\fR, \fIdstX1\fR, \fIdstY1\fR
+.RS 4
+Specify the bounds of the destination rectangle within the write buffer of the write framebuffer\&.
+.RE
+.PP
+\fImask\fR
+.RS 4
+The bitwise OR of the flags indicating which buffers are to be copied\&. The allowed flags are
+\fBGL_COLOR_BUFFER_BIT\fR,
+\fBGL_DEPTH_BUFFER_BIT\fR
+and
+\fBGL_STENCIL_BUFFER_BIT\fR\&.
+.RE
+.PP
+\fIfilter\fR
+.RS 4
+Specifies the interpolation to be applied if the image is stretched\&. Must be
+\fBGL_NEAREST\fR
+or
+\fBGL_LINEAR\fR\&.
+.RE
+.SH "DESCRIPTION"
+.PP
+
+\fBglBlitFramebuffer\fR
+transfers a rectangle of pixel values from one region of the read framebuffer to another region in the draw framebuffer\&.
+\fImask\fR
+is the bitwise OR of a number of values indicating which buffers are to be copied\&. The values are
+\fBGL_COLOR_BUFFER_BIT\fR,
+\fBGL_DEPTH_BUFFER_BIT\fR, and
+\fBGL_STENCIL_BUFFER_BIT\fR\&. The pixels corresponding to these buffers are copied from the source rectangle bounded by the locations (\fIsrcX0\fR;
+\fIsrcY0\fR) and (\fIsrcX1\fR;
+\fIsrcY1\fR) to the destination rectangle bounded by the locations (\fIdstX0\fR;
+\fIdstY0\fR) and (\fIdstX1\fR;
+\fIdstY1\fR)\&. The lower bounds of the rectangle are inclusive, while the upper bounds are exclusive\&.
+.PP
+The actual region taken from the read framebuffer is limited to the intersection of the source buffers being transferred, which may include the color buffer selected by the read buffer, the depth buffer, and/or the stencil buffer depending on mask\&. The actual region written to the draw framebuffer is limited to the intersection of the destination buffers being written, which may include multiple draw buffers, the depth buffer, and/or the stencil buffer depending on mask\&. Whether or not the source or destination regions are altered due to these limits, the scaling and offset applied to pixels being transferred is performed as though no such limits were present\&.
+.PP
+If the sizes of the source and destination rectangles are not equal,
+\fIfilter\fR
+specifies the interpolation method that will be applied to resize the source image , and must be
+\fBGL_NEAREST\fR
+or
+\fBGL_LINEAR\fR\&.
+\fBGL_LINEAR\fR
+is only a valid interpolation method for the color buffer\&. If
+\fIfilter\fR
+is not
+\fBGL_NEAREST\fR
+and
+\fImask\fR
+includes
+\fBGL_DEPTH_BUFFER_BIT\fR
+or
+\fBGL_STENCIL_BUFFER_BIT\fR, no data is transferred and a
+\fBGL_INVALID_OPERATION\fR
+error is generated\&.
+.PP
+If
+\fIfilter\fR
+is
+\fBGL_LINEAR\fR
+and the source rectangle would require sampling outside the bounds of the source framebuffer, values are read as if the
+\fBGL_CLAMP_TO_EDGE\fR
+texture wrapping mode were applied\&.
+.PP
+When the color buffer is transferred, values are taken from the read buffer of the read framebuffer and written to each of the draw buffers of the draw framebuffer\&.
+.PP
+If the source and destination rectangles overlap or are the same, and the read and draw buffers are the same, the result of the operation is undefined\&.
+.SH "NOTES"
+.PP
+
+\fBglBindVertexArray\fR
+is available only if the GL version is 3\&.0 or greater\&.
+.SH "ERRORS"
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fImask\fR
+contains any of the
+\fBGL_DEPTH_BUFFER_BIT\fR
+or
+\fBGL_STENCIL_BUFFER_BIT\fR
+and
+\fIfilter\fR
+is not
+\fBGL_NEAREST\fR\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fImask\fR
+contains
+\fBGL_COLOR_BUFFER_BIT\fR
+and any of the following conditions hold:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The read buffer contains fixed\-point or floating\-point values and any draw buffer contains neither fixed\-point nor floating\-point values\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The read buffer contains unsigned integer values and any draw buffer does not contain unsigned integer values\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The read buffer contains signed integer values and any draw buffer does not contain signed integer values\&.
+.RE
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fImask\fR
+contains
+\fBGL_DEPTH_BUFFER_BIT\fR
+or
+\fBGL_DEPTH_BUFFER_BIT\fR
+and the source and destination depth and stencil formats do not match\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fIfilter\fR
+is
+\fBGL_LINEAR\fR
+and the read buffer contains integer data\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if the value of
+\fIGL_SAMPLES\fR
+for the read and draw buffers is not identical\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fIGL_SAMPLE_BUFFERS\fR
+for both read and draw buffers greater than zero and the dimensions of the source and destination rectangles is not identical\&.
+.PP
+
+\fBGL_INVALID_FRAMEBUFFER_OPERATION\fR
+is generated if the objects bound to
+\fBGL_DRAW_FRAMEBUFFER_BINDING\fR
+or
+\fBGL_READ_FRAMEBUFFER_BINDING\fR
+are not framebuffer complete\&.
+.SH "SEE ALSO"
+.PP
+
+\fBglReadPixels\fR()
+\fBglCheckFramebufferStatus\fR(),
+\fBglGenFramebuffers\fR()
+\fBglBindFramebuffer\fR()
+\fBglDeleteFramebuffers\fR()
+.SH "COPYRIGHT"
+.PP
+Copyright
+\(co
+2010 Khronos Group\&. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1\&.0, 8 June 1999\&.
+\m[blue]\fBhttp://opencontent\&.org/openpub/\fR\m[]\&.

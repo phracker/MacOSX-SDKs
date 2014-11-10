@@ -1,0 +1,113 @@
+.TH SOCKETMAP_TABLE 5 
+.ad
+.fi
+.SH NAME
+socketmap_table
+\-
+Postfix socketmap table lookup client
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap -q "\fIstring\fB" socketmap:inet:\fIhost\fB:\fIport\fB:\fIname\fR
+.br
+\fBpostmap -q "\fIstring\fB" socketmap:unix:\fIpathname\fB:\fIname\fR
+
+\fBpostmap -q - socketmap:inet:\fIhost\fB:\fIport\fB:\fIname\fB <\fIinputfile\fR
+.br
+\fBpostmap -q - socketmap:unix:\fIpathname\fB:\fIname\fB <\fIinputfile\fR
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix mail system uses optional tables for address
+rewriting. mail routing or policy lookup.
+
+The Postfix socketmap client expects TCP endpoint names of
+the form \fBinet:\fIhost\fB:\fIport\fB:\fIname\fR, or
+UNIX-domain endponts of the form \fBunix:\fIpathname\fB:\fIname\fR.
+In both cases, \fIname\fR specifies the name field in a
+socketmap client request (see "REQUEST FORMAT" below).
+.SH "PROTOCOL"
+.na
+.nf
+.ad
+.fi
+Socketmaps use a simple protocol: the client sends one
+request, and the server sends one reply.  Each request and
+reply are sent as one netstring object.
+.SH "REQUEST FORMAT"
+.na
+.nf
+.ad
+.fi
+The socketmap protocol supports only the lookup request.
+
+Postfix will not generate partial search keys such as domain
+names without one or more subdomains, network addresses
+without one or more least-significant octets, or email
+addresses without the localpart, address extension or domain
+portion. This behavior is also found with cidr:, pcre:, and
+regexp: tables.
+.IP "\fB\fIname\fB <space> \fIkey\fR"
+Search the named socketmap for the specified key.
+.SH "REPLY FORMAT"
+.na
+.nf
+.ad
+.fi
+The Postfix socketmap client requires that replies are not
+longer than 100000 characters (not including the netstring
+encapsulation). Replies must have the following form:
+.IP "\fBOK <space> \fIdata\fR"
+The requested data was found.
+.IP "\fBNOTFOUND <space>"
+The requested data was not found.
+.IP "\fBTEMP <space> \fIreason\fR"
+.IP "\fBTIMEOUT <space> \fIreason\fR"
+.IP "\fBPERM <space> \fIreason\fR"
+The request failed. The reason, if non-empty, is descriptive
+text.
+.SH "SECURITY"
+.na
+.nf
+This map cannot be used for security-sensitive information,
+because neither the connection nor the server are authenticated.
+.SH "SEE ALSO"
+.na
+.nf
+http://cr.yp.to/proto/netstrings.txt, netstring definition
+postconf(1), Postfix supported lookup tables
+postmap(1), Postfix lookup table manager
+regexp_table(5), format of regular expression tables
+pcre_table(5), format of PCRE tables
+cidr_table(5), format of CIDR tables
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+.SH BUGS
+.ad
+.fi
+The protocol limits are not yet configurable.
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "HISTORY"
+.na
+.nf
+Socketmap support was introduced with Postfix version 2.10.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA

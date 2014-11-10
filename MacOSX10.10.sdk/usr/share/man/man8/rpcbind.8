@@ -1,0 +1,136 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 1/24/11        \" DATE
+.Dt rpcbind 8      \" Program name and manual section number
+.Os Darwin
+.Sh NAME           \" Section Header - required - don't modify
+.Nm rpcbind
+.Nd portmap
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl d
+.Op Fl v
+.Op Fl h Ar bindip
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm Rpcbind
+is a server that converts
+.Tn RPC
+program numbers into
+.Tn DARPA
+protocol port numbers.
+It is a replacement for the older
+.Nm portmap
+program.
+.Pp
+.Nm
+supports the original version 2
+.Nm portmap
+protocol and in addition supports
+the newer version 3 and version 4 protocols that are necessary for IPv6 support.
+It must be running on the server in order to make
+.Tn RPC
+calls.
+.Pp
+When an
+.Tn RPC
+server is started, it will tell
+.Nm
+what address it is listening to, and what
+.Tn RPC
+program numbers it is prepared to serve.
+When a client wishes to make an
+.Tn RPC
+call to a given program number,
+it will first contact
+.Nm
+on the server machine to determine
+the address where
+.Tn RPC
+packets should be sent.
+.Pp
+.Nm
+is a launchd service. When the first server tries to register with
+.Nm
+the
+.Tn RPC
+library will contact launchd and arrange for rpcbind to be started.
+Note it is no longer possible to run rpcbind from the command line.
+.Nm
+logs errors and information using
+.Xr asl 3 .
+.Nm
+uses
+.Xr hosts_access 5
+for access control; note
+access control patterns may only reference IP addresses.
+.Pp
+The following options are available and will need to be added to the
+.Nm
+plist file.
+.Bl -tag -width indent
+.It Fl d
+causes
+.Nm
+errors and debugging information
+to be printed to the standard error output
+via asl_log. This option is no longer
+very useful.
+.It Fl v
+Enable verbose logging of access control checks.
+.It Fl h
+Specify specific IP addresses to bind to for UDP requests.
+This option
+may be specified multiple times and is typically necessary when running
+on a multi-homed host.
+If no
+.Fl h
+option is specified,
+.Nm
+will bind to
+.Dv INADDR_ANY ,
+which could lead to problems on a multi-homed host due to
+.Nm
+returning a UDP packet from a different IP address than it was
+sent to.
+Note that when specifying IP addresses with
+.Fl h ,
+.Nm
+will automatically add
+.Li 127.0.0.1
+to the list.
+.El
+.Sh FILES
+.Bl -tag -width "/System/Library/LaunchDaemons/com.apple.rpcbind.plist"
+.It Pa /System/Library/LaunchDaemons/com.apple.rpcbind.plist
+.Xr launchd.plist 5
+file for
+.Nm .
+Options should be added here.
+.It Pa /usr/share/sandbox/rpcbind.sb
+.Xr sandbox 7
+file for
+.Nm .
+.El                      \" Ends the list
+.Sh SEE ALSO
+.Xr hosts_access 5 ,
+.Xr launchd.plist 5 ,
+.Xr launchd 8 ,
+.Xr rpcinfo 8
+.Sh BUGS
+.Bl -item
+.It
+If
+.Nm
+crashes, all servers must be restarted.
+.It
+Version 4 getstat procedure is not implemented and will always return 0 and
+null values.
+.Tn RPC_SYSTEMERROR .
+.It
+.Fl h
+option is not supported for
+.Tn IPv6 .
+.El

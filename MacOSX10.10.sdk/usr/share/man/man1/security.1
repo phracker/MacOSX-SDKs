@@ -1,0 +1,1418 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.Dd March 1, 2012        \" DATE 
+.Dt security 1           \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm security
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Command line interface to keychains and Security framework
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl hilqv             \" [-hilqv]
+.Op Fl p Ar prompt       \" [-p prompt] 
+.Op Ar command           \" [command]
+.Op Ar command_options   \" [command_options]
+.Op Ar command_args      \" [command_args]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+A simple command line interface which lets you administer keychains,
+manipulate keys and certificates, and do just about anything the
+Security framework is capable of from the command line.
+.Pp
+By default
+.Nm
+will execute the
+.Ar command
+supplied and report if anything went wrong.
+.Pp
+If the
+.Fl i
+or
+.Fl p
+options are provided,
+.Nm
+will enter interactive mode and allow the user to enter multiple commands on stdin.  When EOF is read from stdin
+.Nm
+will exit.
+.Pp
+Here is a complete list of the options available:
+.Bl -tag -width -indent
+.It Fl h
+If no arguments are specified, show a list of all commands.  If arguments are provided, show usage for each the specified commands.  This option is essentially the same as the
+.Nm help
+command.
+.It Fl i
+Run
+.Nm
+in interactive mode.  A prompt 
+.Po
+.Li security>
+by default
+.Pc
+will be displayed and the user will be able to type commands on stdin until an EOF is encountered.
+.It Fl l
+Before
+.Nm
+exits, run
+.Dl "/usr/bin/leaks -nocontext"
+on itself to see if the command(s) you executed had any leaks.
+.It Fl p Ar prompt
+This option implies the
+.Fl i
+option but changes the default prompt to the argument specified instead.
+.It Fl q
+Will make
+.Nm
+less verbose.
+.It Fl v
+Will make
+.Nm
+more verbose.
+.El                      \" Ends the list
+.Pp
+.Sh "SECURITY COMMAND SUMMARY"
+.Nm
+provides a rich variety of commands
+.Po Ar command
+in the
+.Sx SYNOPSIS Pc Ns
+, each of which often has a wealth of options, to allow access to
+the broad functionality provided by the Security framework.  However,
+you don't have to master every detail for
+.Nm
+to be useful to you.
+.Pp
+Here are brief descriptions of all the
+.Nm
+commands:
+.Pp
+.Bl -tag -width user-trust-settings-enable -compact
+.It Nm help
+Show all commands, or show usage for a command.
+.It Nm list-keychains
+Display or manipulate the keychain search list.
+.It Nm default-keychain
+Display or set the default keychain.
+.It Nm login-keychain
+Display or set the login keychain.
+.It Nm create-keychain
+Create keychains.
+.It Nm delete-keychain
+Delete keychains and remove them from the search list.
+.It Nm lock-keychain
+Lock the specified keychain.
+.It Nm unlock-keychain
+Unlock the specified keychain.
+.It Nm set-keychain-settings
+Set settings for a keychain.
+.It Nm set-keychain-password
+Set password for a keychain.
+.It Nm show-keychain-info
+Show the settings for keychain.
+.It Nm dump-keychain
+Dump the contents of one or more keychains.
+.It Nm create-keypair
+Create an asymmetric key pair.
+.It Nm add-generic-password
+Add a generic password item.
+.It Nm add-internet-password
+Add an internet password item.
+.It Nm add-certificates
+Add certificates to a keychain.
+.It Nm find-generic-password
+Find a generic password item.
+.It Nm delete-generic-password
+Delete a generic password item.
+.It Nm find-internet-password
+Find an internet password item.
+.It Nm delete-internet-password
+Delete an internet password item.
+.It Nm find-certificate
+Find a certificate item.
+.It Nm find-identity
+Find an identity (certificate + private key).
+.It Nm delete-certificate
+Delete a certificate from a keychain.
+.It Nm set-identity-preference
+Set the preferred identity to use for a service.
+.It Nm get-identity-preference
+Get the preferred identity to use for a service.
+.It Nm create-db
+Create a db using the DL.
+.It Nm export
+Export items from a keychain.
+.It Nm import
+Import items into a keychain.
+.It Nm cms
+Encode or decode CMS messages.
+.It Nm install-mds
+Install (or re-install) the MDS database.
+.It Nm add-trusted-cert
+Add trusted certificate(s).
+.It Nm remove-trusted-cert
+Remove trusted certificate(s).
+.It Nm dump-trust-settings
+Display contents of trust settings.
+.It Nm user-trust-settings-enable
+Display or manipulate user-level trust settings.
+.It Nm trust-settings-export
+Export trust settings.
+.It Nm trust-settings-import
+Import trust settings.
+.It Nm verify-cert
+Verify certificate(s).
+.It Nm authorize
+Perform authorization operations.
+.It Nm authorizationdb
+Make changes to the authorization policy database.
+.It Nm execute-with-privileges
+Execute tool with privileges.
+.It Nm leaks
+Run
+.Pa /usr/bin/leaks
+on this process.
+.It Nm error
+Display a descriptive message for the given error code(s).
+.El
+.Sh "COMMON COMMAND OPTIONS"
+This section describes the
+.Ar command_options
+that are available across all
+.Nm
+commands.
+.Bl -tag -width -indent
+.It Fl h
+Show a usage message for the specified command.  This option is
+essentially the same as the
+.Ar help
+command.
+.El
+.Sh "SECURITY COMMANDS"
+Here (finally) are details on all the
+.Nm
+commands and the options each accepts.
+.Bl -item
+.It
+.Nm help
+.Op Fl h
+.Bl -item -offset -indent
+Show all commands, or show usage for a command.
+.El
+.It
+.Nm list-keychains
+.Op Fl h
+.Op Fl d Ar user Ns | Ns Ar system Ns | Ns Ar common Ns | Ns Ar dynamic
+.Op Fl s Op Ar keychain...
+.Bl -item -offset -indent
+Display or manipulate the keychain search list.
+.It
+.Bl -tag -compact -width -indent
+.It Fl d Ar user Ns | Ns Ar system Ns | Ns Ar common Ns | Ns Ar dynamic
+Use the specified preference domain.
+.It Fl s
+Set the search list to the specified keychains.
+.El
+.El
+.It
+.Nm default-keychain
+.Op Fl h
+.Op Fl d Ar user Ns | Ns Ar system Ns | Ns Ar common Ns | Ns Ar dynamic
+.Op Fl s Op Ar keychain
+.Bl -item -offset -indent
+Display or set the default keychain.
+.It
+.Bl -tag -compact -width -indent
+.It Fl d Ar user Ns | Ns Ar system Ns | Ns Ar common Ns | Ns Ar dynamic
+Use the specified preference domain.
+.It Fl s
+Set the default keychain to the specified
+.Ar keychain Ns .
+Unset it if no keychain is specified.
+.El
+.El
+.It
+.Nm login-keychain
+.Op Fl h
+.Op Fl d Ar user Ns | Ns Ar system Ns | Ns Ar common Ns | Ns Ar dynamic
+.Op Fl s Op Ar keychain
+.Bl -item -offset -indent
+Display or set the login keychain.
+.It
+.Bl -tag -compact -width -indent
+.It Fl d Ar user Ns | Ns Ar system Ns | Ns Ar common Ns | Ns Ar dynamic
+Use the specified preference domain.
+.It Fl s
+Set the login keychain to the specified
+.Ar keychain Ns .
+Unset it if no keychain is specified.
+.El
+.El
+.It
+.Nm create-keychain
+.Op Fl hP
+.Op Fl p Ar password
+.Op Ar keychain...
+.Bl -item -offset -indent
+Create keychains.
+.It  
+.Bl -tag -compact -width -indent-indent
+.It Fl P
+Prompt the user for a password using the SecurityAgent.
+.It Fl p Ar password
+Use
+.Ar password
+as the password for the keychains being created.
+.El
+.It
+If neither
+.Fl P
+or
+.Fl p Ar password
+are specified, the user is prompted for a password on the command line.
+.El
+.It
+.Nm delete-keychain
+.Op Fl h
+.Op Ar keychain...
+.Bl -item -offset -indent
+Delete keychains and remove them from the search list.
+.El
+.It
+.Nm lock-keychain
+.Op Fl h
+.Op Fl a Ns | Ns Ar keychain
+.Bl -item -offset -indent
+Lock
+.Ar keychain Ns
+\&, or the default keychain if none is specified.  If the
+.Fl a
+option is specified, all keychains are locked.
+.El
+.It
+.Nm unlock-keychain
+.Op Fl hu
+.Op Fl p Ar password
+.Op Ar keychain
+.Bl -item -offset -indent
+Unlock
+.Ar keychain Ns
+\&, or the default keychain if none is specified.
+.El
+.It
+.Nm set-keychain-settings
+.Op Fl hlu
+.Op Fl t Ar timeout
+.Op Ar keychain
+.Bl -item -offset -indent
+Set settings for
+.Ar keychain Ns
+\&, or the default keychain if none is specified.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl l 
+Lock keychain when the system sleeps.
+.It Fl u 
+Lock keychain after timeout interval.
+.It Fl t Ar timeout
+Specify
+.Ar timeout
+interval in seconds (omitting this option specifies "no timeout").
+.El
+.El
+.It
+.Nm set-keychain-password
+.Op Fl h
+.Op Fl o Ar oldPassword
+.Op Fl p Ar newPassword
+.Op Ar keychain
+.Bl -item -offset -indent
+Set password for
+.Ar keychain Ns
+\&, or the default keychain if none is specified.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl o Ar oldPassword
+Old keychain password (if not provided, will prompt)
+.It Fl p Ar newPassword
+New keychain password (if not provided, will prompt)
+.El
+.El
+.It
+.Nm show-keychain-info
+.Op Fl h
+.Op Ar keychain
+.Bl -item -offset -indent
+Show the settings for
+.Ar keychain Ns
+\&.
+.El
+.It
+.Nm dump-keychain
+.Op Fl adhir
+.Bl -item -offset -indent
+Dump the contents of one or more keychains.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl a
+Dump access control list of items
+.It Fl d
+Dump (decrypted) data of items
+.It Fl i
+Interactive access control list editing mode
+.It Fl r
+Dump raw (encrypted) data of items
+.El
+.El
+.It
+.Nm create-keypair
+.Op Fl h
+.Op Fl a Ar alg
+.Op Fl s Ar size
+.Op Fl f Ar date
+.Op Fl t Ar date
+.Op Fl d Ar days
+.Op Fl k Ar keychain
+.Op Fl A Ns | Ns Fl T Ar appPath
+.Op Ar name
+.Bl -item -offset -indent
+Create an asymmetric key pair.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl a Ar alg
+Use 
+.Ar alg
+as the algorithm, can be rsa, dh, dsa or fee (default rsa)
+.It Fl s Ar size
+Specify the keysize in bits (default 512)
+.It Fl f Ar date
+Make a key valid from the specified date (ex: "13/11/10 3:30pm")
+.It Fl t Ar date
+Make a key valid to the specified date
+.It Fl d Ar days
+Make a key valid for the number of days specified from today
+.It Fl k Ar keychain
+Use the specified keychain rather than the default
+.It Fl A
+Allow any application to access this key without warning (insecure, not recommended!)
+.It Fl T Ar appPath
+Specify an application which may access this key (multiple
+.Fl T Ns
+\& options are allowed)
+.El
+.El
+.It
+.Nm add-generic-password
+.Op Fl h
+.Op Fl a Ar account
+.Op Fl s Ar service
+.Op Fl w Ar password
+.Op Ar options...
+.Op Ar keychain
+.Bl -item -offset -indent
+Add a generic password item.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl a Ar account
+Specify account name (required)
+.It Fl c Ar creator
+Specify item creator (optional four-character code)
+.It Fl C Ar type
+Specify item type (optional four-character code)
+.It Fl D Ar kind
+Specify kind (default is "application password")
+.It Fl G Ar value
+Specify generic attribute value (optional)
+.It Fl j Ar comment
+Specify comment string (optional)
+.It Fl l Ar label
+Specify label (if omitted, service name is used as default label)
+.It Fl s Ar service
+Specify service name (required)
+.It Fl p Ar password
+Specify password to be added (legacy option, equivalent to
+.Fl w Ns
+\&)
+.It Fl w Ar password
+Specify password to be added
+.It Fl A
+Allow any application to access this item without warning (insecure, not recommended!)
+.It Fl T Ar appPath
+Specify an application which may access this item (multiple
+.Fl T Ns
+\& options are allowed)
+.It Fl U
+Update item if it already exists (if omitted, the item cannot already exist)
+.El
+.It
+.Bl -item
+By default, the application which creates an item is trusted to access its data without warning.  You can remove this default access by explicitly specifying an empty app pathname: 
+.Fl T Ns
+\& "". If no keychain is specified, the password is added to the default keychain.
+.El
+.El
+.It
+.Nm add-internet-password
+.Op Fl h
+.Op Fl a Ar account
+.Op Fl s Ar server
+.Op Fl w Ar password
+.Op Ar options...
+.Op Ar keychain
+.Bl -item -offset -indent
+Add an internet password item.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl a Ar account
+Specify account name (required)
+.It Fl c Ar creator
+Specify item creator (optional four-character code)
+.It Fl C Ar type
+Specify item type (optional four-character code)
+.It Fl d Ar domain
+Specify security domain string (optional)
+.It Fl D Ar kind
+Specify kind (default is "application password")
+.It Fl j Ar comment
+Specify comment string (optional)
+.It Fl l Ar label
+Specify label (if omitted, service name is used as default label)
+.It Fl p Ar path
+Specify path string (optional)
+.It Fl P Ar port
+Specify port number (optional)
+.It Fl r Ar protocol
+Specify protocol (optional four-character SecProtocolType, e.g. "http", "ftp ")
+.It Fl s Ar server
+Specify server name (required)
+.It Fl t Ar authenticationType
+Specify authentication type (as a four-character SecAuthenticationType, default is "dflt")
+.It Fl w Ar password
+Specify password to be added
+.It Fl A
+Allow any application to access this item without warning (insecure, not recommended!)
+.It Fl T Ar appPath
+Specify an application which may access this item (multiple
+.Fl T Ns
+\& options are allowed)
+.It Fl U
+Update item if it already exists (if omitted, the item cannot already exist)
+.El
+.It
+.Bl -item
+By default, the application which creates an item is trusted to access its data without warning.  You can remove this default access by explicitly specifying an empty app pathname: 
+.Fl T Ns
+\& "". If no keychain is specified, the password is added to the default keychain.
+.El
+.El
+.It
+.Nm add-certificates
+.Op Fl h
+.Op Fl k Ar keychain
+.Ar file...
+.Bl -item -offset -indent
+Add certficates contained in the specified
+.Ar files
+to the default keychain.  The files must contain one DER encoded X509 certificate each.
+.Bl -tag -compact -width -indent-indent
+.It Fl k Ar keychain
+Use
+.Ar keychain
+rather than the default keychain.
+.El
+.El
+.It
+.Nm find-generic-password
+.Op Fl h
+.Op Fl a Ar account
+.Op Fl s Ar service
+.Op Fl Ar options...
+.Op Fl g
+.Op Fl Ar keychain...
+.Bl -item -offset -indent
+Find a generic password item.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl a Ar account
+Match account string
+.It Fl c Ar creator
+Match creator (four-character code)
+.It Fl C Ar type
+Match type (four-character code)
+.It Fl D Ar kind
+Match kind string
+.It Fl G Ar value
+Match value string (generic attribute)
+.It Fl j Ar comment
+Match comment string
+.It Fl l Ar label
+Match label string
+.It Fl s Ar service
+Match service string
+.It Fl g
+Display the password for the item found
+.It Fl w
+Display the password(only) for the item found
+.El
+.El
+.It
+.Nm delete-generic-password
+.Op Fl h
+.Op Fl a Ar account
+.Op Fl s Ar service
+.Op Fl Ar options...
+.Op Fl Ar keychain...
+.Bl -item -offset -indent
+Delete a generic password item.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl a Ar account
+Match account string
+.It Fl c Ar creator
+Match creator (four-character code)
+.It Fl C Ar type
+Match type (four-character code)
+.It Fl D Ar kind
+Match kind string
+.It Fl G Ar value
+Match value string (generic attribute)
+.It Fl j Ar comment
+Match comment string
+.It Fl l Ar label
+Match label string
+.It Fl s Ar service
+Match service string
+.El
+.El
+.It
+.Nm delete-internet-password
+.Op Fl h
+.Op Fl a Ar account
+.Op Fl s Ar server
+.Op Ar options...
+.Op Ar keychain...
+.Bl -item -offset -indent
+Delete an internet password item.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl a Ar account
+Match account string
+.It Fl c Ar creator
+Match creator (four-character code)
+.It Fl C Ar type
+Match type (four-character code)
+.It Fl d Ar securityDomain
+Match securityDomain string
+.It Fl D Ar kind
+Match kind string
+.It Fl j Ar comment
+Match comment string
+.It Fl l Ar label
+Match label string
+.It Fl p Ar path
+Match path string
+.It Fl P Ar port
+Match port number
+.It Fl r Ar protocol
+Match protocol (four-character code)
+.It Fl s Ar server
+Match server string
+.It Fl t Ar authenticationType
+Match authenticationType (four-character code)
+.El
+.El
+.It
+.Nm find-internet-password
+.Op Fl h
+.Op Fl a Ar account
+.Op Fl s Ar server
+.Op Ar options...
+.Op Fl g
+.Op Ar keychain...
+.Bl -item -offset -indent
+Find an internet password item.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl a Ar account
+Match account string
+.It Fl c Ar creator
+Match creator (four-character code)
+.It Fl C Ar type
+Match type (four-character code)
+.It Fl d Ar securityDomain
+Match securityDomain string
+.It Fl D Ar kind
+Match kind string
+.It Fl j Ar comment
+Match comment string
+.It Fl l Ar label
+Match label string
+.It Fl p Ar path
+Match path string
+.It Fl P Ar port
+Match port number
+.It Fl r Ar protocol
+Match protocol (four-character code)
+.It Fl s Ar server
+Match server string
+.It Fl t Ar authenticationType
+Match authenticationType (four-character code)
+.It Fl g
+Display the password for the item found
+.It Fl w
+Display the password(only) for the item found
+.El
+.El
+.It
+.Nm find-certificate
+.Op Fl h
+.Op Fl a
+.Op Fl c Ar name
+.Op Fl e Ar emailAddress
+.Op Fl m
+.Op Fl p
+.Op Fl Z
+.Op Ar keychain...
+.Bl -item -offset -indent
+Find a certificate item.  If no
+.Ar keychain Ns
+\& arguments are provided, the default search list is used.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl a
+Find all matching certificates, not just the first one
+.It Fl c Ar name
+Match on
+.Ar name Ns
+\& when searching (optional)
+.It Fl e Ar emailAddress
+Match on
+.Ar emailAddress Ns
+\& when searching (optional)
+.It Fl m
+Show the email addresses in the certificate
+.It Fl p
+Output certificate in pem format.  Default is to dump the attributes and keychain the cert is in.
+.It Fl Z
+Print SHA-1 hash of the certificate
+.El
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.It security> find-certificate -a -p > allcerts.pem
+Exports all certificates from all keychains into a pem file called allcerts.pem.
+.It security> find-certificate -a -e me@foo.com -p > certs.pem
+Exports all certificates from all keychains with the email address
+me@foo.com into a pem file called certs.pem.
+.It security> find-certificate -a -c MyName -Z login.keychain | grep ^SHA-1
+Print the SHA-1 hash of every certificate in 'login.keychain' whose common name includes 'MyName'
+.El
+.El
+.It
+.Nm find-identity
+.Op Fl h
+.Op Fl p Ar policy
+.Op Fl s Ar string
+.Op Fl v
+.Op Ar keychain...
+.Bl -item -offset -indent
+Find an identity (certificate + private key) satisfying a given policy. If no
+.Ar policy Ns
+\& arguments are provided, the X.509 basic policy is assumed. If no
+.Ar keychain Ns
+\& arguments are provided, the default search list is used.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl p Ar policy
+Specify
+.Ar policy Ns
+\& to evaluate (multiple -p options are allowed). Supported policies:
+basic, ssl-client, ssl-server, smime, eap, ipsec, ichat, codesigning,
+sys-default, sys-kerberos-kdc
+.It Fl s Ar string
+Specify optional policy-specific
+.Ar string Ns
+\& (e.g. a DNS hostname for SSL, or RFC822 email address for S/MIME)
+.It Fl v
+Show valid identities only (default is to show all identities)
+.El
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.It security> find-identity -v -p ssl-client
+Display valid identities that can be used for SSL client authentication
+.It security> find-identity -p ssl-server -s www.domain.com
+Display identities for a SSL server running on the host 'www.domain.com'
+.It security> find-identity -p smime -s user@domain.com
+Display identities that can be used to sign a message from 'user@domain.com'
+.El
+.El
+.It
+.Nm delete-certificate
+.Op Fl h
+.Op Fl c Ar name
+.Op Fl Z Ar hash
+.Op Fl t
+.Op Ar keychain...
+.Bl -item -offset -indent
+Delete a certificate from a keychain.  If no
+.Ar keychain Ns
+\& arguments are provided, the default search list is used.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl c Ar name
+Specify certificate to delete by its common name
+.It Fl Z Ar hash
+Specify certificate to delete by its SHA-1 hash
+.It Fl t
+Also delete user trust settings for this certificate
+.El
+.It
+The certificate to be deleted must be uniquely specified either by a
+string found in its common name, or by its SHA-1 hash.
+.El
+.It
+.Nm set-identity-preference
+.Op Fl h
+.Op Fl n
+.Op Fl c Ar identity
+.Op Fl s Ar service
+.Op Fl u Ar keyUsage
+.Op Fl Z Ar hash
+.Op Ar keychain...
+.Bl -item -offset -indent
+Set the preferred identity to use for a service.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl n
+Specify no identity (clears existing preference for the given service)
+.It Fl c Ar identity
+Specify identity by common name of the certificate
+.It Fl s Ar service
+Specify service (may be a URL, RFC822 email address, DNS host, or other name) for which this identity is to be preferred
+.It Fl u Ar keyUsage
+Specify key usage (optional)
+.It Fl Z Ar hash
+Specify identity by SHA-1 hash of certificate (optional)
+.El
+.It
+The identity is located by searching the specified keychain(s) for a certificate whose common name contains
+the given identity string. If no keychains are specified to search, the default search list is used. Different
+identity preferences can be set for individual key usages. You can differentiate between two identities which contain
+the same string by providing a SHA-1 hash of the certificate (in addition to, or instead of, the name.)
+.It
+.Sy PARTIAL PATHS AND WILDCARDS
+.It
+Prior to 10.5.4, identity preferences for SSL/TLS client authentication could only be set on a per-URL basis. The
+URL being visited had to match the service name exactly for the preference to be in effect.
+.It
+In 10.5.4, it became possible to specify identity preferences on a per-server basis, by using
+a service name with a partial path URL to match more specific paths on the same server. For
+example, if an identity preference for "https://www.apache-ssl.org/" exists, it will be in effect for
+"https://www.apache-ssl.org/cgi/cert-export", and so on. Note that partial path URLs must end with a trailing
+slash character.
+.It
+Starting with 10.6, it is possible to specify identity preferences on a per-domain
+basis, by using the wildcard character '*' as the leftmost component of the service name. Unlike SSL wildcards,
+an identity preference wildcard can match more than one subdomain. For example, an identity preference for
+the name "*.army.mil" will match "server1.subdomain1.army.mil" or "server2.subdomain2.army.mil". Likewise,
+a preference for "*.mil" will match both "server.army.mil" and "server.navy.mil".
+.It
+.Sy KEY USAGE CODES
+.It
+.Bl -tag -width -indent
+     0 - preference is in effect for all possible key usages (default)
+     1 - encryption only
+     2 - decryption only
+     4 - signing only
+     8 - signature verification only
+    16 - signing with message recovery only
+    32 - signature verification with message recovery only
+    64 - key wrapping only
+   128 - key unwrapping only
+   256 - key derivation only
+.It  To specify more than one usage, add values together.
+.El
+.El
+.It
+.Nm get-identity-preference
+.Op Fl h
+.Op Fl s Ar service
+.Op Fl u Ar keyUsage
+.Op Fl p
+.Op Fl c
+.Op Fl Z
+.Bl -item -offset -indent
+Get the preferred identity to use for a service.
+.It
+.Bl -tag -compact -width -indent-indent
+.It Fl s Ar service
+Specify service (may be a URL, RFC822 email address, DNS host, or other name)
+.It Fl u Ar keyUsage
+Specify key usage (optional)
+.It Fl p
+Output identity certificate in pem format
+.It Fl c
+Print common name of the preferred identity certificate
+.It Fl Z
+Print SHA-1 hash of the preferred identity certificate
+.El
+.El
+.It
+.Nm create-db
+.Op Fl aho0
+.Op Fl g Ar dl Ns | Ns Ar cspdl
+.Op Fl m Ar mode
+.Op Ar name
+.Bl -item -offset -indent
+Create a db using the DL.  If
+.Ar name
+isn't provided
+.Nm
+will prompt the user to type a name.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl a
+Turn off autocommit
+.It Fl g Ar dl Ns | Ns Ar cspdl
+Use the AppleDL (default) or AppleCspDL
+.It Fl m Ar mode
+Set the file permissions to
+.Ar mode Ns
+\&.
+.It Fl o
+Force using openparams argument
+.It Fl 0
+Force using version 0 openparams
+.El
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.It security> create-db -m 0644 test.db
+.It security> create-db -g cspdl -a test2.db
+.El
+.\"new import/export commands.
+.El
+.It
+.Nm export
+.Op Fl k Ar keychain
+.Op Fl t Ar type
+.Op Fl f Ar format
+.Op Fl w
+.Op Fl p Ar format
+.Op Fl P Ar passphrase
+.Op Fl o Ar outfile
+.Bl -item -offset -indent
+Export one or more items from a keychain to one of a number of external representations.  If
+.Ar keychain
+isn't provided, items will be exported from the user's default keychain.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl k Ar keychain
+Specify keychain from which item(s) will be exported. 
+.It Fl t Ar type
+Specify the type of items to export. Possible types are certs, allKeys, pubKeys, privKeys, identities, and all. The default is all. An identity consists of both a certificate and the corresponding provate key. 
+.It Fl f Ar format
+Specify the format of the exported data. Possible formats are openssl, bsafe, pkcs7, pkcs8, pkcs12, x509, openssh1, openssh2, and pemseq. The default is pemseq if more than one item is being exported. The default is openssl if one key is being exported. The default is x509 if one certificate is being exported.
+.It Fl w
+Specifies that private keys are to be wrapped on export. 
+.It Fl p 
+Specifies that PEM armour is to be applied to the output data.
+.It Fl P Ar passphrase
+Specify the wrapping passphrase immediately. The default is to obtain a secure passphrase via GUI.
+.It Fl o Ar outfile
+Write the output data to 
+.Ar outfile Ns
+\&. Default is to write data to stdout. 
+.El
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.It security> export -k login.keychain -t certs -o /tmp/certs.pem
+.It security> export -k newcert.keychain -t identities -f pkcs12 -o /tmp/mycerts.p12
+.El
+.\"marker.
+.El
+.It
+.Nm import
+inputfile
+.Op Fl k Ar keychain
+.Op Fl t Ar type
+.Op Fl f Ar format
+.Op Fl w
+.Op Fl P Ar passphrase
+.Op Ar options...
+.Bl -item -offset -indent
+Import one or more items from 
+.Ar inputfile Ns
+\& into a keychain. If
+.Ar keychain
+isn't provided, items will be imported into the user's default keychain.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl k Ar keychain
+Specify keychain into which item(s) will be imported. 
+.It Fl t Ar type
+Specify the type of items to import. Possible types are cert, pub, priv, session, cert, and agg. Pub, priv, and session refer to keys; agg is one of the aggregate types (pkcs12 and PEM sequence). The command can often figure out what item_type an item contains based in the filename and/or item_format.
+.It Fl f Ar format
+Specify the format of the exported data. Possible formats are openssl, bsafe, raw, pkcs7, pkcs8, pkcs12, x509, openssh1, openssh2, and pemseq. The command can often figure out what format an item is in based in the filename and/or item_type. 
+.It Fl w
+Specify that private keys are wrapped and must be unwrapped on import.
+.It Fl x
+Specify that private keys are non-extractable after being imported.
+.It Fl P Ar passphrase
+Specify the unwrapping passphrase immediately. The default is to obtain a secure passphrase via GUI.
+.It Fl a Ar attrName Ar attrValue
+Specify optional extended attribute name and value. Can be used multiple times. This is only valid when importing keys.
+.It Fl A
+Allow any application to access the imported key without warning (insecure, not recommended!)
+.It Fl T Ar appPath
+Specify an application which may access the imported key (multiple
+.Fl T Ns
+\& options are allowed)
+.El
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.It security> import /tmp/certs.pem -k 
+.It security> import /tmp/mycerts.p12 -t agg -k newcert.keychain
+.It security> import /tmp/mycerts.p12 -f pkcs12 -k newcert.keychain
+.El
+.\"end of new import/export commands.
+.El
+.It
+.Nm cms
+.Op Fl C Ns | Ns Fl D Ns | Ns Fl E Ns | Ns Fl S
+.Op Ar options...
+.Bl -item -offset -indent
+Encode or decode CMS messages.  
+.Bl -tag -compact -width -indent-indent
+.It Fl C
+create a CMS encrypted message
+.It Fl D
+decode a CMS message
+.It Fl E
+create a CMS enveloped message
+.It Fl S
+create a CMS signed message
+.El
+.It
+Decoding options:
+.Bl -tag -compact -width -indent-indent
+.It Fl c Ar content
+use this detached content file
+.It Fl h Ar level
+generate email headers with info about CMS message (output
+.Ar level Ns
+\& >= 0)
+.It Fl n
+suppress output of content
+.El
+.It
+Encoding options:
+.Bl -tag -compact -width -indent-indent
+.It Fl r Ar id,...
+create envelope for comma-delimited list of recipients, where id can be a certificate nickname or email address
+.It Fl G
+include a signing time attribute
+.It Fl H Ar hash
+hash = MD2|MD4|MD5|SHA1|SHA256|SHA384|SHA512 (default: SHA1)
+.It Fl N Ar nick
+use certificate named "nick" for signing
+.It Fl P
+include a SMIMECapabilities attribute
+.It Fl T
+do not include content in CMS message
+.It Fl Y Ar nick
+include an EncryptionKeyPreference attribute with certificate (use "NONE" to omit)
+.It Fl Z Ar hash
+find a certificate by subject key ID
+.El
+.It
+Common options:
+.Bl -tag -compact -width -indent-indent
+.It Fl e Ar envelope
+specify envelope file (valid with
+.Fl D Ns
+\& or
+.Fl E Ns
+\&)
+.It Fl k Ar keychain
+specify keychain to use
+.It Fl i Ar infile
+use infile as source of data (default: stdin)
+.It Fl o Ar outfile
+use outfile as destination of data (default: stdout)
+.It Fl p Ar password
+use password as key db password (default: prompt)
+.It Fl s
+pass data a single byte at a time to CMS
+.It Fl u Ar certusage
+set type of certificate usage (default: certUsageEmailSigner)
+.It Fl v
+print debugging information
+.El
+.It
+Cert usage codes:
+                  0 - certUsageSSLClient
+                  1 - certUsageSSLServer
+                  2 - certUsageSSLServerWithStepUp
+                  3 - certUsageSSLCA
+                  4 - certUsageEmailSigner
+                  5 - certUsageEmailRecipient
+                  6 - certUsageObjectSigner
+                  7 - certUsageUserCertImport
+                  8 - certUsageVerifyCA
+                  9 - certUsageProtectedObjectSigner
+                 10 - certUsageStatusResponder
+                 11 - certUsageAnyCA
+.It
+.El
+.It
+.Nm install-mds
+.Bl -item -offset -indent
+Install (or re-install) the Module Directory Services (MDS) database. This is a system tool which is not normally used by users. There are no options. 
+.El
+.It
+.Nm add-trusted-cert
+.Op Fl d
+.Op Fl r Ar resultType
+.Op Fl p Ar policy
+.Op Fl a Ar appPath
+.Op Fl s Ar policyString
+.Op Fl e Ar allowedError
+.Op Fl u Ar keyUsage
+.Op Fl k Ar keychain
+.Op Fl i Ar settingsFileIn
+.Op Fl o Ar settingsFileOut
+.Op Fl D
+certFile
+.Bl -item -offset -indent
+Add certificate (in DER or PEM format) from  
+.Ar certFile Ns
+\& to per-user or local Admin Trust Settings. When modifying per-user Trust Settings, user authentication is required via an authentication dialog. When modifying admin Trust Settings, the process must be running as root, or admin authentication is required. 
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl d
+Add to admin cert store; default is user. 
+.It Fl r Ar resultType
+resultType = trustRoot|trustAsRoot|deny|unspecified; default is trustRoot.
+.It Fl p Ar policy
+Specify policy constraint (ssl, smime, codeSign, IPSec, iChat, basic, swUpdate, pkgSign, pkinitClient, pkinitServer, eap).
+.It Fl r Ar resultType
+resultType = trustRoot|trustAsRoot|deny|unspecified; default is trustRoot.
+.It Fl a Ar appPath
+Specify application constraint.
+.It Fl s Ar policyString
+Specify policy-specific string.
+.It Fl e Ar allowedError
+Specify allowed error (an integer value, or one of: certExpired, hostnameMismatch)
+.It Fl u Ar keyUsage
+Specify key usage, an integer.
+.It Fl k Ar keychain
+Specify keychain to which cert is added.
+.It Fl i Ar settingsFileIn
+Input trust settings file; default is user domain.
+.It Fl o Ar settingsFileOut
+Output trust settings file; default is user domain.
+.It Fl D
+Add default setting instead of per-cert setting. No certFile is specified when using this option
+.El
+.It
+.Sy Key usage codes:
+    -1 - Any
+     1 - Sign
+     2 - Encrypt/Decrypt Data
+     4 - Encrypt/Decrypt Key
+     8 - Sign certificate
+    16 - Sign revocation
+    32 - Key exchange
+    To specify more than one usage, add values together (except -1 - Any).
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.Dl security> add-trusted-cert /tmp/cert.der
+.Dl security> add-trusted-cert -d .tmp/cert.der
+.El
+.\"marker.
+.It
+.Nm remove-trusted-cert
+.Op Fl d
+.Op Fl D
+certFile
+.Bl -item -offset -indent
+Remove certificate (in DER or PEM format) in  
+.Ar certFile Ns
+\& from per-user or local Admin Trust Settings. When modifying per-user Trust Settings, user authentication is required via an authentication dialog. When modifying admin Trust Settings, the process must be running as root, or admin authentication is required. 
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl d
+Remove from admin cert store; default is user. 
+.It Fl D
+Remove Default Root Cert setting instead of an actual cert setting. No certFile is specified when using this option. 
+.El
+.\"marker.
+.El
+.It
+.Nm dump-trust-settings
+.Op Fl s
+.Op Fl d
+.Bl -item -offset -indent
+Display Trust Settings. 
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl s
+Display trusted system certs; default is user. 
+.It Fl d
+Display trusted admin certs; default is user. 
+.El
+.\"marker.
+.El
+.It
+.Nm user-trust-settings-enable
+.Op Fl d
+.Op Fl e
+.Bl -item -offset -indent
+Display or manipulate user-level Trust Settings. With no arguments, shows the current state of the user-level Trust Settings enable. Otherwise enables or disables user-level Trust Settings. 
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl d
+Disable user-level Trust Settings. 
+.It Fl e
+Enable user-level Trust Settings. 
+.El
+.\"marker.
+.El
+.It
+.Nm trust-settings-export
+.Op Fl s
+.Op Fl d
+settings_file
+.Bl -item -offset -indent
+Export Trust Settings to the specified file.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl s
+Export system Trust Settings; default is user.
+.It Fl d
+Export admin Trust Settings; default is user.
+.El
+.\"marker.
+.El
+.It
+.Nm trust-settings-import
+.Op Fl d
+settings_file
+.Bl -item -offset -indent
+Import Trust Settings from the specified file. When modifying per-user Trust Settings, user authentication is required via an authentication dialog. When modifying admin Trust Settings, the process must be running as root, or admin authentication is required.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl d
+Import admin Trust Settings; default is user.
+.El
+.\"marker.
+.El
+.It
+.Nm verify-cert
+.Op Fl c Ar certFile
+.Op Fl r Ar rootCertFile
+.Op Fl p Ar policy
+.Op Fl k Ar keychain
+.Op Fl n
+.Op Fl L
+.Op Fl l
+.Op Fl e Ar emailAddress
+.Op Fl s Ar sslHost
+.Op Fl q
+.Bl -item -offset -indent
+Verify one or more certificates. 
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl c Ar certFile
+Certificate to verify, in DER or PEM format. Can be specified more than once; leaf certificate has to be specified first.
+.It Fl r Ar rootCertFile
+Root certificate, in DER or PEM format. Can be specified more than once. If not specified, the system anchor certificates are used. If one root certificate is specified, and zero (non-root) certificates are specified, the root certificate is verified against itself. 
+.It Fl p Ar policy
+Specify verification policy (ssl, smime, codeSign, IPSec, iChat, basic, swUpdate, pkgSign, pkinitClient, pkinitServer, eap, appleID, macappstore, timestamping). Default is basic.
+.It Fl k Ar keychain
+Keychain to search for intermediate certs. Can be specified multiple times. Default is the current user's keychain search list.
+.It Fl n
+Avoid searching any keychains.
+.It Fl L
+Use local certificates only. If an issuing CA certificate is missing, this option will avoid accessing the network to fetch it.
+.It Fl l
+Specifies that the leaf certificate is a CA cert. By default, a leaf certificate with a Basic Constraints extension with the CA bit set fails verification.
+.It Fl e Ar emailAddress
+Specify email address for the smime policy.
+.It Fl s Ar sslHost
+Specify SSL host name for the ssl policy.
+.It Fl q
+Quiet, no stdout or stderr.
+.El
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.It security> verify-cert -c applestore0.cer -c applestore1.cer -p ssl -s store.apple.com
+.It security> verify-cert -r serverbasic.crt
+.El
+.\"marker.
+.El
+.It
+.Nm authorize
+.Op Fl updPiew
+.Op Ar right...
+.Bl -item -offset -indent
+Authorize requested right(s).  The extend-rights flag will be passed by default.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl u
+Allow user interaction.
+.It Fl p
+Allow returning partial rights.
+.It Fl d
+Destroy acquired rights.
+.It Fl P
+Pre-authorize rights only.
+.It Fl l
+Operate authorization in least privileged mode.
+.It Fl i
+Internalize authref passed on stdin.
+.It Fl e
+Externalize authref to stdout
+.It Fl w
+Wait while holding AuthorizationRef until stdout is closed. This will allow client to read externalized AuthorizationRef from pipe.
+.El
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.It security> security authorize -ud my-right
+Basic authorization of my-right.
+.It security> security -q authorize -uew my-right | security -q authorize -i my-right
+Authorizing a right and passing it to another command as a way to add authorization to shell scripts.
+.El
+.El
+.It
+.Nm authorizationdb
+.Ar read <right-name>
+.It
+.Nm authorizationdb
+.Ar write <right-name> [allow|deny|<rulename>]
+.It
+.Nm authorizationdb
+.Ar remove <right-name>
+.Bl -item -offset -indent
+Read/Modify authorization policy database. Without a rulename write will read a dictionary as a plist from stdin.
+.It
+.Sy Examples
+.Bl -tag -width -indent
+.It security> security authorizationdb read system.privilege.admin > /tmp/aewp-def
+Read definition of system.privilege.admin right.
+.It security> security authorizationdb write system.preferences < /tmp/aewp-def
+Set system.preferences to definition of system.privilege.admin right.
+.It security> security authorizationdb write system.preferences authenticate-admin
+Every change to preferences requires an Admin user to authenticate.
+.El
+.El
+.It
+.Nm execute-with-privileges
+.Ar <program> 
+.Op Ar args...
+.Bl -item -offset -indent
+Execute tool with privileges. 
+On success stdin will be read and forwarded to the tool.
+.El
+.It
+.Nm leaks
+.Op Fl h
+.Op Fl cycles
+.Op Fl nocontext
+.Op Fl nostacks
+.Op Fl exclude Ar symbol
+.Bl -item -offset -indent
+Run
+.Li /usr/bin/leaks
+on this process.  This can help find memory leaks after running
+certain commands.
+.It
+Options:
+.Bl -tag -compact -width -indent-indent
+.It Fl cycles
+Use a stricter algorithm (See
+.Xr leaks 1
+for details).
+.It Fl nocontext
+Withhold the hex dumps of the leaked memory.
+.It Fl nostacks
+Don't show stack traces of leaked memory.
+.It Fl exclude Ar symbol
+Ignore leaks called from
+.Ar symbol Ns .
+.El
+.El
+.It
+.Nm error
+.Op Fl h
+.Op Ar <error code(s)...>
+.Bl -item -offset -indent
+Display an error string for the given security-related error code.
+The error can be in decimal or hex, e.g. 1234 or 0x1234. Multiple
+errors can be separated by spaces.
+.El
+.El
+.El
+.Sh ENVIRONMENT      \" May not be needed
+.Bl -tag -width -indent
+.It Ev MallocStackLogging
+When using the
+.Nm leaks
+command or the
+.Fl l
+option it's probably a good idea to set this environment variable before
+.Nm
+is started.  Doing so will allow leaks to display symbolic backtraces.
+.El                      
+.Sh FILES
+.Bl -tag -width -indent
+.It Pa ~/Library/Preferences/com.apple.security.plist
+.Pp
+Property list file containing the current user's default keychain and keychain search list.
+.It Pa /Library/Preferences/com.apple.security.plist
+.Pp
+Property list file containing the system default keychain and keychain search list.  This is used by processes started at boot time, or those requesting to use the system search domain, such as system daemons.
+.It Pa /Library/Preferences/com.apple.security-common.plist
+.Pp
+Property list file containing the common keychain search list, which is appended to every user's search list and to the system search list.
+.El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr certtool 1 ,
+.Xr leaks 1
+.\" .Xr systemkeychain 8 
+.Sh HISTORY
+.Nm
+was first introduced in Mac OS X version 10.3.
+.Sh BUGS
+.Nm
+still needs more commands before it can be considered complete.
+In particular, it should someday supersede both the
+.Li certtool
+and
+.Li systemkeychain
+commands.

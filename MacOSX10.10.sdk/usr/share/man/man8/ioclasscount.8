@@ -1,0 +1,50 @@
+.\"
+.\" Copyright (c) 2000-2008 Apple Computer, Inc.  All rights reserved.
+.\"
+.\"	$Id: ioclasscount.8,v 1.4 2003/11/06 19:16:54 sdouglas Exp $
+.\"
+.Dd November 06, 2008
+.Dt IOCLASSCOUNT 8
+.Os Darwin
+.Sh NAME
+.Nm ioclasscount
+.Sh SYNOPSIS
+.Nm
+.Op classname
+.Op ...
+.Sh DESCRIPTION
+.Nm
+displays the instance counts of OSObject-based C++ classes in the kernel,
+incremented by the number of
+.Em direct
+subclasses that have an instance count of at least 1.
+For example, if IONetworkController is not directly instantiated,
+but its direct subclass IOEthernetController has any instances,
+then IONetworkController's instance count will be at least 1;
+if another direct subclass such as IOFWController has any instances,
+then IONetworkController's instance count will be at least 2; and so on.
+(This modification of instance counts prevents unloading of
+kexts defining superclasses that have no instances,
+but whose subclasses in other kexts have instances.)
+.Pp
+If classes are specified,
+instance counts are printed as a comma-separated list
+in the order specified.
+If no classes are specified,
+instance counts for all classes are printed,
+one per line of output and sorted by name.
+.Pp
+This information is useful for tracking leaks.
+Instance counts can also found in the root of the IORegistry
+in the
+.Dq IOKitDiagnostics
+property.
+.Sh EXAMPLES
+Display instance counts for IOPCIDevice and AppleTestPCI:
+.Bl -tag -width findx
+.It Li "/usr/sbin/ioclasscount IOPCIDevice AppleTestPCI"
+IOPCIDevice = 2, AppleTestPCI = 1
+.El
+.Sh SEE ALSO
+.Xr ioalloccount 8 ,
+.Xr ioreg 8

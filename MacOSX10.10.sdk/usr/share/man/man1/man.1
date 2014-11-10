@@ -1,0 +1,498 @@
+.\"
+.\" Generated automatically from man.1.in by the
+.\" configure script.
+.\"
+.\" Man page for man (and the former manpath)
+.\"
+.\" Copyright (c) 1990, 1991, John W. Eaton.
+.\"
+.\" You may distribute under the terms of the GNU General Public
+.\" License as specified in the README file that comes with the man 1.0
+.\" distribution.  
+.\"
+.\" John W. Eaton
+.\" jwe@che.utexas.edu
+.\" Department of Chemical Engineering
+.\" The University of Texas at Austin
+.\" Austin, Texas  78712
+.\"
+.\" Many changes - aeb
+.\" More changes - flc
+.\"
+.TH man 1 "September 19, 2005"
+.LO 1
+.SH NAME
+man \- format and display the on-line manual pages
+.SH SYNOPSIS
+.B man 
+.RB [ \-acdfFhkKtwW ]
+.RB [ --path ] 
+.RB [ \-m 
+.IR system ] 
+.RB [ \-p 
+.IR string ] 
+.RB [ \-C 
+.IR config_file ] 
+.RB [ \-M 
+.IR pathlist ]
+.RB [ \-P
+.IR pager ] 
+.RB [ \-B
+.IR browser ] 
+.RB [ \-H
+.IR htmlpager ] 
+.RB [ \-S 
+.IR section_list ] 
+.RI [ section ] 
+.I "name ..."
+
+.SH DESCRIPTION
+.B man
+formats and displays the on-line manual pages.  If you specify
+.IR section ,
+.B man
+only looks in that section of the manual.
+.I name
+is normally the name of the manual page, which is typically the name
+of a command, function, or file.  
+However, if
+.I name
+contains a slash
+.RB ( / ) 
+then 
+.B man 
+interprets it as a file specification, so that you can do
+.B "man ./foo.5"
+or even
+.B "man /cd/foo/bar.1.gz\fR.\fP"
+.PP
+See below for a description of where 
+.B man
+looks for the manual page files.
+ 
+.SH OPTIONS
+.TP
+.B \-\^C " config_file"
+Specify the configuration file to use; the default is
+.BR /private/etc/man.conf .
+(See
+.BR man.conf (5).)
+.TP
+.B \-\^M " path"
+Specify the list of directories to search for man pages.
+Separate the directories with colons.  An empty list is the same as
+not specifying 
+.B \-M
+at all.  See
+.BR "SEARCH PATH FOR MANUAL PAGES" .
+.TP
+.B \-\^P " pager"
+Specify which pager to use. 
+This option overrides the
+.B MANPAGER
+environment variable, which in turn overrides the
+.B PAGER
+variable.  By default,
+.B man
+uses
+.BR "/usr/bin/less -is" .
+.TP
+.B \-\^B
+Specify which browser to use on HTML files. 
+This option overrides the
+.B BROWSER
+environment variable. By default,
+.B man
+uses
+.BR /usr/bin/less -is ,
+.TP
+.B \-\^H
+Specify a command that renders HTML files as text. 
+This option overrides the
+.B HTMLPAGER
+environment variable. By default,
+.B man
+uses
+.BR /bin/cat ,
+.TP
+.B \-\^S " section_list"
+List is a colon separated list of manual sections to search.
+This option overrides the
+.B MANSECT
+environment variable.
+.TP
+.B \-\^a
+By default,
+.B man
+will exit after displaying the first manual page it
+finds.  Using this option forces
+.B man
+to display all the manual pages that match
+.B name, 
+not just the first.
+.TP
+.B \-\^c
+Reformat the source man page, even when an up-to-date cat page exists.
+This can be meaningful if the cat page was formatted for a screen
+with a different number of columns, or if the preformatted page
+is corrupted.
+.TP
+.B \-\^d
+Don't actually display the man pages, but do print gobs of debugging
+information.
+.TP
+.B \-\^D
+Both display and print debugging info.
+.TP
+.B \-\^f
+Equivalent to
+.BR whatis .
+.TP
+.BR \-\^F " or " \-\-preformat
+Format only - do not display.
+.TP
+.B \-\^h
+Print a help message and exit.
+.TP
+.B \-\^k
+Equivalent to
+.BR apropos .
+.TP
+.B \-\^K
+Search for the specified string in *all* man pages. Warning: this is
+probably very slow! It helps to specify a section.
+(Just to give a rough idea, on my machine this takes about a minute
+per 500 man pages.)
+.TP
+.B \-\^m " system"
+Specify an alternate set of man pages to search based on the system
+name given.
+.TP
+.B \-\^p " string"
+Specify the sequence of preprocessors to run before
+.B nroff
+or
+.BR troff .
+Not all installations will have a full set of preprocessors.
+Some of the preprocessors and the letters used to designate them are: 
+eqn (e), grap (g), pic (p), tbl (t), vgrind (v), refer (r).
+This option overrides the
+.B MANROFFSEQ
+environment variable.
+.TP
+.B \-\^t
+Use
+.B /usr/bin/groff -Tps -mandoc -c
+to format the manual page, passing the output to 
+.B stdout.
+The default output format of
+.B /usr/bin/groff -Tps -mandoc -c 
+is Postscript, refer to the manual page of
+.B /usr/bin/groff -Tps -mandoc -c
+for ways to pick an alternate format.
+.PP
+Depending on the selected format and the availability of printing
+devices, the output
+may need to be passed through some filter or another before being
+printed.
+.TP
+.B \-\^w \fRor\fP \-\-path
+Don't actually display the man pages, but do print the location(s) of
+the files that would be formatted or displayed. If no argument is given:
+display (on stdout) the list of directories that is searched by
+.B man
+for man pages. If
+.B manpath
+is a link to man, then "manpath" is equivalent to "man --path".
+.TP
+.B \-\^W
+Like \-\^w, but print file names one per line, without additional information.
+This is useful in shell commands like
+.ft CW
+.B "man -aW man | xargs ls -l"
+.ft
+
+.SH "CAT PAGES"
+Man will try to save the formatted man pages, in order to save
+formatting time the next time these pages are needed.
+Traditionally, formatted versions of pages in DIR/manX are
+saved in DIR/catX, but other mappings from man dir to cat dir
+can be specified in
+.BR /private/etc/man.conf .
+No cat pages are saved when the required cat directory does not exist.
+No cat pages are saved when they are formatted for a line length
+different from 80.
+No cat pages are saved when man.conf contains the line NOCACHE.
+.PP
+It is possible to make
+.B man
+suid to a user man. Then, if a cat directory
+has owner man and mode 0755 (only writable by man), and the cat files
+have owner man and mode 0644 or 0444 (only writable by man, or not
+writable at all), no ordinary user can change the cat pages or put
+other files in the cat directory. If
+.B man
+is not made suid, then a cat directory should have mode 0777
+if all users should be able to leave cat pages there.
+.PP
+The option
+.B \-c
+forces reformatting a page, even if a recent cat page exists.
+
+.SH "HTML PAGES"
+Man will find HTML pages if they live in directories named as
+'html' followed by a section extension.  The last file extension is
+expected to be ".html", thus a valid name for an HTML version of the
+.BR ls (1)
+man page would be
+.IR /usr/share/man/htmlman1/ls.1.html .
+
+.SH "SEARCH PATH FOR MANUAL PAGES"
+.B man
+uses a sophisticated method of finding manual page files, based on the
+invocation options and environment variables, the 
+.B /private/etc/man.conf 
+configuration file, and some built in conventions and heuristics.
+.PP
+First of all, when the 
+.I name
+argument to 
+.B man
+contains a slash 
+.RB ( / ),
+.B man
+assumes it is a file specification itself,
+and there is no searching involved.
+.PP
+But in the normal case where 
+.I name
+doesn't contain a slash,
+.B man
+searches a variety of directories for a file that could be a manual page
+for the topic named.
+.PP
+If you specify the 
+.BI "-M " pathlist
+option,
+.I pathlist 
+is a colon-separated list of the directories that 
+.B man 
+searches.
+.PP
+If you don't specify
+.B -M
+but set the
+.B MANPATH
+environment variable, the value of that variable is the list of the 
+directories that 
+.B man
+searches.
+.PP
+If you don't specify an explicit path list with 
+.B -M
+or 
+.BR MANPATH ,
+.B man
+develops its own path list based on the contents of the configuration 
+file
+.BR /private/etc/man.conf .
+The
+.B MANPATH
+statements in the configuration file identify particular directories to 
+include in the search path.
+.PP
+Furthermore, the 
+.B MANPATH_MAP 
+statements add to the search path depending on your command search path
+(i.e. your
+.B PATH 
+environment variable).  For each directory that may be in the command
+search path, a
+.B MANPATH_MAP
+statement specifies a directory that should be added to the search
+path for manual page files.
+.B man
+looks at the 
+.B PATH
+variable and adds the corresponding directories to the manual page
+file search path.  Thus, with the proper use of
+.BR MANPATH_MAP ,
+when you issue the command
+.BR "man xyz" ,
+you get a manual page for the program that would run if you issued the
+command 
+.BR xyz .
+.PP
+In addition, for each directory in the command search path (we'll call
+it a "command directory") for which you do
+.I not
+have a 
+.B MANPATH_MAP 
+statement,
+.B man
+automatically looks for a manual page directory "nearby"
+namely as a subdirectory in the command directory itself or
+in the parent directory of the command directory.
+.PP
+You can disable the automatic "nearby" searches by including a
+.B NOAUTOPATH
+statement in 
+.BR /private/etc/man.conf .
+.PP
+In each directory in the search path as described above, 
+.B man
+searches for a file named
+.IB topic . section\fR,
+with an optional suffix on the section number and 
+possibly a compression suffix.
+If it doesn't find such a file, it then looks in any subdirectories
+named
+.BI man N
+or 
+.BI cat N
+where
+.I N
+is the manual section number.
+If the file is in a 
+.BI cat N
+subdirectory, 
+.B man
+assumes it is a formatted manual page file (cat page).  Otherwise,
+.B man
+assumes it is unformatted.  In either case, if the filename has a
+known compression suffix (like
+.BR .gz ),
+.B man
+assumes it is gzipped.
+.PP
+If you want to see where (or if)
+.B man
+would find the manual page for a particular topic, use the 
+.BR "--path " ( -w )
+option.
+
+.SH ENVIRONMENT
+.TP
+.B MANPATH
+If
+.B MANPATH
+is set, 
+.B man
+uses it as the path to search for manual page files.  It overrides the
+configuration file and the automatic search path, but is overridden by
+the
+.B -M
+invocation option.  See 
+.BR "SEARCH PATH FOR MANUAL PAGES" .
+.TP
+.B MANPL
+If
+.B MANPL
+is set, its value is used as the display page length.
+Otherwise, the entire man page will occupy one (long) page.
+.TP
+.B MANROFFSEQ
+If
+.B MANROFFSEQ
+is set, its value is used to determine the set of preprocessors run
+before running
+.B nroff
+or
+.BR troff .
+By default, pages are passed through
+the tbl preprocessor before
+.BR nroff .
+.TP
+.B MANSECT
+If
+.B MANSECT
+is set, its value is used to determine which manual sections to search.
+.TP
+.B MANWIDTH
+If
+.B MANWIDTH
+is set, its value is used as the width manpages should be displayed.
+Otherwise the pages may be displayed over the whole width of your
+screen.
+.TP
+.B MANPAGER
+If
+.B MANPAGER
+is set, its value is used as the name of the program to use to display
+the man page.  If not, then
+.B PAGER
+is used. If that has no value either,
+.B /usr/bin/less -is
+is used.
+.TP
+.B BROWSER
+The name of a browser to use for displaying HTML manual pages.  If
+it is not set, /usr/bin/less -is is used.
+.TP
+.B HTMLPAGER
+The command to use for rendering HTML manual pages as text.  If
+it is not set, /bin/cat is used.
+.TP
+.B LANG
+If
+.B LANG
+is set, its value defines the name of the subdirectory where man
+first looks for man pages. Thus, the command `LANG=dk man 1 foo'
+will cause man to look for the foo man page in .../dk/man1/foo.1,
+and if it cannot find such a file, then in .../man1/foo.1,
+where ... is a directory on the search path.
+.TP
+.B "NLSPATH, LC_MESSAGES, LANG"
+The environment variables
+.B NLSPATH
+and
+.B LC_MESSAGES
+(or
+.B LANG
+when the latter does not exist)
+play a role in locating the message catalog.
+(But the English messages are compiled in, and for English no catalog
+is required.)
+Note that programs like
+.BR col(1)
+called by man also use e.g. LC_CTYPE.
+.TP
+.B PATH
+.B PATH
+helps determine the search path for manual page files.  See
+.BR "SEARCH PATH FOR MANUAL PAGES" .
+.TP
+.B SYSTEM
+.B SYSTEM
+is used to get the default alternate system name (for use
+with the
+.B \-m
+option). 
+.SH BUGS
+The
+.B \-t
+option only works if a troff-like program is installed.
+.br
+If you see blinking \e255 or <AD> instead of hyphens,
+put `LESSCHARSET=latin1' in your environment.
+.SH TIPS
+If you add the line
+
+  (global-set-key [(f1)] (lambda () (interactive) (manual-entry (current-word))))
+
+to your
+.IR .emacs 
+file, then hitting F1 will give you the man page for the library call
+at the current cursor position.
+.LP
+To get a plain text version of a man page, without backspaces
+and underscores, try
+
+  # man foo | col -b > foo.mantxt
+.SH AUTHOR
+John W. Eaton was the original author of
+.BR "man" .
+Zeyd M. Ben-Halim released man 1.2, and Andries Brouwer followed up with versions 1.3 thru 1.5p.
+Federico Lucifredi <flucifredi@acm.org> is the current maintainer.
+.SH "SEE ALSO"
+apropos(1), whatis(1), less(1), groff(1), man.conf(5).

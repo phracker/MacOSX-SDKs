@@ -1,0 +1,200 @@
+.Dd February 20, 2014
+.Dt asctl 1 
+.Os Darwin
+.Sh NAME 
+.Nm asctl
+.Nd App Sandbox Control Tool
+.Sh SYNOPSIS
+.Nm
+.Op Fl p
+.Op Fl l
+.Ar command
+.Op Ar arguments
+.Sh DESCRIPTION
+.Nm 
+is a facility for manipulating the filesystem container for an applications using App Sandbox.
+A container is a per-application filesytem hierarchy rooted in
+.Pa ~/Library/Containers.
+.Sh GENERAL COMMANDS
+.Bl -tag -width -ident
+.It help
+Prints a summary of commands and their behaviours.
+.It sandbox check <app specification>
+Determines with the given application is signed with App Sandbox entitlements.
+In addition, if the application is specified by pid using the --pid syntax,
+prints out whether the application is actually running with App Sandbox enabled,
+a traditional sandbox, or no sandbox at all.
+.El
+.Sh CONTAINER MANAGEMENT COMMANDS
+The following commands manage filesystem containers for sandboxed apps.
+.Bl -tag -width -ident
+.It container path <app specification>
+Print the path to the application's container.
+.It container create <app specification>
+Create and initialize the application's container.
+Containers are normally created automatically when sandboxed applications
+are run.
+This command creates the container for an application without running the
+application.
+.It container upgrade <app specification>
+Upgrade the application's container to the current container schema.
+Existing containers are normally automatically upgraded to the latest
+container schema when their associated applications are run.
+This command upgrades an existing container without running the associated
+application.
+.It container repair <app specification>
+Repair a container's structure by re-creating missing files and symlinks,
+repairing file permissions so that files are owned by and accessible to the current user, and
+rebuilding the application's sandbox information.
+This operation may require authorization by the user.
+.El
+.Sh CONTAINER ACL MANAGEMENT COMMANDS
+Each container has an access control list comprised of code requirements.
+A sandboxed application must satify one or more of the code requirements on
+their container in order to run.
+.Pp
+The following commands manipulate the container's access control list:
+.Bl -tag -width -indent
+.It container acl add <app specification>
+Update the access control list for the application's container to
+include the application's designated code requirement.
+.It container acl add <app specification> <code requirement>
+Update the access control list for the application's container to
+include the specified code requirement.
+.It container acl update <app specification>
+Update the access control list for the application's container such
+that it consists of only the application's designated code requirement.
+Any other code requirements will be removed from the ACL.
+.It container acl list <app specification>
+Print list of code requirements in the access control list for the
+given application's container.
+.It container acl validate <app specification>
+Validate the application against each of the code requirements in its
+container's access control list.
+Each code requirement in the ACL is labeled with one of the following:
+.Bl -tag -width [EXACT]
+.It [FAIL]
+application does not validate against code requirement.
+.It [VALID]
+application validates against code requirement.
+.It [EXACT]
+application validates against code requirement and code requirement is
+the same as the application's designated code requirement.
+.El
+.It container acl verify <app specification>
+Synonym for acl validate.
+.El
+.Sh SYMLINK SUPPORT COMMANDS
+App Sandbox will follow any symlinks in the paths to users' home directories.
+In addition, it has a whitelist of other locations where it will acknowledge
+and honor symbolic links.
+Any symlinks not in this whitelist will not be followed and, as a result,
+App Sandboxed applications will not have access to the paths that the symlinks
+refer to.
+.Pp
+The following command displays the whitelist of paths where App Sandbox will
+acknowledge symlinks at:
+.Bl -tag -width -indent
+.It symlink list <path ...>
+Display the list of paths that App Sandbox searches for symlinks and, for
+any paths that are symlinks, display where the symlinks currently resolve to. 
+.El
+.Sh DIAGNOSTIC COMMAND
+Collect diagnostic information related to Application Sandboxing and containers.
+The information is collected into a single file that can be sent to Apple to aid in diagnosing 
+problems when an application runs inside of a sandbox.
+Should you choose to send the diagnostic information to Apple, then you must agree to this disclaimer:
+.Pp
+.Bd -filled 
+.Bf -symbolic
+This diagnostic tool generates files that allow Apple to investigate issues with your computer 
+and help Apple to improve its products. The generated files may contain some of your personal 
+information, which may include, but not be limited to, the serial number or similar unique number
+for your device, your user name, your file names or your computer name. The information is used by Apple in
+accordance with its privacy policy (www.apple.com/privacy) and is not shared with any third party.
+By enabling this diagnostic tool and sending a copy of the generated files to Apple, you are
+consenting to Apple's use of the content of such files.
+.Ef
+.Ed
+.Pp
+Additional information concerning a specific application can be gathered via the app subcommand.
+This command must be run as 'root'.
+.Pp
+The following command collects diagnostic information:
+.Bl -tag -width -indent
+.It diagnose [ --no-compress |  --no-disclaimer | --no-reveal | --no-verbose ] [app <app specification>]
+Collection diagnostic information. Outputs the path to the folder or file containing the information. 
+.br
+Optional arguments:
+.Bl -tag -width -indent
+.It --no-compress
+Do not compress the folder containing the dianostic files into a Zip file.
+.It --no-disclaimer
+Do not show the disclaimer. Use of this option constitutes acceptance of the disclaimer.
+.It --no-reveal
+Do not reveal the resulting diagnostic file in Finder.
+.It --no-verbose
+Do not show verbose output while running the diagnostic.
+.El
+.Pp
+Optional subcommand:
+.Bl -tag -width -indent
+.It app <app specification>
+Specify an application for which additional information will be gathered.
+.El
+.El
+.Sh GLOBAL OPTIONS
+.Bl -tag -width -indent
+.It Fl p
+By default,
+.Nm
+displays paths relative to the user's home directory.
+This flag causes any paths in the output to be displayed as absolute paths
+instead.
+.It Fl l
+Write internal logging information to a temporary file.
+.El
+.Sh APPLICATION SPECIFIERS
+Many commands require an application specification as one of their arguments.
+Applications can be specified any of the following ways:
+.Bl -tag -width -ident
+.It <name>
+The application name as it appears in the Applications folder, with or
+without the \.app extension.
+For example, "TextEdit".
+.It <path>
+The path to the application binary or bundle.
+For example, 
+.Dl "/Applications/TextEdit.app".
+.It --file <path>
+Explicitly indicate the following argument is to be interpreted as the path
+to the application binary or bundle.
+The --file flag removes ambiguity when an argument can be interpreted as either
+an application name or a valid path to an application.
+For example, 
+.Dl "--file /Applications/TextEdit.app".
+.It --bundle <bundle Id>
+Interpret the following argument as the bunder identifier of the application.
+For example, 
+.Dl "--bundle com.apple.TextEdit".
+.It --pid <process Id>
+Interpret the following argument as the process identifier of a running
+application.
+For example, 
+.Dl "--pid 1".
+.It --container-path <path to container>
+Interpret the following argument as a path to an existing container and determine the application for that container .
+For example, 
+.Dl "--container-path ~/Library/Containers/com.apple.TextEdit".
+.El
+.Sh FILES
+.Bl -tag -width -ident
+.It Pa ~/Library/Containers
+The user's containers folder.
+.El
+.Sh SEE ALSO
+.Xr codesign 1
+.Sh HISTORY
+The
+.Nm
+command first appeared in Mac OS X Version 10.7.

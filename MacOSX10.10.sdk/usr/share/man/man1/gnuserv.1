@@ -1,0 +1,297 @@
+.TH GNUSERV 1 "" "emacs server"
+.UC 4
+.SH NAME
+gnuserv, gnuclient \- Server and Clients for Emacs
+.SH SYNOPSIS
+.B gnuclient
+[-nw] [-display display] [-q] [-v] [-l library] [-batch] [-f function] [-eval form] 
+[-h hostname] [-p port] [-r remote-pathname] [[+line] file] ...
+.br
+.B gnudoit [-q] 
+form
+.br
+.B gnuserv
+.br
+.B gnuattach   
+Removed as of gnuserv 3.x
+.SH DESCRIPTION
+
+.PP
+\fIgnuclient\fP allows the user to request a running emacs process to
+edit the named files or directories and/or evaluate lisp forms.
+Depending on your environment, it can be an X frame or a TTY frame.
+One typical use for this is with a dialup connection to a machine on
+which an emacs process is currently running.
+.PP
+\fIgnudoit\fP is a shell script frontend to ``gnuclient -batch -eval form''.
+Its use is deprecated. Try to get used to calling gnuclient directly.
+.PP
+\fIgnuserv\fP is the server program that is set running by emacs to
+handle all incoming and outgoing requests. It is not usually invoked
+directly, but is started from emacs by loading the \fIgnuserv\fP
+package and evaluating the Lisp form (gnuserv-start).
+.PP
+\fIgnuattach\fP no longer exists. Its functionality has been replaced by
+\fIgnuclient -nw\fP.
+.SH OPTIONS
+.PP 
+\fIgnuclient\fP supports as much of the command line options of Emacs as
+makes sense in this context. In addition it adds a few of its own. 
+.br
+Options with long names can also be specified using a double
+hyphen instead of a single one.
+.TP 8
+.BI \-nw
+This option makes \fIgnuclient\fP act as a frontend such that emacs
+can attach to the current TTY. emacs will then open a new TTY frame.
+The effect is similar to having started a new emacs on this TTY with
+the ``-nw'' option. It currently only works if emacs is running on
+the same machine as gnuclient. This is the default if the `DISPLAY'
+environment variable is not set.
+.TP 8
+.BI \-display " display, " \--display " display" 
+If this option is given or the `DISPLAY' environment variable is set
+then gnuclient will tell emacs to edit files in a frame on the
+specified X device.
+.TP 8
+.BI \-q
+This option informs \fIgnuclient\fP to exit once connection has been
+made with the emacs process.  Normally \fIgnuclient\fP waits until
+all of the files on the command line have been finished with (their
+buffers killed) by the emacs process, and all the forms have been
+evaluated.
+.TP 8
+.BI \-v
+When this option is specified \fIgnuclient\fP will request for the
+specified files to be viewed instead of edited.
+.TP 8
+.BI \-l " library"
+Tell Emacs to load the specified library.
+.TP 8
+.BI \-batch
+Tell Emacs not to open any frames. Just load libraries and evaluate
+lisp code.  If no files to execute, functions to call or forms to eval 
+are given using the
+.BR \-l ,
+.BR \-f ,
+or
+.B \-eval
+options, then forms to eval are read from STDIN.
+.TP 8
+.BI \-f " function," 
+Make Emacs execute the lisp function.
+.TP 8
+.BI \-eval " form"
+Make Emacs execute the lisp form.
+.TP 8
+.BI \-h " hostname"
+Used only with Internet-domain sockets, this option specifies the host
+machine which should be running \fIgnuserv\fP. If this option is not
+specified then the value of the environment variable GNU_HOST is used
+if set. If no hostname is specified, and the GNU_HOST variable is not
+set, an internet connection will not be attempted. N\.B.:
+\fIgnuserv\fP does NOT allow internet connections unless XAUTH
+authentication is used or the GNU_SECURE variable has been specified
+and points at a file listing all trusted hosts. (See SECURITY below.)
+
+.br
+Note that an internet address may be specified instead of a hostname
+which can speed up connections to the server by quite a bit,
+especially if the client machine is running YP.
+
+.br
+Note also that a hostname of \fBunix\fP can be used to specify that
+the connection to the server should use a Unix-domain socket (if
+supported) rather than an Internet-domain socket.
+.TP 8
+.BI \-p " port"
+Used only with Internet-domain sockets, this option specifies the
+service port used to communicate between server and clients.  If this
+option is not specified, then the value of the environment variable
+GNU_PORT is used, if set, otherwise a service called ``gnuserv'' is
+looked up in the services database.  Finally, if no other value can be
+found for the port, then a default port is used which is usually 21490
++ uid.
+.br
+Note that since \fIgnuserv\fP doesn't allow command-line options, the port for
+it will have to be specified via one of the alternative methods.
+.TP 8
+.BI \-r " pathname"
+Used only with Internet-domain sockets, the pathname argument may be
+needed to inform emacs how to reach the root directory of a remote
+machine.  \fIgnuclient\fP prepends this string to each path argument
+given.  For example, if you were trying to edit a file on a client
+machine called otter, whose root directory was accessible from the
+server machine via the path /net/otter, then this argument should be
+set to '/net/otter'.  If this option is omitted, then the value is
+taken from the environment variable GNU_NODE, if set, or the empty
+string otherwise.
+.TP 8
+.BI "[+n] file"
+This is the path of the file to be edited.  If the file is a directory, then
+the directory browsers dired or monkey are usually invoked instead.
+The cursor is put at line number 'n' if specified.
+
+.SH SETUP
+\fIgnuserv\fP is packaged with emacs on Mac OS X.
+Therefore, you should be able to start the server simply by evaluating
+the emacs lisp form (gnuserv-start), or equivalently by typing
+`M-x gnuserv-start'.
+
+.SH CONFIGURATION
+The behavior of this suite of program is mostly controlled on the lisp 
+side in Emacs and its behavior can be customized to a large extent.
+Type `M-x customize-group RET gnuserv RET' for easy access. More
+documentation can be found in the file `gnuserv.el'
+
+.SH EXAMPLE
+.RS 4
+gnuclient -q -f mh-smail
+.br
+gnuclient -h cuckoo -r /ange@otter: /tmp/*
+.br
+gnuclient -nw ../src/listproc.c
+.RE
+.br
+
+.br
+More examples and sample wrapper scripts are provided in the
+etc/gnuserv directory of the Emacs installation.
+
+
+.SH SYSV IPC
+SysV IPC is used to communicate between \fIgnuclient\fP and
+\fIgnuserv\fP if the symbol SYSV_IPC is defined at the top of
+gnuserv.h. This is incompatible with both Unix-domain and
+Internet-domain socket communication as described below. A file called
+/tmp/gsrv??? is created as a key for the message queue, and if removed
+will cause the communication between server and client to fail until
+the server is restarted.
+.SH UNIX-DOMAIN SOCKETS
+A Unix-domain socket is used to communicate between \fIgnuclient\fP
+and \fIgnuserv\fP if the symbol UNIX_DOMAIN_SOCKETS is defined at the
+top of gnuserv.h.  A file called /tmp/gsrvdir????/gsrv is created for
+communication and if deleted will cause communication between server
+and client to fail.  Only the user running gnuserv will be able to
+connect to the socket.
+.SH INTERNET-DOMAIN SOCKETS
+Internet-domain sockets are used to communicate between
+\fIgnuclient\fP and \fIgnuserv\fP if the symbol
+INTERNET_DOMAIN_SOCKETS is defined at the top of gnuserv.h. Both
+Internet-domain and Unix-domain sockets can be used at the same
+time. If a hostname is specified via -h or via the GNU_HOST
+environment variable, \fIgnuclient\fP establish connections using an
+internet domain socket. If not, a local connection is attempted via
+either a unix-domain socket or SYSV IPC.
+.SH SECURITY
+Using Internet-domain sockets, a more robust form of security is
+needed that wasn't necessary with either Unix-domain sockets or SysV
+IPC. Currently, two authentication protocols are supported to provide
+this: MIT-MAGIC-COOKIE-1 (based on the X11 xauth(1) program) and a
+simple host-based access control mechanism, hereafter called
+GNUSERV-1. The GNUSERV-1 protocol is always available, whereas support
+for MIT-MAGIC-COOKIE-1 may or may not have been enabled (via a #define
+at the top of gnuserv.h) at compile-time.
+.PP
+\fIgnuserv\fP, using GNUSERV-1, performs a limited form of access
+control at the machine level. By default no internet-domain socket is
+opened.  If the variable GNU_SECURE can be found in \fIgnuserv\fP's
+environment, and it names a readable filename, then this file is
+opened and assumed to be a list of hosts, one per line, from which the
+server will allow requests. Connections from any other host will be
+rejected. Even the machine on which \fIgnuserv\fP is running is not
+permitted to make connections via the internet socket unless its
+hostname is explicitly specified in this file.  Note that a host may
+be either a numeric IP address or a hostname, and that
+.I any
+user on an approved host may connect to your gnuserv and execute arbitrary
+elisp (e.g., delete all your files).
+If this file contains a lot of
+hostnames then the server may take quite a time to start up.
+.PP
+When the MIT-MAGIC-COOKIE-1 protocol is enabled, an internet socket
+\fIis\fP opened by default. \fIgnuserv\fP will accept a connection from
+any host, and will wait for a "magic cookie" (essentially, a password)
+to be presented by the client. If the client doesn't present the
+cookie, or if the cookie is wrong, the authentication of the client is
+considered to have failed. At this point. \fIgnuserv\fP falls back to
+the GNUSERV-1 protocol; If the client is calling from a host listed in
+the GNU_SECURE file, the connection will be accepted, otherwise it
+will be rejected. 
+.TP 4
+.I  Using MIT-MAGIC-COOKIE-1 authentication
+When the \fIgnuserv\fP server is started, it looks for a cookie
+defined for display 999 on the machine where it is running. If the
+cookie is found, it will be stored for use as the authentication
+cookie. These cookies are defined in an authorization file (usually
+~/.Xauthority) that is manipulated by the X11 xauth(1) program. For
+example, a machine "kali" which runs an emacs that invokes
+\fIgnuserv\fP should respond as follows (at the shell prompt) when set
+up correctly.
+.PP
+.RS 8
+kali% xauth list
+.br
+GS65.SP.CS.CMU.EDU:0  MIT-MAGIC-COOKIE-1  11223344
+.br
+KALI.FTM.CS.CMU.EDU:999  MIT-MAGIC-COOKIE-1  1234
+.RE
+.PP
+.RS 4
+In the above case, the authorization file defines two cookies. The
+second one, defined for screen 999 on the server machine, is used for
+gnuserv authentication. 
+.PP
+On the client machine's side, the authorization file must contain an
+identical line, specifying the 
+.I server's 
+cookie. In other words, on a machine "foobar" which wishes to connect
+to "kali,"  the `xauth list' output should contain the line:
+.PP
+.RS 4
+KALI.FTM.CS.CMU.EDU:999  MIT-MAGIC-COOKIE-1  1234
+.RE
+.PP
+For more information on authorization files, take a look at the
+xauth(1X11) man page, or invoke xauth interactively (without any
+arguments) and type "help" at the prompt. Remember that case in the
+name of the authorization protocol (i.e.`MIT-MAGIC-COOKIE-1') 
+.I is
+significant!
+.RE
+
+
+.SH ENVIRONMENT
+.PP
+.TP 8
+.B DISPLAY
+Default X device to put edit frame.
+
+.SH FILES
+.PP
+.TP 8
+.B /tmp/gsrv???
+(SYSV_IPC only)
+.TP 8
+.B /tmp/gsrvdir???/gsrv
+(unix domain sockets only)
+.TP 8
+.B ~/.emacs
+emacs customization file, see emacs(1).
+.SH SEE ALSO
+.PP
+.TP 8
+xauth(1X11), Xsecurity(1X11), gnuserv.el
+.SH BUGS
+.PP 
+NULs occurring in result strings don't get passed back to gnudoit properly.
+.PP
+The
+.B -nw
+flag does not work, due to lack of necessary functionality in emacs.
+.SH AUTHOR.
+Andy Norman (ange@hplb.hpl.hp.com), based heavily upon
+etc/emacsclient.c, etc/server.c and lisp/server.el from the GNU Emacs
+18.52 distribution.  Various modifications from Bob Weiner (weiner@mot.com),
+Darrell Kindred (dkindred@cmu.edu), Arup Mukherjee (arup@cmu.edu), Ben
+Wing (ben@xemacs.org) and Hrvoje Niksic (hniksic@xemacs.org).
