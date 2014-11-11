@@ -1,0 +1,112 @@
+.\"
+.\" Copyright (c) 2012 Apple Computer, Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.Dd December 10, 2012
+.Dt NCDESTROY 1
+.Os
+.Sh NAME
+.Nm ncdestroy
+.Nd Destroy kernel
+.Tn NFS
+credentials
+.Sh SYNOPSIS
+.Nm
+.Op Fl v
+.Op Fl P
+.Op path Op path...
+.Sh DESCRIPTION
+.Nm
+invalidates the caller's kernel
+.Tn GSS
+credentials for any of the specified path's associated
+.Tn NFS
+mounts.  If no paths are specified then all the caller's associated credentials for all
+.Tn NFS
+file systems are destroyed.
+.Pp
+When a nfs file system is mounted using a
+.Tn GSS
+mechanism (currently only
+.Tn Kerberos
+is supported)
+through the 
+.Dq sec=
+option or by the export specified on the server, the resulting session context is stored in a table for each mount. If the user decides to finish his or her
+session or chooses to use a different
+credential, then
+.Nm
+can be called to invalidate those credentials in the kernel. New credentials
+can be obtain (typically by calling kinit) and those credentials can be used when accessing the mount. 
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl v
+Be verbose and show what file system is being operated on and any resulting errors.
+.It Fl P
+If the trailing component resolves to a symbolic link do not resolve the link but use the current path to determine any associate
+.Tn NFS
+file system.
+.El
+.Sh EXAMPLES
+.Pp
+If leaving for the day:
+.Bd -literal 
+ $ kdestroy -A
+ $ ncdestroy
+.Ed
+.Pp
+Lets say a user does
+.Bd -literal
+ $ kinit user@FOO.COM
+.Ed
+.sp
+And through the automounter access a path /Network/Serves/someserver/Sources/foo/bar
+where the mount of /Network/Servers/someserver/Sources/foo was done with user@FOO.COM.
+.Bd -literal
+ $ cat /Network/Servers/someserver/Sources/foo/bar
+ cat: /Network/Servers/someserver/Sources/foo/bar: Permission denied
+.Ed
+.sp
+The user realizes that in order to have access on the server his
+identity should be user2@BAR.COM. So:
+.Bd -literal
+ $ kdestroy -A
+ $ kinit user2@BAR.COM
+ $ ncdestroy /Network/Servers/someserver/Sources/foo
+.Ed
+.sp
+Now the local user can access bar
+.Sh NOTES
+In the above example the user destroyed all credentials so the only credential to choose was new credential user2@BAR.COM. However, if accessing the server with user@FOO.COM was done by getting a cross realm TGT to obtain the service ticket nfs/some.server.fqdn@BAR.COM, then it won't be necessary to use kdestroy. The 
+.Tn GSS
+infrastructure will prefer to use credentials in the same realm as the service.
+.Sh DIAGNOSTICS
+The
+.Nm
+command will exit with 1 if any of the supplied paths don't exist. If all paths
+exist or no paths are given the exit status will be 0.
+.Sh SEE ALSO
+.Xr kinit 1 ,
+.Xr kdestroy 1 ,
+.Xr mount_nfs 8
+.Sh BUGS
+There should be an option to kdestroy to destroy cached nfs contexts.
+

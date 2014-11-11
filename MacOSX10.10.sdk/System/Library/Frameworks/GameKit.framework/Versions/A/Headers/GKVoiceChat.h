@@ -1,0 +1,49 @@
+//
+//  GKVoiceChat.h
+//  Game Center
+//
+//  Copyright 2010-2014 Apple Inc. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+typedef NS_ENUM(NSInteger, GKVoiceChatPlayerState) {
+    GKVoiceChatPlayerConnected,
+    GKVoiceChatPlayerDisconnected,
+    GKVoiceChatPlayerSpeaking,
+    GKVoiceChatPlayerSilent,
+    GKVoiceChatPlayerConnecting
+};
+
+@class GKPlayer;
+
+
+// GKVoiceChat represents an instance of a named voice communications channel
+NS_CLASS_AVAILABLE(10_8, 4_1)
+@interface GKVoiceChat : NSObject
+
+- (void)start;  // start receiving audio from the chat
+- (void)stop;   // stop receiving audio from the chat
+
+- (void)setPlayer:(GKPlayer *)player muted:(BOOL)isMuted NS_AVAILABLE(10_10, 8_0);
+
+@property(copy, NS_NONATOMIC_IOSONLY) void(^playerVoiceChatStateDidChangeHandler)(GKPlayer *player, GKVoiceChatPlayerState state) NS_AVAILABLE(10_10, 8_0);
+
+@property(readonly, copy, NS_NONATOMIC_IOSONLY) NSString *name;  // name the chat was created with
+@property(assign, getter=isActive, NS_NONATOMIC_IOSONLY)    BOOL active; // make this session active and route the microphone
+@property(assign, NS_NONATOMIC_IOSONLY) float volume; // default 1.0 (max is 1.0, min is 0.0)
+
+@property(readonly, NS_NONATOMIC_IOSONLY) NSArray *players NS_AVAILABLE(10_10, 8_0); // array of GKPlayer *
+
++ (BOOL)isVoIPAllowed;
+
+@end
+
+@interface GKVoiceChat (Deprecated)
+
+@property(readonly, NS_NONATOMIC_IOSONLY) NSArray *playerIDs NS_DEPRECATED(10_8, 10_10, 5_0, 8_0, "use players");
+@property(copy, NS_NONATOMIC_IOSONLY) void(^playerStateUpdateHandler)(NSString *playerID, GKVoiceChatPlayerState state) NS_DEPRECATED(10_8, 10_10, 4_1, 8_0, "use setPlayerVoiceChatStateDidChangeHandler:");
+
+- (void)setMute:(BOOL)isMuted forPlayer:(NSString *)playerID NS_DEPRECATED(10_8, 10_10, 5_0, 8_0, "use setPlayer:muted:");
+
+@end

@@ -1,0 +1,133 @@
+.\" Copyright (c) 2000, Apple Computer, Inc.  All rights reserved.
+.\"
+.Dd October 28, 2002
+.Dt SC_USAGE 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm sc_usage
+.Nd show system call usage statistics
+.Sh SYNOPSIS
+.Nm sc_usage
+.Op Fl c Ar codefile
+.Op Fl e
+.Op Fl l
+.Op Fl s Ar interval
+pid | cmd | 
+.Fl E
+execute
+.Sh DESCRIPTION
+.Nm sc_usage
+displays an ongoing sample of system call and page fault usage statistics for
+a given process in a
+.Dq Li top-like
+fashion.
+It requires root privileges due to the kernel tracing facility it uses to
+operate.
+.Pp
+Page faults can be of the following types:
+.Bl -tag -width CACHEHITTT -compact
+.It PAGE_IN
+page had to read from disk
+.It ZERO_FILL
+page was created and zero filled
+.It COW
+page was copied from another page
+.It CACHE_HIT
+page was found in the cache
+.El
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl c
+When the
+.Fl c
+option is specified, it expects a path to a 
+.Ar codefile 
+that
+contains the mappings for the system calls.
+This option overrides the default location of the system call codefile which
+is found in /usr/share/misc/trace.codes.
+.It Fl e
+Specifying the
+.Fl e
+option generates output that is sorted by call count.
+This overrides the default sort by time.
+.It Fl l
+The
+.Fl l
+option causes
+.Nm sc_usage
+to turn off its continuous window updating style of output and instead output
+as a continuous scrolling of data.
+.It Fl s
+By default,
+.Nm sc_usage
+updates its output at one second intervals.
+This sampling interval may be changed by specifying the
+.Fl s
+option.
+Enter the
+.Ar interval
+in seconds.
+.It pid | cmd | -E execute
+The last argument must be a process id, a running command name, or using the
+.Fl E
+option, an execution path followed by optional arguments.
+The system call usage data for the process or command is displayed.
+If the
+.Fl E
+flag is used, sc_usage will launch the executable, pass along any optional
+arguments and display system call usage date for that executable.
+.El
+.Pp
+The data columns displayed are as follows:
+.Bl -tag -width LAST_PATHNAME_WAITED_FOR -compact
+.Pp
+.It TYPE
+the system call type
+.It NUMBER
+the system call count
+.It CPU_TIME
+the amount of cpu time consumed
+.It WAIT_TIME
+the absolute time the process is waiting
+.It CURRENT_TYPE
+the current system call type
+.It LAST_PATHNAME_WAITED_FOR
+for each active thread, the last pathname
+that was referenced by a system call that blocked
+.It CUR_WAIT_TIME
+the cumulative time that a thread has been blocked
+.It THRD#
+the thread number
+.It PRI
+current scheduling priority
+.El
+.Pp
+The
+.Nm sc_usage
+command also displays some global state in the first few lines of output,
+including the number of preemptions, context switches, threads, faults and
+system calls, found during the sampling period.
+The current time and the elapsed time that the command has been running is also
+displayed here.
+The
+.Nm sc_usage
+command is also SIGWINCH savvy, so adjusting your window geometry may change
+the list of system calls being displayed.
+Typing a
+.Sq Li q
+will cause sc_usage to exit immediately.
+Typing any other character will cause sc_usage to reset its counters and the
+display.
+.Sh SAMPLE USAGE
+.Pp
+sc_usage Finder -e -s2
+.Pp
+.Nm sc_usage
+will sort the Finder process usage data according to system call count and
+update the output at 2 second intervals.
+.Sh SEE ALSO
+.Xr fs_usage 1 ,
+.Xr latency 1 ,
+.Xr top 1

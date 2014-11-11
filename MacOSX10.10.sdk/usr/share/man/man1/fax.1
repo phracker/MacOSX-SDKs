@@ -1,0 +1,235 @@
+.TH FAX 1 "May 1996"
+.UC 1
+.SH NAME
+fax \- make, send, receive, view or print a fax
+.SH SYNOPSIS
+
+.de ML
+\fR[\fB-l\fR]
+..
+
+.de MV
+\fR[\fB-v\fR]
+..
+
+.de MU
+\fR[\fIunits\fR]
+..
+
+.de MF
+\fIfilename\fR...
+..
+
+.B fax
+.B help
+
+.B fax
+.B make
+.ML
+.I file
+
+.B fax
+.B send
+.ML
+.MV
+{
+.B -m
+|
+.I number
+} 
+.MF
+
+.B fax
+[
+\fBreceive\fR
+.MV
+[
+.I filename-prefix
+]
+]
+
+.B fax
+{
+.B print
+|
+.B view
+|
+.B rm
+}
+.MF
+
+.B fax
+\fR{\fB queue \fR|\fB status \fR[\fIt\fR] | \fB start \fR|\fB stop \fR}\fR
+
+.B fax
+.B answer
+
+.SH OPTIONS
+
+.TP 9
+.B -l
+use low (96 line per inch) resolution
+.TP 9
+.B -v
+display verbose messages for debugging
+.TP 9 
+.B -m
+the phone call has already been dialed manually
+
+.PP 
+
+The commands make, send, receive, view and queue may be
+abbreviated to their first characters (e.g. ``fax q'').
+
+Assignments of the form \fIVARIABLE\fB=\fIvalue\fR may appear
+before the command name to temporarily change the values of most
+fax script variables (e.g. ``fax PAGE=A4 print letter.001'')
+
+
+.SH DESCRIPTION
+
+\fBfax\fP provides a simple user interface to the efax(1) and
+efix(1) programs.  It allows you to send text or Postscript files
+as faxes and receive, print or preview received faxes.  The
+\fBfax help\fP command prints a summary of the possible commands.
+
+To send a fax, the original files need to be converted from ASCII
+or Postscript into a particular bit-map format (TIFF with Group 3
+encoding).  This can be done automatically by the \fBfax send\fP
+command or you can use the \fBfax make\fP command to do the
+conversion before sending the fax.  The conversion will create
+one file per page.  These files will have the name of the
+original file with the page number as an additional suffix.  For
+example, running \fBfax make doc.ps\fP on the two-page postscript
+file doc.ps would generate the files doc.ps.001 and doc.ps.002.
+
+When sending a fax with the \fBfax send\fP command you may dial
+the number manually and use the \fB-m\fP option or you may give
+the phone number on the command line.  The names of the files to
+be sent are given on the command line, usually by using
+wildcards.  For example, to send a multi-page fax consisting of
+the files doc.ps.001, doc.ps.002, and so on, you could use the
+command \fBfax send 555-1212 doc.ps.0*\fP (if you had already run
+the \fBfax make\fP command) or simply \fBfax send 555-1212
+doc.ps\fP.  If the number is busy the script will wait and try
+again.
+
+Use the \fBfax receive\fP command to answer the phone and receive
+a fax.  If a file name is specified the received fax will be
+stored in files with the given file name plus an extension equal
+to the page number.  If no options are given, the received fax
+will be stored in files having a name given by the date and time
+and an extension equal to the page number.  For example, a fax
+received beginning on July 4 at 3:05:20 pm will generate files
+0704150520.001, 0704150520.002, and so on.
+
+The \fBfax print\fP, \fBfax view\fP, and \fBfax rm\fP commands
+are used to print, preview or remove received fax files.  As with
+the send command the file names are usually given using
+wildcards.
+
+If efax has been installed for automatic fax reception you can
+use the \fBfax queue\fP command to check for files in the
+incoming spool directory.  The fax script can also be configured
+to print received faxes or e-mail them as MIME attachments with
+type image/tiff-f.  For convenience the \fBfax print\fP,
+\fBview\fP and \fBrm\fP commands will first check for the named
+files in this spool directory.  The \fBfax status\fP command
+shows the status of the automatic receive process once, or every
+\fIt\fP seconds.  Privileged users can use the \fBfax stop\fP and
+\fBfax start\fP commands to stop and restart the fax reception
+daemon.
+
+The \fBfax answer\fP command is used for unattended reception of
+faxes.  It is normally placed in a launchd.plist(5) file and is
+run automatically by launchd(8).
+The \fB-v\fP option displays verbose messages.
+
+Other features of the fax script are documented within the
+script:
+
+.TP 3
+.B -
+a directory that lets you specify recipients by name instead of
+number
+
+.TP 3
+.B -
+the \fBfax new\fP command to create a simple cover page and start
+up a text editor
+
+.TP 3
+.B -
+the \fBfax makefont\fP command converts a Postscript font to a
+bit-mapped font for use in headers or text
+
+.SH RESOLUTION
+
+Faxes can be created at low (98 lines per inch) or high (196 lpi)
+resolution.  Almost all fax machines will operate at either
+resolution.  By default files are created at high resolution but
+you can use the optional \fB-l\fP argument to create files at low
+resolution.
+
+.SH SESSION LOGS
+
+The modem commands and responses together with status and error
+messages are written to file.  If the fax is successfully sent or
+received the log file is removed.  Otherwise a message is printed
+showing the log file name.  Please send a copy of this file when
+reporting problems with efax.
+
+.SH FILES
+
+The fax script will `source' the optional shell scripts
+\fB/etc/efax.rc\fP, \fB~/.efaxrc\fP and/or \fB./.efaxrc\fP before
+processing command-line arguments.  These files can be used to
+set script variables to custom values for a particular system,
+user and/or directory.
+
+The following files are created in the FAXDIR spool directory
+when automatic fax reception is enabled (see the fax script).
+DEV represents the name of the fax modem device file in /dev
+(e.g. cua1 for /dev/cua1).
+
+.TP 10
+DEV.\fIn\fP
+the log file created by the fax answer daemon with process id
+\fIn\fP
+.TP 10
+DEV.log
+contains collected log files for device DEV.  Log files showing a
+termination status of 1 (device busy) or 4 (no response from
+modem) are not added to this file.
+.TP 10
+DEV.stop
+created by the fax stop command to prevent the fax daemon from
+starting up.
+
+.SH AUTHOR
+
+Fax was written by Ed Casas.  Please send comments or bug reports
+to edc@cce.com.  Please describe the type of modem used and
+include a copy of the log file.
+
+.SH COPYRIGHT
+
+Fax is copyright 1993 -- 1999 by Ed Casas.  It may be used,
+copied and modified under the terms of the GNU Public License.
+
+.SH DISCLAIMER
+
+Although \fBfax\fP has been tested, it may have errors that will
+prevent it from working correctly on your system.  Some of these
+errors may cause serious problems including loss of data and
+interruptions to telephone service.
+
+.SH SEE ALSO
+
+.BR efax(1),
+.BR efix(1),
+.BR launchd(8).
+
+.SH  BUGS
+
+See efax(1).

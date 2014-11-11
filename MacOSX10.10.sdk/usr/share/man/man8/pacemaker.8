@@ -1,0 +1,157 @@
+.\"Copyright (c) 2013 Apple Inc. All rights reserved.
+.\"
+.\"@APPLE_LICENSE_HEADER_START@
+.\"
+.\"This file contains Original Code and/or Modifications of Original Code
+.\"as defined in and that are subject to the Apple Public Source License
+.\"Version 2.0 (the 'License'). You may not use this file except in
+.\"compliance with the License. Please obtain a copy of the License at
+.\"http://www.opensource.apple.com/apsl/ and read it before using this
+.\"file.
+.\"
+.\"The Original Code and all software distributed under the License are
+.\"distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\"EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\"INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\"FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\"Please see the License for the specific language governing rights and
+.\"limitations under the License.
+.\"
+.\"@APPLE_LICENSE_HEADER_END@
+.\"
+.Dd March 9, 2013
+.Dt PACEMAKER 8
+.Os "OS X"
+.Sh NAME
+.Nm pacemaker
+.Nd clock drift adjustment daemon
+.Sh SYNOPSIS
+.Nm
+.Op Fl d Ar drift
+.Op Fl b
+.Op Fl e Ar error
+.Op Fl a Ar interval
+.Op Fl i
+.Op Fl v
+.Op Fl n
+.Sh DESCRIPTION
+.Nm pacemaker
+adjusts the system clock periodically to compensate for clock drift.
+The clock drift is normally computed by
+.Xr ntpd 8 ,
+which writes a clock drift value in /var/db/ntp.drift.
+By default,
+.Nm pacemaker
+will call
+.Xr adjtime 2
+once per second to slew the system clock.
+The daemon is started by
+.Xr launchd 8 
+only when the drift file is present or has just been created in the file system.
+.Nm pacemaker
+detects changes in the file and re-calculates clock adjustment values appropriately.
+The daemon will exit if the drift file is deleted and is not re-created within one minute.
+.Pp
+.Nm pacemaker
+exits if the clock drift exceeds 500 parts per million.
+.Pp
+The
+.Fl d
+option allows the specification of either a floating-point drift value,
+or the path name of an alternate drift file.
+If a floating point drift value is specified,
+.Nm pacemaker
+will use the given value and will not read a drift file.
+.Pp
+To reduce power consumption, especially when the system is using
+internal battery power, it may be desirable to reduce the frequency
+of calls to adjust the system's clock drift.
+The
+.Fl e
+and
+.Fl a
+options, together with the
+.Fl b
+flag allow several ways to control the clock adjustment frequency.
+.Pp
+The floating point value following
+.Fl e
+specifies a maximum error tolerance in seconds for the system clock.
+For example, a value of 0.001 specifies that the clock drift adjustment 
+should only be done frequently enough to keep the system clock error 
+within one millisecond, based on the current clock drift rate.
+.Pp
+Alternatively, the clock adjustment frequency can be specified exactly
+as a value in seconds following
+.Fl a .
+.Pp
+When both
+.Fl e Ar error
+and
+.Fl a Ar interval
+are provided,
+.Nm pacemaker
+will choose to adjust the system clock either every
+.Ar interval
+seconds, or less frequently if the clock error will remain within
+.Ar error
+seconds.
+.Pp
+The settings for
+.Fl e
+and/or
+.Fl a
+may be specified for operation of the system while using an external power source,
+and specified independently for operation using internal batteries.
+By default, the values for
+.Fl e
+and/or
+.Fl a
+are used for both power configurations.
+If the
+.Fl b
+flag precedes
+.Fl e
+and/or
+.Fl a ,
+then the following settings apply only when the system is using internal battery power.
+.Pp
+For example, starting
+.Nm pacemaker
+with the following parameters will cause it to adjust the clock every
+2 seconds when the system is using external power.
+When running on battery power, it will adjust the clock no more than
+once every 10 seconds, or less frequently if the clock error remains less than
+five milliseconds.
+.Pp
+.Dl pacemaker -a 2 -b -a 10 -e 0.005
+.Pp
+When invoked on the command-line with
+.Fl i ,
+.Nm pacemaker
+prints a summary of internal parameters and then exits.
+The 
+.Fl v
+flag causes
+.Nm pacemaker
+to print copies of its log messages to standard error.
+Note that this requires running the program from the command line rather than from
+.Nm launchd .
+.Fl n
+causes
+.Nm pacemaker
+to run without actually attempting to adjust the system clock.
+.Sh FILES
+.Bl -tag -width /var/db/ntp.drift -compact
+.It Pa /var/db/ntp.drift
+default clock drift file
+.El
+.Sh SEE ALSO
+.Xr launchd 8 ,
+.Xr ntpd 8 ,
+.Xr adjtime 2 ,
+.Xr settimeofday 2 .
+.Sh HISTORY
+The
+.Nm pacemaker
+daemon was introduced in OS X 10.9.

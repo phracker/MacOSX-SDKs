@@ -1,0 +1,90 @@
+.\""Copyright (c) 2002 Apple Computer, Inc. All Rights Reserved.
+.Dd May 7, 2007
+.Dt genstrings 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm genstrings
+.Nd generate string table from source code
+.Sh SYNOPSIS
+.Nm
+.Op Fl a
+.Op Fl s Ar <routine>
+.Op Fl skipTable Ar <Table>
+.Op Fl noPositionalParameters
+.Op Fl bigEndian | littleEndian 
+.Op Fl u
+.Op Fl macRoman
+.Op Fl q
+.Op Fl o Ar <outputDir>
+.Ar file 
+ ... 
+.Sh DESCRIPTION
+The 
+.Nm 
+utility generates a \fB.strings\fR 
+file(s) from the C or Objective-C
+(.c or .m) source code file(s) given as the 
+argument(s).  A \fI.strings\fR 
+file is used for
+localizing an application for different 
+languages, as described under "Internationalization" in the Cocoa Developer Documentation.
+.Pp
+* C and Objective-C:
+.Pp
+Source lines containing text of the form 
+NSLocalizedString("\fIkey\fR", \fIcomment\fR) or 
+CFCopyLocalizedString("\fIkey\fR", \fIcomment\fR) 
+will generate an appropriate string table entry to a file named 
+\fILocalizable.strings\fR. 
+.Pp
+Source lines containing
+NSLocalizedStringFromTable("\fIkey\fR", \fITable\fR, \fIcomment\fR) or CFCopyLocalizedStringFromTable("\fIkey\fR", \fITable\fR, \fIcomment\fR) 
+will generate an appropriate string table entry in a file named \fITable\fR.strings.
+.Pp
+Source lines with 
+NSLocalizedStringFromTableInBundle("\fIkey\fR", \fITable\fR, \fIbundle\fR, \fIcomment\fR) or 
+CFCopyLocalizedStringFromTableInBundle("\fIkey\fR", \fITable\fR, \fIbundle\fR, \fIcomment\fR) 
+will generate an appropriate string table entry in \fITable\fR.strings.
+.Pp
+Source lines with 
+NSLocalizedStringWithDefaultValue("\fIkey\fR", \fITable\fR, \fIbundle\fR, "\fIvalue\fR", \fIcomment\fR) or 
+CFCopyLocalizedStringWithDefaultValue("\fIkey\fR", \fITable\fR, \fIbundle\fR, "\fIvalue\fR", \fIcomment\fR) 
+will generate an appropriate string table entry in \fITable\fR.strings.
+.Pp
+* Format Strings and Positional Parameters:
+.Pp
+Keys and values of string file entries can include formatting characters.  For value strings with multiple formatting arguments, positional parameters are generated.  These allow the order of arguments to be changed as needed by each localization (e.g. "File %1$@ contains %2$d bytes." could become "%2$d bytes are contained in file %1$@." in another localization).
+.Pp
+* Encoding:
+.Pp
+By default, genstrings will read UTF-8 encoded source files and source files with no non-ASCII characters.  Mac Roman encoded files that contain non-ASCII characters will not be read successfully unless the \fB-macRoman\fR compatibility flag is used.  Developers are strongly encouraged to move to UTF-8 as the encoding for source files as the \fB-macRoman\fR option may be removed in future versions.
+.Pp
+Embedded non-ASCII characters in UTF-8 files, as well as non-ASCII characters specified by the escape sequences \\uxxxx and \\Uxxxxxxxx are read automatically by genstrings.  The \fB-u\fR option and genstrings-specific escape sequence are also supported. 
+.Pp
+Generated .strings files are UTF-16 encoded.  Host endianness is used unless the \fB-bigEndian\fR or \fB-littleEndian\fR option is specified.  The endian options do not affect .strings files being appended to with the \fB-a\fR option.  The byte order of the existing file is maintained.
+.Sh OPTIONS
+.Bl -tag -width "-a"
+.It Fl a
+Allows the output to be appended to the old output files. However, -a causes the results to be appended to the end of the old file and not merged.
+.It Fl s Ar routine
+Substitutes \fIroutine\fR for NSLocalizedString.
+For example, \fB-s MyLocalString\fR will catch calls to MyLocalString and MyLocalStringFromTable.
+.It Fl skipTable Ar Table
+Causes genstrings to skip over the file for \fITable\fR.
+Note that any entries in this table will not be generated.
+.It Fl noPositionalParameters
+Turns off generation of positional parameters.
+.It Fl u
+Allow unicode characters in the value of strings files. 
+Any occurrence of \\\\Uxxxx (where xxxx are four hex digits) in the source code will be written to the strings file with its Unicode value (in terms of \\\\Uxxxx) for the key, but the actual Unicode value for its value.  For Example, CFCopyLocalizedString(CFSTR("AB\\\\U0043D"), "Comment") will result in the key/value pair "AB\\\\U0043D" = "ABCD".
+.Pp
+Note that non-ASCII characters can now be handled automatically without this option.  See 'Encoding' section above for details.
+.It Fl macRoman
+For compatibility, read source files using Mac Roman encoding.  See 'Encoding' section above for details.
+.It Fl q
+Turns off multiple key/value pairs warning
+.It Fl o Ar outputDir
+Specifies what directory the tables should be created in.
+.El
+.\" .Sh "SEE ALSO"
+.\" The developer bookshelf in Digital Librarian; search for "genstrings".

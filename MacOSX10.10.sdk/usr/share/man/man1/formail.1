@@ -1,0 +1,563 @@
+.\"if n .pl +(135i-\n(.pu)
+.de Id
+.ds Rv \\$3
+.ds Dt \\$4
+..
+.Id $Id: formail.man,v 1.46 2001/08/04 06:08:17 guenther Exp $
+.TH FORMAIL 1 \*(Dt BuGless
+.rn SH Sh
+.de SH
+.br
+.ne 11
+.Sh "\\$1"
+..
+.rn SS Ss
+.de SS
+.br
+.ne 10
+.Ss "\\$1"
+..
+.rn TP Tp
+.de TP
+.br
+.ne 9
+.Tp \\$1
+..
+.rn RS Rs
+.de RS
+.na
+.nf
+.Rs
+..
+.rn RE Re
+.de RE
+.Re
+.fi
+.ad
+..
+.de Sx
+.PP
+.ne \\$1
+.RS
+..
+.de Ex
+.RE
+.PP
+..
+.SH NAME
+formail \- mail (re)formatter
+.SH SYNOPSIS
+.na
+.B formail
+.RI [ "\fB\+\fPskip" ]
+.RI [ "\fB\-\fPtotal" ]
+.RB [ \-bczfrktedqBY ]
+.RB [ \-p
+.IR prefix ]
+.if n .ti +0.5i
+.RB [ \-D
+.IR "maxlen idcache" ]
+.if n .ti +0.5i
+.RB [ \-l
+.IR folder ]
+.if n .ti +0.5i
+.RB [ \-x
+.IR headerfield ]
+.RB [ \-X
+.IR headerfield ]
+.if n .ti +0.5i
+.RB [ \-a
+.IR headerfield ]
+.RB [ \-A
+.IR headerfield ]
+.if n .ti +0.5i
+.RB [ \-i
+.IR headerfield ]
+.RB [ \-I
+.IR headerfield ]
+.if n .ti +0.5i
+.RB [ \-u
+.IR headerfield ]
+.RB [ \-U
+.IR headerfield ]
+.if n .ti +0.5i
+.RB [ \-R
+.I oldfield
+.IR newfield ]
+.if n .ti +0.5i
+.RB [ \-n
+.RI [ maxprocs
+]]
+.RB [ \-m
+.IR minfields ]
+.RB [ \-s
+.RI [ command
+.RI [ arg
+\&.\|.\|.\|]]]
+.br
+.B formail
+.B \-v
+.ad
+.SH DESCRIPTION
+.B formail
+is a filter that can be used to force mail into mailbox format, perform
+`From ' escaping, generate auto-replying headers, do simple
+header munging/extracting or split up a
+mailbox/digest/articles file.  The mail/mailbox/article contents will be
+expected on stdin.
+.PP
+If formail is supposed to determine the sender of the mail, but is unable
+to find any, it will substitute `foo@bar'.
+.PP
+If formail is started without any command line options, it will force any
+mail coming from stdin into mailbox format and will escape
+.B all
+bogus `From ' lines with a `>'.
+.SH OPTIONS
+.TP 0.5i
+.B \-v
+Formail will print its version number and exit.
+.TP
+.B \-b
+Don't escape any bogus mailbox headers (i.e., lines starting with `From ').
+.TP
+.I "\fB\-p\fP prefix"
+Define a different quotation prefix.  If unspecified it defaults to `>'.
+.TP
+.B \-Y
+Assume traditional Berkeley mailbox format, ignoring any
+.B Content-Length:
+fields.
+.TP
+.B \-c
+Concatenate continued fields in the header.  Might be convenient when
+postprocessing mail with standard (line oriented) text utilities.
+.TP
+.B \-z
+Ensure a whitespace exists between field name and content.
+Zap fields which contain only a single whitespace character.
+Zap leading and trailing whitespace on fields extracted with
+.BR \-x .
+.TP
+.B \-f
+Force formail to simply pass along any non-mailbox format (i.e., don't
+generate a `From ' line as the first line).
+.TP
+.B \-r
+Generate an auto-reply header.  This will normally throw away all the existing
+fields (except X-Loop:) in the original message, fields you wish to preserve
+need to be named using the
+.B \-i
+option.  If you use this option in conjunction with
+.BR \-k ,
+you can prevent the body from being `escaped' by also specifying
+.BR \-b .
+.TP
+.B \-k
+When generating the auto-reply header or when extracting fields, keep
+the body as well.
+.TP
+.B \-t
+Trust the sender to have used a valid return address in his header.  This
+causes formail to select the
+.I header sender
+instead of the
+.I envelope sender
+for the reply.  This option should be used when generating auto-reply
+headers from news articles or when the sender of the message is
+expecting a reply.
+.TP
+.B \-s
+The input will be split up into separate mail messages, and piped into
+a program one by one (a new program is started for every part).
+.B \-s
+has to be the last option specified, the first argument following it is
+expected to be the name of a program, any other arguments will be
+passed along to it.  If you omit the program, then formail will simply
+concatenate the split mails on stdout again.  See
+.BR FILENO .
+.TP
+.I "\fB\-n\fP [maxprocs]"
+Tell formail not to wait for every program to finish before starting
+the next (causes splits to be processed in parallel).
+.I Maxprocs
+optionally specifies an upper limit on the number of concurrently
+running processes.
+.TP
+.B \-e
+Do not require empty lines to be preceding the header of a new message
+(i.e.,  the messages could start on every line).
+.TP
+.B \-d
+Tell formail that the messages it is supposed to split need not be in
+strict mailbox format (i.e., allows you to split digests/articles or
+non-standard mailbox formats).  This disables recognition of the
+.B Content-Length:
+field.
+.TP
+.B \-l folder
+Generate a log summary in the same style as procmail.  This includes
+the entire "From " line, the Subject: header field, the folder, and
+the size of the message in bytes.  The mailstat command can be used
+to summarize logs in this format.
+.TP
+.B \-B
+Makes formail assume that it is splitting up a BABYL rmail file.
+.TP
+.I "\fB\-m\fP minfields"
+Allows you to specify the number of consecutive headerfields formail
+needs to find before it decides it found the start of a new message, it
+defaults to 2.
+.TP
+.B \-q
+Tells formail to (still detect but) be quiet about write errors,
+duplicate messages and mismatched
+.B Content-Length:
+fields.  This option is on by default, to make it display the messages
+use
+.BR \-q\- .
+.TP
+.I "\fB\-D\fP maxlen idcache"
+Formail will detect if the Message-ID of the current message has
+already been seen using an
+.I idcache
+file of approximately
+.I maxlen
+size.  If not splitting, it will return success if a duplicate has been
+found.  If splitting, it will not output duplicate messages.  If used
+in conjunction with
+.BR \-r ,
+formail will look at the
+.I mail address
+of the envelope sender
+.I instead
+at the Message-ID.
+.TP
+.I "\fB\-x\fP headerfield"
+Extract the contents of this
+.I headerfield
+from the header.  Line continuations will be left intact; if you
+want the value on a single line then you'll also need the
+.B \-c
+option.
+.TP
+.I "\fB\-X\fP headerfield"
+Same as
+.BR \-x ,
+but also preserves/includes the field name.
+.TP
+.I "\fB\-a\fP headerfield"
+Append a custom
+.I headerfield
+onto the header; but only if a similar field does not exist yet.  If
+you specify either one of the field names
+.B Message-ID:
+or
+.B Resent-Message-ID:
+with no field contents, then formail will generate a unique message-ID
+for you.
+.TP
+.I "\fB\-A\fP headerfield"
+Append a custom
+.I headerfield
+onto the header in any case.
+.TP
+.I "\fB\-i\fP headerfield"
+Same as
+.BR \-A ,
+except that any existing similar fields are renamed by prepending an
+``Old-'' prefix.  If
+.I headerfield
+consists only of a field-name, it will not be appended.
+.TP
+.I "\fB\-I\fP headerfield"
+Same as
+.BR \-i ,
+except that any existing similar fields are simply removed.  If
+.I headerfield
+consists only of a field-name, it effectively deletes the field.
+.TP
+.I "\fB\-u\fP headerfield"
+Make the first occurrence of this field unique, and thus delete all
+subsequent occurrences of it.
+.TP
+.I "\fB\-U\fP headerfield"
+Make the last occurrence of this field unique, and thus delete all
+preceding occurrences of it.
+.TP
+.I "\fB\-R\fP oldfield newfield"
+Renames all occurrences of the fieldname
+.I oldfield
+into
+.IR newfield .
+.TP
+.I "\fB\+\fPskip"
+Skip the first
+.I skip
+messages while splitting.
+.TP
+.I "\fB\-\fPtotal"
+Output at most
+.I total
+messages while splitting.
+.SH NOTES
+When renaming, removing, or extracting fields, partial fieldnames may
+be used to specify all fields that start with the specified value.
+.PP
+By default, when generating an auto-reply header procmail selects the
+envelope sender from the input message.  This is correct for vacation
+messages and other automatic replies regarding the routing or delivery
+of the original message.  If the sender is expecting a reply or the
+reply is being generated in response to the contents of the original
+message then the \-t option should be used.
+.PP
+.BR RFC822 ,
+the original standard governing the format of Internet mail
+messages, did not specify whether Resent header fields (those that
+begin with `Resent\-', such as `Resent\-From:') should be considered
+when generating a reply.  Since then, the recommended usage of the
+Resent headers has evolved to consider them as purely informational and
+not for use when generating a reply.  This has been codified in
+.BR RFC2822 ,
+the new Internet Message Format standard, which states in part:
+.IP
+Resent fields are used to identify a message as having been
+reintroduced into the transport system by a user.  The purpose of
+using resent fields is to have the message appear to the final
+recipient as if it were sent directly by the original sender, with
+all of the original fields remaining the same.\|\|.\|.\|.\|\|They
+MUST NOT be used in the normal processing of replies or other such
+automatic actions on messages.
+.PP
+While formail now
+ignores Resent headers when generating header replies, versions of
+formail prior to 3.14 gave such headers a high precedence.  If the old
+behavior is needed for established applications it can be specified by
+calling formail with the option `-a Resent-' in addition
+to the \-r and \-t options.  This usage is deprecated
+and should not be used in new applications.
+.SH ENVIRONMENT
+.TP .5i
+.B FILENO
+While splitting, formail assigns the message number currently being output to
+this variable.  By presetting FILENO, you can change the initial message
+number being used and the width of the zero-padded output.  If FILENO is
+unset it will default to 000.  If FILENO is non-empty and
+does not contain a number, FILENO generation is disabled.
+.SH EXAMPLES
+To split up a digest one usually uses:
+.RS
+formail +1 \-ds >>the_mailbox_of_your_choice
+.RE
+or
+.RS
+formail +1 \-ds procmail
+.RE
+.PP
+To remove all Received: fields from the header:
+.RS
+formail \-I Received:
+.RE
+.PP
+To remove all fields except From: and Subject: from the header:
+.RS
+formail \-k \-X From: \-X Subject:
+.RE
+.PP
+To supersede the Reply-To: field in a header you could use:
+.RS
+formail \-i "Reply-To: foo@bar"
+.RE
+.PP
+To convert a non-standard mailbox file into a standard mailbox file you can
+use:
+.RS
+formail \-ds <old_mailbox >>new_mailbox
+.RE
+.PP
+Or, if you have a very tolerant mailer:
+.RS
+formail \-a Date: \-ds <old_mailbox >>new_mailbox
+.RE
+.PP
+To extract the header from a message:
+.RS
+formail \-X ""
+.RE
+or
+.RS
+sed \-e '/^$/ q'
+.RE
+.PP
+To extract the body from a message:
+.RS
+formail \-I ""
+.RE
+or
+.RS
+sed \-e '1,/^$/ d'
+.RE
+.SH "SEE ALSO"
+.na
+.nh
+.BR mail (1),
+.BR binmail (1),
+.BR sendmail (8),
+.BR procmail (1),
+.BR sed (1),
+.BR sh (1),
+.BR RFC822 ,
+.BR RFC2822 ,
+.B RFC1123
+.hy
+.ad
+.SH DIAGNOSTICS
+.TP 2.3i
+Can't fork
+Too many processes on this machine.
+.TP
+Content-Length: field exceeds actual length by nnn bytes
+The Content-Length: field in the header specified a length that was longer
+than the actual body.  This causes this message to absorb a number of
+subsequent messages following it in the same mailbox.
+.TP
+Couldn't write to stdout
+The program that formail was trying to pipe into didn't accept all the data
+formail sent to it; this diagnostic can be suppressed by the
+.B \-q
+option.
+.TP
+Duplicate key found: x
+The Message-ID or sender x in this message was found in the idcache; this
+diagnostic can be suppressed by the
+.B \-q
+option.
+.TP
+Failed to execute "x"
+Program not in path, or not executable.
+.TP
+File table full
+Too many open files on this machine.
+.TP
+Invalid field-name: "x"
+The specified field-name "x" contains control characters, or cannot be a
+partial field-name for this option.
+.SH WARNINGS
+You can save yourself and others a lot of grief if you try to avoid using
+this autoreply feature on mails coming through mailinglists.  Depending
+on the format of the incoming mail (which in turn depends on both the
+original sender's mail agent and the mailinglist setup) formail could
+decide to generate an autoreply header that replies to the list.
+.PP
+In the tradition of UN*X utilities, formail will do exactly what
+you ask it to, even if it results in a
+.RB non- RFC822
+compliant message.  In particular, formail will let you generate
+header fields whose name ends in a space instead of a colon.  While
+this is correct for the leading `From ' line, that line is not a
+header field so much as the message separator for the mbox mailbox
+format.  Multiple occurrences of such a line or any other colonless
+header field will be considered by many mail programs, including
+formail itself, as the beginning of a new message.  Others will
+consider the message to be corrupt.  Because of this, you should
+not use the
+.B \-i
+option with the `From ' line as the resulting renamed line,
+`Old-From ', will probably not do what you want it to.  If
+you want to save the original `From ' line, rename it with the
+.B \-R
+option to a legal header field such as `X-From_:'.
+.SH BUGS
+When formail has to generate a leading `From ' line it normally will contain
+the current date.  If formail is given the option `\-a Date:',
+it will use the date from the `Date:' field in the header (if present).
+However, since formail copies it verbatim, the format will differ from that
+expected by most mail readers.
+.PP
+If formail is instructed to delete or rename the leading `From ' line, it
+will not automatically regenerate it as usual.  To force formail to regenerate
+it in this case, include \fB\-a 'From '\fP.
+.PP
+If formail is not called as the first program in a pipe and it is told to
+split up the input in several messages, then formail will not terminate until
+the program it receives the input from closes its output or terminates itself.
+.PP
+If formail is instructed to generate an autoreply mail, it will
+.B never
+put more than one address in the `To:' field.
+.SH MISCELLANEOUS
+Formail is eight-bit clean.
+.PP
+When formail has to determine the sender's address, every
+.B RFC822
+conforming
+mail address is allowed.  Formail will always strip down the address to
+its minimal form (deleting excessive comments and whitespace).
+.PP
+The regular expression that is used to find `real' postmarks is:
+.RS
+"\en\enFrom [\et ]*[^\et\en ]+[\et ]+[^\en\et ]"
+.RE
+.PP
+If a
+.B Content-Length:
+field is found in a header, formail will copy the number of specified bytes in
+the body verbatim before resuming the regular scanning for message boundaries
+(except when splitting digests or Berkeley mailbox format is assumed).
+.PP
+Any header lines immediately following the leading `From ' line
+that start with `>From ' are considered to be a continuation
+of the `From ' line.  If instructed to rename the `From ' line,
+formail will change each leading `>' into a space, thereby
+transforming those lines into normal
+.B RFC822
+continuations.
+.SH NOTES
+Calling up formail with the \-h or \-? options will cause
+it to display a command-line help page.
+.Sh SOURCE
+This program is part of the
+.I procmail mail-processing-package
+(v3.22) available at http://www.procmail.org/ or
+ftp.procmail.org in
+.BR pub/procmail/ .
+.Sh MAILINGLIST
+There exists a mailinglist for questions relating to any program in the
+procmail package:
+.RS
+<procmail-users@procmail.org>
+.RS
+for submitting questions/answers.
+.RE
+<procmail-users-request@procmail.org>
+.RS
+for subscription requests.
+.RE
+.PP
+.RE
+If you would like to stay informed about new versions and official patches send
+a subscription request to
+.RS
+procmail-announce-request@procmail.org
+.RE
+(this is a readonly list).
+.SH AUTHORS
+Stephen R. van den Berg
+.RS
+<srb@cuci.nl>
+.RE
+Philip A. Guenther
+.RS
+<guenther@sendmail.com>
+.RE
+.\".if n .pl -(\n(.tu-1i)
+.rm SH
+.rn Sh SH
+.rm SS
+.rn Ss SS
+.rm TP
+.rn Tp TP
+.rm RS
+.rn Rs RS
+.rm RE
+.rn Re RE

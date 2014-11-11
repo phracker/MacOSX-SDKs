@@ -1,0 +1,139 @@
+.\" Copyright (c) 2000-2013 Apple Inc. All rights reserved.
+.Dd Mar. 16, 2013
+.Dt "malloc_history" 1
+.Os
+.Sh NAME
+.Nm malloc_history
+.Nd Show the malloc allocations that the process has performed
+.Sh SYNOPSIS
+.Nm malloc_history
+.Ar pid
+.Op Fl highWaterMark
+.Ar address
+.Op Ar address ...
+.Nm malloc_history
+.Ar pid
+.Fl allBySize
+.Op Fl highWaterMark
+.Op Ar address ...
+.Nm malloc_history
+.Ar pid
+.Fl allByCount
+.Op Fl highWaterMark
+.Op Ar address ...
+.Nm malloc_history
+.Ar pid
+.Fl allEvents
+.Op Fl highWaterMark
+.Nm malloc_history
+.Ar pid
+.Fl callTree
+.Op Fl highWaterMark
+.Op Fl showContent
+.Op Fl invert
+.Op Fl ignoreThreads
+.Op Fl collapseRecursion
+.Op Fl chargeSystemLibraries
+.Op Ar address ...
+.Sh DESCRIPTION
+.Nm malloc_history
+inspects a given process and lists the malloc allocations performed by it.
+The target process may be specified by pid or by full or partial name.
+.Nm
+relies on information provided by the standard malloc 
+library when malloc stack logging has been enabled for the target process.
+See below for further information.
+.Pp
+If the
+.Fl highWaterMark
+option is passed,
+.Nm
+first scans through the all malloc stack log records to calculate the "high water mark" of allocated memory --
+i.e., the highest amount of allocated memory used at any one time by the target process.  It then shows information
+about the malloc allocations that were live at that time, rather than currently alive in the target program.
+.Pp
+By specifying one or more addresses,
+.Nm malloc_history
+lists all allocations and deallocations of any malloc blocks that started at
+those addresses, or (starting in Mac OS X 10.6) of any malloc blocks that contained those addresses.
+For each allocation, a stack trace describing who called malloc or free is listed.  If you do
+only wish to see events for malloc blocks that started at the specified address, you can grep
+the output for that address.  If
+.Fl highWaterMark
+is passed, it only shows allocations and deallocations up to the high water mark.
+.Pp
+Alternatively, the 
+.Fl allBySize
+and 
+.Fl allByCount
+options list all allocations that are currently live in the target process, or were live at the high water mark.  Frequent allocations from the same
+point in the program (that is, the same call stack) are grouped together, and output presented either from
+largest allocations to smallest, or most allocations to least.  If you also specify one or more addresses, this output
+is filtered to only show information for malloc blocks containing those addresses.
+.Pp
+The 
+.Fl allEvents
+option lists all allocation and free events, for all addresses, up to the current time or to the high water mark.  This output can be voluminous.
+.Pp
+The 
+.Fl callTree
+option generates a call tree of the backtraces of malloc calls for live allocations in the target process, or
+for allocations that were live at the high water mark.  The call tree format is similar to the output from
+.Xr sample 1 .
+The resulting call tree can be filtered or pruned with the
+.Xr filtercalltree 1
+tool for further analysis.  Additional options for the
+.Fl callTree
+mode include:
+.Bl -tag -offset indent -width "-chargeSystemLibraries"
+.It Fl showContent
+Show the content of malloc blocks of various types, including C strings, Pascal strings (with a length
+byte at the start), and various objects including NSString, NSDate, and NSNumber.
+.It Fl invert
+Invert the call tree, so that malloc (and the allocated content, if the
+.Fl showContent
+option was given) show at the top of the call trees.
+.It Fl ignoreThreads
+Combine the call trees for all threads into a single call tree.
+.It Fl collapseRecursion
+Collapse recursion within the call trees.
+.It Fl chargeSystemLibraries
+Remove stack frames from all libraries in /System and /usr, while still charging
+their cost (number of calls, allocation size, and content) to the callers.
+.El
+.Pp
+All modes require the standard malloc library's debugging facility to be turned on.  To do this, set either the
+MallocStackLogging or MallocStackLoggingNoCompact environment variable to 1 in the shell that will run the program.
+If MallocStackLogging is used, then when recording events, if an allocation event for an address is immediately
+followed by a free event for the same address, both events are removed from the event log.  If MallocStackLoggingNoCompact
+is used, then all such immediate allocation/free pairs are kept in the event log, which can be useful when examining all events
+for a specific address, or when using the -allEvents option.
+.Pp
+If both MallocStackLogging and MallocStackLoggingNoCompact are set, then MallocStackLogging takes precedence and
+MallocStackLoggingNoCompact is ignored.
+.Pp
+.Nm malloc_history
+is particularly useful for tracking down memory 
+smashers.  Run the program to be inspected with MallocStackLogging or MallocStackLoggingNoCompact
+defined.  Also set the environment variable MallocScribble; this causes the malloc library to overwrite freed
+memory with a well-known value (0x55), and occasionally checks freed malloc blocks to make sure the memory has not
+been overwritten since it was cleared.  When malloc detects the memory has been written, it will print out a warning that the buffer
+was modified after being freed.  You can then use
+.Nm
+to find who
+allocated and freed memory at that address, and thus deduce
+what parts of the code might still have a pointer to the freed structure.
+.Sh SEE ALSO
+.Xr malloc 3 ,
+.Xr heap 1 ,
+.Xr leaks 1 ,
+.Xr stringdups 1 ,
+.Xr vmmap 1 ,
+.Xr filtercalltree 1 ,
+.Xr DevToolsSecurity 1
+.Pp
+The Xcode developer tools also include Instruments, a graphical application that can give information similar to that provided by
+.Nm malloc_history.
+The Allocations instrument graphically displays dynamic, real-time
+information about the object and memory use in an application, including backtraces
+of where the allocations occured.

@@ -1,0 +1,245 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 12/01/13               \" DATE
+.Dt lsactivity 8      \" Program name and manual section number
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm lsactivity
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.Nm activity
+.Nm continuation
+.Nm companion
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Query and control the lsuseractivityd daemon, part of the LaunchServices framework
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl
+.Op Fl abcd              \" [-abcd]
+.Op Fl a Ar path         \" [-a path] 
+.Op Ar file              \" [file]
+.Op Ar                   \" [file ...]
+.Ar arg0                 \" Underlined argument - use .Ar anywhere to underline
+arg2 ...                 \" Arguments
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+lsactivity controls and helps with testing of the UserActivity feature and frameworks.
+The tool processes its arguments as command [ options... ] [ command [options...]]*
+.Pp                      \" Inserts a space
+A list of commands that deal with user activity items, and descriptions of each:
+.Bl -tag -width -indent  \" Begins a tagged list
+.It Cm create 
+.Op Fl title Ar t 
+.Op Fl payload Ar key=value
+.Op Fl payloadData Ar hexEncodedPayloadData
+.Op Fl payloadFile Ar path
+.Op Fl options Ar key=value
+.Op Fl bundleID Ar bundleString
+.Op Fl type Ar suggestedActionType
+.Pp
+Creates a new user activity
+.Bl -tag -width -in
+.It Fl title Ar t
+the title to give the activity
+.It Fl payload Ar key=value
+Add the 
+.Ar value
+item to the payload with the key
+.Ar key
+.It Fl payloadData Ar hexData
+Uses NSKeyedUnarchiver to unarchive the given data
+.It Fl payloadFile Ar path
+read the payload dictionary from 
+.Ar path
+.It Fl options Ar key=value
+Add the key,value pair to the options dictionary
+.It Fl type Ar int
+Sets the activity type to the given LSSuggestedActionType, defaulting to LSSuggestedActionUserActivityType
+.It Fl url Ar url
+Sets the webpageURL for the item to
+.Ar url
+.El
+.It Cm update 
+.Ar activityID
+.Op Fl title Ar t
+.Op Fl payload Ar key=value
+.Op Fl payloadFile Ar path
+.Op Fl bundleID Ar bundleString
+.Op Fl -
+.Pp
+Updates the user activity with any given items
+.Bl -tag -width -in
+.It Fl title Ar t
+the title to give the activity
+.It Fl payload Ar key=value
+Add the 
+.Ar value
+item to the payload with the key
+.Ar key
+.It Fl payloadData Ar hexData
+Uses NSKeyedUnarchiver to unarchive the given data
+.It Fl payloadFile Ar path
+read the payload dictionary from 
+.Ar path
+.It Fl url Ar url
+Sets the webpageURL for the item to
+.Ar url
+.El
+.Ar activityID
+with the given new values.
+.It Cm delete Ar activityID Oo Ar activityID ... Oc Op Fl -
+Deletes each individual activity given as 
+.Ar activityID
+.Pp
+If 
+.Ar activityID
+is all then deletes all activities.
+.It Cm list
+lists the user activity items
+.It Cm export Ar activityID Oo Ar activityID ... Oc Op Fl -
+Exports each activity given by an 
+.Ar activityID
+.El                      \" Ends the list
+.Pp
+Commands which track, control, and affect the ranking of activities which the user could choose
+to resume on this device include:
+.Bl -tag -width -indent
+.It Cm rank
+.Op -all
+.Op -watch
+.Op -open
+.Op -show
+.Op -remove
+.Bl -tag -width xxxxxxx
+.It Fl all
+List all best apps, not just the top-ranked one.
+.It Fl watch
+Display the live changes to the best application as they happen.  Control-c to exit.
+.It Fl open
+Attempt to open (as if selected by the user) each received item
+.It Fl show
+Fetch the activity from the remote device and display the information, including the payload
+.It Fl remove
+Remove the item from future consideration as a bestAppSuggestion until the item itself changes.
+.El
+.It Cm reflect [ Fl duration Ar duration ]
+.Bl -tag -width -indent
+.It Fl duration Ar duration
+The duration, in seconds, to reflect activities.
+.El
+.Pp
+.Bl -tag -width xxxxxxxx
+Make whatever the most recently updated user activity is be 'reflected' back to this device, as if it was received from anther device with exactly the identifier and payload as given.  This is helpful when testing, because you can run this in a shell, and then resume the activity from lock screen or notification center, and it should send that activity back to the same application to see that it receives an activity correctly.
+.Pp
+.El
+Anywhere 
+.Ar activityID
+is shown, it can be any of a full UUID, the prefix or suffix part of a UUID, or the title for an activity.
+.El
+.Sh ADMINISTRATIVE CONTROL COMMANDS
+Commands that control the lsuseractivityd daemon.
+.Bl -tag -width -indent
+.It Cm status
+.Op -watch
+.Op -interval Ar duration
+.Bl -tag -width XXXXXXX
+.It Fl watch
+Run in full-screen mode, showing status every second
+.Pp
+.El
+.Fl interval Ar duration
+Update every
+.Ar duration
+seconds
+.Pp
+.Bl -tag -width -indent
+Get the current status of many aspects of the daemon.
+.El
+.Bl -tag -width -indent
+.It Cm terminate
+.Bl -tag -width -indent
+Ask the daemon to terminate itself.
+.El
+.Bl -tag -width -indent
+.It Cm reload
+.Bl -tag -width -indent
+Reload the daemon from its launchd plist (effectively killing the daemon)  Mac OS X only.
+.El
+.Bl -tag -width -indent
+.It Cm restart
+.Bl -tag -width -indent
+Ase the daemon to restart.
+.El
+.El
+.El
+.Sh BLUETOOTH ADVERTISING CONTROL
+Commands that directly change what this machine is advertising or display what is being received via the BTLE subsystem.
+.Bl -tag -width -indent
+.It advertiseBTLE [ -identifier Ar bundleidentifier ] [ -payload Ar key=value ] [ -payloadFile Ar path ] [ -options Ar key=value ] [ -url Ar url ]
+.Bl -tag -width -indent
+.It Fl identifier Ar bundleidentifier
+Advertise the given bundle identifier
+.It Fl payload Ar key=value
+Add the key,value pair to the payload dictionary
+.It Fl payloadFile Ar path
+Read an entire payload from the file at
+.Ar path
+.It Fl options Ar key=value
+Add the key,value pair to the options dictionary
+.It Fl url Ar url
+Add url to the set of resourceURLs in the payload being advertised
+.El
+.Pp
+Change the current BTLE advertisement to be the given bundleID, with the given payload. If no payload is specified then small random payload will be created so that the advertisement differs from any previous one.
+.It listenBTLE
+.Pp
+Listen for BTLE advertisements from other machines, and log a line each time a new item is seen.
+.El
+.Pp
+.Sh MISCELLANEOUS
+Miscellaneous commands for different things.
+.Bl -tag -width -indent
+.It showpayload Ar hex-string
+.Bl -tag -width -indent
+Decode the hex string as the data format the daemon stores each payload item and print out the resulting object(s).
+.El
+.Bl -tag -width XXXXXXXX
+.It showbtlepayload Ar hex-string
+.Bl -tag -width XXXXXXX
+Decode the hex string as the data format a user activity item is encoded into when it is sent via BTLE between two devices.
+.El
+.Bl -tag -width XXXXXXXX
+.It idle [ Fl duration Ar secondsToRun ] [ Fl statusInterval Ar secondsBetweenStatus ]
+.Bl -tag -width XXXXXXXX
+Run for up to 
+.Ar secondsToRun
+seconds, printing the idle state of the system every
+.Ar
+secondsBetweenStatus
+seconds.  Also print the status whenever the kIOUserActivityNotifyName notify() fires.
+.El
+.El
+.El
+
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr lsuseractivityd 8 
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner

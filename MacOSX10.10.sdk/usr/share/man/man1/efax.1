@@ -1,0 +1,1241 @@
+.TH EFAX 1 "February 1999" ""  ""
+.UC 1
+.SH NAME
+efax \- send/receive faxes with Class 1, 2 or 2.0 fax modem
+
+.ce 1
+(Please read the \fBfax\fP man page first.)
+.SH SYNOPSIS
+
+.B efax
+[
+\fIoptions\fP
+]
+[
+\fB-t\fP \fInum\fP [ \fIfile\fP... ]
+]
+
+.SH OPTIONS
+Where \fIoptions\fP are:
+
+.TP 9
+.B -a \fIcmd\fP
+use the command \fBATcmd\fP when answering the phone.  The
+default is "A".
+
+.TP 9
+.B -c \fIcaps\fP
+set the local modem capabilities.  See the section on
+capabilities below for the format and meaning of \fIcaps\fP.  For
+Class 1 the default is 1,n,0,2,0,0,0,0 where n is the highest
+speed supported by the modem.  For Class 2 the default is
+determined by the modem.
+
+.TP 9 
+.B -d \fIdev\fP 
+use the fax modem connected to device \fIdev\fP.  The default is
+\fB/dev/modem\fP.  
+
+.TP 9
+.B -f \fIfnt\fP
+use font file \fIfnt\fP for generating the header.  The default
+is a built-in 8x16 font.  See the efix(1) -f option for the font
+file format.
+
+.TP 9
+.B -g \fIcmd\fP
+if a \fBCONNECT\fP (or \fBDATA\fP) response indicates a data
+call, the shell \fB/bin/sh\fP is exec(2)'ed with \fIcmd\fP as its
+command.  \fIcmd\fP is a printf(3) format that may contain up to
+6 %d escapes which are replaced by the baud rate following the
+most recent \fBCONNECT\fP message. \fIcmd\fP typically exec's
+getty(8).
+
+.TP 9
+.B -h \fIhdr\fP
+put string `hdr' at the top of each page.  The first %d in `hdr'
+is replaced by the page number and the second, if any, is
+replaced by the number of pages being sent.
+
+.TP 9
+.B -i \fIstr\fP
+.TP 9
+.B -j \fIstr\fP
+.TP 9
+.B -k \fIstr\fP
+send the command \fBAT\fP\fIstr\fP to the modem to initialize it.
+-i commands are sent before the modem is put into fax mode, -j
+commands after the modem is in fax mode, and -k commands just
+before efax exits.  The only default is a hang-up (ATH) command
+that is sent before exiting only if no other -k options are
+given.  Multiple options may be used.
+
+.TP 9
+.B -l \fIid\fP
+set the local identification string to \fIid\fP.  \fIid\fP should
+be the local telephone number in international format (for
+example "+1 800 555-1212").  This is passed to the remote fax
+machine.  Some fax machines may not accept characters other than
+numbers, space, and '+'.  
+
+.TP 9 
+.B -o \fIopt\fP 
+use option \fIopt\fP to accommodate a non-standard fax modem
+protocol.  See the MODEM REQUIREMENTS section below for more
+details.  The \fIopt\fPions are:
+
+.TP 9
+.B 
+    0
+Force use of Class 2.0 fax modem commands.  The modem must
+support Class 2.0.
+
+.TP 9
+.B 
+    2
+Force use of Class 2 fax modem commands.  The modem must support
+Class 2.
+
+.TP 9
+.B 
+    1 
+Force use of Class 1 fax modem commands. The modem must support
+Class 1.  By default efax queries the modem and uses the first of
+the three above classes which is supported by the modem.
+
+.TP 9
+.B 
+    a
+use software adaptive answer method.  If the first attempt to
+answer the call does not result in a data connection within 8
+seconds the phone is hung up temporarily and answered again in
+fax mode (see "Accepting both fax and data calls" below).
+
+.TP 9
+.B 
+    e 
+ignore errors in modem initialization commands.
+
+.TP 9
+.B 
+    f
+use "virtual flow control".  efax tries to estimate the number of
+bytes in the modem's transmit buffer and pauses as necessary to
+avoid filling it.  The modem's buffer is assumed to hold at least
+96 bytes.  This feature does not work properly with Class 2
+modems that add redundant padding to scan lines.  Use this option
+only if you have problems configuring flow control.
+
+.TP 9
+.B 
+    h 
+use hardware (RTS/CTS) in addition to software (XON/XOFF) flow
+control.  Many modems will stop responding if this option is
+used.  See the section `Resolving Problems' before using this
+option.
+
+.TP 9
+.B 
+    l
+halve the time between testing lock files when waiting for other
+programs to complete.  By default this is 8 seconds. For example
+-olll sets the interval to 1 second.
+
+.TP 9
+.B 
+    n
+ignore requests for pages to be retransmitted. Use this option if
+you don't care about the quality of the received fax or if the
+receiving machine is too fussy.  Otherwise each page may be
+retransmitted up to 3 times.
+
+.TP 9
+.B 
+    r
+do not reverse bit order during data reception for Class 2
+modems.  Only Multitech modems require this option. Not normally
+required since efax detects these modems.
+
+.TP 9
+.B 
+    x
+send XON (DC1) instead of DC2 to start data reception.  Applies
+to a very few Class 2 modems only.
+
+.TP 9
+.B 
+    z
+delay an additional 100 milliseconds before each modem
+initialization or reset command.  The initial delay is 100
+ms. For example, -ozzz produces a 400 ms delay.  Use with modems
+that get confused when commands arrive too quickly.
+
+
+.TP 9
+.B -q \fIn\fP
+ask for retransmission of pages received with more than \fIn\fP
+errors.  Default is 10.
+
+.TP 9
+.B -r \fIpat\fP
+each received fax page is stored in a separate file.  The file
+name is created using \fIpat\fP as a strftime(3) format string.
+A page number of the form .001, .002, ...  is appended to the
+file name.  If \fIpat\fP is blank ("") or no -r option is given a
+default string of "%m%d%H%M%S" is used.
+
+.\" If a file already exists, efax terminates with an error.
+
+.TP 9
+.B -s
+remove lock file(s) after initializing the modem.  This allows
+outgoing calls to proceed when efax is waiting for an incoming
+call.  If efax detects modem activity it will attempt to re-lock
+the device.  If the modem has been locked by the other program
+efax will exit and return 1 (``busy'').  Normally a new efax
+process is then started by launchd(8). The new efax process will
+then check periodically until the lock file disappears and
+then re-initialize the modem.
+
+.TP 9 
+.B -t \fInum [file\fP...]  
+dial telephone number \fInum\fP and send the fax image files
+\fIfile\fP....  If used, this must be the last argument on the
+command line.  The telephone number \fInum\fP is a string that
+may contain any dial modifiers that the modem supports such as a
+T prefix for tone dialing or commas for delays.  If no file names
+are given the remote fax machine will be polled. If no -t
+argument is given efax will answer the phone and attempt to
+receive a fax.
+
+.TP 9
+.B -v \fIstrng\fP
+select types of messages to be printed.  Each \fIlower-case\fP
+letter in \fIstrng\fP enables one type of message:
+
+.RS 12
+.B
+e - 
+errors
+.br
+.B
+w - 
+warnings
+.br
+.B
+i - 
+session progress information
+.br
+.B
+n - 
+capability negotiation information
+.br
+.B
+c - 
+modem (AT) commands and responses
+.br
+.B
+h - 
+HDLC frame data (Class 1 only)
+.br
+.B
+m - 
+modem output
+.br
+.B
+a - 
+program arguments
+.br
+.B
+r -
+reception error details
+.br
+.B
+t -
+transmission details
+.br
+.B
+f -
+image file details 
+.br
+.B
+x -
+lock file processing
+
+.RE
+.RS 9
+Up to two -v options may be used.  The first is for messages
+printed to the standard error and the second is for messages to
+the standard output. The default is "ewin" to the standard error
+only.
+.RE
+
+.TP 9
+.B -w
+wait for an OK or CONNECT prompt instead of issuing an answer
+(\fBATA\fP) command to receive a fax.  Use this option when the
+modem is set to auto-answer (using S0=\fIn\fP) or if another
+program has already answered the call.
+
+.TP 9
+.B -x \fIlkf\fP
+use a UUCP-style lock file \fIlkf\fP to lock the modem device
+before opening it.  If the device is locked, efax checks every 15
+seconds until it is free.  Up to 16 -x options may be used if
+there are several names for the same device.  A `#' prefix on the
+file name creates an binary rather than text (HDB-style) lock
+file.  This is the reverse of what was used by previous efax
+versions.
+
+.SH FAX FILE FORMATS
+
+efax can read the same types of files as \fBefix(1)\fP including
+text, T.4 (Group 3), PBM, single- and multi-page TIFF (G3 and
+uncompressed).  efax automatically determines the type of file
+from its contents.  TIFF files are recommended as they contain
+information about the image size and resolution.
+
+Each page to be sent should be converted to a separate TIFF
+format file with Group 3 (G3) compression.  Received files are
+also stored in this format.  The EXAMPLES section below shows how
+efix and other programs can be used to create, view and print
+these files.
+
+.SH OPERATING SYSTEM REQUIREMENTS
+
+The operating system must provide short response times to avoid
+protocol timeouts.  For Class 2 and 2.0 modems the delay should
+not exceed 1 or 2 seconds.
+
+When using Class 1 modems the program must respond to certain
+events within 55 milliseconds.  Longer delays may cause the fax
+protocol to fail in certain places (between DCS and TCF or
+between RTC and MPS).  Class 1 modems should therefore not be
+used on systems that cannot guarantee that the program will
+respond to incoming data in less than 55 milliseconds.  In
+particular, some intelligent serial cards and terminal servers
+may introduce enough delay to cause problems with Class 1
+operation.
+
+The operating system must also provide sufficient low-level
+buffering to allow uninterrupted transfer of data between the
+modem and a disk file at the selected baud rate, typically 9600
+bps.  Since the fax protocol does not provide end-to-end flow
+control the effectiveness of flow control while receiving is
+limited by the size of the modem's buffer. This can be less than
+100 bytes.  Efax does not use flow control during reception.
+
+.SH MODEM REQUIREMENTS
+
+The "Group" is the protocol used to send faxes between fax
+machines.  Efax supports the Group 3 protocol used over the
+public telephone network.
+
+The "Class" is the protocol used by computers to control fax
+modems.  Efax supports Class 1, 2 and 2.0 fax modems.
+
+Most fax modems use XON/XOFF flow control when in fax mode.  This
+type of flow control adds very little overhead for fax use. Many
+modems have unreliable hardware (RTS/CTS) flow control in fax
+mode.  By default efax enables only XON/XOFF flow control and the
+-oh option must be used to add hardware flow control.
+
+While some modems have serial buffers of about 1k bytes, many
+inexpensive modems have buffers of about one hundred bytes and
+are thus more likely to suffer overruns when sending faxes.
+
+A few older modems may need a delay between commands of more than
+the default value used by efax (100 milliseconds).  If the delay
+is too short, commands may not echo properly, may time out, or
+may give inconsistent responses.  Use one or more \fB-oz\fP
+options to increase the delay between modem initialization
+commands and use the E0 modem initialization command to disable
+echoing of modem commands.
+
+By default efax sends DC2 to start the data flow from the modem
+when receiving faxes from Class 2 modems.  A few older modems
+require XON instead.  Use of DC2 would cause the modem to give an
+error message and/or the program to time out.  The \fB-ox\fP
+option should be used in this case.
+
+A few older Class 2 modems (e.g. some Intel models) don't send
+DC2 or XON to start the data flow to the modem when sending
+faxes.  After waiting 2 seconds efax will print a warning and
+start sending anyways.
+
+A very few Class 2 modems do not reverse the bit order (MSB to
+LSB) by default on receive.  This might cause errors when trying
+to display or print the received files.  The \fB-or\fP option can
+be used in this case.
+
+Some inexpensive "9600 bps" fax modems only \fItransmit\fP at
+9600 bps and reception is limited to 4800 bps.
+
+The following Class 1 modems have been reported to work with efax:
+AT&T DataPort,
+.\" Andrea Gozzi <work@forum.sublink.org>, v0.6, SCO 3.2.0, (Class 1)
+Cardinal Digital Fax Modem (14400),
+.\" awk0%navajo@gte.com, v0.6, linux 1.0, downloading fax144c.car
+Digicom Scout+,
+.\" umlin000@CC.UManitoba.CA, v 0.6, Linux 1.1.12
+Motorola Lifestyle 28.8,
+.\" mortbay@ozemail.com.au
+Motorola Power 28.8,
+.\" danz@wv.mentorg.com, Linux 1.2.10
+QuickComm Spirit II,
+.\" umlin000@CC.UManitoba.CA, v 0.6, Linux 1.1.12
+.\" gsmith@softsmiths.oz.au, v 0.7a, add "*F1" for Xon/Xoff
+Smartlink 9614AV-Modem,
+.\" gt@sky.gun.de, v0.6, Linux 1.1.15
+Supra Faxmodem 144LC,
+.\" john@johncon.johncon.com, v0.6, Consensys (ie., Unixware) 4.2
+USR Courier V.32bis Terbo,
+.\" meyer@geomatic.no, v0.6, SunOS 4.1.3
+USR Sportster (V.32 and V.34),
+.\" satyr!kayvan@apple.com (Kayvan Sylvan), v0.6, Linux (?)
+Zoom AFC 2.400,
+.\" hausutzu@pse.panic.bln.sub.org (Utz-Uwe Haus), v0.6, Linux
+Zoom VFX14.4V.
+.\" edc@ee.ubc.ca (me!), v0.6, Linux
+
+The following Class 2 modems have been reported to work with efax:
+14k4 Amigo Communion fax/modem,
+.\" bekker@tn.utwente.nl, efax0.5
+Adtech Micro Systems 14.4 Fax/modem,
+.\" gmaughan@grape.fcit.monash.edu.au, Linux 1.2.10, efax 07a
+askey modem type 1414VQE,
+.\" thowi@chiba.escape.de, efax06?, Linux?
+AT&T DataPort,
+.\" ingber@alumni.caltech.edu (Class 2)
+ATT/Paradyne,
+.\" john@johncon.johncon.com
+AT&T Paradyne PCMCIA,
+.\" jh@datanet.tele.fi (Juha Heinanen)
+Boca modem,
+.\" ?
+BOCA M1440E, 
+.\" v0.6a, SunOS 4.1.1, Linux 1.0.9
+.\" hsw1@papa.attmail.com
+Crosslink 9614FH faxmodem,
+.\" ?
+FuryCard DNE 5005,
+.\" a PCMCIA Class 3 faxmodem
+.\" ron@draconia.hacktic.nl
+GVC 14.4k internal,
+.\" jchen@ee.mcgill.ca, 0.6a w/ stty fax patch, Linux kernel 1.1.59
+Intel 14.4 fax modem,
+.\" (matloff@cs.ucdavis.edu)
+Megahertz 14.4,
+,\" norman@bellcore.com
+Microcom DeskPorte FAST ES 28.8,
+.\" Skip Montanaro (skip@automatrix.com), 0.6a, Linux
+Motorola UDS FasTalk II,
+.\" Raj Mathur (root@darbari.ncst.ernet.in), 0.6a, Linux 1.1.48
+MultiTech 1432MU,
+.\"reb@pdsf.ssc.gov
+Practical Peripherals PM14400FXMT,
+.\" (DEC Alpha AXP 3000/500 running OSF/1 V1.3)
+Supra V32bis,
+.\" john@johncon.johncon.com, v0.5b, SysV R4.2
+.\" tbucks!timothy@csn.org
+.\" (ROCKWELL)
+.\" Alec.Muffett@UK.Sun.COM (Alec Muffett), Linux 1.1.51, 
+.\"  Supra FAXModem v.32bis
+Telebit Worldblazer,
+.\" blurfl!jhood@Dartmouth.EDU
+.\" Telebit Worldblazer with ROM version LA7.02. (requires -or)
+.\" (my configuration required hardware flow control)
+.\" Dario_Ballabio@milano.europe.dg.com, v 0.6, Version LA7.05C.  
+TKR DM-24VF+,
+.\" rainer.dorsch@student.uni-ulm.de
+Twincom 144/DFi,
+.\" (ROCKWELL, V.32AC, V1.270 TR14-Jxxx-001)
+ViVa 14.4/Fax modem,
+.\" Robert.Sprockeels@csc.be, v0.6a, Linux
+Vobis Fax-Modem (BZT-approved),
+.\" klein@pc-klein.zxa.basf-ag.de (Peter Klein), Linux, kernel 0.99.14
+.\" beck@irs.inf.tu-dresden.de (Andre Beck), v 0.6, Ultrix 4.3, gcc V2.5.8:
+.\" gcc -ansi -D_XOPEN_SOURCE -O2 efax.c -o efax -lcP
+Zoom VFX14.4V,
+.\" edc@ee.ubc.ca (me!), v0.6, Linux
+ZyXEL U-1496E[+], 
+.\" plph@umcc.umich.edu, v0.3 & faxmodem ROM version 5.05M)
+.\" requires -or
+.\" Marc@Synergytics.Com, v0.5a & ZyXEL 1496E Plus, ROM Version 6.11a)
+.\" -or -i '+FCLASS=2;+FCR=1' -c '+FDCC=1,5,2,2,0,0,0,0'
+ZyXEL Elite 2864I.
+.\" schlatt@dial.eunet.ch, v0.7a, using -Xn (n<4)
+
+.SH MODEM INITIALIZATION OPTIONS
+
+The required modem initialization commands are generated by efax.
+Additional commands may be supplied as command-line arguments.
+The modem must be set up to issue verbose(text) result codes.
+The following command does this and is sent by efax before trying
+to initialize the modem.
+
+.TP 9
+.BR Q0V1
+respond to commands with verbose result codes
+
+.PP
+The following commands may be useful for special purposes:
+
+.TP 9 
+.BR X3 
+don't wait for dial tone before dialing.  This may be used to
+send a fax when the call has already been dialed manually.  In
+this case use an empty string ("") as the first argument to the
+\fB-t\fP command.  Use \fBX4\fP (usual default) to enable all
+result codes.
+
+.TP 9 
+.BR M2
+leave the monitor speaker turned on for the duration of the call
+(use \fBM0\fP to leave it off).
+
+.TP 9 
+.BR L0
+turn monitor speaker volume to minimum (use \fBL3\fP for maximum).
+
+.TP 9 
+.BR E0 
+disable echoing of modem commands.  See the Resolving Problems
+section below.
+
+.TP 9 
+.BR &D2
+returns the modem to command mode when DTR is dropped.  The
+program drops DTR at the start and end of the call if it can't
+get a response to a modem command.  You can use \fB&D3\fP to
+reset the modem when DTR is dropped.
+
+.TP 9
+.BR S7=120
+wait up to two minutes (120 seconds) for carrier.  This may be
+useful if the answering fax machine takes a long time to start
+the handshaking operation (e.g. a combined fax/answering machine
+with a long announcement).
+
+.SH CAPABILITIES
+
+The capabilities of the local hardware and software can be set
+using a string of 8 digits separated by commas:
+
+.BR  \fIvr\fP,\fIbr\fP,\fIwd\fP,\fIln\fP,\fIdf\fP,\fIec\fP,\fIbf\fP,\fIst\fP
+
+where:
+
+.TP 9
+.I vr \fP (vertical resolution) =
+0 for 98 lines per inch
+.br
+1 for 196 lpi
+
+.TP 9
+.I br \fP (bit rate) =
+0 for 2400 bps
+.br
+1 for 4800
+.br
+2 for 7200
+.br
+3 for 9600
+.br
+4 for 12000 (V.17)
+.br
+5 for 14400 (V.17)
+
+.TP 9
+.I wd \fP (width) =
+0 for 8.5" (21.5 cm) page width
+.br
+1 for 10" (25.5 cm)
+.br
+2 for 12" (30.3 cm)
+
+.TP 9
+.I ln  \fP (length) =
+0 for 11" (A4: 29.7 cm) page length
+.br
+1 for 14" (B4: 36.4 cm)
+.br
+2 for unlimited page length
+
+.TP 9
+.I df \fP (data format) =
+0 for 1-D coding
+.br
+1 for 2-D coding (not supported)
+
+.TP 9
+.I ec  \fP (error correction) =
+0 for no error correction
+.\" .br
+.\" 1 for EC mode with 64 byte frames (not supported)
+.\" .br
+.\" 2 for EC mode with 256 byte frames (not supported)
+
+.TP 9
+.I bf \fP (binary file) =
+0 for no binary file transfer
+
+.TP 9
+.I st  \fP (minimum scan time) =
+0 for zero delay per line
+.br
+1 for 5 ms per line
+.br
+3 for 10 ms per line
+.br
+5 for 20 ms per line
+.br
+7 for 40 ms per line
+
+.PP
+
+When \fIreceiving\fP a fax the \fIvr\fP, \fIwd\fP, and \fIln\fP
+fields of the capability string should be set to the maximum
+values that your display software supports.  The default is 196
+lpi, standard (8.5"/21.5cm) width and unlimited length.
+
+When \fIsending\fP a fax efax will determine \fIvr\fP and
+\fIln\fP from the image file and set \fIwd\fP to the default.
+
+If the receiving fax machine does not support high resolution
+(\fIvr\fP=1) mode, efax will reduce the resolution by combining
+pairs of scan lines.  If the receiving fax machine does not
+support the image's width then efax will truncate or pad as
+required. Most fax machines can receive \fIln\fP up to 2.  Few
+machines support values of \fIwd\fP other than 0.
+
+
+.SH HEADERS
+
+efax adds blank scan lines at the top of each image when it is
+sent.  This allows room for the page header but increases the
+length of the image (by default about 0.1" or 2.5mm of blank
+space is added).
+
+The header placed in this area typically includes the date and
+time, identifies the, and shows the page number and total pages.
+Headers cannot be disabled but the header string can be set to a
+blank line.
+
+The default font for generating the headers is the built-in 8x16
+pixel font scaled to 12x24 pixels (about 9 point size).
+
+Note that both efax and efix have -f options to specify the font.
+efIx uses the font to generate text when doing text-to-fax
+conversions (during "fax make") while efAx uses the font to
+generate the header (during "fax send").
+
+.SH SESSION LOG
+
+A session log is written to the standard error stream.  This log
+gives status and error messages from the program as selected by
+the \fB-v\fP option. A time stamp showing the full time or just
+minutes and seconds is printed before each message.  Times
+printed along with modem responses also show milliseconds.
+
+.SH RETURN VALUES
+
+The program returns an error code as follows:
+
+.TP 9
+0
+The fax was successfully sent or received.
+
+.TP 9
+1
+The dialed number was busy or the modem device was in use.  Try
+again later.
+
+.TP 9
+2
+Something failed (e.g. file not found or disk full). Don't retry.
+Check the session log for more details.
+
+.TP 9
+3 
+Modem protocol error.  The program did not receive the expected
+response from the modem.  The modem may not have been properly
+initialized, the correct \fB-o\fP options were not used, or a bug
+report may be in order.  Check the session log for more details.
+
+.TP 9
+4
+The modem is not responding.  Operator attention is required.
+Check that the modem is turned on and connected to the correct
+port.
+
+.TP 9
+5
+The program was terminated by a signal.
+
+.TP 9
+6
+The program was terminated due to a system power event (i.e. the computer is about to sleep).
+
+.TP 9
+7
+The operator canceled the call.
+
+.SH EXAMPLES
+
+.B Creating fax (G3) files
+
+The efix program can be used to convert text files to TIFF-G3
+format.  For example, the following command will convert the text
+file \fBletter\fP to the files \fBletter.001\fP,
+\fBletter.002\fP, etc,:
+
+.IP
+.nf
+.ft CW
+efix -nletter.%03d letter
+.ft P
+.fi
+.LP
+
+Ghostscript's \fBtiffg3\fP driver can generate fax files in
+TIFF-G3 format from postscript files.  For example, the command:
+
+.IP
+.nf
+\f(CW gs -q -sDEVICE=tiffg3 -dNOPAUSE \\
+	-sOutputFile=letter.%03d letter.ps </dev/null\fP
+.fi
+.LP
+
+will convert the Postscript file
+.BR letter.ps
+into high-resolution
+(\fIvr\fP=1) G3 fax image files \fBletter.001, letter.002,\fP ...
+
+The images should have margins of at least 1/2 inch (1 cm) since
+the fax standard only requires that fax machines print a central
+portion of the image 196.6mm (7.7 inches) wide by 281.5mm (11.1
+inches) high.
+
+The efix program can also insert bitmaps in images to create
+letterhead, signatures, etc.
+
+.B Printing fax files
+
+On CUPS based systems you can use lpr(1) to print faxes. For example, to 
+print the received fax file \fBreply.001\fP use the command:
+
+.IP
+.nf
+.ft CW
+lpr reply.001
+.ft P
+.fi
+.LP
+
+On lpd based systems you can use the efix program to print faxes on Postscript or
+HP-PCL (LaserJet) printers.  For example, to print the received
+fax file \fBreply.001\fP on a Postscript printer use the command:
+
+.IP
+.nf
+.ft CW
+efix -ops reply.001 | lpr
+.ft P
+.fi
+.LP
+
+.B Sending fax files
+
+The following command will dial the number 222-2222 using tone
+dialing and send a two-page fax from the TIFF-G3 files letter.001
+and letter.002 using the fax modem connected to device /dev/cua1.
+
+.IP
+.nf
+.ft CW
+efax -d /dev/cua1 \\
+     -t T222-2222 letter.001 letter.002
+.ft P
+.fi
+.LP
+
+.B Manual answer
+
+You can use efax to answer the phone immediately and start fax
+reception.  Use this mode if you need to answer calls manually to
+see if they are fax or voice.
+
+For example, the following command will make the fax modem on
+device \fB/dev/ttyS1\fP answer the phone and attempt to receive a
+fax.  The received fax will be stored in the files
+\fBreply.001\fP, \fBreply.002\fP, and so on.  The modem will
+identify itself as "555-1212" and receive faxes at high or low
+resolution (\fIvr\fP=1), at up to 14.4 kbps (\fIbr\fP=5).
+
+.IP
+.nf
+.ft CW
+efax -d /dev/ttyS1 -l "555-1212" \\
+   -c 1,5 -r reply
+.ft P
+.fi
+.LP
+
+.B Automatic answer
+
+The \fB-w\fP option makes efax wait for characters to become
+available from the modem (indicating an incoming call) before
+starting fax reception.  Use the \fB-w\fP option and a
+\fB-i\fPS0=\fIn\fP option to answer the phone after \fIn\fP
+rings.  The example below will make the modem answer incoming
+calls in fax mode on the fourth ring and save the received faxes
+using files names corresponding to the reception date and time.
+
+.IP
+.nf
+.ft CW
+efax -d /dev/ttyb -w -iS0=4 2>&1 >> fax.log
+.ft P
+.fi
+.LP
+
+.B Sharing the modem with outgoing calls
+
+The modem device can be shared by programs that use the UUCP
+device locking protocol.  This includes pppd, chat, minicom,
+kermit, uucico, efax, cu, and many others others.  However,
+locking will only work if all programs use the same lock file.
+
+efax will lock the modem device before opening it if one or more
+UUCP lock file names are given with \fB-x\fP options.  Most
+programs place their lock files in the \fR/usr/spool/uucp\fP or
+\fR/var/lock\fP directories and use the name \fRLCK..\fP\fIdev\fP
+where \fIdev\fP is the name of the device file in the /dev
+directory that is to be locked.
+
+If the \fB-s\fP (share) option is used, the lock file is removed
+while waiting for incoming calls so other programs can use the
+same device.
+
+If efax detects another program using the modem while it is
+waiting to receive a fax, efax exits with a termination code of
+1.  A subsequent efax process using this device will wait until
+the other program is finished before re-initializing the modem
+and starting to wait for incoming calls again.
+
+Programs that try to lock the modem device by using device
+locking facilities other than UUCP lock files not be able to use
+this arbitration mechanism because the device will still be open
+to the efax process.  In this case you will need to kill the efax
+process (e.g. "fax stop") before starting the other program.
+
+When efax is waiting for a fax it leaves the modem ready to
+receive in fax mode but removes the lock file.  When a slip or
+PPP program takes over the modem port by setting up its own lock
+file efax cannot send any more commands to the modem -- not even
+to reset it.  Therefore the other program has to set the modem
+back to data mode when it starts up.  To do this add a modem
+reset command (send ATZ expect OK) to the beginning of your slip
+or PPP chat script.
+
+.B Accepting both fax and data calls
+
+Many modems have an adaptive data/fax answer mode that can be
+enabled using the \fB-j+FAE=1\fP (for Class 1) or \fB-jFAA=1\fP
+(for Class 2[.0]) initialization string.  The type of call (data
+or fax) can then be deduced from the modem's responses.
+
+Some modems have limited adaptive answer features (e.g. only
+working properly at certain baud rates or only in Class 2) or
+none at all.  In this case use the initialization string
+\fB-i+FCLASS=0\fP to answer in data mode first and the \fB-oa\fP
+option to then hang up and try again in fax mode if the first
+answer attempt was not successful.  This method only works if
+your telephone system waits a few seconds after you hang up
+before disconnecting incoming calls.
+
+If the \fB-g\fP option is used then the option's argument will be
+run as a shell command when an incoming data call is detected.
+Typically this command will exec \fBgetty\fP(8).  This program
+should expect to find the modem already off-hook and a lock file
+present so it should not try to hang up the line or create a lock
+file.  Note that the modem should be set up to report the DCE-DTE
+(modem-computer, e.g. CONNECT 38400) speed, not the DCE-DCE
+(modem-modem, e.g. CONNECT 14400) speed.  For many modems the
+initialization option -iW0 will set this.
+
+The following command will make efax answer incoming calls on
+\fB/dev/cua1\fP on the second ring.  This device will be locked
+using two different lock files but these lock files will be
+removed while waiting for incoming calls (\fB-s\fP).  If a data
+call is detected, the \fBgetty\fP program will be run to
+initialize the terminal driver and start a \fBlogin\fP(1)
+process.  Received fax files will be stored using names like
+\fBDec02-12.32.33.001\fP, in the \fB/usr/spool/fax/incoming\fP
+directory and the log file will be appended to
+\fB/usr/spool/fax/faxlog.cua1\fP.
+
+.IP
+.nf
+.ft CW
+efax -d /dev/cua1  -j '+FAA=1' \\
+   -x /usr/spool/uucp/LCK..cua1 \\
+   -x /usr/spool/uucp/LCK..ttyS1 \\
+   -g "exec /sbin/getty -h /dev/cua1 %d" \\
+   -iS0=2 -w -s \\
+   -r "/usr/spool/fax/incoming/%b%d-%H.%I.%S" \\
+   >> /usr/spool/fax/faxlog.cua1 2>&1
+.ft P
+.fi
+.LP
+
+Note that adaptive answer of either type will not work for all
+callers.  For some data calls the duration of the initial
+data-mode answer may be too short for data handshaking to
+complete.  In other cases this duration may be so long that
+incoming fax calls will time out before efax switches to fax
+mode.  In addition, some calling fax modems mistake data-mode
+answering tones for fax signaling tones and initiate fax
+negotiation too soon.  If you use software adaptive answer you
+can reduce the value of the initial data-mode answer (set by
+TO_DATAF in efax.c) to get more reliable fax handshaking or
+increase it for more reliable data handshaking.  However, if you
+need to provide reliable fax and data service to all callers you
+should use separate phone numbers for the two types of calls.
+
+When a call is answered the modem goes on-line with the
+computer-to-modem baud rate fixed at the speed used for the most
+recent AT command.  When efax is waiting for a fax or data call
+it sets the interface speed to 19200 bps since this is the speed
+required for fax operation.  This prevents full use of 28.8kbps
+modem capabilities.
+
+
+.SH USING LAUNCHD TO RUN EFAX
+
+efax can answer all incoming calls if you create a launchd.plist(5)
+file in \fB/System/Library/LaunchDaemons\fP. The launchd(8)
+process will run a new copy of efax when the system boots up and
+whenever the previous efax process terminates.  The configuration
+file should invoke efax by running the \fBfax\fP script with an 
+\fBanswer\fP argument.
+
+For example, the following XML Property List keeps efax running 
+continuously:
+
+.IP
+.nf
+.ft CW
+  <?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <plist version="1.0">
+  <dict>
+	  <key>Label</key>
+	  <string>com.cce.efax</string>
+	  <key>OnDemand</key>
+	  <false/>
+	  <key>ProgramArguments</key>
+	  <array>
+		  <string>/usr/bin/fax</string>
+		  <string>answer</string>
+	  </array>
+  </dict>
+  </plist>
+.ft P
+.fi
+.LP
+
+You should protect the fax script and configuration files against
+tampering since launchd will execute them as a privileged (root)
+process.  If you will be allowing data calls via getty and login
+you should ensure that your system is reasonably secure
+(e.g. that all user id's have secure passwords).
+
+If efax exec()'s getty properly but you get a garbled login
+prompt then there is probably a baud rate mismatch between the
+modem and the computer.  First, check the efax log file to make
+sure the modem's CONNECT response reported the serial port speed
+(e.g. 19200), \fBnot\fP the modem-modem speed (e.g. 14400).
+Next, check the getty options and/or configuration files
+(e.g. /etc/gettydefs) for that particular baud rate.  Then run
+getty manually with the same arguments and verify the port
+settings using ``stty </dev/XXX''.  Note that you'll probably
+want to enable hardware flow control for data connections (-h for
+agetty, CRTSCTS for getty_ps).
+
+A few programs won't work properly when efax is set up to answer
+calls because they don't create lock files.  You can put the
+shell script ``wrapper'' below around such programs to make them
+work properly.  Change BIN and LOCKF to suit.
+
+.IP
+.nf
+.ft CW
+#!/bin/sh
+BIN=/bin/badprogram
+LOCKF=/var/spool/uucp/LCK..cua1
+if [ -f $LOCKF ]
+then
+        echo lock file $LOCKF exists
+        exit 1
+else
+        printf "%10d\n" $$ >$LOCKF
+        $BIN $*
+        rm $LOCKF
+fi
+.ft P
+.fi
+.LP
+
+
+.SH DELIVERING RECEIVED FAXES BY E-MAIL
+
+The "fax answer" script described above can be configured to
+e-mail the fax files received by the previous fax answer process
+to a "fax manager" who can then forward the fax to the correct
+recipient.  The received fax files are send as MIME attachments,
+one file per page, using the ``base64'' text encoding and the
+``image/tiff'' file format.
+
+To view the fax images directly from your e-mail reader you will
+have to configure it with an application that can display files
+of type image/tiff.  Typically this is specified in a ``mailcap''
+file.  For example, placing the following line in /etc/mailcap
+will cause the fax file attachments to be displayed using the
+``fax view'' command.
+
+.ft CW
+image/tiff; fax view %s
+.ft P
+
+.SH SENDING FAXES USING THE PRINT SPOOLER
+
+You can configure a "fax" printer into the lpr print spooler that
+will fax a document out using efax instead of printing it. To set up a
+fax printer do the following:
+
+.ft CW
+lpadmin -p fax -E -P /System/Library/Frameworks/ApplicationServices.framework/Frameworks/PrintCore.framework/Resources/English.lproj/Fax.ppd -v fax://dev/cu.modem
+.ft P
+
+
+You should now be able to send a fax using the lpr interface by
+using a command such as:
+
+.IP
+.nf
+.ft CW
+lpr -P fax -ophone="555-1212" file.ps
+.ft P
+.fi
+.LP
+
+You can use lpq(1) to check the fax queue, lprm(1) to remove fax
+jobs and lpc(8) to control the spooler.  In each case use the
+-Pfax option to specify the fax ``printer.'' A log file will be
+mailed to the user when the fax is sent.
+
+See the lpr(1) man page for information on the print spooler.
+
+.SH RESOLVING PROBLEMS
+
+Double check the configuration setup in the first part of the fax
+script, particularly the modem device name and the lock file
+names.
+
+If efax hangs when trying to open the modem device (typically
+/dev/ttyX), the device is either already in use by another
+process (e.g. pppd) or it requires the carrier detect line to be
+true before it can be opened.  Many systems define an alternate
+device name for the same physical device (typically cuaX) that
+can be opened even if carrier is not present or other programs
+are already using it.
+
+If responses to modem initialization commands are being lost or
+generated at random, another processes (e.g. getty or an efax
+auto-answer process) may be trying to use the modem at the same
+time.  Try running efax while this other program is running.  If
+efax does not report "/dev/ttyX locked or busy. waiting."  then
+the lock files names are not specified correctly.
+
+Attempt to send a fax. Check that the modem starts making the
+calling signal (CNG, a 0.5 second beep every 3 seconds) as soon
+as it's finished dialing.  This shows the modem is in fax mode.
+You may need to set the SPKR variable to -iM2L3 to monitor the
+phone line to do this.
+
+Listen for the answering fax machine and check that it sends the
+answer signal (CED, a 3 second beep) followed by "warbling"
+sounds (DIS frames) every 3 seconds.  If you hear a continuous
+sound (tones or noise) instead, then you've connected to a data
+modem instead.
+
+Your modem should send back its own warble (DCS frame) in
+response to DIS immediately followed by 1.5 seconds of noise (a
+channel check).  If everything is OK, the receiving end will send
+another warble (CFR frame) and your modem will start to send
+data.  If you have an external modem, check its LEDs.  If flow
+control is working properly the modem's send data (SD) LED will
+turn off periodically while the fax data is sent.
+
+Check the message showing the line count and the average bit rate
+when the page transmission is done.  Low line counts (under 1000
+for a letter size image) or the warning "fax output buffer
+overflow" while sending indicate that the image data format is
+incorrect. Check the file being sent using the "fax view"
+command.
+
+If you get the error message ``flow control did not work'' then
+flow control was not active.  This usually results in a garbled
+transmission and the receiving machine may reject the page, abort
+the call, print a distorted or blank image and/or hang up.
+
+The warning "characters received while sending" or an <XOFF>
+character appearing after the transmission means that the
+operating system ignored the modem's XOFF flow control character.
+Ensure that you are not running other programs such as getty or
+pppd at the same time as efax since they will turn off xon/xoff
+flow control.
+
+If you cannot get flow control to work properly then enable
+``virtual flow control'' with the \fB-of\fP option or hardware
+flow control with the \fB-oh\fP option.
+
+Check that the remote machine confirms reception with a +FPTS:1
+response (Class 2) or an MCF frame (Class 1).
+
+For Class 2 modems, the error message "abnormal call termination
+(code \fInn\fP)" indicates that the modem detected an error and
+hung up.
+
+Many companies advertise services that will fax back information
+on their products.  These can be useful for testing fax
+reception.
+
+The message "run length buffer overflow" when receiving indicates
+an error with the image data format.  You may need to use the
+\fB-or\fP option with certain Class 2 modems.
+
+If efax displays the message "can't happen (<details>)" please
+send a bug report to the author.
+
+Finally, don't play "option bingo," if you can't resolve the
+problem send a verbose log of the failed session (the output from
+\fBfax -v ...\fP) to the address below.
+
+.SH WEB PAGE
+
+A Web Page with pointers to the latest version, known bugs and
+patches is available at:
+.IP
+.ft CW
+http://www.cce.com/efax/
+.ft P
+.LP
+
+.SH RELATED SOFTWARE
+
+For Linux Systems
+
+Independent packages provide more user-friendly interfaces to
+efax (xfax, tefax) and provide an e-mail-to-fax (Qfax) gateway
+using efax. All are available by anonymous FTP from
+metalab.unc.edu in /pub/Linux/apps/serialcomm/fax/.
+
+For Amiga Systems
+
+A port of an early version of efax for the Amiga is available as
+a component of a shareware voice mail package, AVM, distributed
+by Al Villarica (rvillari@cat.syr.edu).
+
+Other Ports
+
+efax is relatively easy to port.  All system-dependent code is in
+\fBefaxos.c\fP.  An early version of efax was ported to VMS.
+Version 0.8a was ported to Win32 by Luigi Capriotti.  Contact the
+author if you would like to integrate the Win32 code into the
+current version.
+
+.SH AUTHOR
+
+Efax was written by Ed Casas.  Please send comments or bug
+reports to edc@cce.com.
+
+.SH BUG REPORTS
+
+Bug reports should include the operating system, the type of the
+modem and a copy of a verbose session log that demonstrates the
+problem.  It's usually impossible to help without a verbose log.
+Please do \fBnot\fP send fax image files.
+
+.SH COPYRIGHT
+
+efax is copyright 1993 -- 1999 Ed Casas.  It may be used, copied
+and modified under the terms of the GNU Public License.
+
+.SH DISCLAIMER
+
+Although \fBefax\fP has been tested it may have errors that will
+prevent it from working correctly on your system.  Some of these
+errors may cause serious problems including loss of data and
+interruptions to telephone service.
+
+.SH REFERENCES
+
+CCITT Recommendation T.30, "Procedures for Document Facsimile
+Transmission in the General Switched Telephone Network". 1988
+
+CCITT Recommendation T.4, "Standardization of Group 3 Facsimile
+Apparatus for Document Transmission". 1988.
+
+For documentation on Class 1 and Class 2 fax commands as
+implemented by Connexant (formerly Rockwell) modems see
+http://www.conexant.com/techinfo.
+
+For the TIFF specification see
+http://partners.adobe.com/supportservice/devrelations/PDFS/TN/TIFF6.pdf
+or RFC 2301 (ftp://ftp.isi.edu/in-notes/rfc2301.txt).
+
+For information on Ghostscript see
+http://www.cs.wisc.edu/~ghost/.
+
+The pbm utilities can be obtained by ftp from wuarchive.wustl.edu
+in /graphics/graphics/packages/NetPBM/netpbm-1mar1994.tar.gz.
+
+PCX and many other file formats are described in: Gunter Born,
+The File Formats Handbook, International Thomson Computer Press,
+1995.
+
+The "Fax Modem Source Book" by Andrew Margolis, published by John
+Wiley & Sons in 1994 (ISBN 0471950726), is a book on writing fax
+applications which includes source code.
+
+Dennis Bodson et. al., "FAX: Digital Facsimile Technology and
+Applications", Second Edition. Artech House, Boston. 1992.
+
+.SH SEE ALSO
+
+.BR fax(1),
+.BR efix(1),
+.BR launchd(8), 
+.BR launchd.plist(5), 
+.BR lpr(1),
+.BR printf(3),
+.BR strftime(3).
+
+.SH  BUGS
+
+Can't read TIFF files with more than 1 strip
+
+Class 1 operation may fail if the program can't respond to
+certain data received from the modem within 55 milliseconds.
+
+May fail if multitasking delays cause the received data to
+overflow the computer's serial device buffer or if an under-run
+of transmit data exceeds 5 seconds.
+
+Polling does not work.
+
+Does not support 2-D coding, ECM, or BFT.
