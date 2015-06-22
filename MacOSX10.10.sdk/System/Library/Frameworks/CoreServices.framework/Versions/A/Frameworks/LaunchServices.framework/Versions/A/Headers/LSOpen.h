@@ -72,7 +72,7 @@ enum {
   kLSLaunchNewInstance          = 0x00080000, /* Instantiate app even if it is already running.*/
   kLSLaunchAndHide              = 0x00100000, /* Send child a "hide" request as soon as it checks in.*/
   kLSLaunchAndHideOthers        = 0x00200000, /* Hide all other apps when the app checks in.*/
-  kLSLaunchHasUntrustedContents = 0x00400000  /* Mark items to be opened as untrusted*/
+  kLSLaunchHasUntrustedContents = 0x00400000, /* Mark items to be opened as untrusted*/
 };
 
 #if !TARGET_OS_IPHONE

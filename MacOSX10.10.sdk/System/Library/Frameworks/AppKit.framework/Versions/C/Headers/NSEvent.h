@@ -51,7 +51,11 @@ typedef NS_ENUM(NSUInteger, NSEventType) {        /* various types of events */
 #if __LP64__
     NSEventTypeSmartMagnify NS_ENUM_AVAILABLE_MAC(10_8) = 32,
 #endif
-    NSEventTypeQuickLook NS_ENUM_AVAILABLE_MAC(10_8) = 33
+    NSEventTypeQuickLook NS_ENUM_AVAILABLE_MAC(10_8) = 33,
+
+#if __LP64__
+    NSEventTypePressure NS_ENUM_AVAILABLE_MAC(10_10_3) = 34
+#endif
 };
 
 
@@ -92,6 +96,7 @@ typedef NS_OPTIONS(unsigned long long, NSEventMask) { /* masks for the types of 
     /* Note: You can only use these event masks on 64 bit. In other words, you cannot setup a local, nor global, event monitor for these event types on 32 bit. Also, you cannot search the event que for them (nextEventMatchingMask:...) on 32 bit.
      */
     NSEventMaskSmartMagnify NS_ENUM_AVAILABLE_MAC(10_8) = 1ULL << NSEventTypeSmartMagnify,
+    NSEventMaskPressure NS_ENUM_AVAILABLE_MAC(10_10_3) = 1ULL << NSEventTypePressure,
 #endif
     
     NSAnyEventMask              = NSUIntegerMax
@@ -277,7 +282,7 @@ typedef NS_ENUM(short, NSEventSubtype) {
 /* these messages are valid for all mouse down/up/drag and enter/exit events */
 @property (readonly) NSInteger eventNumber;
 
-/* -pressure is valid for all mouse down/up/drag events, and is also valid for NSTabletPoint events on 10.4 or later */
+/* -pressure is valid for all mouse down/up/drag events, and is also valid for NSTabletPoint events on 10.4 or later and NSEventTypePressure on 10.10.3 or later */
 @property (readonly) float pressure;
 /* -locationInWindow is valid for all mouse-related events */
 @property (readonly) NSPoint locationInWindow;
@@ -404,6 +409,19 @@ typedef NS_ENUM(short, NSEventSubtype) {
     Valid for NSScrollWheel
 */
 @property (readonly) NSEventPhase phase NS_AVAILABLE_MAC(10_7);
+
+/* This message is valid for NSEventTypePressure events. Pressure gesture events go through multiple stages.
+*/
+@property (readonly) NSInteger stage NS_AVAILABLE_MAC(10_10_3);
+
+/* This message is valid for NSEventTypePressure events. Positive stageTransition describes approaching the next stage of the pressure gesture. Negative stageTransition describes approaching release of the current stage.
+*/
+@property (readonly) CGFloat stageTransition NS_AVAILABLE_MAC(10_10_3);
+
+/* This message is valid for Mouse events. The event mask describing the various events that you may also get during this event sequence. Useful for determining if the input device issuing this mouse event can also simultaneously issue NSEventTypePressure events.
+*/
+@property (readonly) NSEventMask associatedEventsMask NS_AVAILABLE_MAC(10_10_3);
+
 
 /* Returns the user's preference about using gesture scrolls as a way to track fluid swipes. This value is determined by the Mouse / Trackpad preference panel for the current user. Generally, NSScrollView will check this for you. However, if your app is not using an NSScrollView, or your NSResponder can receive scrollWheel messages without first being sent to an NSScrollView, then you should check this preference before calling -trackSwipeEventWithOptions:dampenAmountThresholdMin:max:usingHandler:
 */

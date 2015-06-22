@@ -19,10 +19,10 @@ NS_CLASS_AVAILABLE(10_10, NA)
     CGFloat private0;
     CGFloat private1;
     struct __pgrFlags {
-        unsigned int        reserved:32;
+        unsigned int    reserved:32;
     } __pgrFlags;
+    id _reserved0;
 #ifndef __OBJC2__
-    NSInteger _reserved0;
     NSInteger _reserved1;
 #endif
 }

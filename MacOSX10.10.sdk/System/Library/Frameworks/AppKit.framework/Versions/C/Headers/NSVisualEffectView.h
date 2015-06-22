@@ -41,8 +41,9 @@ NS_CLASS_AVAILABLE_MAC(10_10)
     __strong struct NSVisualEffectViewInternal *_NSVisualEffectViewInternal;
     
 #if !__LP64__
-    uint8_t _reserved[60];
+    uint8_t _reserved[56];
 #endif
+    CALayer *_darkenLayer;
     
     unsigned int _dirty:1;
     unsigned int _hasMask:1;
@@ -54,7 +55,9 @@ NS_CLASS_AVAILABLE_MAC(10_10)
     unsigned int _hasAcceleration:1;
     unsigned int _emphasized:1;
     unsigned int _hasAccelerationCached:1;
-    unsigned int _reservedFlags:22;
+    unsigned int _appearsDarker:1;
+    unsigned int _requiresBackdrop:1;
+    unsigned int _reservedFlags:20;
 }
 
 /* The default value is NSVisualEffectMaterialAppearanceBased; the material is updated to be the correct material based on the appearance set on this view.

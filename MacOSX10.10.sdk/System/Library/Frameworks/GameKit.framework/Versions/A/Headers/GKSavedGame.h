@@ -2,7 +2,7 @@
 //  GKSavedGame.h
 //  Game Center
 //
-//  Copyright 2010-2014 Apple Inc. All rights reserved.
+//  Copyright 2010-2015 Apple Inc. All rights reserved.
 //
 
 #import <GameKit/GKLocalPlayer.h>

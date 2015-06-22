@@ -168,3 +168,35 @@ typedef NS_OPTIONS(uint64_t, NSActivityOptions) {
 - (void)performActivityWithOptions:(NSActivityOptions)options reason:(NSString *)reason usingBlock:(void (^)(void))block NS_AVAILABLE(10_9, 7_0);
 
 @end
+
+// Describes the current thermal state of the system.
+typedef NS_ENUM(NSInteger, NSProcessInfoThermalState) {
+    // No corrective action is needed.
+    NSProcessInfoThermalStateNominal,
+    
+    // The system has reached a state where fans may become audible.
+    NSProcessInfoThermalStateFair,
+
+    // Fans are running at maximum speed, system performance maybe impacted. Recommendation: reduce application's usage of CPU, GPU and I/O, if possible. Switch to lower quality visual effects, reduce frame rates.
+    NSProcessInfoThermalStateSerious,
+    
+    // System performance is significantly impacted and the Mac needs to cool down. Recommendation: reduce application's usage of CPU, GPU, and I/O to the minimum level needed to respond to user actions. Consider stopping use of camera and other peripherals if your application is using them.
+    NSProcessInfoThermalStateCritical
+} NS_ENUM_AVAILABLE(10_10_3, NA);
+
+@interface NSProcessInfo ()
+
+// Retrieve the current thermal state of the system. On systems where thermal state is unknown or unsupported, the value returned from the thermalState property is always NSProcessInfoThermalStateNominal.
+@property (readonly) NSProcessInfoThermalState thermalState NS_AVAILABLE(10_10_3, NA);
+
+@end
+
+/*
+ This notification is posted once the thermal state of the system has changed. Once the notification is posted, use the thermalState property to retrieve the current thermal state of the system.
+ 
+ You can use this opportunity to take corrective action in your application to help cool the system down. Work that could be done in the background or at opportunistic times should be using the Quality of Service levels in NSOperation or the NSBackgroundActivityScheduler API.
+ 
+ This notification is posted on the global dispatch queue. Register for it using the default notification center. The object associated with the notification is +[NSProcessInfo processInfo].
+*/
+FOUNDATION_EXTERN NSString * const NSProcessInfoThermalStateDidChangeNotification NS_AVAILABLE(10_10_3, NA);
+

@@ -133,11 +133,11 @@ typedef NS_ENUM(NSInteger, NSTableViewDraggingDestinationFeedbackStyle) {
      */
     NSTableViewDraggingDestinationFeedbackStyleNone = -1,
     
-    /* Draws a solid round-rect background on drop target rows, and an insertion marker between rows. This style should be used in most cases.
+    /* Draws a solid selection rectangle background on drop target rows, and an insertion marker between rows. This style should be used in most cases.
      */
     NSTableViewDraggingDestinationFeedbackStyleRegular = 0,
     
-    /* Draws an outline on drop target rows, and an insertion marker between rows. This style will automatically be set for source lists when [table setSelectionHighlightStyle:NSTableViewSelectionHighlightStyleSourceList] is called, as it is the standard look for Source Lists, but may be used in other areas as needed.
+    /* On Mac OS 10.0.2, this style is now identical to NSTableViewDraggingDestinationFeedbackStyleRegular. On previous released it draws an outline on drop target rows, and an insertion marker between rows. This style will automatically be set for source lists when [table setSelectionHighlightStyle:NSTableViewSelectionHighlightStyleSourceList] is called, as it is the standard look for Source Lists, but may be used in other areas as needed.
      */
     NSTableViewDraggingDestinationFeedbackStyleSourceList = 1,
     

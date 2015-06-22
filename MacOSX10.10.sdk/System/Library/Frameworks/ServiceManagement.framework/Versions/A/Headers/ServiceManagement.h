@@ -122,9 +122,9 @@ SMCopyAllJobDictionaries(CFStringRef domain);
  * if the given domain is kSMDomainSystemLaunchd. Otherwise, NULL may be passed.
  *
  * @param outError
- * Upon unsuccessful return, a new CFError object describing the error. This
- * argument may be NULL. It is the responsibility of the application to release
- * the error reference.
+ * Upon unsuccessful return, a new CFError object describing the error.  Upon 
+ * successful return, this argument is set to NULL.  This argument may be NULL. 
+ * It is the responsibility of the application to release the error reference.
  *
  * @result 
  * True if the job was submitted successfully, otherwise false.
@@ -160,9 +160,9 @@ SMJobSubmit(CFStringRef domain, CFDictionaryRef job, AuthorizationRef auth,
  * Pass true to block until the process for the given job has exited.
  *
  * @param outError
- * Upon unsuccessful return, a new CFError object describing the error. This
- * argument may be NULL. It is the responsibility of the application to release
- * the error reference.
+ * Upon unsuccessful return, a new CFError object describing the error.  Upon 
+ * successful return, this argument is set to NULL.  This argument may be NULL. 
+ * It is the responsibility of the application to release the error reference.
  *
  * @result
  * True if the job was removed successfully, otherwise false.
@@ -233,9 +233,9 @@ SMJobRemove(CFStringRef domain, CFStringRef jobLabel,
  * {@link kSMRightBlessPrivilegedHelper} right.
  *
  * @param outError
- * Upon unsuccessful return, a new CFError object describing the error. This
- * argument may be NULL. It is the responsibility of the application to release
- * the error reference.
+ * Upon unsuccessful return, a new CFError object describing the error.  Upon 
+ * successful return, this argument is set to NULL.  This argument may be NULL. 
+ * It is the responsibility of the application to release the error reference.
  *
  * @result
  * True if the helper tool was successfully bootstrapped, otherwise false.

@@ -528,9 +528,8 @@ typedef struct ssl_session_st
 #define SSL_OP_SINGLE_ECDH_USE				0x00080000L
 /* If set, always create a new key when using tmp_dh parameters */
 #define SSL_OP_SINGLE_DH_USE				0x00100000L
-/* Set to always use the tmp_rsa key when doing RSA operations,
- * even when this violates protocol specs */
-#define SSL_OP_EPHEMERAL_RSA				0x00200000L
+/* Does nothing: retained for compatibiity */
+#define SSL_OP_EPHEMERAL_RSA				0x0
 /* Set on servers to choose the cipher according to the server's
  * preferences */
 #define SSL_OP_CIPHER_SERVER_PREFERENCE			0x00400000L
@@ -565,6 +564,15 @@ typedef struct ssl_session_st
 #define SSL_MODE_AUTO_RETRY 0x00000004L
 /* Don't attempt to automatically build certificate chain */
 #define SSL_MODE_NO_AUTO_CHAIN 0x00000008L
+/* Send TLS_FALLBACK_SCSV in the ClientHello.
+ * To be set only by applications that reconnect with a downgraded protocol
+ * version; see draft-ietf-tls-downgrade-scsv-00 for details.
+ *
+ * DO NOT ENABLE THIS if your application attempts a normal handshake.
+ * Only use this in explicit fallback retries, following the guidance
+ * in draft-ietf-tls-downgrade-scsv-00.
+ */
+#define SSL_MODE_SEND_FALLBACK_SCSV 0x00000080L
 
 
 /* Note: SSL[_CTX]_set_{options,mode} use |= op on the previous value,
@@ -1211,6 +1219,7 @@ size_t SSL_get_peer_finished(const SSL *s, void *buf, size_t count) DEPRECATED_I
 #define SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE TLS1_AD_BAD_CERTIFICATE_STATUS_RESPONSE
 #define SSL_AD_BAD_CERTIFICATE_HASH_VALUE TLS1_AD_BAD_CERTIFICATE_HASH_VALUE
 #define SSL_AD_UNKNOWN_PSK_IDENTITY	TLS1_AD_UNKNOWN_PSK_IDENTITY /* fatal */
+#define SSL_AD_INAPPROPRIATE_FALLBACK	TLS1_AD_INAPPROPRIATE_FALLBACK /* fatal */
 
 #define SSL_ERROR_NONE			0
 #define SSL_ERROR_SSL			1
@@ -1299,6 +1308,8 @@ size_t SSL_get_peer_finished(const SSL *s, void *buf, size_t count) DEPRECATED_I
 #define SSL_CTRL_GET_RI_SUPPORT			76
 #define SSL_CTRL_CLEAR_OPTIONS			77
 #define SSL_CTRL_CLEAR_MODE			78
+
+#define SSL_CTRL_CHECK_PROTO_VERSION		119
 
 #define DTLSv1_get_timeout(ssl, arg) \
 	SSL_ctrl(ssl,DTLS_CTRL_GET_TIMEOUT,0, (void *)arg)
@@ -1947,6 +1958,7 @@ void ERR_load_SSL_strings(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 #define SSL_R_HTTPS_PROXY_REQUEST			 155
 #define SSL_R_HTTP_REQUEST				 156
 #define SSL_R_ILLEGAL_PADDING				 283
+#define SSL_R_INAPPROPRIATE_FALLBACK			 373
 #define SSL_R_INVALID_CHALLENGE_LENGTH			 158
 #define SSL_R_INVALID_COMMAND				 280
 #define SSL_R_INVALID_PURPOSE				 278
@@ -2074,6 +2086,7 @@ void ERR_load_SSL_strings(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 #define SSL_R_TLSV1_ALERT_DECRYPTION_FAILED		 1021
 #define SSL_R_TLSV1_ALERT_DECRYPT_ERROR			 1051
 #define SSL_R_TLSV1_ALERT_EXPORT_RESTRICTION		 1060
+#define SSL_R_TLSV1_ALERT_INAPPROPRIATE_FALLBACK	 1086
 #define SSL_R_TLSV1_ALERT_INSUFFICIENT_SECURITY		 1071
 #define SSL_R_TLSV1_ALERT_INTERNAL_ERROR		 1080
 #define SSL_R_TLSV1_ALERT_NO_RENEGOTIATION		 1100

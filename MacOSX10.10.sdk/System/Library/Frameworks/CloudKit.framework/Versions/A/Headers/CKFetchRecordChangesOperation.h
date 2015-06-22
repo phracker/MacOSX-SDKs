@@ -6,13 +6,9 @@
 //
 
 #import <CloudKit/CKDatabaseOperation.h>
+#import <CloudKit/CKServerChangeToken.h>
 
 @class CKRecord, CKRecordID, CKRecordZoneID;
-
-NS_CLASS_AVAILABLE(10_10, 8_0)
-@interface CKServerChangeToken : NSObject <NSCopying, NSSecureCoding>
-- (instancetype)init NS_UNAVAILABLE;
-@end
 
 NS_CLASS_AVAILABLE(10_10, 8_0)
 @interface CKFetchRecordChangesOperation : CKDatabaseOperation

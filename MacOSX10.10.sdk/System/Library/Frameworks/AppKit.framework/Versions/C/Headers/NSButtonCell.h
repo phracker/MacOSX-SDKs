@@ -18,6 +18,9 @@ typedef NS_ENUM(NSUInteger, NSButtonType) {
     NSMomentaryChangeButton		= 5,
     NSOnOffButton			= 6,
     NSMomentaryPushInButton		= 7,	// was NSMomentaryLight
+    NSAcceleratorButton NS_ENUM_AVAILABLE_MAC(10_10_3)			= 8,
+    NSMultiLevelAcceleratorButton NS_ENUM_AVAILABLE_MAC(10_10_3)	= 9,
+    
     /* These constants were accidentally reversed so that NSMomentaryPushButton lit and
        NSMomentaryLight pushed. These names are now deprecated */
     NSMomentaryPushButton NS_ENUM_DEPRECATED_MAC(10_0, 10_9)    = 0, // NSMomentaryLightButton should be used instead
@@ -159,6 +162,7 @@ typedef struct __BCFlags2 {
 - (void)drawImage:(NSImage*)image withFrame:(NSRect)frame inView:(NSView*)controlView;
 - (NSRect)drawTitle:(NSAttributedString*)title withFrame:(NSRect)frame inView:(NSView*)controlView;
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView;
+
 @end
 
 // NSGradientType :

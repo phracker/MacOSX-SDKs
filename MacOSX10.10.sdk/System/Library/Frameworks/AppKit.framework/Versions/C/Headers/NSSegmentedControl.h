@@ -8,8 +8,14 @@
 #import <AppKit/NSControl.h>
 #import <AppKit/NSCell.h>
 
-
 @class NSImage;
+
+typedef NS_ENUM(NSUInteger, NSSegmentSwitchTracking) {
+    NSSegmentSwitchTrackingSelectOne = 0,  // only one button can be selected
+    NSSegmentSwitchTrackingSelectAny = 1,  // any button can be selected
+    NSSegmentSwitchTrackingMomentary = 2,  // only selected while tracking
+    NSSegmentSwitchTrackingMomentaryAccelerator NS_ENUM_AVAILABLE_MAC(10_10_3) = 3, // accelerator behavior, only selected while tracking
+};
 
 typedef NS_ENUM(NSInteger, NSSegmentStyle) {
     NSSegmentStyleAutomatic = 0, //Appearance is chosen depending on the type of window and the control's position inside it
@@ -62,5 +68,13 @@ typedef NS_ENUM(NSInteger, NSSegmentStyle) {
 - (BOOL)isEnabledForSegment:(NSInteger)segment;
 
 @property NSSegmentStyle segmentStyle NS_AVAILABLE_MAC(10_5);
+
+@property (getter=isSpringLoaded) BOOL springLoaded NS_AVAILABLE_MAC(10_10_3); // sends action on deep-press or extended hover while dragging. Defaults to NO.
+
+@property NSSegmentSwitchTracking trackingMode NS_AVAILABLE_MAC(10_10_3);
+
+/*  This message is valid only for trackingMode=NSSegmentSwitchTrackingMomentaryAccelerator and provides the double value for the selected segment.
+ */
+- (double)doubleValueForSelectedSegment NS_AVAILABLE_MAC(10_10_3);
 
 @end

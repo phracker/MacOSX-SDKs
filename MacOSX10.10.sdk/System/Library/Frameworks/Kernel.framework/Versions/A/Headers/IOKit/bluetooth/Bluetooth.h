@@ -2618,7 +2618,12 @@ typedef enum {
     BluetoothLEScanDisable	= 0x00,
     BluetoothLEScanEnable	= 0x01
 } BluetoothLEScan;
-    
+		
+typedef enum {
+	BluetoothLEConnectionIntervalMin	= 0x06,
+	BluetoothLEConnectionIntervalMax	= 0x0C80
+} BluetoothLEConnectionInterval;
+		
 typedef enum {
     BluetoothLEScanDuplicateFilterDisable	= 0x00,
     BluetoothLEScanDuplicateFilterEnable	= 0x01,

@@ -35,7 +35,7 @@
 /* VERSION_MINOR, version_minor is an integer that represents the minor version
  * of the kernel
  */
-#define VERSION_MINOR		0
+#define VERSION_MINOR		3
 
 /* VERSION_VARIANT, version_variant is a string that contains the revision,
  * stage, and prerelease level of the kernel
@@ -63,7 +63,7 @@
 #define	OSTYPE		"Darwin"
 
 /* OSRELEASE, osrelease, is a string as returned by uname -r */
-#define OSRELEASE	"14.0.0"
+#define OSRELEASE	"14.3.0"
 
 #ifndef ASSEMBLER
 

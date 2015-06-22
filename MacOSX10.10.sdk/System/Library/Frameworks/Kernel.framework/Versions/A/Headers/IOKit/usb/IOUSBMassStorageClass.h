@@ -528,6 +528,8 @@ protected:
 	    
 	IOReturn            SuspendPort ( bool suspend );
 	
+	bool				DidWakeFromHibernationOrStandby ( void );
+	
 private:
 	
 	void				ClearPipeStall ( void );

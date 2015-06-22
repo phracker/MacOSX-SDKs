@@ -75,9 +75,9 @@ extern "C" {
 #define RC5_DECRYPT	0
 
 /* 32 bit.  For Alpha, things may get weird */
-#ifdef __LP64__
-#define RC5_32_INT unsigned int
-#else
+#ifdef __LP64__                                                                                                                                                  
+#define RC5_32_INT unsigned int                                                                                                                                  
+#else                                                                                                                                                            
 #define RC5_32_INT unsigned long
 #endif
 

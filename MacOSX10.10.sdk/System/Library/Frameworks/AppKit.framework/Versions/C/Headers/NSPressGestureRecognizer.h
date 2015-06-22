@@ -9,7 +9,7 @@
 #import <AppKit/NSGestureRecognizer.h>
 
 NS_CLASS_AVAILABLE(10_10, NA)
-@interface NSPressGestureRecognizer : NSGestureRecognizer {
+@interface NSPressGestureRecognizer : NSGestureRecognizer <NSCoding> {
 @private
     NSPoint _location;
     NSUInteger _buttonMask;

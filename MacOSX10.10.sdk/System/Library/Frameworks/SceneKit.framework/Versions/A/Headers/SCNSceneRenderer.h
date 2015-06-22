@@ -29,7 +29,6 @@ SCN_EXTERN NSString * const SCNHitTestRootNodeKey;
 /*! Determines whether hidden nodes should be ignored. Defaults to YES. */
 SCN_EXTERN NSString * const SCNHitTestIgnoreHiddenNodesKey SCENEKIT_AVAILABLE(10_9, 8_0);
 
-
 /*! @class SCNHitTestResult
     @abstract Results returned by the hit test methods.
  */

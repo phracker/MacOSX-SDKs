@@ -33,7 +33,8 @@ enum
     kPDFControlArea = 16, 
     kPDFTextFieldArea = 32, 
     kPDFIconArea = 64, 
-    kPDFPopupArea = 128
+    kPDFPopupArea = 128,
+    kPDFImageArea = 256
 };
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
@@ -71,7 +72,7 @@ extern NSString *PDFViewDisplayBoxChangedNotification;	// Notification when the 
 extern NSString *PDFViewVisiblePagesChangedNotification;  // Notification when the scroll view has scrolled into the bounds of a new page.
 
 
-@interface PDFView : NSView <NSAnimationDelegate>
+@interface PDFView : NSView <NSAnimationDelegate, NSMenuDelegate>
 {
 @private
     PDFViewPrivateVars *_pdfPriv;
@@ -194,6 +195,7 @@ extern NSString *PDFViewVisiblePagesChangedNotification;  // Notification when t
 
 // Returns type of area (see defines above) mouse is over. This method is useful for subclasses.
 - (PDFAreaOfInterest) areaOfInterestForMouse: (NSEvent *) event;
+- (PDFAreaOfInterest) areaOfInterestForPoint: (NSPoint) cursorLocation;
 
 // Sets the appropriate cursor for a given area of interest. This method is useful for subclasses.
 - (void) setCursorForAreaOfInterest: (PDFAreaOfInterest) area;

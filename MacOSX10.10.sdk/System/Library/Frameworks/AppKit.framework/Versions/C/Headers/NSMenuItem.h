@@ -53,7 +53,8 @@
         unsigned int indent:4;
         unsigned int keShareMode:3;
         unsigned int state:2;
-        unsigned int RESERVED1:2;
+        unsigned int destructive:1;
+        unsigned int RESERVED1:1;
         unsigned int limitedView:1;
         unsigned int nextItemIsAlternate:1;
         unsigned int blockKE:1;

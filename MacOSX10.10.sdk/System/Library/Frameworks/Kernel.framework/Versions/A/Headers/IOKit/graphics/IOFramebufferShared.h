@@ -195,7 +195,8 @@ struct StdFBShmem_t {
 #if IOFB_ARBITRARY_FRAMES_CURSOR
     unsigned long long int vblDrift;
     unsigned long long int vblDeltaMeasured;
-    unsigned int reservedC[24];
+    AbsoluteTime vblDeltaReal;
+    unsigned int reservedC[22];
 #else
     unsigned int reservedC[27];
     unsigned char hardwareCursorFlags[kIOFBNumCursorFrames];

@@ -455,6 +455,8 @@ Completion Code         Error Returned              Description
 #define kIOUSBMessageHubPortDeviceDisconnected      iokit_usb_msg(0x1b)		// 0xe000401b  Message sent by a built-in hub when a device was disconnected
 #define kIOUSBMessageUnsupportedConfiguration		iokit_usb_msg(0x1c)     // 0xe000401c  Message sent to the clients of the device when a device is not supported in the current configuration.  The message argument contains the locationID of the device
 #define kIOUSBMessageHubCountExceeded               iokit_usb_err(0x1d)     // 0xe000401d  Message sent when a 6th hub was plugged in and was not enumerated, as the USB spec only support 5 hubs in a chain
+#define kIOUSBMessageTDMLowBattery                  iokit_usb_err(0x1e)     // 0xe000401e  Message sent when when an attached TDM system battery is running low.
+    
 /*! @/defineblock */
 
     
@@ -1221,7 +1223,8 @@ enum {
     kUSBDeviceCountExceededNotificationType     = 6,
     kUSBEndpointCountExceededNotificationType   = 7,
     kUSBUnsupportedNotificationType             = 8,
-    kUSBHubCountExceededNotificationType        = 9
+    kUSBHubCountExceededNotificationType        = 9,
+    kUSBTDMLowBatteryType                       = 10
 };
 
 /*!
@@ -1245,6 +1248,7 @@ enum {
 #define kUSBOutOfSpecMPSOK						"Out of spec MPS OK"
 #define kConfigurationDescriptorOverride		"ConfigurationDescriptorOverride"
 #define kOverrideIfAtLocationID					"OverrideIfAtLocationID"
+#define kOverrideAllowLowPower                  "kOverrideAllowLowPower"
 /*! @/defineblock */
 
 /*!
@@ -1388,6 +1392,7 @@ typedef enum {
 #define kAppleCurrentInSleep				"AAPL,current-in-sleep"
 #define kApplePortCurrentInSleep			"AAPL,port-current-in-sleep"
 
+#define kOverrideAttachedToCPU              "kOverrideAttachedToCPU"
 
 // UPC definitions from ACPI Rev 4.0
 typedef enum {

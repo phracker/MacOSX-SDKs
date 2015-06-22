@@ -431,7 +431,7 @@ enum
 						Writable if supported.
     @constant		kAudioCodecPropertyDelayMode
                         A UInt32 specifying the delay mode. See enum below.                        
-                        Encoders only, writable if supported.
+                        Writable if supported.
 	@constant		kAudioCodecPropertyAdjustLocalQuality
 						An SInt32 number in the range [-128, 127] to allow encoding quality adjustements on a packet by packet basis.
 						This property can be set on an initialized encoder object without having to uninitialize and re-intialize it

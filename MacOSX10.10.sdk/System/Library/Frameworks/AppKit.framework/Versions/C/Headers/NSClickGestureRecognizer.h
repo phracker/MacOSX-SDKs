@@ -18,8 +18,8 @@ NS_CLASS_AVAILABLE(10_10, NA)
     NSInteger _currentButtonCount;
     NSInteger _activeButtonCount;
     NSInteger _currentClickCount;
+    id _reserved0;
 #ifndef __OBJC2__
-    NSInteger _reserved0;
     NSInteger _reserved1;
 #endif
 }

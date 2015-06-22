@@ -190,6 +190,15 @@
 #endif
 #define kIOAudioEngineOutputChannelLayoutKey			"IOAudioEngineOutputChannelLayout"
 
+/*!
+ * @defined kIOAudioEngineDisableClockBoundsCheck
+ * @abstract The key in the IORegistry for the IOAudioEngine's dictionary implemented as an OSBoolean that is used to disable the bounds checking on timestamps being passed to the HAL.
+ * @discussion By using this key and setting the value to true the driver is asserting that it guarantees that all zero timestamps passed to the HAL increment appropriately at the 
+				correct period. This key is used to disable the HAL test that the timestamp is within 1ms of the current time, so that a driver may pass a timestamp that is more than
+				1ms in the future. This may be useful when a timestamp is based on a large DMA read/write which encompasses the wrap point but occurs many samples before the end of that point.
+ */
+#define kIOAudioEngineDisableClockBoundsCheck		"IOAudioEngineDisableClockBoundsCheck"
+
 /*****
  *
  * IOAudioStream defines

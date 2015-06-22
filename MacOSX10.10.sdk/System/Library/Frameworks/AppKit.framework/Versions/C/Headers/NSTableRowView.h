@@ -43,11 +43,12 @@ NS_CLASS_AVAILABLE(10_7, NA)
     unsigned int _locationNeedsUpdating:1;
     unsigned int _isStatic:1;
     unsigned int _hasSelectedBackgroundView:1;
-    unsigned int _hasDropTargetBackgroundView:1;
     unsigned int _selectionBlendingMode:1;
     unsigned int _checkingFontRefColor:1;
+    unsigned int _forDeletion:1;
+    unsigned int _emphasizedForDropOperation:1;
 #if !__LP64__    
-    unsigned int _reserved2:8;
+    unsigned int _reserved2:7;
 #endif
 }
 
@@ -76,7 +77,7 @@ NS_CLASS_AVAILABLE(10_7, NA)
  */
 @property(getter=isFloating) BOOL floating;
 
-/* Drag and drop state. When targetForDropOperation is set to YES, the NSTableRowView will draw a drop on indicator based on the current draggingDestinationFeedbackStyle. The indentationForDropOperation is set appropriately by NSOutlineView if the drop target row should be indented. Otherwise it is 0.
+/* Drag and drop state. When targetForDropOperation is set to YES, the NSTableRowView will draw a drop on indicator based on the current draggingDestinationFeedbackStyle. The indentationForDropOperation is set appropriately by NSOutlineView if the drop target row should be indented. Otherwise it is 0. On Mac OS 10.0.2, the indentation is always 0, and the feedback style is now drawn similar to selection.
 */ 
 @property(getter=isTargetForDropOperation) BOOL targetForDropOperation;
 @property NSTableViewDraggingDestinationFeedbackStyle draggingDestinationFeedbackStyle;

@@ -85,8 +85,10 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
     id _fontEffectsBox;
     int _sizeStyle;
 
+    NSInteger _mode;
+
 #if !__LP64__
-    id _fpUnused[72];
+    id _fpUnused[71];
 #endif /* !__LP64__ */
 }
 

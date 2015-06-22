@@ -2,7 +2,7 @@
  *  SFNTLayoutTypes.h
  *  CoreText
  *
- *  Copyright 1994-2013 Apple Inc. All rights reserved.
+ *  Copyright 1994-2015 Apple Inc. All rights reserved.
  *
  */
 
@@ -1119,6 +1119,7 @@ enum {
   kMORXCoverVertical            = (int)0x80000000,
   kMORXCoverDescending          = 0x40000000,
   kMORXCoverIgnoreVertical      = 0x20000000,
+  kMORXCoverLogicalOrder        = 0x10000000,
   kMORXCoverTypeMask            = 0x000000FF
 };
 

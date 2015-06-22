@@ -148,6 +148,8 @@ class IOUSBHIDDriver : public IOHIDDevice
 		uint64_t						_handleReportTimeStamp;
         UInt32                          _defaultControlNoDataTimeoutMS;
         uint32_t                        _defaultRetryCount;
+        uint32_t                        _zlp;   // buffer for zero length packet
+        uint32_t                        _maxOutputReportSize;
     };
     IOUSBHIDDriverExpansionData *_usbHIDExpansionData;
     

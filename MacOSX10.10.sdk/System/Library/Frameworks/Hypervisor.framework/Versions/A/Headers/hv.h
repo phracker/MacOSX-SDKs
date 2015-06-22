@@ -9,6 +9,7 @@
 #define __HYPERVISOR_HV__
 
 #include <stdbool.h>
+#include <sys/types.h>
 #include <Availability.h>
 
 #include <Hypervisor/hv_error.h>

@@ -554,6 +554,15 @@ enum
 	kINQUIRY_VERSION_DESCRIPTOR_SAT					= 0x1EA0
 };
 
+/*!
+ @enum kINQUIRY_VERSION_DESCRIPTOR_NVME
+ NVMe specification version descriptor.
+ */
+enum
+{
+	kINQUIRY_VERSION_DESCRIPTOR_NVME				= 0x8080
+};
+
 
 /*
 IORegistry property names for information derived from the Inquiry data.

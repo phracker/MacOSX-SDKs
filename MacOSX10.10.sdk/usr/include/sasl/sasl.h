@@ -514,6 +514,7 @@ typedef int sasl_getsimple_t(void *context, int id,
 #define SASL_CB_AUTHN_PRSID  0x4a01  /* APPLE: authentication person ID */
 #define SASL_CB_ATOKEN_TOKEN 0x4a02  /* APPLE: authentication token for ATOKEN */
 #define SASL_CB_CLIENTTOKEN_TOKEN 0x4a03  /* APPLE: client token for PLAIN-CLIENTTOKEN */
+#define SASL_CB_OAUTH2_BEARER_TOKEN 0x4a04 /* APPLE: access token for OAUTHBEARER */
 
 /* get a sasl_secret_t (plaintext password with length)
  * inputs:

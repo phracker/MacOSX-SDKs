@@ -33,7 +33,7 @@ typedef struct __OvFlags {
     unsigned int delegateWillDisplayOutlineCell:1;
     unsigned int subclassRowForItem:1;
     unsigned int selectionAdjustmentDisabled:1;
-    unsigned int autoExpandFlashState:1;
+    unsigned int unused:1;
     unsigned int animateExpandAndCollapse:1;
     unsigned int delegateHeightOfRowByItem:1;
     unsigned int delayRowEntryFreeDisabled:1;
@@ -46,8 +46,8 @@ typedef struct __OvFlags {
     unsigned int delegateAutoExpandItem:1;
     unsigned int delegateAutoCollapseItem:1;
     unsigned int delegateShouldAutoExpandItem:1;
-    unsigned int flashingEntireRow:1;
-    unsigned int flashingOutlineCell:1;
+    unsigned int unused2:1;
+    unsigned int _isSpringLoadingFlashing:1;
     unsigned int dontRedisplayOnFrameChange:1;
     unsigned int allowAutomaticAnimations:1;
     unsigned int dataSourceObjectValueByItem:1;
@@ -57,8 +57,8 @@ typedef struct __OvFlags {
     unsigned int dataSourceObjectValueByItem:1;
     unsigned int allowAutomaticAnimations:1;
     unsigned int dontRedisplayOnFrameChange:1;
-    unsigned int flashingOutlineCell:1;
-    unsigned int flashingEntireRow:1;
+    unsigned int _isSpringLoadingFlashing:1;
+    unsigned int unused2:1;
     unsigned int delegateShouldAutoExpandItem:1;
     unsigned int delegateAutoCollapseItem:1;
     unsigned int delegateAutoExpandItem:1;
@@ -71,7 +71,7 @@ typedef struct __OvFlags {
     unsigned int delayRowEntryFreeDisabled:1;
     unsigned int delegateHeightOfRowByItem:1;
     unsigned int animateExpandAndCollapse:1;
-    unsigned int autoExpandFlashState:1;
+    unsigned int unused:1;
     unsigned int selectionAdjustmentDisabled:1;
     unsigned int subclassRowForItem:1;
     unsigned int delegateWillDisplayOutlineCell:1;
