@@ -1,0 +1,593 @@
+'\" t
+.\" @(#)jstat.1 1.10 04/06/13 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.TH jstat 1 "13 June 2004"
+.SH NAME
+jstat \- Java Virtual Machine statistics monitoring tool 
+.\"
+.SH SYNOPSIS
+.B jstat
+[
+.I generalOption 
+| 
+.I outputOptions vmid 
+[
+.I interval
+[ s|ms ] [
+.I count
+] ] ]
+.SH DESCRIPTION
+The
+.B jstat
+tool displays performance statistics for an instrumented 
+HotSpot Java virtual machine (JVM). The target JVM is identified by
+its virtual machine identifier, or vmid option described below. 
+.LP
+.B NOTE -
+This utility is unsupported and may or may not be 
+available in future versions of the J2SE SDK. 
+It is currently not available on Windows 98 and Windows ME platforms.
+.SS VIRTUAL MACHINE IDENTIFIER
+The syntax of the vmid string largely corresponds to the syntax of a URI: 
+.LP
+.RS
+.ft 3
+.nf
+[protocol:][//]lvmid[@hostname][:port][/servername]
+.fi
+.ft 1
+.RE
+.if t .TP 20
+.if n .TP 15
+.B protocol
+The communications protocol. If the protocol is omitted and a hostname is not specified, the default protocol is a platform specific optimized
+local protocol. If the protocol is omitted and a hostname is specified, then the default protocol is rmi. 
+.if t .TP 20
+.if n .TP 15
+.B lvmid
+The local virtual machine identifier for the target JVM. The lvmid is a platform-specific value that uniquely identifies a JVM on a system. The
+lvmid is the only required component of a virtual machine identifier. The lvmid is typically, but not necessarily, the operating system's process
+identifier for the target JVM process. You can use the jps command to determine the lvmid. Also, you can determine lvmid on Unix platforms
+with the ps command, and on Windows with the Windows Task Manager. 
+.if t .TP 20
+.if n .TP 15
+.B hostname
+A hostname or IP address indicating the target host. If hostname is omitted, then the target host is the local host. 
+.if t .TP 20
+.if n .TP 15
+.B port
+The default port for communicating with the remote server. If the hostname is omitted or the protocol specifies an optimized, local protocol,
+then port is ignored. Otherwise, treatment of the port parameter is implementation specific. For the default rmi protocol, the port indicates the
+port number for the rmiregistry on the remote host. If port is omitted, and protocol indicates rmi, then the default rmiregistry port (1099) is
+used. 
+.if t .TP 20
+.if n .TP 15
+.B servername
+The treatment of this parameter depends on implementation. For the optimized local protocol, this field is ignored. For the rmi protocol, it
+represents the name of the RMI remote object on the remote host. 
+.SH PARAMETERS 
+.if t .TP 20
+.if n .TP 15
+.BI generalOption
+A single general command-line option (\f3\-help\fP, \f3\-options\fP, or \f3\-version\fP)
+.if t .TP 20
+.if n .TP 15
+.BI outputOptions
+One or more output options, consisting of a single statOption, 
+plus any of the \f3\-t\fP, \f3\-h\fP, and \f3\-J\fP options. 
+.if t .TP 20
+.if n .TP 15
+.BI vmid
+Virtual machine identifier, a string indicating the target Java virtual machine (JVM). The general syntax is 
+.LP
+.RS
+.ft 3
+.nf
+[protocol:][//]lvmid[@hostname[:port]/servername
+.fi
+.ft 1
+.RE
+.LP
+The syntax of the vmid string largely corresponds to the syntax of a URI. The vmid can vary from a simple integer representing a local JVM to a
+more complex construction specifying a communications protocol, port number, and other implementation-specific values. See Virtual Machine
+Identifier below for details. 
+.if t .TP 20
+.if n .TP 15
+.BI interval[s|ms]
+Sampling interval in the specified units, seconds (s) or milliseconds (ms). Default units are milliseconds.  Must be a positive integer.  If specified,
+jstat will produce its output at each interval. 
+.if t .TP 20
+.if n .TP 15
+.BI count
+Number of samples to display. Default value is infinity; that is, jstat displays statistics until the target JVM terminates or the jstat command is
+terminated.  Must be a positive integer. 
+.SH OPTIONS
+The
+.B jstat
+command supports two types of options, general options and output options. 
+General options cause jstat to display simple
+usage and version information. Output options determine the 
+content and format of the statistical output. 
+.LP
+.B NOTE-
+All options, and their functionality are subject to change or removal in future releases.
+.SS GENERAL OPTIONS
+If you specify one of the general options, you cannot specify any other option or parameter. 
+.if t .TP 20
+.if n .TP 15
+.BI \-help
+Display help message.
+.if t .TP 20
+.if n .TP 15
+.BI \-version
+Display version information.
+.if t .TP 20
+.if n .TP 15
+.BI \-options
+Display list of statistics options. See the Output Options section below.
+.SS OUTPUT OPTIONS
+If you do not specify a general option, then you can specify output options. 
+Output options determine the content and format of jstat's
+output, and consist of a single statOption, plus any of the other output 
+options (\f3\-h\fP, \f3\-t\fP, and \f3\-J\fP).  The statOption must come first. 
+.LP
+Output is formatted as a table, with columns are separated by spaces. 
+A header row with titles describes the columns.  Use the 
+.B \-h
+option to set the frequency at which the header is displayed.  
+Column header names are generally consistent between the different
+options. In general, if two options provide a column with the same 
+name, then the data source for the two columns are the same. 
+.LP
+Use the 
+.B \-t 
+option to display a time stamp column, labeled Timestamp 
+as the first column of output. The Timestamp column contains the
+elapsed time, in seconds, since startup of the target JVM. The resolution 
+of the time stamp is dependent on various factors and is subject
+to variation due to delayed thread scheduling on heavily loaded systems. 
+.LP
+Use the interval and count parameters to determine how frequently and how 
+many times, respectively, \f3jstat\fP displays its output.
+.LP
+.B NOTE-
+You are advised not to write scripts to parse jstat's output since 
+the format may change in future releases. If you choose to write
+scripts that parse jstat output, expect to modify them for future 
+releases of this tool. 
+.if t .TP 20
+.if n .TP 15
+.BI \-statOption
+Determines the statistics information that jstat displays. The following 
+table lists the available options.  Use the \f3\-options\fP general option to
+display the list of options for a particular platform installation.
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Option	Displays...
+_
+class	Statistics on the behavior of the class loader
+compiler	T{
+Statistics on the behavior of the HotSpot 
+Just-In-Time compiler
+T}	
+gc	T{
+Statistics on the behavior of the garbage 
+collected heap
+T}	
+gccapacity	T{
+Statistics of the capacities of the 
+generations and their corresponding spaces.
+T}	
+gccause 	T{
+Summary of garbage collection statistics (same 
+as \-gcutil), with the cause of the last and 
+current (if applicable) garbage collection events.
+T}	
+gcnew	Statistics of the behavior of the new generation.
+gcnewcapacity	T{
+Statistics of the sizes of the new generations 
+and its corresponding spaces.
+T}	
+gcold	T{
+Statistics of the behavior of the old and 
+permanent generations.
+T}	
+gcoldcapacity	Statistics of the sizes of the old generation.
+gcpermcapacity	Statistics of the sizes of the permanent generation.
+gcutil	Summary of garbage collection statistics.
+printcompilation	Summary of garbage collection statistics.
+.TE
+.if t .TP 20
+.if n .TP 15
+.BI \-h " n"
+Display a column header every n samples (output rows), where n is a 
+positive integer. Default value is 0, which displays the column header
+above the first row of data. 
+.if t .TP 20
+.if n .TP 15
+.BI \-t " n"
+Display a timestamp column as the first column of output. The timestamp 
+is the the time since the start time of the target JVM. 
+.if t .TP 20
+.if n .TP 15
+.BI \-J javaOption
+Pass \f2javaOption\fP to the java application launcher. For example, \f3-\J\fP-Xms48m 
+sets the startup memory to 48 megabytes. For a complete list of
+options, see \f3java\fP(1).
+.SS STATOPTIONS AND OUTPUT
+The following tables summarize the columns that jstat outputs
+for each statOption.
+.TP
+.B class
+Class Loader Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+Loaded	Number of classes loaded
+Bytes	Number of Kbytes loaded
+Unloaded	Number of classes unloaded
+Bytes	Number of Kbytes unloaded
+Time	Time spent performing class load and unload operations
+.TE
+.TP
+.B compiler
+HotSpot Just-In-Time Compiler Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+Compiled	Humber of compilation tasks performed
+Failed	Number of compilation tasks that failed
+Invalid	Number of compilation tasks that were invalidated
+Time	Time spent performing compilation tasks
+FailedType	Compile type of the last failed compilation
+FailedMethod	Class name and method for the last failed compilation
+.TE
+.TP
+.B gc
+Garbage-collected heap statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+SOC	Current survivor space 0 capacity (KB).
+S1C	Current survivor space 1 capacity (KB).
+S0U	Survivor space 0 utilization (KB).
+S1U	Survivor space 1 utilization (KB).
+EC	Current eden space capacity (KB).
+EU	Eden space utilization (KB).
+OC	Current old space capacity (KB).
+OU	Old space utilization (KB).
+PC	Current permanent space capacity (KB).
+PU	Permanent space utilization (KB).
+YGC	Number of young generation GC Events.
+YGCT	Young generation garbage collection time.
+FGC	Number of full GC events.
+FGCT	Full garbage collection time.
+GCT	Total garbage collection time. 
+.TE
+.TP
+.B gccapacity
+Memory Pool Generation and Space Capacities
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+NGCMN	Minimum new generation capacity (KB).
+NGCMX	Maximum new generation capacity (KB).
+NGC	Current new generation capacity (KB).
+S0C	Current survivor space 0 capacity (KB).
+S1C	Current survivor space 1 capacity (KB).
+EC	Current eden space capacity (KB).
+OGCMN	Minimum old generation capacity (KB).
+OGCMX	Maximum old generation capacity (KB).
+OGC	Current old generation capacity (KB).
+OC	Current old space capacity (KB).
+PGCMN	Minimum permanent generation capacity (KB).
+PGCMX	Maximum Permanent generation capacity (KB).
+PGC	Current Permanent generation capacity (KB).
+PC	Current Permanent space capacity (KB).
+VGC	Number of Young generation GC Events.
+FGC	Number of Full GC Events.
+.TE
+.TP
+.B gccause
+This option displays the same summary of garbage collection 
+statistics as the \-gcutil option, but includes the causes 
+of the last garbage
+collection event and (if applicable) the current garbage collection 
+event. In addition to the columns listed for \-gcutil, this option adds
+the following columns:
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+LGCC	Cause of last Garbage Collection.
+GCC	Cause of current Garbage Collection.
+.TE
+.TP
+.B gcnew
+New Generation Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+SOC	Current survivor space 0 capacity (KB).
+S1C	Current survivor space 1 capacity (KB).
+S0U	Survivor space 0 utilization (KB).
+S1U	Survivor space 1 utilization (KB).
+TT	Tenuring threshold.
+MTT	Maximum tenuring threshold.
+DSS	Desired survivor size (KB).
+EC	Current eden space capacity (KB).
+EU	Eden space utilization (KB).
+VGC	Number of young generation GC events.
+VGCT	Young generation garbage collection time.
+.TE
+.TP
+.B gcnewcapacity
+New Generation Space Size Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+NGCMN	Minimum new generation capacity (KB).
+NGCMX	Maximum new generation capacity (KB).
+NGC	Current new generation capacity (KB).
+S0CMX	Maximum survivor space 0 capacity (KB).
+S0C	Current survivor space 0 capacity (KB).
+S1CMX	Maximum survivor space 1 capacity (KB).
+S1C	Current survivor space 1 capacity (KB).
+ECMX	Maximum eden space capacity (KB).
+EC	Current eden space capacity (KB).
+YGC	Number of young generation GC events.
+FGC	Number of Full GC Events.
+.TE
+.TP
+.B gcold
+Old and Permanent Generation Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+PC	Current permanent space capacity (KB).
+PU	Permanent space utilization (KB).
+OC	Current old space capacity (KB).
+OU	Old space utilization (KB).
+YGC	Number of young generation GC events.
+FGC	Number of Full GC events.
+FGCT	Full garbage collection time.
+GCT	Total garbage collection time.
+.TE
+.TP
+.B gcoldcapacity
+Old Generation Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+OGCMN	Minimum old generation capacity (KB).
+OGCMV	Maximum old generation capacity (KB).
+OGC	Current old generation capacity (KB).
+OC	Current old space capacity (KB).
+YGC	Number of young generation GC events.
+FGC	Number of Full GC events.
+FGCT	Full garbage collection time.
+GCT	Total garbage collection time.
+.TE
+.TP
+.B gcpermcapacity
+Permanent Generation Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+PGCMN	Minimum permanent generation capacity (KB).
+PGCMX	Maximum permanent generation capacity (KB).
+PGC	Current permanent generation capacity (KB).
+PC	Current permanent space capacity (KB).
+YGC	Number of young generation GC events.
+FGC	Number of Full GC events.
+FGCT	Full garbage collection time.
+GCT	Total garbage collection time.
+.TE
+.TP
+.B gcutil
+Summary of Garbage Collection Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+S0	T{
+Survivor space 0 utilization as a percentage 
+of the space's current capacity.
+T}	
+S1	T{
+Survivor space 1 utilization as a percentage 
+of the space's current capacity.
+T}	
+E	T{
+Eden space utilization as a percentage 
+of the space's current capacity.
+T}	
+O	T{
+Old space utilization as a percentage 
+of the space's current capacity.
+T}	
+P	T{
+Permanent space utilization as a percentage 
+of the space's current capacity.
+T}	
+YGC	Number of young generation GC events.
+YGCT	Young generation garbage collection time.
+FGC	Number of Full GC events.
+FGCT	Full garbage collection time.
+GCT	Total garbage collection time.
+.TE
+.TP
+.B printcompilation
+HotSpot Compiler Method Statistics
+.LP
+.sp 1n
+.TS
+center, box;
+cbp-1 | cbp-1
+l | l .
+Column	Description
+_
+Compiled	Number of compilation tasks performed.
+Size	Number of bytes of bytecode for the method.
+Type	Compilation type.
+Method	T{
+Class name and method name identifying the compiled method. Class name uses "/" instead of "." as namespace separator. Method name is the method within the given class. The format for these two fields is consistent with the HotSpot \- XX:+PrintComplation option. 
+T}	
+.TE
+.LP
+.SH EXAMPLES
+This section presents some examples of monitoring a local JVM 
+with a lvmid of 21891. 
+.SS Using the gcutil option
+This example attaches to lvmid 21891 and takes 7 samples at 250 
+millisecond intervals and displays the output as specified by the
+\-gcutil option. 
+.LP
+.ft 3
+.nf
+jstat -gcutil 21891 250 7
+  S0     S1     E      O      P     YGC    YGCT    FGC    FGCT     GCT
+ 12.44   0.00  27.20   9.49  96.70    78    0.176     5    0.495    0.672
+ 12.44   0.00  62.16   9.49  96.70    78    0.176     5    0.495    0.672
+ 12.44   0.00  83.97   9.49  96.70    78    0.176     5    0.495    0.672
+  0.00   7.74   0.00   9.51  96.70    79    0.177     5    0.495    0.673
+  0.00   7.74  23.37   9.51  96.70    79    0.177     5    0.495    0.673
+  0.00   7.74  43.82   9.51  96.70    79    0.177     5    0.495    0.673
+  0.00   7.74  58.11   9.51  96.71    79    0.177     5    0.495    0.673
+.fi
+.ft 1
+.LP
+The output of this example shows that a young generation collection 
+occurred between the 3rd and 4th sample. The collection took
+0.001 seconds and promoted objects from the eden space (E) to the 
+old space (O), resulting in an increase of old space utilization from
+9.49% to 9.51%. Before the collection, the survivor space was 
+12.44% utilized, but after this collection it is only 7.74% utilized. 
+.SS Repeating the column header string
+This example attaches to lvmid 21891 and takes samples at 250 
+millisecond intervals and displays the output as specified by \-gcutil
+option. In addition, it uses the \f3\-h3\fP option to output the column 
+header after every 3 lines of data. 
+.LP
+.ft 3
+.nf
+jstat -gcnew -h3 21891 250
+ S0C    S1C    S0U    S1U   TT MTT  DSS      EC       EU     YGC     YGCT
+  64.0   64.0    0.0   31.7 31  31   32.0    512.0    178.6    249    0.203
+  64.0   64.0    0.0   31.7 31  31   32.0    512.0    355.5    249    0.203
+  64.0   64.0   35.4    0.0  2  31   32.0    512.0     21.9    250    0.204
+ S0C    S1C    S0U    S1U   TT MTT  DSS      EC       EU     YGC     YGCT
+  64.0   64.0   35.4    0.0  2  31   32.0    512.0    245.9    250    0.204
+  64.0   64.0   35.4    0.0  2  31   32.0    512.0    421.1    250    0.204
+  64.0   64.0    0.0   19.0 31  31   32.0    512.0     84.4    251    0.204
+ S0C    S1C    S0U    S1U   TT MTT  DSS      EC       EU     YGC     YGCT
+  64.0   64.0    0.0   19.0 31  31   32.0    512.0    306.7    251    0.204
+.fi
+.ft 1
+.LP
+In addition to showing the repeating header string, this example 
+shows that between the 2nd and 3rd samples, a young GC occurred. Its
+duration was 0.001 seconds. The collection found enough live data that 
+the survivor space 0 utilization (S0U) would would have
+exceeded the desired survivor Size (DSS). As a result, objects were 
+promoted to the old generation (not visible in this output), and the
+tenuring threshold (TT) was lowered from 31 to 2. 
+.LP
+Another collection occurs between the 5th and 6th samples. This 
+collection found very few survivors and returned the tenuring
+threshold to 31. 
+.SS Including a time stamp for each sample
+This example attaches to lvmid 21891 and takes 3 samples at 
+250 millisecond intervals. The \f3\-t\fP option is used to generate a time stamp
+for each sample in the first column. 
+.LP
+.ft 3
+.nf
+jstat \-gcoldcapacity \-t 21891 250 3
+Timestamp  OGCMN    OGCMX    OGC      OC       YGC   FGC   FGCT    GCT
+150.1      1408.0   60544.0  11696.0  11696.0  194   80    2.874   3.799
+150.4      1408.0   60544.0  13820.0  13820.0  194   81    2.938   3.863
+150.7      1408.0   60544.0  13820.0  13820.0  194   81    2.938   3.863
+.fi
+.ft 1
+.SS Monitor instrumentation for a remote JVM 
+This example attaches to lvmid 40496 on the system named remote.domain 
+using the \f3\-gcutil\fP option, with samples taken every second
+indefinitely. 
+.LP
+.ft 3
+.nf
+jstat -gcutil 40496@remote.domain 1000
+ ... output omitted
+.fi
+.ft 1
+.LP
+The lvmid is combined with the name of the remote host to construct a vmid 
+of 40496@remote.domain. This vmid results in the use of
+the rmi protocol to communicate to the default jstatd server on 
+the remote host. The jstatd server is located using the rmiregistry on
+remote.domain that is bound to the default rmiregistry port (port 1099). 
+.SH SEE ALSO
+.BR java (1)
+.BR jps (1)
+.BR jstatd (1)
+.BR rmiregistry (1)

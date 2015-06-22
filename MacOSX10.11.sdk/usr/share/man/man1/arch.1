@@ -1,0 +1,235 @@
+.\" Copyright (c) 1994 SigmaSoft, Th. Lockert
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"      This product includes software developed by SigmaSoft, Th. Lockert.
+.\" 4. The name of the author may not be used to endorse or promote products
+.\"    derived from this software without specific prior written permission
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+.\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\"	$OpenBSD: arch.1,v 1.2 1996/06/29 20:29:34 tholo Exp $
+.\"
+.\" Modifications made 8/20/97 (c) Apple Computer, Inc.
+.\" Modifications made 11/12/06 (c) Apple Computer, Inc.
+
+.Dd July 8, 2010
+.Dt ARCH 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm arch
+.Nd print architecture type or run selected architecture of a universal binary
+.Sh SYNOPSIS
+.Nm arch
+.Nm arch
+.Op Fl 32
+.Op Fl 64
+.Oo
+.Oo Fl Ns Ar arch_name | Fl arch Ar arch_name Oc Ns ...
+.Oc
+.Op Fl c
+.Oo Fl d Ar envname Oc Ns ...
+.Oo Fl e Ar envname=value Oc Ns ...
+.Op Fl h
+.Ar prog
+.Op Ar args No ...
+.Sh DESCRIPTION
+The
+.Nm arch
+command with no arguments, displays the machine's architecture type.
+.Pp
+The other use of the
+.Nm arch
+command it to run a selected architecture of a universal binary.
+A universal binary contains code that can run on different architectures.
+By default, the operating system will select the architecture that most closely
+matches the processor type.
+This means that an intel architecture is selected on intel processors and a
+powerpc architecture is selected on powerpc processors.
+A 64-bit architecture is preferred over a 32-bit architecture on a 64-bit
+processor, while only 32-bit architectures can run on a 32-bit processor.
+.Pp
+When the most natural architecture is unavailable, the operating system will
+try to pick another architecture.
+On 64-bit processors, a 32-bit architecture is tried.
+If this is also unavailable, the operating system on an intel processor will
+try running a 32-bit powerpc architecture.
+Otherwise, no architecture is run, and an error results.
+.Pp
+The
+.Nm arch
+command can be used to alter the operating system's normal selection order.
+The most common use is to select the 32-bit architecture on a 64-bit processor,
+even if a 64-bit architecture is available.
+.Pp
+The
+.Ar arch_name
+argument must be one of the currently supported architectures:
+.Bl -tag -width x86_64 -offset indent
+.It i386
+32-bit intel
+.It x86_64
+64-bit intel
+.El
+.Pp
+Either prefix the architecture with a hyphen, or (for compatibility with
+other commands), use
+.Fl arch
+followed by the architecture.
+.Pp
+If more than one architecture is specified, the operating system will try each
+one in order, skipping an architecture that is not supported on the current
+processor, or is unavailable in the universal binary.
+.Pp
+The other options are:
+.Bl -tag -width ".Fl e Ar envname=value"
+.It Fl 32
+Add the native 32-bit architecture to the list of architectures.
+.It Fl 64
+Add the native 64-bit architecture to the list of architectures.
+.It Fl c
+Clears the environment that will be passed to the command to be run.
+.It Fl d Ar envname
+Deletes the named environment variable from the environment that will be passed
+to the command to be run.
+.It Fl e Ar envname=value
+Assigns the given value to the named environment variable in the environment
+that will be passed to the command to be run.
+Any existing environment variable with the same name will be replaced.
+.It Fl h
+Prints a usage message and exits.
+.El
+.Pp
+The
+.Ar prog
+argument is the command to run, followed by any arguments to pass to the
+command.
+It can be a full or partial path, while a lone name will be looked up in the user's
+command search path.
+.Pp
+If no architectures are specified on the command line, the
+.Nm arch
+command takes the basename of the
+.Ar prog
+argument and searches for the first property list file with that basename and
+the
+.Pa \&.plist
+suffix, in the
+.Pa archSettings
+sub-directory in each of the standard domains, in the following order:
+.Bl -tag -width ".Pa /Network/Library/archSettings" -offset indent
+.It ~/Library/archSettings
+User settings
+.It /Library/archSettings
+Local settings
+.It /Network/Library/archSettings
+Network settings
+.It /System/Library/archSettings
+System settings
+.El
+.Pp
+This property list contains the architecture order preferences, as well
+as the full path to the real executable.
+For examples of the property list format, look at the files in
+.Pa /System/Library/archSettings .
+.Ss Example
+On an intel processor:
+.Bd -literal -offset indent
+% perl -MConfig -e 'printf "%s\\n", $Config{byteorder}'
+1234
+.Ed
+.Pp
+shows the intel little endian byte order.
+.Ss Making links to the arch command
+When a link is made to
+.Nm arch
+command with a different name, that name is used to find
+the corresponding property list file.
+Thus, other commands can be wrapped so that they have custom architecture
+selection order.
+.Pp
+Because of some internal logic in the code, hard links to the
+.Nm arch
+command may not work quite right.
+It is best to avoid using hard links, and only use symbolic links to the
+.Nm arch
+command.
+.Ss Environment
+The environment variable
+.Ev ARCHPREFERENCE
+can be used to provide architecture order preferences.
+It is checked before looking for the corresponding property list file.
+.Pp
+The value of the environment variable
+.Ev ARCHPREFERENCE
+is composed of one or more specifiers, separated by semicolons.
+A specifier is made up of one, two or three fields, separated by colons.
+Architectures specified in order, are separated by commas and make up the last
+(mandatory) field.
+The first field, if specified, is a name of a program, which selects this
+specifier if that name matches the program name in question.
+If the name field is empty or there is no name field, the specifier matches
+any program name.
+Thus, ordering of specifiers is important, and the one with no name should
+be last.
+.Pp
+When the
+.Nm arch
+command is called directly, the
+.Ar prog
+name provides the path information to the executable (possibly via the command
+search path).
+When a name is specified in a
+.Ev ARCHPREFERENCE
+specifier, the path information can alternately be specified as a second
+field following the name.
+When the
+.Nm arch
+command is called indirectly via a link, this path information must be
+specified.
+If not specified as a second field in a specifier, the executable path will
+be looked up in the corresponding property list file.
+.Ss Example ARCHPREFERENCE Values
+.Bl -tag -width "    "
+.It i386,x86_64
+A specifier that matches any name.
+.It foo:i386,x86_64
+A specifier that matches the program named
+.Nm foo
+(the full executable path is in the
+.Pa foo.plist
+file).
+.It foo:/op/bin/boo:i386,x86_64
+A specifier with all fields specified.
+.It baz:i386;x86_64
+A specifier for
+.Nm baz
+and a second specifier that would match any other name.
+.El
+.Sh BUGS
+Running the
+.Nm arch
+command on an interpreter script may not work if the interpreter is a link
+to the arch command, especially if a 64-bit architecture is specified (since the
+.Nm arch
+command is 2-way universal, 32-bit only).
+.Sh SEE ALSO
+.Xr machine 1

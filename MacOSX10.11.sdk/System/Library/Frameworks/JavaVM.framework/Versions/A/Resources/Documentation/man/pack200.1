@@ -1,0 +1,315 @@
+'\" t
+.\" @(#)pack200.1 1.0 04/01/21/SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits réservés.
+.\"
+.TH pack200 1 "14 July 2004"
+.SH NAME
+pack200 \- JAR Packing tool
+.SH SYNOPSIS
+.B pack200 
+[ 
+.IB OPTIONS 
+] 
+.I output\-file 
+.I JAR\-file
+.SH PARAMETERS
+The options may be in any order. The last option on the command
+line or in a properties file supersedes all previously specified
+options. For a discussion of the options, see OPTIONS below.
+.TP 15
+.I OPTIONS      
+see OPTIONS below.
+.TP
+.I output\-file  
+name of the output file.
+.TP
+.I JAR\-file     
+name of the input file.
+.SH DESCRIPTION
+The pack200 tool is a Java application that transforms a JAR file into a 
+compressed pack200 file using the Java gzip compressor.
+The compressed packed files are highly compressed JARs that can be
+directly deployed, saving bandwidth and reducing download time. 
+.LP     
+The pack200 tool uses several options to fine-tune and set the
+compression engine.
+.TP
+Typical usage:
+.LP
+.ft 3
+.nf     
+% pack200 myarchive.pack.gz myarchive.jar
+.fi
+.ft 1
+.LP
+In this example, the myarchive.pack.gz is produced, using the default
+.B pack200 
+and 
+.B gzip 
+settings.
+.SS OPTIONS
+.TP 
+.B \-r \--repack
+Produces a JAR file by packing the file myarchive.jar, and unpacking it. 
+The resulting file can be used as an input to the jarsigner(1) tool.
+.LP
+.RS
+.ft 3
+.nf
+% pack200 --repack myarchive-packed.jar myarchive.jar
+% pack200 --repack myarchive.jar
+.fi
+.ft 1
+.RE
+.TP
+.B \-g \--no-gzip
+Produces a pack200 file. With this option a suitable compressor 
+must be used, and the target system must also use a 
+corresponding decompressor.
+.LP
+.RS
+.ft 3
+.nf
+% pack200 --no-gzip myarchive.pack myarchive.jar
+.fi
+.ft 1
+.RE
+.TP
+.B \-G \--strip-debug
+Strips the attributes used for debugging, from the output. These include
+SourceFile, LineNumberTable, LocalVariableTable and LocalVariableTypeTable. 
+Removing these attributes reduces the size of both downloads and installations  
+but reduces the usefulness of debuggers.
+.TP
+.B \-O \--no-keep-file-order
+The packer will reorder and transmit all elements. Additionally, the
+packer may remove JAR directory names. This will reduce the download
+size; however, certain JAR file optimizations such as indexing, may not
+work correctly.
+.TP     
+.BI \-S value " \--segment-limit=" value
+The value is the estimated target size N (in bytes) of each archive
+segment. If a single input file requires more than N bytes, it will
+be given its own archive segment. As a special case, a value of -1
+will produce a single large segment with all input files, while a
+value of 0 will produce one segment for each class. Larger archive
+segments result in less fragmentation and better compression, but
+processing them requires more memory.
+
+The size of each segment is estimated by counting the size of each
+input file to be transmitted in the segment, along with the size of
+its name and other transmitted properties.
+
+The default is 1000000 (a million bytes). This allows input JAR files
+of moderate size to be transmitted in one segment. It also puts a limit
+on memory requirements for packers and unpackers.
+
+A 10MB JAR packed without this limit will typically pack about 10%
+smaller, but the packer may require a larger Java heap (about ten times
+the segment limit).
+.TP     
+.BI \-E value " \--effort=" value
+If the value is set to a single decimal digit, the packer will use
+the indicated amount of effort in compressing the archive. Level 1
+may produce somewhat larger size and faster compression speed, while
+level 9 will take much longer but may produce better compression.
+The special value 0 instructs the packer to copy through the original
+JAR file directly, with no compression. The JSR 200 standard requires
+any unpacker to understand this special case as a pass-through of the
+entire archive.
+
+The default is 5, investing a modest amount of time to produce
+reasonable compression.
+.TP	
+.BI \-H value " \--deflate-hint=" value
+Overrides the default, which preserves the input information, but may
+cause the transmitted archive to be larger.
+
+The possible values are:
+
+true
+
+false
+.in 20
+In either case, the packer will set the deflation
+hint accordingly in the output archive, and will not transmit
+the individual deflation hints of archive elements.
+.in
+keep
+.in 20
+Preserve deflation hints observed in the input JAR.
+(This is the default.)
+.in
+.TP
+.BI \-m value " \--modification-time=" value
+The possible values are:
+
+latest
+.in 20
+The packer will attempt to determine the latest
+modification time, among all the available entries in
+the original archive, or the latest modification time of
+all the available entries in that segment. This single
+value will be transmitted as part of the segment and
+applied to all the entries in each segment. This can
+marginally decrease the transmitted size of the archive
+at the expense of setting all installed files to a
+single date.
+.in
+keep
+.in 20
+Preserve modification times observed in the input JAR.
+(This is the default.)
+.in
+.TP
+.BI \-P file " \-pass-file=" file
+Indicates that a file should be passed through byte-wise with no
+compression. By repeating the option, multiple files may be specified,.
+There is no pathname transformation, except that the system file
+separator is replaced by the JAR file separator '/'. The resulting file
+names must match exactly as strings with their occurrences in the JAR
+file. If file is a directory name, all files under that directory will
+be passed.
+.TP	
+.BI \-U action " \--unknown-attribute=" action
+Overrides the default behavior, ie. the classfile containing the unknown
+attribute will be passed through with the specified action.
+
+The possible values for actions are:
+
+error:
+.in 20
+The pack200 operation as a whole will fail, with a suitable
+explanation.
+.in
+strip:
+.in 20
+The attribute will be dropped. Note: removing the VM required
+attributes may cause Class Loader failures.
+.in
+pass:
+.in 20
+Upon encountering this attribute, the entire class will be
+transmitted as though it is a resource.  (This is the default.)
+.in
+.LP
+.PD 0
+.BI \-C attribute-name = layout 
+.BI \--class-attribute= attribute-name = action 
+.LP
+.PD 0
+.BI \-F attribute-name = layout 
+.BI \--field-attribute= attribute-name = action  
+.LP
+.PD 0
+.BI \-M attribute-name = layout 
+.BI \--method-attribute= attribute-name = action 
+.LP
+.PD 0
+.BI \-D attribute-name = layout 
+.BI \--code-attribute= attribute-name = action 
+.in 15
+.PD
+With the above four options, the attribute layout can be specified for a class
+entity, such as Class attribute, Field attribute, Method attribute
+and Code attribute. The attribute-name is the name of the attribute
+for which the layout or action is being defined.
+
+The possible values for action are:
+
+(some layout string)
+.in 20 
+The layout language is defined in the JSR 200 specification.
+For example\: --class-attribute=SourceFile=RUH.
+.in
+error
+.in 20 
+upon encountering this attribute, the pack200 operation will
+fail, with a suitable explanation.
+.in
+strip
+.in 20 
+upon encountering this attribute, the attribute will be removed
+from the output. Note: removing the VM required attributes may
+cause Class Loader failures.
+.in
+pass
+.in 20
+upon encountering this attribute, the entire class will be
+transmitted as though it is a resource.
+
+Example\: --class-attribute=CompilationID=pass, will cause the classfile
+containing this attribute to be passed through, without further
+action by the packer.
+.in
+.TP
+.B \-fpack.properties \--config-file=pack.properties
+A configuration file, containing Java properties to initialize the
+packer, may be specified on the command line.
+.LP
+.RS
+.ft 3
+.nf
+% pack200 -f pack.properties myarchive.pack.gz myarchive.jar
+% cat pack.properties
+# Generic properties for the packer.
+modification.time=latest
+deflate.hint=false
+keep.file.order=false
+# This option will cause the files bearing new attributes to
+# be reported as an error rather than passed uncompressed.
+unknown.attribute=error
+# Change the segment limit to be unlimited.
+segment.limit=-1
+.fi
+.ft 1
+.RE
+.TP        
+.SH Non-Standard Options
+.TP 20
+.B \-v \--verbose
+Outputs minimal messages, multiple specification of this option
+will output more verbose messages.
+
+.TP	
+.B \-q \--quiet
+Quiet operation with no messages.
+
+.TP    	
+.BI \-l filename " \--log-file=" filename
+A log file to output messages.
+
+.TP    	
+.BI \-J option
+Passes option to the Java launcher  called  by  pack200.
+For  example,  -J-Xms48m sets the startup memory to 48
+megabytes. Although it does not begin with -X,  it  is
+not  a  `standard  option'  of  pack200.  It is a common
+convention for -J to pass options to the underlying VM
+executing applications written in Java.
+
+.SS EXIT STATUS
+The following exit values are returned:
+.TP
+.B 0 "  Successful completion."
+.TP
+.B >0 " An error occurred."
+
+.SH SEE ALSO
+\f3unpack200\fP(1), \f3jar\fP(1), \f3jarsigner\fP(1), \f3attributes\fP(5)
+
+.TP
+For API specification and other related information:
+http://java.sun.com/j2se/5.0/docs
+.br
+.in
+.in
+http://java.sun.com/j2se/5.0/docs/guide/deployment/deployment-guide/pack200.html
+
+.SH NOTES:
+This command should not be confused with \f3pack\fP(1). They are distinctly
+separate products.
+.TP
+The J2SE API Specification provided with the JDK release is the superseding
+authority, in case of discrepancies.	 

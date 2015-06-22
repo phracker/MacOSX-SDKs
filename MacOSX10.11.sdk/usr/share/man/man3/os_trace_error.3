@@ -1,0 +1,133 @@
+.\" Copyright (c) 2014 Apple Inc
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of Apple Computer nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd 01/28/14
+.Dt os_trace 3
+.Os Darwin
+.Sh NAME
+.Nm os_trace ,
+.Nm os_trace_debug ,
+.Nm os_trace_error ,
+.Nm os_trace_fault ,
+.Nm os_trace_with_payload
+.Nd trace message for the current activity
+.Sh SYNOPSIS
+.In os/trace.h
+.Ft void
+.Fn os_trace "const char *format" ...
+.Ft void
+.Fn os_trace_debug "const char *format" ...
+.Ft void
+.Fn os_trace_error "const char *format" ...
+.Ft void
+.Fn os_trace_fault "const char *format" ...
+.Ft void
+.Fn os_trace_with_payload "const char *format" ...
+.Sh DESCRIPTION
+.Nm
+and its variants use an in-process ring buffer to store the provided trace message. Trace messages are correlated based on a new identifier assigned when an activity is created by the system, see
+.Xr os_activity_initiate 3 .
+The identifier is automatically carried across GCD and XPC boundaries. This identifier provides a correlation point for intra and inter-process work based on that activity. Ring buffers will be collected by a crash and/or spin report and will provide further diagnostic information about what triggered the problem.
+.Pp
+Trace messages should never be done in tight loops as they will overrun the buffer pushing potentially "interesting" trace messages out. Loss of those entries reduces the effectiveness of the trace mechanism.
+.Pp
+The API was designed to prevent strings from being recorded in the buffers for performance and privacy protection. The API only suppports scalar types (float, double, etc.) despite use of a standard
+.Xr printf 3
+formatting. All unsupported types will emit UNSUP to the trace output. The format string length does not factor into the trace buffer memory, although there is a maximum supported length of 100 characters.
+.Pp
+Inappropriate use of strings in messages:
+.Bd -literal -offset indent
+os_trace("user %s logged in from hostname %s", username, host);
+.Ed
+.Pp
+Will output:
+.Bd -literal -offset indent
+user UNSUP logged in from hostname UNSUP
+.Ed
+.Pp
+There are two (2) types of trace messages "release" and "debug". Release messages are always recorded into the ring buffers regardless of the state of the process. Whereas, "debug" messages are only recorded if the process is under a debugger or is specifically requested to include debug messages.
+.Pp
+.Nm os_trace
+is a "release" trace message. These messages are recorded on end-user systems regardless of the state of the process. Limit use to messages that would help diagnosing a failure, crash, etc. for production installations. Some messages are more appropriate under debug mode only.
+.Pp
+.Bd -literal -offset indent
+os_trace("issue query for record type: %d, timeout: %d", recType, timeout);
+.Ed
+.Pp
+.Nm os_trace_debug
+is a "debug" trace message. These are only recorded while under a debugger or when it is specifically requested by tools. Debug messages should be used for "development" use, i.e., additional information that is typically not interesting from an end-user system.
+.Pp
+.Nm os_trace_error
+is a "release" trace message that should be used when a process encounters a soft-error (i.e., an unexpected error that was successfully avoided).
+.Pp
+.Nm os_trace_fault
+is a "release" trace message that should be used when a process is about to crash or would otherwise crash but recovered. This call is unique as it causes a collection of all buffers related to activity that triggered the fault. The buffers are analyzed and provided in crash/spin reports.
+.Pp
+.Nm os_trace_with_payload
+is a "release" trace message with one key difference, it takes a block that gets called to populate additional information. This data is sent out-of-band if requested and is not stored in the ring buffers. The data is intended for evaluation by tools that are validating functionality, provide further information, etc.
+.Bd -literal -offset indent
+os_trace_with_payload("network event %ld", event, ^(xpc_object_t xdict) {
+	// validate the network interface and address where what was expected
+	xpc_dictionary_set_string(xdict, "network", ifp->ifa_name);
+	xpc_dictionary_set_string(xdict, "ip_address", _get_address(ifp));
+});
+.Ed
+.Sh EXAMPLES
+Example use of trace messages.
+.Pp
+.Bd -literal -offset indent
+#include <os/trace.h>
+#include <pwd.h>
+
+uid_t uid;
+
+os_trace("looking up user %d", uid);
+struct passwd *pwd = getpwuid(uid);
+if (pwd == NULL) {
+    os_trace_error("failed to lookup user %d", uid);
+    return ENOENT;
+}
+
+error = _openPref(pwd->pw_name, pwd->pw_dir);
+if (error) {
+    os_trace_error("failed to open prefs %d", error);
+    return error;
+}
+.Ed
+.Pp
+.Sh CAVEATS
+It should be noted that os_trace is printf-like, but not printf-compatible. Specifically, format specifiers should be exactly matched to the types of the arguments being used to fill them. Use
+.Ql %f
+for floats,
+.Ql %g
+for doubles,
+.Ql %ld
+for longs, etc.
+.Sh SEE ALSO
+.Xr ostraceutil 1 ,
+.Xr os_activity_initiate 3

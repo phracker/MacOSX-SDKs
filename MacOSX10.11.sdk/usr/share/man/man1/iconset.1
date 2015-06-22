@@ -1,0 +1,238 @@
+.Dd 14/10/14
+.Dt ICONSET 1
+.Os Darwin
+.Sh NAME
+.Nm iconset
+.Nd icon resource fromat
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+
+.Nm 
+is a is an icon resource format for providing high resolution application and document icons. The format consits of a folder named with the iconset extension.
+
+An 
+.Nm
+consists one or more variants, each variant is specified by file resources that follow a nameing convention. There are 3 types of resource supported:
+
+.Bl -bullet -offset indent -compact
+.It
+Image resources
+.It
+PDF resouces
+.It
+Composited resources
+.El
+
+.Bf Sy
+IMAGE RESOURCES
+.Ef
+.Pp
+An image resource consists of pairs of images (standard and high resolution) images with sizes 16x16, 32x32, 128x128, 256x256, 512x512. The naming convention is:
+
+.Bl -tag -offset indent
+.It
+<variantname>_[<subvariantname>]<sizeinpoints>x<sizeinpoints>[@<scale>].png
+.El
+
+where:
+
+.Bl -tag -offset indent -compact
+.It
+<variantname> is the name of the variant, the supported variants are 'icon' and 'template'.
+.It
+<subvariantname> is the name if the sub variant. The only supported subvariant is 'selected'. This is a expected to be a minor variation of the variant that has been modified to draw well in a control that is in the selected state.  
+.It 
+<sizeinpoints> is the size of the icon in points
+.It
+<scale> is @2x for the high-resolution version. 
+.El
+
+The images must be square and have the dimensions that match the name of the file.
+
+Ideally, you would supply a complete set of icons. However, it is not a requirement to have a complete set; the system will choose the best representation for sizes and resolutions that you don’t supply. Each icon in the set is a hint to the system as to the best representation to use. A complete set consists of the following:
+
+.Bl -bullet -offset indent -compact
+.It
+icon_16x16.png
+.It
+icon_16x16@2x.png
+.It
+icon_32x32.png
+.It
+icon_32x32@2x.png
+.It
+icon_128x128.png
+.It
+icon_128x128@2x.png
+.It
+icon_256x256.png
+.It
+icon_256x256@2x.png
+.It
+icon_512x512.png
+.It
+icon_512x512@2x.png
+.El
+
+.Bf Sy
+PDF RESOURCES
+.Ef
+.Pp
+A PDF resource consistes fo a single PDF the naming convention is: 
+
+.Bl -tag -offset indent
+.It
+<variantname>_[<subvariantname>].pdf
+.El
+
+.Bl -bullet -offset indent -compact
+.It
+<variantname> See image resource.
+.It
+<subvariantname> See image resource.
+.El
+
+A PDF resource for any one variant can be combined with one or more image resources. The images will be used in preferance to the PDF at draw time and the PDF is only used at sizes larger than the largest image. Given the following resources:
+
+.Bl -bullet -offset indent -compact
+.It
+icon_16x16.png
+.It
+icon_16x16@2x.png
+.It
+icon.pdf
+.El
+
+the PNG images will be used to draw the icon are 16pt sizes and smaller while the PDF will be used at sizes larger than 16pt. Given the following resources:
+
+.Bl -bullet -offset indent -compact
+.It
+icon_16x16.png
+.It
+icon_16x16@2x.png
+.It
+icon_256x256.png
+.It
+icon_256x256@2x.png
+.It
+icon.pdf
+.El
+
+the PDF will only be used at sizes larger than 256pt (not true there is a bug).
+
+.Bf Sy
+COMPOSITED RESOURCES
+.Ef
+.Pp
+
+A composited resouce consists of a JSON file and a resource folder with the naming conventions:
+
+.Bl -tag -offset indent
+.It
+<variantname>_[<subvariantname>].json
+.It
+Resources/
+.El
+
+.Bl -bullet -offset indent -compact
+.It
+<variantname> See image resource.
+.It
+<subvariantname> See image resource.
+.El
+
+The JSON conatains instructions for compositing an icon from the resources provided in 'Resources' and by the System. The Resources folder may contain image resources and PDF resouces as described above, it may also contain other iconset folders however a composite my not referance composite resources sources from another iconset.
+
+The JSON supports 4 top level keys:
+
+.Bl -bullet -width a -compact
+.It
+.Cm info 
+- Information on the iconset version. 
+.It
+.Cm resource-folder-urls 
+- An array of URL strings either relative or absolute that may contain additional resources.
+.It
+.Cm recipe
+- The instructions used to composite the final icon, this may be a string that referances a system provided recipe or custom recipe.
+.It
+.Cm resources 
+- A dictionary of resource names, that can be used with the recipes to composite the final icon images. A resouce may be:
+.El
+
+.Cm Recipes:
+
+The system provides 3 icon recipes: 
+
+.Bl -bullet -width a -compact
+.It
+.Cm application
+- This recipe requires an entry in the resources dictionary named 'image' and will construct an app icon using this image.
+.It 
+.Cm badged-document
+- This recipe uses the 'badge' (graphic) and the 'extension' (text) entries from the resources dictionary. Both resources are optional.
+.It
+.Cm movie-document
+- See badged-document recipe.
+.El
+.It
+
+It is also possible to specifiy a custom recipe. This takes the form of an array of layers, aach layer is represented as a dictionary the specifies a resource and some options that control size and positioning and the icon sizes the layer is active at. There are 2 types of layer, Graphic and Text:
+
+.Bl -bullet -width a -compact
+.It
+.Cm Graphic
+- Draws the layer's resource image or PDF in the center of the icon. For composition purposes the icon should be considered to be a 1024px square. Any sizes specified will be proportionaly adjused when the icon is drawn at smaller sizes.
+.Bl -bullet -width a -compact
+.It
+.Cm resource
+- The name of an Image or PDF resource present the Resources folder, provided by the system or when prefixed by a $ this value referances an entry from the resources dictionary. 
+.It
+.CM offset
+- An offset co-ordinate provided as '{<x>,<y>}'. The image is drawn centered in the icon bounds and offset by <x> <y>. 
+.It
+.Cm size
+- Specifies the size the image resouces should be drawn at. 
+.It
+.Cm active
+- Specifies the icon size range that this layer will be drawn at. If not present the layer will be drawn at all sizes. '-32' will draw at all sizes  <= 32pt, '32-128' will draw at all sizes > 32pt and <= 128pt and '128-' will draw at all sizes > 128pt.
+.El
+.It
+.Cm Text
+- Draws text specified in the layer's resource. This is currently optimized for drawing the file extension on document icons. By default the text is drawn centered on the bottom edge of the icon.
+.Bl -bullet -offset a -compact
+.It
+.Cm resource
+- The text to be drawn or when prefixed by a $ this value referances an entry from the resources dictionary.
+.It
+.Cm offset
+- An offset co-ordinate provided as '{<x>,<y>}'.
+.It
+.Cm active
+- See Graphic layer.
+.El
+.El
+.El
+
+.Cm Resources:
+There are 4 supported resource types:
+
+.Bl -bullet -width a -compact
+.It
+.Cm PDF
+- The value 'foo' would search the resource folders for a PDF named 'foo.pdf' 
+.It
+.Cm Image
+- The value 'foo' would search the resource folders for a images named foo_<sizeinpoints>x<sizeinpoints>[@<scale>].png
+.It
+.Cm Iconset
+- To use iconset resources you must also specify the variant to use. The value 'foo.icon' would search the resource folders for an iconset named 'foo' and would use the 'icon' variant resources from that iconset.   
+.It	
+.Cm Text
+- This provides test to a text layer. This is used exclusivly for badging document icons with the file extension.
+.El
+
+
+.Sh EXAMPLES
+.El

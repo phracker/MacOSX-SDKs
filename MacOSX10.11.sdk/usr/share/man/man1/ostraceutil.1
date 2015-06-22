@@ -1,0 +1,99 @@
+.Dd 04/22/14               \" DATE
+.Dt ostraceutil 1      \" Program name and manual section number
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm ostraceutil
+.Nd is used to see application level os_trace messages.
+.Sh SYNOPSIS
+.Nm
+.Fl list Ar file
+.Nm
+.Fl setmode Ar disable|default|debug|stream
+.Fl process Ar pid | Fl parent Ar pid
+.Nm
+.Fl stream
+.Op Fl activity Ar binary:activity_name
+.Op Fl buffered
+.Op Fl debug
+.Op Fl payload
+.Op Fl process Ar pid | Fl parent Ar pid
+.Op Fl source
+.Op Fl style Ar json|syslog
+.Op Fl timeout Ar seconds
+.Op Fl type Ar activity|breadcrumb|message
+.Nm
+.Fl watch
+.Op Fl errors
+.Op Fl faults
+.Op Fl process Ar pid
+.Op Fl quiet
+.Op Fl timeout Ar seconds
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is used to see application level os_trace messages. Must be run with root privileges.
+.Pp
+Available options:
+.Bl -tag -width "-process -pid|process"
+.It Fl activity Ar binary:activity_name
+Stream will filter a specific activity from a process, does not operate with the
+.Fl parent
+option.
+.It Fl buffered
+Stream will run in buffered mode (delivers as buffers are filled), reduces overhead and impact to application.  Normal stream is 1 IPC per message.  This option only applies when directed towards a specific process.
+.It Fl errors
+Watch for software errors triggered by processes.
+.It Fl faults
+Watch for software faults triggered by processes.
+Allows watching for a specific activity based on name.  The binary must be listed first, e.g., "AppKit:sendAction:".
+.It Fl list Ar file
+Will list all available trace related strings for a binary.
+.It Fl payload
+Will output the payload content, forcing the output to be JSON.  If the output is cancelled then a trailing ']' may be needed to make JSON parsers happy.
+.It Fl parent Ar pid
+When passed with
+.Fl stream
+any processes that are sent IPC from the provided PID will also stream messages associated with the same activity.
+.It Fl process Ar pid
+The process to operate on.  This option can be passed more than once to operate on multiple processes.  Passing -1 in conjunction with
+.Fl setmode
+or
+.Fl stream
+will change the global mode of the system.
+.It Fl setmode Ar disable|default|debug|stream
+Changes the mode of a process. The parameter
+.Fl setmode
+can be passed more than once to enable multiple modes.  An environment variable can be used to enable a specific mode:
+.Pp
+OS_ACTIVITY_MODE="stream"
+.Pp
+NOTE:
+.Fl setmode
+must be accompanied by a
+.Fl process Ar pid
+or
+.Fl parent Ar pid
+argument.
+.It Fl timeout Ar seconds
+Timeout a stream or watch operation after a specified number of seconds.
+.It Fl source
+Include symbol names and source line numbers for
+.Fl stream
+.It Fl stream
+Stream breadcrumbs, activities and/or trace messages from a given process. Using this flag without a process will listen for anything that is in stream mode.
+.It Fl type Ar activity|breadcrumb|message
+Dictates the type of events to stream from a process. By default all types are streamed unless otherwise specified. Pass an appropriate
+.Fl type
+for each requested type of event.
+.It Fl quiet
+Reduce the amount of duplicate information in ostraceutil output.
+.It Fl watch
+Watch for events for a given process or all processes. The default will be to watch both types of events if neither
+.Fl fault
+nor
+.Fl error
+is provided.
+.El
+.Pp
+.Sh SEE ALSO
+.Xr os_trace 3 ,
+.Xr os_activity_initiate 3 ,

@@ -1,0 +1,469 @@
+.\"
+.\" Copyright (c) 2000-2009 Apple Computer, Inc., all rights reserved.
+.\" 
+.Dd 17 August 2009
+.Dt vpnd 5
+.Os "Mac OS X"
+.sp
+.Sh NAME
+.Nm vpnd
+.Nd Mac OS X VPN Remote Access Server File
+.Sh DESCRIPTION
+This manual page describes the configuration elements contained in the
+.Sy /Library/Preferences/SystemConfiguration/com.apple.RemoteAccessServers.plist
+file.  Should this file not be present on the target OS X System, a template file has been provided in this manual page. 
+.sp
+The user can manipulate the contents of this file using a PLIST file editor (provided with any Mac OS X
+system), or any text editor. In this case, the user is assumed to have some basic understanding of Property Lists, and
+how to manipulate them.
+.Pp
+The goal of this page is to provide documentation on this configuration file's database structure and data fields,
+to facilitate the configuration and deployment of L2TP or PPTP VPN Servers by invoking  
+.Nm 
+without specifying any specific server profile.
+.Pp
+.Sh /ActiveServers
+Lists the server identifiers that are currently available for use.  These servers will be started in the abscense of 
+.Nm 
+.Sy -i <server_id> 
+parameter.
+.Pp
+.Sh /Servers
+Defines the following dictionaries:
+.Sy DNS, IPv4, Interface, PPP, Radius, Server (common);
+.Sy IPSec, L2TP (for L2TP tunnels only)
+.sp
+.Sh /Servers/<server_id>
+Indicates a 
+.Sy user-defined named
+VPN profile configuration, identified with the <server_id> parameter defined in
+.Xr vpnd 8
+.sp
+There are 2 default server configurations available:  
+.Sy com.apple.ppp.l2tp and com.apple.ppp.pptp
+.Pp
+.Sh /Server/<server_id>/DNS
+Contains two Arrays of Strings:
+.sp
+.Sy OfferedSearchDomains
+- which lets the server specify what DNS domain(s) a VPN client should belong to
+.sp
+.Sy OfferedServerAddresses
+- which specify the primary and (optional) secondary DNS servers a VPN client will use to resolve FQDN's. 
+.sp
+.Sh /Servers/<server_id>/IPv4
+Contains 4 arrays of Strings, and one String:
+.sp
+.Sy DestAddressRanges
+- which specifies the start and end IP addresses range.  The Server will give an IP address to a connecting PPP-VPN client after the successful negotiation of IPCP from this range.
+.sp
+.Sy OfferedRouteAddresses
+- which lists the network address(es) to each route the Server will serve to any connecting VPN client.
+.sp
+.Sy OfferedRouteMasks
+- which lists the network mask(s) to each route the Server will serve to any connecting VPN client.
+.sp
+.Sy OfferedRouteTypes
+- which lists the attribute flag(s) to each route the Server will serve to any connecting VPN client.  Valid types include: 
+.sp
+.Sy Public
+- VPN Client will forward traffic destined to VPN subnet to its Public interface.
+.sp
+.Sy Private
+- VPN Client will forward traffic destined to VPN subnet to its Private interface.
+.sp 
+Default value is Public.
+.sp
+.Sy ConfigMethod
+- The method through which a VPN IP interface will configure its IP address; 
+.Sy default 
+value is "Manual".
+.Sh /Servers/<server_id>/Interface
+- Specifies the VPN interface's base type:  PPP or IPSec and, its subtype:  L2TP or PPTP
+.Sh /Server/<server_id>/PPP
+- Defines Parameters necessary for PPP protocol negotiations for successful VPN functionality.
+.sp
+.Sy AuthenticatorACLPlugins
+- Access Control List that determines if a given user accounts has sign-on priviledges to the VPN server.
+.sp
+.Sy AuthenticatorPlugins
+- An optional plug-in used to authenticate local users with an account on the target server.  Used in conjunction with OpenDirectory/DirectoryServices facilities.
+.sp
+.Sy AuthenticatorEAPPlugins
+- User authentication using EAP protocol, with Digital Certificates.  L2TP VPN uses Kerberos "EAP-KRB" certificates or RSA "EAP-RSA" SecurID tokens; PPTP VPN uses RSA SecurID tokens only.
+.sp
+.Sy AuthenticatorProtocol
+- Protocol(s) in use for carrying out PPP authentication.  Valid values are "MSCHAP", "MSCHAPv2", "PAP", "EAP"
+.sp
+.Sy ACSPEnabled
+- Enable/Disable ACSP protocol, which passes DHCP-like messages from VPN client to server; used mostly to convey static routes from server to client and DNS domains.
+.sp
+.Sy DisconnectOnIdle
+- Enable/Disable flag for PPP Connection Idling.  If Enabled, PPP connection will terminate after not seeing any application data going through the
+VPN interface.
+.sp
+.Sy DisconnectOnIdleTimer
+- Time to wait (in seconds) before PPP connection goes down without any data passing through the VPN interface.
+.sp
+.Sy IPCPCompressionVJ
+- Enable/Disable IPCP Van-Jacobson Compression Algorithm.  Recommended setting is Disable(0).
+.sp
+.Sy LCPEchoEnabled
+-  Enable/Disable Link Control Protocol (LCP) Echoing feature.
+.sp
+.Sy LCPEchoFailure
+- Number of LCP Echo Requests sent without any response from the PPP peer before declaring PPP link failure (and subsequent teardown)
+.sp
+.Sy LCPEchoInterval
+- Time interval in seconds elapsed between consecutive LCP Echo Requests sent to the PPP peer.
+.sp
+.Sy LogFile
+- VPN log file for PPP
+.sp
+.Sy VerboseLogging
+- Enables/Disables extra logging within PPP 
+.sp
+.Sy CCPEnabled (PPTP only)
+- Enables/Disables CCP negotiation for PPP; default value is true(1)
+.sp
+.Sy CCPProtocols (PPTP only)
+- List of protocols supported by CCP layer;  default value is "MPPE"
+.sp
+.Sy MPPEKeySize128 (PPTP only)
+- Enables/Disables MPPE 128-bit encryption algorithm; default value is true(1)
+.sp
+.Sy MPPEKeySize40 (PPTP only)
+- Enables/Disables MPPE 40-bit encryption algorithm; default value is false(0)
+.sp
+.Sy Note:
+The previous 2 settings are not necessarily mutually-exclusive!  The 2 PPP peers will attempt to negotiate to the strongest encryption policy, whenever possible.
+.Sh /Servers/<server_id>/Radius
+- Contains an Array with 2 Dictionaries.  The entries are Radius servers that a VPN server must authenticate a client user against before completing the
+PPP negotiation.  Each entry indicates the server's IP address, and the shared secret key used for the RADIUS AAA exchange between said server and the VPN server.  The first Array entry indicates primary server, the other is secondary server.
+.sp
+.Sh /Servers/<server_id>/Server
+- Contains VPN server parameters
+.sp
+.Sy LogFile
+- VPN log file for PPP
+.sp
+.Sy VerboseLogging
+- Enables/Disables extra logging within PPP 
+.sp
+.Sy MaximumSessions
+- maximum number of simultaneous VPN tunnel sessions active on the VPN server.  This setting is now deprecated;  the VPN subnet determines the maximum number of sessions.
+.sp
+.Sy LoadBalancingEnabled (L2TP only)
+- Enable/Disable load balancing feature for L2TP VPN.  This feature allows a collection of L2TP VPN servers on a common LAN segment to share a common "virtual" address.  A L2TP client can specify this virtual address to connect to the server.  The server within the collection that "owns" the virtual address will then redirect the initial L2TP request message to the "least busy" server within the collection (which can include the redirecting VPN server!)
+.sp 
+.Sy LoadBalancingAddress (L2TP only)
+- L2TP load-balancing virtual IP address  
+.sp
+.Sh /Servers/<server_id>/IPSec
+- L2TP only;  L2TP VPN tunnels are secured using IPSec transport mode, with IKEv1 negotiation.  The following parameters configure the ISAKMP Security Association required to run this type of IPSec Security Association.
+.sp
+.Sy AuthenticationMethod
+- the method for IKE authentication; default value is "SharedSecret"
+.sp
+.Sy IdentifierVerification
+- Used during IKE negotiation; default value set to "NONE"
+.sp
+.Sy LoadCertificate
+- X.509/PKI Certificate binary data
+.sp
+.Sy LocalIdentifier
+- String identifying the local IPsec entity; not used for L2TP VPN.
+.sp
+.Sy RemoteIdentifier
+- String identifying the remote IPsec entity; not used for L2TP VPN.
+.sp
+.Sy SharedSecret
+- Shared secret String known between the negotiating L2TP peers.
+.sp
+.Sy SharedSecretEncryption
+- Indicates where L2TP secret key information is stored. If set to "Keychain", the
+.Sy SharedSecret
+key value points to the shared secret key stored in the Keychain.  If absent, SharedSecret value is to taken
+.Sy explicitly
+.
+.Sh /Servers/<server_id>/L2TP/Transport
+- Defines the underlying transport protocol for L2TP; default value is IPSec
+.sp
+.Pp
+.Sh TEMPLATE CONFIGURATION FILE
+To properly extract this file, run the following command:
+.Sy man 5 vpnd | col -b > com.apple.RemoteAccessServers.plist
+and cut out the non-XML text from the file
+then copy the file to the proper directory.
+.sp
+---- CUT HERE ----
+.nf
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ActiveServers</key>
+	<array>
+		<string>com.apple.ppp.l2tp</string>
+		<string>com.apple.ppp.pptp</string>
+	</array>
+	<key>Servers</key>
+	<dict>
+		<key>com.apple.ppp.l2tp</key>
+		<dict>
+			<key>DNS</key>
+			<dict>
+				<key>OfferedSearchDomains</key>
+				<array>
+					<string>Replace with DNS search domain(s) - remove if not needed</string>
+				</array>
+				<key>OfferedServerAddresses</key>
+				<array>
+					<string>Replace with IPv4 DNS server address(es) - remove if not needed</string>
+				</array>
+			</dict>
+			<key>IPSec</key>
+			<dict>
+				<key>AuthenticationMethod</key>
+				<string>SharedSecret</string>
+				<key>IdentifierVerification</key>
+				<string>None</string>
+				<key>LocalCertificate</key>
+				<data></data>
+				<key>LocalIdentifier</key>
+				<string></string>
+				<key>RemoteIdentifier</key>
+				<string></string>
+				<key>SharedSecret</key>
+				<string>com.apple.ppp.l2tp</string>
+				<key>SharedSecretEncryption</key>
+				<string>Keychain</string>
+			</dict>
+			<key>IPv4</key>
+			<dict>
+				<key>ConfigMethod</key>
+				<string>Manual</string>
+				<key>DestAddressRanges</key>
+				<array>
+					<string>Replace with Starting VPN address - IPv4 address</string>
+					<string>Replace with End VPN address - IPv4 address</string>
+				</array>
+				<key>OfferedRouteAddresses</key>
+				<array>
+					<string>Replace with Offered Routes addresses - remove if not needed</string>
+				</array>
+				<key>OfferedRouteMasks</key>
+				<array>
+					<string>Replace with Offered Route Masks - remove if not needed</string>
+				</array>
+				<key>OfferedRouteTypes</key>
+				<array>
+					<string>Replace with Offered Route Type(s) - remove if not needed</string>
+				</array>
+			</dict>
+			<key>Interface</key>
+			<dict>
+				<key>SubType</key>
+				<string>L2TP</string>
+				<key>Type</key>
+				<string>PPP</string>
+			</dict>
+			<key>L2TP</key>
+			<dict>
+				<key>Transport</key>
+				<string>IPSec</string>
+			</dict>
+			<key>PPP</key>
+			<dict>
+				<key>ACSPEnabled</key>
+				<integer>1</integer>
+				<key>AuthenticatorACLPlugins</key>
+				<array>
+					<string>DSACL</string>
+				</array>
+				<key>AuthenticatorEAPPlugins</key>
+				<array>
+					<string>EAP-KRB</string>
+				</array>
+				<key>AuthenticatorPlugins</key>
+				<array>
+					<string>DSAuth</string>
+				</array>
+				<key>AuthenticatorProtocol</key>
+				<array>
+					<string>MSCHAP2</string>
+				</array>
+				<key>DisconnectOnIdle</key>
+				<integer>1</integer>
+				<key>DisconnectOnIdleTimer</key>
+				<integer>7200</integer>
+				<key>IPCPCompressionVJ</key>
+				<integer>0</integer>
+				<key>LCPEchoEnabled</key>
+				<integer>1</integer>
+				<key>LCPEchoFailure</key>
+				<integer>5</integer>
+				<key>LCPEchoInterval</key>
+				<integer>60</integer>
+				<key>Logfile</key>
+				<string>/var/log/ppp/vpnd.log</string>
+				<key>VerboseLogging</key>
+				<integer>1</integer>
+			</dict>
+			<key>Radius</key>
+			<dict>
+				<key>Servers</key>
+				<array>
+					<dict>
+						<key>Address</key>
+						<string>Replace with Primary Server IPv4 Address</string>
+						<key>SharedSecret</key>
+						<string>Replace with Server Shared Secret string</string>
+					</dict>
+					<dict>
+						<key>Address</key>
+						<string>Replace with Secondary Server IPv4 Address</string>
+						<key>SharedSecret</key>
+						<string>Replace with Secondary Server Shared Secret string</string>
+					</dict>
+				</array>
+			</dict>
+			<key>Server</key>
+			<dict>
+				<key>LoadBalancingAddress</key>
+				<string>Replace with IPv4 address</string>
+				<key>LoadBalancingEnabled</key>
+				<integer>0</integer>
+				<key>Logfile</key>
+				<string>/var/log/ppp/vpnd.log</string>
+				<key>MaximumSessions</key>
+				<integer>128</integer>
+				<key>VerboseLogging</key>
+				<integer>1</integer>
+			</dict>
+		</dict>
+		<key>com.apple.ppp.pptp</key>
+		<dict>
+			<key>DNS</key>
+			<dict>
+				<key>OfferedSearchDomains</key>
+				<array>
+					<string>Replace with DNS search domain(s) - remove if not needed</string>
+				</array>
+				<key>OfferedServerAddresses</key>
+				<array>
+					<string>Replace with IPv4 DNS server address(es) - remove if not needed</string>
+				</array>
+			</dict>
+			<key>IPv4</key>
+			<dict>
+				<key>ConfigMethod</key>
+				<string>Manual</string>
+				<key>DestAddressRanges</key>
+				<array>
+					<string>Replace with Starting VPN address - IPv4 address</string>
+					<string>Replace with End VPN address - IPv4 address</string>
+				</array>
+				<key>OfferedRouteAddresses</key>
+				<array>
+					<string>Replace with Offered Routes addresses - remove if not needed</string>
+				</array>
+				<key>OfferedRouteMasks</key>
+				<array>
+					<string>Replace with Offered Route Masks - remove if not needed</string>
+				</array>
+				<key>OfferedRouteTypes</key>
+				<array>
+					<string>Replace with Offered Route Types - remove if not needed</string>
+				</array>
+			</dict>
+			<key>Interface</key>
+			<dict>
+				<key>SubType</key>
+				<string>PPTP</string>
+				<key>Type</key>
+				<string>PPP</string>
+			</dict>
+			<key>PPP</key>
+			<dict>
+				<key>ACSPEnabled</key>
+				<integer>1</integer>
+				<key>AuthenticatorACLPlugins</key>
+				<array>
+					<string>DSACL</string>
+				</array>
+				<key>AuthenticatorEAPPlugins</key>
+				<array>
+					<string>EAP-RSA</string>
+				</array>
+				<key>AuthenticatorPlugins</key>
+				<array>
+					<string>DSAuth</string>
+				</array>
+				<key>AuthenticatorProtocol</key>
+				<array>
+					<string>MSCHAP2</string>
+				</array>
+				<key>CCPEnabled</key>
+				<integer>1</integer>
+				<key>CCPProtocols</key>
+				<array>
+					<string>MPPE</string>
+				</array>
+				<key>DisconnectOnIdle</key>
+				<integer>1</integer>
+				<key>DisconnectOnIdleTimer</key>
+				<integer>7200</integer>
+				<key>IPCPCompressionVJ</key>
+				<integer>0</integer>
+				<key>LCPEchoEnabled</key>
+				<integer>1</integer>
+				<key>LCPEchoFailure</key>
+				<integer>5</integer>
+				<key>LCPEchoInterval</key>
+				<integer>60</integer>
+				<key>Logfile</key>
+				<string>/var/log/ppp/vpnd.log</string>
+				<key>MPPEKeySize128</key>
+				<integer>1</integer>
+				<key>MPPEKeySize40</key>
+				<integer>0</integer>
+				<key>VerboseLogging</key>
+				<integer>1</integer>
+			</dict>
+			<key>Radius</key>
+			<dict>
+				<key>Servers</key>
+				<array>
+					<dict>
+						<key>Address</key>
+						<string>Replace with Primary Server IPv4 Address</string>
+						<key>SharedSecret</key>
+						<string>Replace with Primary Server Shared Secret string</string>
+					</dict>
+					<dict>
+						<key>Address</key>
+						<string>Replace with Secondary Server IPv4 Address</string>
+						<key>SharedSecret</key>
+						<string>Replace with Secondary Server Shared Secret string</string>
+					</dict>
+				</array>
+			</dict>
+			<key>Server</key>
+			<dict>
+				<key>Logfile</key>
+				<string>/var/log/ppp/vpnd.log</string>
+				<key>MaximumSessions</key>
+				<integer>128</integer>
+				<key>VerboseLogging</key>
+				<integer>1</integer>
+			</dict>
+		</dict>
+	</dict>
+</dict>
+</plist>
+.fi
+---- CUT HERE ----
+.Pp
+.Sh SEE ALSO
+.Xr vpnd 8

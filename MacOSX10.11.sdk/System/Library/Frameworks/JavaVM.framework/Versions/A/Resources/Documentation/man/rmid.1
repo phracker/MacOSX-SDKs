@@ -1,0 +1,552 @@
+'\" t
+.\" @(#)rmid.1 1.8 00/06/13 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.TH rmid 1 "10 March 2001"
+.SH NAME
+rmid \- RMI activation system daemon
+.SH SYNOPSIS
+.B rmid 
+[
+.I options
+]
+.SH DESCRIPTION
+.IX "RMI activation system daemon" "" "RMI activation system daemon \(em \fLrmid\fP"
+.IX "rmid" "" "\fLrmid\fP \(em RMI activation system daemon"
+The
+.B rmid 
+tool starts the activation system daemon. Before
+activatable objects can be either registered with the activation
+system or activated in a Java VM, the activation system daemon
+must be started.
+See the
+.I RMI Specification
+and
+.I Activation Tutorials
+for details on how to
+write programs that use activatable remote objects.
+.LP
+The daemon can
+be started by executing the
+.B rmid
+command, and specifying a security policy file, as follows:
+.LP
+.ti +5n
+.B example% rmid \-J\-Djava.security.policy=rmid.policy
+.LP
+Note: When running Sun's implementation of
+.BR rmid ,
+by default you will need to specify a security policy
+file so that
+.B rmid can verify whether or not the information in each
+.B ActivationGroupDesc
+is allowed to be used to launch a JVM for an activation group.
+Specifically, the command and options specified by the
+.B CommandEnvironment
+and any
+.B Properties
+passed to an
+.BR ActivationGroupDesc 's
+constructor must now be
+explicitly allowed in the security policy file for
+.BR rmid .
+The value of the
+.B sun.rmi.activation.execPolicy
+property dictates the policy that
+.B rmid
+uses to determine whether or not the information in an
+.B ActivationGroupDesc
+may be used to launch a JVM for an activation group.
+.LP
+Executing
+.B rmid
+by default 
+.RS
+.TP 2
+\(bu
+starts the Activator and an internal registry on the default port,
+.BR 1098 ,
+and 
+.PD 0
+.TP
+\(bu
+binds an
+.B ActivationSystem
+to the name
+.B java.rmi.activation.ActivationSystem
+in this internal registry. 
+.PD
+.RE
+.LP
+To specify an alternate port for the registry,
+you must specify the
+.B \-port
+option when starting up
+.BR rmid .
+For example,
+.sp 1n
+.ti +5n
+.B rmid \-J\-Djava.security.policy=rmid.policy \-port 1099
+.sp 1n
+starts the activation system daemon and
+a registry on the registry's default port,
+.BR 1099 .
+.SS Starting rmid from inetd/xinetd
+An alternative to starting rmid from the command 
+line is to configure inetd (Solaris) or 
+xinetd (Linux) to start rmid on demand. 
+.LP
+When rmid starts up, it attempts to obtain an 
+inherited channel (inherited from inetd/xinetd)
+by invoking the System.inheritedChannel method. 
+If the inherited channel is null, then rmid
+was started from the command line, 
+and it starts up as described above. 
+.LP
+If the inherited channel is not an instance 
+of java.io.channels.ServerSocketChannel, rmid exits. 
+.LP
+If the inherited channel is a ServerSocketChannel 
+instance, then rmid uses the
+java.net.ServerSocket obtained from the 
+ServerSocketChannel as the server socket that
+accepts requests for the remote objects 
+it exports, namely the registry in which the
+java.rmi.activation.ActivationSystem is 
+bound and the java.rmi.activation.Activator
+remote object. 
+.LP
+The rmid tool, when started from inetd/xinetd, 
+behaves the same as when it is started from the
+command line, except: 
+.TP 2
+\(bu Output printed to System.err is redirected 
+to a file. This file is located in the directory
+specified by the java.io.tmpdir system 
+property (typically /var/tmp or /tmp) with the
+prefix "rmid-err" and the suffix "tmp". 
+.TP 2
+\(bu The \-port option is disallowed. If this 
+option is specified, rmid will exit with an error
+message. 
+.TP 2
+\(bu The \-log option is required. If this option 
+is not specified, rmid will exit with an error
+message. 
+.LP
+See the man pages for inetd (Solaris) or 
+xinetd (Linux) for details on how to configure services to
+be started on demand. 
+.SH OPTIONS
+.TP
+.BI \-C someCommandLineOption
+Specifies an option that is passed as a command-line argument
+to each child process (activation group) of 
+.B rmid 
+when that
+process is created. 
+For example, you could pass a property to each Java
+virtual machine spawned by the activation system daemon: 
+.sp 1n
+.ti +5n
+.B rmid \-C\-Dsome.property=value
+.sp 1n
+This ability to pass command-line arguments 
+o child processes can be useful for debugging.
+For example, the following command: 
+.sp 1n
+.ti +5n
+.B rmid \-C\-Djava.rmi.server.logCalls=true
+.sp 1n
+will enable server-call logging in all child JVMs.
+.TP
+.BI \-J someCommandLineOption
+Specifies an option that is passed to the
+java interpreter running
+.BR rmid .
+For example, to specify that
+.B rmid
+use a policy file named
+.BR rmid.policy ,
+the
+.B \-J
+option can be used to define the
+.B java.security.policy
+property on
+.BR rmid 's
+command line.
+For example: 
+.sp 1n
+.ti +5n
+.B rmid \-J\-Djava.security.policy=rmid.policy
+.TP
+.BI \-J\-Dsun.rmi.activation.execPolicy= policy 
+Specifies the policy that
+.B rmid
+employs to check commands and command-line options used to
+launch the JVM in which an activation group runs.
+Please note that this option exists only in Sun's
+implementation of the RMI activation daemon.
+If this property is not specified on the command line,
+the result is the same as if
+.B \-J-Dsun.rmi.activation.execPolicy=default
+were specified.
+The possible values of
+.I policy
+can be
+.BR default ,
+.IR policyClassName ,
+or
+.BR none : 
+.RS
+.TP 2
+\(bu
+default (or if this property is \f2unspecified\f1)
+The default
+.B execPolicy
+allows
+.B rmid
+to execute commands with specific command-line options only if
+.B rmid
+has been granted permission to execute those commands and options
+in the security policy file that
+.B rmid
+uses.
+Only the default activation group implementation
+can be used with the
+.I default
+execution policy.
+.sp 1n
+.B rmid
+launches a JVM for an activation group using the
+information in the group's registered activation
+group descriptor, an
+.BR ActivationGroupDesc .
+The group descriptor specifies an optional
+.B ActivationGroupDesc.CommandEnvironment
+which includes the
+.I command
+to execute to start the
+activation group as well as any
+command line
+.I options
+to be added to the command line.
+By default,
+.B rmid
+uses the
+.B java
+command found in
+.BR java.home .
+The group descriptor also contains
+.I properties
+overrides that are added to the command line as options defined as: 
+.sp 1n
+.ti +5n
+.BI \-D property = value
+.sp 1n
+The permission
+.B com.sun.rmi.rmid.ExecPermission
+is used to grant
+.B rmid
+permission to execute a
+command, specified in the group descriptor's
+.B CommandEnvironment
+to launch an activation group.
+The permission
+.B com.sun.rmi.rmid.ExecOptionPermission
+is used to allow
+.B rmid
+to use command-line options, specified as
+properties overrides in the group descriptor or as options in the
+.BR CommandEnvironment ,
+when launching the activation group. 
+.sp 1n
+When granting
+.B rmid
+permission to execute various commands and options,
+the permissions
+.B ExecPermission
+and
+.B ExecOptionPermission
+need to be granted universally
+(that is, granted to all code sources). 
+.RS
+.TP 7
+.B ExecPermission
+The
+.B ExecPermission
+class represents permission for
+.B rmid
+to execute a specific command to launch an activation group.
+.sp 1n
+.B Syntax
+.br
+The name of an
+.B ExecPermission
+is the path name of a command to grant
+.B rmid
+permission to execute.
+A path name that ends in "/*" indicates
+all the files contained in that directory (where "/"
+is the file-separator character,
+.BR File.separatorChar ).
+A path name that ends with "/-" indicates
+all files and subdirectories contained in that directory (recursively).
+A path name consisting of
+the special token "<<ALL FILES>>" matches
+.I any
+file. 
+.sp 1n
+.B Note:
+A path name consisting of a
+single "*" indicates all the files in the current directory,
+while a path name consisting of
+a single "-" indicates all the files
+in the current directory and
+(recursively) all files and
+subdirectories contained in the current directory. 
+.TP
+.B ExecOptionPermission
+The
+.B ExecOptionPermission
+class represents permission for
+.B rmid
+to use a specific command-line
+option when launching an activation group.
+The name of an
+.B ExecOptionPermission
+is the value of a command line option.
+.sp 1n
+.B Syntax
+.br
+Options support a limited wildcard scheme.
+An asterisk signifies a wildcard match, and it may
+appear as the option name itself
+(that is, it matches any option),
+or an asterisk may appear at the end
+of the option name only if the
+asterisk follows either a "." or "=". 
+.sp 1n
+For example: "*" or "\-Dfoo.*" or "-Da.b.c=*" is valid;
+"*foo" or "-Da*b" or "ab*" is not.
+.RE
+.TP
+.B Policy file for rmid
+When granting
+.B rmid
+permission to execute various commands and options,
+the permissions
+.B ExecPermission
+and
+.B ExecOptionPermission
+need to be granted universally (that is, granted to all code
+sources).
+It is safe to grant these permissions
+universally because only
+.B rmid
+checks these permissions.
+.sp 1n
+An example policy file that
+grants various execute permissions to
+.B rmid
+is: 
+.sp 1n
+.ft 3
+.nf
+grant {
+    permission com.sun.rmi.rmid.ExecPermission
+        "/files/apps/java/jdk1.2.2/bin/java";
+
+    permission com.sun.rmi.rmid.ExecPermission
+        "/files/apps/rmidcmds/*";
+
+    permission com.sun.rmi.rmid.ExecOptionPermission
+        "\-Djava.security.policy=/files/policies/group.policy";
+
+    permission com.sun.rmi.rmid.ExecOptionPermission
+        "\-Djava.security.debug=*";
+
+    permission com.sun.rmi.rmid.ExecOptionPermission
+        "\-Dsun.rmi.*";
+};
+.fi
+.ft 1
+.sp 1n
+The first permission granted allow
+.B rmid
+to execute the 1.2.2 version of the
+.B java
+command, specified by its explicit path names.
+Note that by default, the version of the
+.B java
+command found in
+.B java.home
+is used (the same one that
+.B rmid
+uses), and does not need to be
+specified in the policy file.
+The third permission allows
+.B rmid
+to execute any command in the
+directory
+.BR /files/apps/rmidcmds .
+.sp 1n
+The fourth permission granted, an
+.BR ExecOptionPermission ,
+allows
+.B rmid
+to launch an activation
+group that defines the security policy file to be
+.BR /files/policies/group.policy .
+The next permission allows the
+.B java.security.debug
+property to be used by an activation group.
+The last permission allows any property in the
+.B sun.rmi
+property name hierarchy to be used by activation groups.
+.sp 1n
+To start
+.B rmid
+with a policy file, the
+.B java.security.policy
+property needs to be specified on
+.BR rmid 's
+command line.
+For example: 
+.sp 1n
+.ti +5n
+.B rmid \-J\-Djava.security.policy=rmid.policy 
+.TP 2
+\(bu
+.I policyClassName
+.sp 1n
+If the default behavior is not flexible enough,
+an administrator can provide, when starting
+.BR rmid ,
+the name of a class whose
+.B checkExecCommand
+method is executed in order to check commands to be executed by
+.BR rmid .
+.sp 1n
+The
+.B policyClassName
+specifies a public class with a public,
+no-argument constructor and an
+implementation of the following
+.B checkExecCommand
+method: 
+.sp 1n
+.ft 3
+.nf
+.in +5n
+public void checkExecCommand(ActivationGroupDesc desc,
+                                         String[] command)
+                throws SecurityException;
+.in
+.fi
+.ft 1
+.sp 1n
+Before launching an activation group,
+.B rmid
+calls the policy's
+.BR checkExecCommand
+method, passing it the activation group descriptor
+and an array containing the complete
+command to launch the activation group.
+If the
+.B checkExecCommand
+throws a
+.BR SecurityException ,
+.B rmid
+will not launch the activation group
+and an
+.B ActivationException
+will be thrown to the caller attempting to activate the object. 
+.TP
+\(bu
+.B none
+.sp 1n
+If the
+.B sun.rmi.activation.execPolicy
+property value is "none", then
+.B rmid
+will not perform any
+validation of commands to launch activation groups. 
+.RE
+.TP
+.BI \-log " dir"
+Specifies the name of the directory the activation
+system daemon uses to write its database and
+associated information.
+The log directory defaults to creating a directory,
+.BR log ,
+in the directory in
+which the
+.B rmid
+command was executed. 
+.TP
+.BI \-port " port"
+Specifies the port
+.BR rmid 's
+registry uses.
+The activation system daemon binds the
+.BR ActivationSystem ,
+with the name
+.BR java.rmi.activation.ActivationSystem ,
+in this registry.
+Thus, the
+.B ActivationSystem
+on the local machine can be obtained using
+the following
+.B Naming.lookup
+method call: 
+.LP
+.RS 
+.ft 3
+.nf
+import java.rmi.*;
+import java.rmi.activation.*;
+
+ActivationSystem system;
+system = (ActivationSystem)
+Naming.lookup("//:port/java.rmi.activation.ActivationSystem");
+.fi
+.ft 1
+.RE
+.TP
+.B \-stop
+Stops the current invocation of
+.BR rmid , 
+for a port specified by the 
+.B \-port 
+option.
+If no 
+.I port 
+is specified, it will stop the
+.B rmid
+running on port
+.BR 1098 .
+.SH ENVIRONMENT VARIABLES
+.TP 20
+.SB CLASSPATH
+Used to provide the system a path to user-defined classes.
+Directories are separated by colons.
+For example,
+.RS
+.LP
+.ft 3
+.nf
+example% .:/usr/local/java/classes
+.fi
+.ft 1
+.RE
+.SH SEE ALSO
+.BR rmic (1)
+.LP
+See (or search
+.BR java.sun.com )
+for the following:
+.TP 2
+.B RMI Specification @
+http://java.sun.com/j2se/1.5/docs/guide/rmi/spec/rmiTOC.doc.html

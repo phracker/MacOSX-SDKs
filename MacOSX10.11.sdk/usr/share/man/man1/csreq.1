@@ -1,0 +1,84 @@
+.Dd June 1, 2006
+.Dt CSREQ 1
+.Os
+.Sh NAME
+.Nm csreq
+.Nd Expert tool for manipulating Code Signing Requirement data
+.Sh SYNOPSIS
+.\" text dump
+.Nm
+.Op Fl v
+.Ar -r requirement-input
+.Ar -t
+.\" create binary form
+.Nm
+.Op Fl v
+.Ar -r requirement-input
+.Ar -b outputfile
+.Sh DESCRIPTION
+The
+.Nm
+command manipulates Code Signing Requirement data.
+It reads one requirement from a file or command arguments, converts it into
+internal form, checks it, and then optionally outputs it in a different form.
+.Pp
+The options are as follows:
+.Bl -tag -width indent
+.It Fl b Ar path
+Requests that the requirement read be written in binary form to the path given.
+.It Fl r Ar requirement-input
+Specifies the input requirement. See "specifying requirements" below. This is
+exactly the same format as is accepted by the -r and -R options of the codesign(1)
+command.
+.It Fl t
+Requests that the requirement read be written as text to standard output.
+.It Fl v
+Increases the verbosity of output. Multiple instances of -v produce increasing levels
+of commentary output.
+.El
+.Pp
+In the first synopsis form,
+.Nm
+reads a Code Requirement and writes it to standard output as canonical source text.
+Note that with text input, this actually compiles the requirement into internal
+form and then converts it back to text, giving you the system's view of the requirement code.
+.Pp
+In the second synopsis form,
+.Nm
+reads a Code Requirement and writes its binary representation to a file. This is the
+same form produced by the SecRequirementCopyData API, and is readily acceptable
+as input to Code Signing verification APIs. It can also be used as input to subsequent
+invocations of
+.Nm
+by passing the filename to the -r option.
+.Sh SPECIFYING REQUIREMENTS
+The
+.Ar requirement
+argument (-r) can be given in various forms. A plain text argument is taken
+to be a path to a file containing the requirement. This program will accept
+both binary files containing properly compiled requirements code, and source files
+that are automatically compiled for use.
+An argument of "-" requests that the requirement(s) are read from standard input.
+Again, standard input can contain either binary form or text.
+Finally, an argument that begins with an equal sign "=" is taken as a literal
+requirements source text, and is compiled accordingly for use.
+.Sh EXAMPLES
+To compile an explicit requirement program and write its binary form to file "output":
+.Dl csreq -r="identifier com.foo.test" -b output.csreq
+.Pp
+To display the requirement program embedded at offset 1234 of file "foo":
+.Dl tail -b 1234 foo | csreq -r- -t
+.Sh FILES
+.\" .Bl -tag -width /Library/Keychains/System.keychain -compact
+.\".It Pa /Library/Keychains/System.keychain
+.Sh DIAGNOSTICS
+The
+.Nm
+program exits 0 on success or 1 on failure. Errors in arguments yield exit code 2.
+.Sh SEE ALSO
+.Xr codesign 1
+.Sh HISTORY
+The
+.Nm
+command first appeared in
+Mac OS 10.5.0 .

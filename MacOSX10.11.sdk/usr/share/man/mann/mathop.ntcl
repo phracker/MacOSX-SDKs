@@ -1,0 +1,569 @@
+.\" -*- nroff -*-
+.\" Copyright (c) 2006-2007 Donal K. Fellows.
+.\"
+.\" See the file "license.terms" for information on usage and redistribution
+.\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+.\"
+.\" RCS: @(#) $Id: mathop.n,v 1.10.2.1 2010/06/30 23:31:04 dkf Exp $
+.\"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH mathop n 8.5 Tcl "Tcl Mathematical Operator Commands"
+.BS
+.\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+mathop \- Mathematical operators as Tcl commands
+.SH SYNOPSIS
+package require \fBTcl 8.5\fR
+.sp
+\fB::tcl::mathop::!\fR \fInumber\fR
+.br
+\fB::tcl::mathop::~\fR \fInumber\fR
+.br
+\fB::tcl::mathop::+\fR ?\fInumber\fR ...?
+.br
+\fB::tcl::mathop::\-\fR \fInumber\fR ?\fInumber\fR ...?
+.br
+\fB::tcl::mathop::*\fR ?\fInumber\fR ...?
+.br
+\fB::tcl::mathop::/\fR \fInumber\fR ?\fInumber\fR ...?
+.br
+\fB::tcl::mathop::%\fR \fInumber number\fR
+.br
+\fB::tcl::mathop::**\fR ?\fInumber\fR ...?
+.br
+\fB::tcl::mathop::&\fR ?\fInumber\fR ...?
+.br
+\fB::tcl::mathop::|\fR ?\fInumber\fR ...?
+.br
+\fB::tcl::mathop::^\fR ?\fInumber\fR ...?
+.br
+\fB::tcl::mathop::<<\fR \fInumber number\fR
+.br
+\fB::tcl::mathop::>>\fR \fInumber number\fR
+.br
+\fB::tcl::mathop::==\fR ?\fIarg\fR ...?
+.br
+\fB::tcl::mathop::!=\fR \fIarg arg\fR
+.br
+\fB::tcl::mathop::<\fR ?\fIarg\fR ...?
+.br
+\fB::tcl::mathop::<=\fR ?\fIarg\fR ...?
+.br
+\fB::tcl::mathop::>=\fR ?\fIarg\fR ...?
+.br
+\fB::tcl::mathop::>\fR ?\fIarg\fR ...?
+.br
+\fB::tcl::mathop::eq\fR ?\fIarg\fR ...?
+.br
+\fB::tcl::mathop::ne\fR \fIarg arg\fR
+.br
+\fB::tcl::mathop::in\fR \fIarg list\fR
+.br
+\fB::tcl::mathop::ni\fR \fIarg list\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+The commands in the \fB::tcl::mathop\fR namespace implement the same set of
+operations as supported by the \fBexpr\fR command. All are exported from the
+namespace, but are not imported into any other namespace by default. Note that
+renaming, reimplementing or deleting any of the commands in the namespace does
+\fInot\fR alter the way that the \fBexpr\fR command behaves, and nor does
+defining any new commands in the \fB::tcl::mathop\fR namespace.
+.PP
+The following operator commands are supported:
+.DS
+.ta 2c 4c 6c 8c
+\fB~\fR	\fB!\fR	\fB+\fR	\fB\-\fR	\fB*\fR
+\fB/\fR	\fB%\fR	\fB**\fR	\fB&\fR	\fB|\fR
+\fB^\fR	\fB>>\fR	\fB<<\fR	\fB==\fR	\fBeq\fR
+\fB!=\fR	\fBne\fR	\fB<\fR	\fB<=\fR	\fB>\fR
+\fB>=\fR	\fBin\fR	\fBni\fR
+.DE
+.SS "MATHEMATICAL OPERATORS"
+.PP
+The behaviors of the mathematical operator commands are as follows:
+.TP
+\fB!\fR \fIboolean\fR
+.
+Returns the boolean negation of \fIboolean\fR, where \fIboolean\fR may be any
+numeric value or any other form of boolean value (i.e. it returns truth if the
+argument is falsity or zero, and falsity if the argument is truth or
+non-zero).
+.TP
+\fB+\fR ?\fInumber\fR ...?
+.
+Returns the sum of arbitrarily many arguments. Each \fInumber\fR argument may
+be any numeric value. If no arguments are given, the result will be zero (the
+summation identity).
+.TP
+\fB\-\fR \fInumber\fR ?\fInumber\fR ...?
+.
+If only a single \fInumber\fR argument is given, returns the negation of that
+numeric value. Otherwise returns the number that results when all subsequent
+numeric values are subtracted from the first one. All \fInumber\fR arguments
+must be numeric values. At least one argument must be given.
+.TP
+\fB*\fR ?\fInumber\fR ...?
+.
+Returns the product of arbitrarily many arguments. Each \fInumber\fR may be
+any numeric value. If no arguments are given, the result will be one (the
+multiplicative identity).
+.TP
+\fB/\fR \fInumber\fR ?\fInumber\fR ...?
+.
+If only a single \fInumber\fR argument is given, returns the reciprocal of that
+numeric value (i.e. the value obtained by dividing 1.0 by that value).
+Otherwise returns the number that results when the first numeric argument is
+divided by all subsequent numeric arguments. All \fInumber\fR arguments must
+be numeric values. At least one argument must be given.
+.RS
+.PP
+Note that when the leading values in the list of arguments are integers,
+integer division will be used for those initial steps (i.e. the intermediate
+results will be as if the functions \fIfloor\fR and \fIint\fR are applied to
+them, in that order). If all values in the operation are integers, the result
+will be an integer.
+.RE
+.TP
+\fB%\fR \fInumber number\fR
+.
+Returns the integral modulus of the first argument with respect to the second.
+Each \fInumber\fR must have an integral value. Note that Tcl defines this
+operation exactly even for negative numbers, so that the following equality
+holds true:
+.RS
+.CS
+(\fIx \fB/ \fIy\fR) \fB* \fIy \fB== \fIx \fB-\fR (\fIx \fB% \fIy\fR)
+.CE
+.RE
+.TP
+\fB**\fR ?\fInumber\fR ...?
+.
+Returns the result of raising each value to the power of the result of
+recursively operating on the result of processing the following arguments, so
+.QW "\fB** 2 3 4\fR"
+is the same as
+.QW "\fB** 2 [** 3 4]\fR" .
+Each \fInumber\fR may be
+any numeric value, though the second number must not be fractional if the
+first is negative. If no arguments are given, the result will be one, and if
+only one argument is given, the result will be that argument. The
+result will have an integral value only when all arguments are
+integral values.
+.SS "COMPARISON OPERATORS"
+.PP
+The behaviors of the comparison operator commands (most of which operate
+preferentially on numeric arguments) are as follows:
+.TP
+\fB==\fR ?\fIarg\fR ...?
+.
+Returns whether each argument is equal to the arguments on each side of it in
+the sense of the \fBexpr\fR == operator (\fIi.e.\fR, numeric comparison if
+possible, exact string comparison otherwise). If fewer than two arguments
+are given, this operation always returns a true value.
+.TP
+\fBeq\fR ?\fIarg\fR ...?
+.
+Returns whether each argument is equal to the arguments on each side of it
+using exact string comparison. If fewer than two arguments are given, this
+operation always returns a true value.
+.TP
+\fB!=\fR \fIarg arg\fR
+.
+Returns whether the two arguments are not equal to each other, in the sense of
+the \fBexpr\fR != operator (\fIi.e.\fR, numeric comparison if possible, exact
+string comparison otherwise).
+.TP
+\fBne\fR \fIarg arg\fR
+.
+Returns whether the two arguments are not equal to each other using exact
+string comparison.
+.TP
+\fB<\fR ?\fIarg\fR ...?
+.
+Returns whether the arbitrarily-many arguments are ordered, with each argument
+after the first having to be strictly more than the one preceding it.
+Comparisons are performed preferentially on the numeric values, and are
+otherwise performed using UNICODE string comparison. If fewer than two
+arguments are present, this operation always returns a true value. When the
+arguments are numeric but should be compared as strings, the \fBstring
+compare\fR command should be used instead.
+.TP
+\fB<=\fR ?\fIarg\fR ...?
+.
+Returns whether the arbitrarily-many arguments are ordered, with each argument
+after the first having to be equal to or more than the one preceding it.
+Comparisons are performed preferentially on the numeric values, and are
+otherwise performed using UNICODE string comparison. If fewer than two
+arguments are present, this operation always returns a true value. When the
+arguments are numeric but should be compared as strings, the \fBstring
+compare\fR command should be used instead.
+.TP
+\fB>\fR ?\fIarg\fR ...?
+.
+Returns whether the arbitrarily-many arguments are ordered, with each argument
+after the first having to be strictly less than the one preceding it.
+Comparisons are performed preferentially on the numeric values, and are
+otherwise performed using UNICODE string comparison. If fewer than two
+arguments are present, this operation always returns a true value. When the
+arguments are numeric but should be compared as strings, the \fBstring
+compare\fR command should be used instead.
+.TP
+\fB>=\fR ?\fIarg\fR ...?
+.
+Returns whether the arbitrarily-many arguments are ordered, with each argument
+after the first having to be equal to or less than the one preceding it.
+Comparisons are performed preferentially on the numeric values, and are
+otherwise performed using UNICODE string comparison. If fewer than two
+arguments are present, this operation always returns a true value. When the
+arguments are numeric but should be compared as strings, the \fBstring
+compare\fR command should be used instead.
+.SS "BIT-WISE OPERATORS"
+.PP
+The behaviors of the bit-wise operator commands (all of which only operate on
+integral arguments) are as follows:
+.TP
+\fB~\fR \fInumber\fR
+.
+Returns the bit-wise negation of \fInumber\fR. \fINumber\fR may be an integer
+of any size. Note that the result of this operation will always have the
+opposite sign to the input \fInumber\fR.
+.TP
+\fB&\fR ?\fInumber\fR ...?
+.
+Returns the bit-wise AND of each of the arbitrarily many arguments. Each
+\fInumber\fR must have an integral value. If no arguments are given, the
+result will be minus one.
+.TP
+\fB|\fR ?\fInumber\fR ...?
+.
+Returns the bit-wise OR of each of the arbitrarily many arguments. Each
+\fInumber\fR must have an integral value. If no arguments are given, the
+result will be zero.
+.TP
+\fB^\fR ?\fInumber\fR ...?
+.
+Returns the bit-wise XOR of each of the arbitrarily many arguments. Each
+\fInumber\fR must have an integral value. If no arguments are given, the
+result will be zero.
+.TP
+\fB<<\fR \fInumber number\fR
+.
+Returns the result of bit-wise shifting the first argument left by the
+number of bits specified in the second argument. Each \fInumber\fR
+must have an integral value.
+.TP
+\fB>>\fR \fInumber number\fR
+.
+Returns the result of bit-wise shifting the first argument right by
+the number of bits specified in the second argument. Each \fInumber\fR
+must have an integral value.
+.SS "LIST OPERATORS"
+.PP
+The behaviors of the list-oriented operator commands are as follows:
+.TP
+\fBin\fR \fIarg list\fR
+.
+Returns whether the value \fIarg\fR is present in the list \fIlist\fR
+(according to exact string comparison of elements).
+.TP
+\fBni\fR \fIarg list\fR
+.
+Returns whether the value \fIarg\fR is not present in the list \fIlist\fR
+(according to exact string comparison of elements).
+.SH EXAMPLES
+The simplest way to use the operators is often by using \fBnamespace path\fR
+to make the commands available. This has the advantage of not affecting the
+set of commands defined by the current namespace.
+.CS
+namespace path {\fB::tcl::mathop\fR ::tcl::mathfunc}
+
+\fI# Compute the sum of some numbers\fR
+set sum [\fB+\fR 1 2 3]
+
+\fI# Compute the average of a list\fR
+set list {1 2 3 4 5 6}
+set mean [\fB/\fR [\fB+\fR {*}$list] [double [llength $list]]]
+
+\fI# Test for list membership\fR
+set gotIt [\fBin\fR 3 $list]
+
+\fI# Test to see if a value is within some defined range\fR
+set inRange [\fB<=\fR 1 $x 5]
+
+\fI# Test to see if a list is sorted\fR
+set sorted [\fB<=\fR {*}$list]
+.CE
+.SH "SEE ALSO"
+expr(n), mathfunc(n), namespace(n)
+.SH KEYWORDS
+command, expression, operator

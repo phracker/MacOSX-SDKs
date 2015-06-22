@@ -1,0 +1,138 @@
+.TH LMDB_TABLE 5 
+.ad
+.fi
+.SH NAME
+lmdb_table
+\-
+Postfix LMDB adapter
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap lmdb:/etc/postfix/\fIfilename\fR
+.br
+\fBpostmap -i lmdb:/etc/postfix/\fIfilename\fB <\fIinputfile\fR
+
+\fBpostmap -d "\fIkey\fB" lmdb:/etc/postfix/\fIfilename\fR
+.br
+\fBpostmap -d - lmdb:/etc/postfix/\fIfilename\fB <\fIinputfile\fR
+
+\fBpostmap -q "\fIkey\fB" lmdb:/etc/postfix/\fIfilename\fR
+.br
+\fBpostmap -q - lmdb:/etc/postfix/\fIfilename\fB <\fIinputfile\fR
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix LMDB adapter provides access to a persistent,
+memory-mapped, key-value store.  The database size is limited
+only by the size of the memory address space (typically 31
+or 47 bits on 32-bit or 64-bit CPUs, respectively) and by
+the available file system space.
+.SH "REQUESTS"
+.na
+.nf
+.ad
+.fi
+The LMDB adapter supports all Postfix lookup table operations.
+This makes LMDB suitable for Postfix address rewriting,
+routing, access policies, caches, or any information that
+can be stored under a fixed lookup key.
+
+When a transaction fails due to a full database, Postfix
+resizes the database and retries the transaction.
+
+Postfix table lookups may generate partial search keys such
+as domain names without one or more subdomains, network
+addresses without one or more least-significant octets, or
+email addresses without the localpart, address extension
+or domain portion.  This behavior is also found with, for
+example, btree:, hash:, or ldap: tables.
+
+Unlike other flat-file Postfix databases, changes to
+an LMDB database do not trigger automatic daemon program
+restart, and do not require "\fBpostfix reload\fR".
+.SH "RELIABILITY"
+.na
+.nf
+.ad
+.fi
+LMDB's copy-on-write architecture provides safe updates,
+at the cost of using more space than some other flat-file
+databases.  Read operations are memory-mapped for speed.
+Write operations are not memory-mapped to avoid silent
+curruption due to stray pointer bugs.
+
+Multiple processes can safely update an LMDB database without
+serializing requests through the proxymap(8) service.  This
+makes LMDB suitable as a shared cache for verify(8) or
+postscreen(8) services.
+.SH "SYNCHRONIZATION"
+.na
+.nf
+.ad
+.fi
+The Postfix LMDB adapter does not use LMDB's built-in locking
+scheme, because that would require world-writable lockfiles
+and would violate the Postfix security model.  Instead,
+Postfix uses fcntl(2) locks with whole-file granularity.
+Programs that use LMDB's built-in locking protocol will
+corrupt a Postfix LMDB database or will read garbage.
+
+Every Postfix LMDB database read or write transaction must
+be protected from start to end with a shared or exclusive
+fcntl(2) lock.  A writer may atomically downgrade an exclusive
+lock to a shared lock, but it must acquire an exclusive
+lock between updating the database and starting another
+write transaction.
+
+Note that fcntl(2) locks do not protect transactions within
+the same process against each other.  If a program cannot
+avoid making simultaneous database requests, then it must
+protect its transactions with in-process locks, in addition
+to the per-process fcntl(2) locks.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Short-lived programs automatically pick up changes to
+main.cf.  With long-running daemon programs, Use the command
+"\fBpostfix reload\fR" after a configuration change.
+.IP "\fBlmdb_map_size (default: 16777216)\fR"
+The initial LMDB database size limit in bytes.
+.SH "SEE ALSO"
+.na
+.nf
+postconf(1), Postfix supported lookup tables
+postmap(1), Postfix lookup table maintenance
+postconf(5), configuration parameters
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+LMDB_README, Postfix OpenLDAP LMDB howto
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "HISTORY"
+.na
+.nf
+LMDB support was introduced with Postfix version 2.11.
+.SH "AUTHOR(S)"
+.na
+.nf
+Howard Chu
+Symas Corporation
+
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
