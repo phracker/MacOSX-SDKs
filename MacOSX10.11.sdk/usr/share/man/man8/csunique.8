@@ -1,0 +1,111 @@
+.\" Copyright (c) 2012 Apple Inc.  All rights reserved.
+.\"
+.Dd September 25, 2012
+.Dt CSUNIQUE 8
+.Os OS X
+.Sh NAME
+.Nm csunique
+.Nd modify the UUIDs of CoreStorage metadata objects
+.Sh SYNOPSIS
+.Nm
+.Op Fl v | -verbose
+.Op Fl n | -dry-run
+.Op Fl I | -include Ar include
+.Op Fl X | -exclude Ar exclude
+.Ar device ...
+.Sh DESCRIPTION
+.Pp
+The
+.Nm
+utility can rewrite
+.Tn CoreStorage
+logical volume group metadata, changing object UUIDs.  All CoreStorage objects are uniquely
+identified by UUIDs.  This can be useful when copying an initial "canned image" onto multiple
+machines to establish these as independent volumes.
+.Pp
+The
+.Ar device
+parameter(s) should be path(s) to the "raw" (character special) disk device(s) such as
+.Pa /dev/rdisk1s1 
+that constitute the CoreStorage logical volume group.
+If you specify a "non-raw" (block special) path such as
+.Pa /dev/disk1s1 ,
+or just the disk name such as
+.Pa disk1s1 ,
+it will automatically be converted to the corresponding raw disk device
+.Pa ( /dev/rdisk1s1 ) .
+.Pp
+The options are as follows:
+.Bl -tag -offset indent
+.It Fl v
+Output verbose progress information of each step and the UUID re-mappings.
+.It Fl n
+Operates in "dry run" mode; no changes are made to the on-disk data.
+.It Fl I
+Specifies an additional class of UUID objects that should be modified.
+.It Fl X
+Specifies a class of UUID objects that should not be modified.  By default
+all UUIDs will be changed.
+.El
+.Pp
+The classes of CoreStorage UUID objects that can be included or excluded
+from modification by
+.Nm
+are indicated using the following characters:
+.Bl -hang -offset indent
+.It f
+logical volume family (LVF)
+.It g
+logical volume group (LVG)
+.It l
+logical volume (LV)
+.It p
+physical volume (PV)
+.It w
+MLV wipekey
+.El
+.Pp
+.Nm
+processes/transforms the CoreStorage metadata in a number of steps:
+.Bl -enum -offset indent
+.It
+Firstly, an initial
+.Pa fsck_cs
+is performed to ensure the source structure is consistent;
+.It
+If the LVG is currently live and mounted by the kext it is temporarily "frozen";
+.It
+If the disk partitions are of type Apple_CoreStorage then they are switched
+offline (which dissociates the kext from the old metadata);
+.It
+The CoreStorage metadata is locally parsed and loaded;
+.It
+All object UUIDs are located, and new UUIDs generated for classes as set by the
+.Fl I
+and
+.Fl X
+options;
+.It
+UUIDs are re-written to disk;
+.It
+A post-modification
+.Pa fsck_cs
+is performed to ensure the final structure is consistent;
+.It
+Finally, any disk partitions taken offline are restored to Apple_CoreStorage
+(which will reload the kext with the new UUID metadata).
+.El
+.Sh DIAGNOSTICS
+The
+.Nm
+utility exits with 0 if the CoreStorage logical volume group was modified
+as directed, and with >0 if it was unable to do so.  Any error message is
+written to stderr.
+.Sh BUGS
+.Nm
+cannot modify the LVF UUID if there are any encrypted LVs inside it.  Any
+mounted LVs must be manually unmounted before invocation.
+.Sh HISTORY
+The
+.Nm
+utility first appeared in OS X 10.8.1.

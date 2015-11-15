@@ -1,0 +1,646 @@
+'\"
+'\" Copyright (c) 1994-1997 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: StringObj.3,v 1.26 2007/12/13 15:22:32 dgp Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tcl_StringObj 3 8.1 Tcl "Tcl Library Procedures"
+.BS
+.SH NAME
+Tcl_NewStringObj, Tcl_NewUnicodeObj, Tcl_SetStringObj, Tcl_SetUnicodeObj, Tcl_GetStringFromObj, Tcl_GetString, Tcl_GetUnicodeFromObj, Tcl_GetUnicode, Tcl_GetUniChar, Tcl_GetCharLength, Tcl_GetRange, Tcl_AppendToObj, Tcl_AppendUnicodeToObj, Tcl_AppendObjToObj, Tcl_AppendStringsToObj, Tcl_AppendStringsToObjVA, Tcl_AppendLimitedToObj, Tcl_Format, Tcl_AppendFormatToObj, Tcl_ObjPrintf, Tcl_AppendPrintfToObj, Tcl_SetObjLength, Tcl_AttemptSetObjLength, Tcl_ConcatObj \- manipulate Tcl objects as strings
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+Tcl_Obj *
+\fBTcl_NewStringObj\fR(\fIbytes, length\fR)
+.sp
+Tcl_Obj *
+\fBTcl_NewUnicodeObj\fR(\fIunicode, numChars\fR)
+.sp
+void
+\fBTcl_SetStringObj\fR(\fIobjPtr, bytes, length\fR)
+.sp
+void
+\fBTcl_SetUnicodeObj\fR(\fIobjPtr, unicode, numChars\fR)
+.sp
+char *
+\fBTcl_GetStringFromObj\fR(\fIobjPtr, lengthPtr\fR)
+.sp
+char *
+\fBTcl_GetString\fR(\fIobjPtr\fR)
+.sp
+Tcl_UniChar *
+\fBTcl_GetUnicodeFromObj\fR(\fIobjPtr, lengthPtr\fR)
+.sp
+Tcl_UniChar *
+\fBTcl_GetUnicode\fR(\fIobjPtr\fR)
+.sp
+Tcl_UniChar
+\fBTcl_GetUniChar\fR(\fIobjPtr, index\fR)
+.sp
+int
+\fBTcl_GetCharLength\fR(\fIobjPtr\fR)
+.sp
+Tcl_Obj *
+\fBTcl_GetRange\fR(\fIobjPtr, first, last\fR)
+.sp
+void
+\fBTcl_AppendToObj\fR(\fIobjPtr, bytes, length\fR)
+.sp
+void
+\fBTcl_AppendUnicodeToObj\fR(\fIobjPtr, unicode, numChars\fR)
+.sp
+void
+\fBTcl_AppendObjToObj\fR(\fIobjPtr, appendObjPtr\fR)
+.sp
+void
+\fBTcl_AppendStringsToObj\fR(\fIobjPtr, string, string, ... \fB(char *) NULL\fR)
+.sp
+void
+\fBTcl_AppendStringsToObjVA\fR(\fIobjPtr, argList\fR)
+.VS 8.5
+.sp
+void
+\fBTcl_AppendLimitedToObj\fR(\fIobjPtr, bytes, length, limit, ellipsis\fR)
+.sp
+Tcl_Obj *
+\fBTcl_Format\fR(\fIinterp, format, objc, objv\fR)
+.sp
+int
+\fBTcl_AppendFormatToObj\fR(\fIinterp, objPtr, format, objc, objv\fR)
+.sp
+Tcl_Obj *
+\fBTcl_ObjPrintf\fR(\fIformat, ...\fR)
+.sp
+int
+\fBTcl_AppendPrintfToObj\fR(\fIobjPtr, format, ...\fR)
+.VE 8.5
+.sp
+void
+\fBTcl_SetObjLength\fR(\fIobjPtr, newLength\fR)
+.sp
+int
+\fBTcl_AttemptSetObjLength\fR(\fIobjPtr, newLength\fR)
+.sp
+Tcl_Obj *
+\fBTcl_ConcatObj\fR(\fIobjc, objv\fR)
+.SH ARGUMENTS
+.AS "const Tcl_UniChar" *appendObjPtr in/out
+.AP "const char" *bytes in
+Points to the first byte of an array of UTF-8-encoded bytes
+used to set or append to a string object.
+This byte array may contain embedded null characters
+unless \fInumChars\fR is negative.  (Applications needing null bytes
+should represent them as the two-byte sequence \fI\e700\e600\fR, use
+\fBTcl_ExternalToUtf\fR to convert, or \fBTcl_NewByteArrayObj\fR if
+the string is a collection of uninterpreted bytes.)
+.AP int length in
+The number of bytes to copy from \fIbytes\fR when
+initializing, setting, or appending to a string object.
+If negative, all bytes up to the first null are used.
+.AP "const Tcl_UniChar" *unicode in
+Points to the first byte of an array of Unicode characters
+used to set or append to a string object.
+This byte array may contain embedded null characters
+unless \fInumChars\fR is negative.
+.AP int numChars in
+The number of Unicode characters to copy from \fIunicode\fR when
+initializing, setting, or appending to a string object.
+If negative, all characters up to the first null character are used.
+.AP int index in
+The index of the Unicode character to return.
+.AP int first in
+The index of the first Unicode character in the Unicode range to be
+returned as a new object.
+.AP int last in
+The index of the last Unicode character in the Unicode range to be
+returned as a new object.
+.AP Tcl_Obj *objPtr in/out
+Points to an object to manipulate.
+.AP Tcl_Obj *appendObjPtr in
+The object to append to \fIobjPtr\fR in \fBTcl_AppendObjToObj\fR.
+.AP int *lengthPtr out
+If non-NULL, the location where \fBTcl_GetStringFromObj\fR will store
+the length of an object's string representation.
+.AP "const char" *string in
+Null-terminated string value to append to \fIobjPtr\fR.
+.AP va_list argList in
+An argument list which must have been initialised using
+\fBva_start\fR, and cleared using \fBva_end\fR.
+.AP int limit in
+Maximum number of bytes to be appended.
+.AP "const char" *ellipsis in
+Suffix to append when the limit leads to string truncation.
+If NULL is passed then the suffix "..." is used.
+.AP "const char" *format in
+Format control string including % conversion specifiers.
+.AP int objc in
+The number of elements to format or concatenate.
+.AP Tcl_Obj *objv[] in
+The array of objects to format or concatenate.
+.AP int newLength in
+New length for the string value of \fIobjPtr\fR, not including the
+final null character.
+.BE
+
+.SH DESCRIPTION
+.PP
+The procedures described in this manual entry allow Tcl objects to
+be manipulated as string values.  They use the internal representation
+of the object to store additional information to make the string
+manipulations more efficient.  In particular, they make a series of
+append operations efficient by allocating extra storage space for the
+string so that it does not have to be copied for each append.
+Also, indexing and length computations are optimized because the
+Unicode string representation is calculated and cached as needed.
+When using the \fBTcl_Append*\fR family of functions where the
+interpreter's result is the object being appended to, it is important
+to call Tcl_ResetResult first to ensure you are not unintentionally
+appending to existing data in the result object.
+.PP
+\fBTcl_NewStringObj\fR and \fBTcl_SetStringObj\fR create a new object
+or modify an existing object to hold a copy of the string given by
+\fIbytes\fR and \fIlength\fR.  \fBTcl_NewUnicodeObj\fR and
+\fBTcl_SetUnicodeObj\fR create a new object or modify an existing
+object to hold a copy of the Unicode string given by \fIunicode\fR and
+\fInumChars\fR.  \fBTcl_NewStringObj\fR and \fBTcl_NewUnicodeObj\fR
+return a pointer to a newly created object with reference count zero.
+All four procedures set the object to hold a copy of the specified
+string.  \fBTcl_SetStringObj\fR and \fBTcl_SetUnicodeObj\fR free any
+old string representation as well as any old internal representation
+of the object.
+.PP
+\fBTcl_GetStringFromObj\fR and \fBTcl_GetString\fR return an object's
+string representation.  This is given by the returned byte pointer and
+(for \fBTcl_GetStringFromObj\fR) length, which is stored in
+\fIlengthPtr\fR if it is non-NULL.  If the object's UTF string
+representation is invalid (its byte pointer is NULL), the string
+representation is regenerated from the object's internal
+representation.  The storage referenced by the returned byte pointer
+is owned by the object manager.  It is passed back as a writable
+pointer so that extension author creating their own \fBTcl_ObjType\fR
+will be able to modify the string representation within the
+\fBTcl_UpdateStringProc\fR of their \fBTcl_ObjType\fR.  Except for that
+limited purpose, the pointer returned by \fBTcl_GetStringFromObj\fR
+or \fBTcl_GetString\fR should be treated as read-only.  It is
+recommended that this pointer be assigned to a (const char *) variable.
+Even in the limited situations where writing to this pointer is
+acceptable, one should take care to respect the copy-on-write
+semantics required by \fBTcl_Obj\fR's, with appropriate calls
+to \fBTcl_IsShared\fR and \fBTcl_DuplicateObj\fR prior to any
+in-place modification of the string representation.
+The procedure \fBTcl_GetString\fR is used in the common case
+where the caller does not need the length of the string
+representation.
+.PP
+\fBTcl_GetUnicodeFromObj\fR and \fBTcl_GetUnicode\fR return an object's
+value as a Unicode string.  This is given by the returned pointer and
+(for \fBTcl_GetUnicodeFromObj\fR) length, which is stored in
+\fIlengthPtr\fR if it is non-NULL.  The storage referenced by the returned
+byte pointer is owned by the object manager and should not be modified by
+the caller.  The procedure \fBTcl_GetUnicode\fR is used in the common case
+where the caller does not need the length of the unicode string
+representation.
+.PP
+\fBTcl_GetUniChar\fR returns the \fIindex\fR'th character in the
+object's Unicode representation.
+.PP
+\fBTcl_GetRange\fR returns a newly created object comprised of the
+characters between \fIfirst\fR and \fIlast\fR (inclusive) in the
+object's Unicode representation.  If the object's Unicode
+representation is invalid, the Unicode representation is regenerated
+from the object's string representation.
+.PP
+\fBTcl_GetCharLength\fR returns the number of characters (as opposed
+to bytes) in the string object.
+.PP
+\fBTcl_AppendToObj\fR appends the data given by \fIbytes\fR and
+\fIlength\fR to the string representation of the object specified by
+\fIobjPtr\fR.  If the object has an invalid string representation,
+then an attempt is made to convert \fIbytes\fR is to the Unicode
+format.  If the conversion is successful, then the converted form of
+\fIbytes\fR is appended to the object's Unicode representation.
+Otherwise, the object's Unicode representation is invalidated and
+converted to the UTF format, and \fIbytes\fR is appended to the
+object's new string representation.
+.PP
+\fBTcl_AppendUnicodeToObj\fR appends the Unicode string given by
+\fIunicode\fR and \fInumChars\fR to the object specified by
+\fIobjPtr\fR.  If the object has an invalid Unicode representation,
+then \fIunicode\fR is converted to the UTF format and appended to the
+object's string representation.  Appends are optimized to handle
+repeated appends relatively efficiently (it overallocates the string
+or Unicode space to avoid repeated reallocations and copies of
+object's string value).
+.PP
+\fBTcl_AppendObjToObj\fR is similar to \fBTcl_AppendToObj\fR, but it
+appends the string or Unicode value (whichever exists and is best
+suited to be appended to \fIobjPtr\fR) of \fIappendObjPtr\fR to
+\fIobjPtr\fR.
+.PP
+\fBTcl_AppendStringsToObj\fR is similar to \fBTcl_AppendToObj\fR
+except that it can be passed more than one value to append and
+each value must be a null-terminated string (i.e. none of the
+values may contain internal null characters).  Any number of
+\fIstring\fR arguments may be provided, but the last argument
+must be a NULL pointer to indicate the end of the list.
+.PP
+\fBTcl_AppendStringsToObjVA\fR is the same as \fBTcl_AppendStringsToObj\fR
+except that instead of taking a variable number of arguments it takes an
+argument list.
+.PP
+.VS 8.5
+\fBTcl_AppendLimitedToObj\fR is similar to \fBTcl_AppendToObj\fR
+except that it imposes a limit on how many bytes are appended.
+This can be handy when the string to be appended might be
+very large, but the value being constructed should not be allowed to grow
+without bound. A common usage is when constructing an error message, where the
+end result should be kept short enough to be read.
+Bytes from \fIbytes\fR are appended to \fIobjPtr\fR, but no more
+than \fIlimit\fR bytes total are to be appended. If the limit prevents
+all \fIlength\fR bytes that are available from being appended, then the
+appending is done so that the last bytes appended are from the
+string \fIellipsis\fR. This allows for an indication of the truncation
+to be left in the string.
+When \fIlength\fR is \fB-1\fR, all bytes up to the first zero byte are appended,
+subject to the limit. When \fIellipsis\fR is NULL, the default
+string \fB...\fR is used. When \fIellipsis\fR is non-NULL, it must point
+to a zero-byte-terminated string in Tcl's internal UTF encoding.
+The number of bytes appended can be less than the lesser
+of \fIlength\fR and \fIlimit\fR when appending fewer
+bytes is necessary to append only whole multi-byte characters.
+.PP
+\fBTcl_Format\fR is the C-level interface to the engine of the \fBformat\fR
+command.  The actual command procedure for \fBformat\fR is little more
+than
+.CS
+Tcl_Format(interp, Tcl_GetString(objv[1]), objc-2, objv+2);
+.CE
+The \fIobjc\fR Tcl_Obj values in \fIobjv\fR are formatted into a string
+according to the conversion specification in \fIformat\fR argument, following
+the documentation for the \fBformat\fR command.  The resulting formatted
+string is converted to a new Tcl_Obj with refcount of zero and returned.
+If some error happens during production of the formatted string, NULL is
+returned, and an error message is recorded in \fIinterp\fR, if \fIinterp\fR
+is non-NULL.
+.PP
+\fBTcl_AppendFormatToObj\fR is an appending alternative form
+of \fBTcl_Format\fR with functionality equivalent to
+.CS
+Tcl_Obj *newPtr = Tcl_Format(interp, format, objc, objv);
+if (newPtr == NULL) return TCL_ERROR;
+Tcl_AppendObjToObj(objPtr, newPtr);
+return TCL_OK;
+.CE
+but with greater convenience and efficiency when the appending
+functionality is needed.
+.PP
+\fBTcl_ObjPrintf\fR serves as a replacement for the common sequence
+.CS
+char buf[SOME_SUITABLE_LENGTH];
+sprintf(buf, format, ...);
+Tcl_NewStringObj(buf, -1);
+.CE
+but with greater convenience and no need to 
+determine \fBSOME_SUITABLE_LENGTH\fR. The formatting is done with the same
+core formatting engine used by \fBTcl_Format\fR.  This means the set of
+supported conversion specifiers is that of the \fBformat\fR command and
+not that of the \fBsprintf\fR routine where the two sets differ. When a
+conversion specifier passed to \fBTcl_ObjPrintf\fR includes a precision,
+the value is taken as a number of bytes, as \fBsprintf\fR does, and not
+as a number of characters, as \fBformat\fR does.  This is done on the
+assumption that C code is more likely to know how many bytes it is
+passing around than the number of encoded characters those bytes happen
+to represent.  The variable number of arguments passed in should be of
+the types that would be suitable for passing to \fBsprintf\fR.  Note in
+this example usage, \fIx\fR is of type \fBlong\fR.
+.CS
+long x = 5;
+Tcl_Obj *objPtr = Tcl_ObjPrintf("Value is %d", x);
+.CE
+If the value of \fIformat\fR contains internal inconsistencies or invalid
+specifier formats, the formatted string result produced by
+\fBTcl_ObjPrintf\fR will be an error message describing the error.
+.PP
+\fBTcl_AppendPrintfToObj\fR is an appending alternative form
+of \fBTcl_ObjPrintf\fR with functionality equivalent to
+.CS
+Tcl_AppendObjToObj(objPtr, Tcl_ObjPrintf(format, ...));
+.CE
+but with greater convenience and efficiency when the appending
+functionality is needed.
+.VE 8.5
+.PP
+The \fBTcl_SetObjLength\fR procedure changes the length of the
+string value of its \fIobjPtr\fR argument.  If the \fInewLength\fR
+argument is greater than the space allocated for the object's
+string, then the string space is reallocated and the old value
+is copied to the new space; the bytes between the old length of
+the string and the new length may have arbitrary values.
+If the \fInewLength\fR argument is less than the current length
+of the object's string, with \fIobjPtr->length\fR is reduced without
+reallocating the string space; the original allocated size for the
+string is recorded in the object, so that the string length can be
+enlarged in a subsequent call to \fBTcl_SetObjLength\fR without
+reallocating storage.  In all cases \fBTcl_SetObjLength\fR leaves
+a null character at \fIobjPtr->bytes[newLength]\fR.
+.PP
+\fBTcl_AttemptSetObjLength\fR is identical in function to
+\fBTcl_SetObjLength\fR except that if sufficient memory to satisfy the
+request cannot be allocated, it does not cause the Tcl interpreter to
+\fBpanic\fR.  Thus, if \fInewLength\fR is greater than the space
+allocated for the object's string, and there is not enough memory
+available to satisfy the request, \fBTcl_AttemptSetObjLength\fR will take
+no action and return 0 to indicate failure.  If there is enough memory
+to satisfy the request, \fBTcl_AttemptSetObjLength\fR behaves just like
+\fBTcl_SetObjLength\fR and returns 1 to indicate success.
+.PP
+The \fBTcl_ConcatObj\fR function returns a new string object whose
+value is the space-separated concatenation of the string
+representations of all of the objects in the \fIobjv\fR
+array. \fBTcl_ConcatObj\fR eliminates leading and trailing white space
+as it copies the string representations of the \fIobjv\fR array to the
+result. If an element of the \fIobjv\fR array consists of nothing but
+white space, then that object is ignored entirely. This white-space
+removal was added to make the output of the \fBconcat\fR command
+cleaner-looking. \fBTcl_ConcatObj\fR returns a pointer to a
+newly-created object whose ref count is zero.
+
+.SH "SEE ALSO"
+Tcl_NewObj, Tcl_IncrRefCount, Tcl_DecrRefCount, format, sprintf
+
+.SH KEYWORDS
+append, internal representation, object, object type, string object,
+string type, string representation, concat, concatenate, unicode

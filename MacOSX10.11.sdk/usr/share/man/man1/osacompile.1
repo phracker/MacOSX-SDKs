@@ -1,0 +1,144 @@
+.Dd November 12, 2008
+.Dt OSACOMPILE 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm osacompile
+.Nd compile AppleScripts and other OSA language scripts
+.Sh SYNOPSIS
+.Nm osacompile
+.Bk -words
+.Op Fl l Ar language
+.Ek
+.Bk -words
+.Op Fl e Ar command
+.Ek
+.Bk -words
+.Op Fl o Ar name
+.Ek
+.Op Fl d
+.Bk -words
+.Op Fl r Ar type:id
+.Ek
+.Bk -words
+.Op Fl t Ar type
+.Ek
+.Bk -words
+.Op Fl c Ar creator
+.Ek
+.Op Fl x
+.Op Fl s
+.Op Fl u
+.Bk -words
+.Op Fl a Ar arch
+.Ek
+.Bk -words
+.Op Ar file ...
+.Ek
+.Sh DESCRIPTION
+.Nm
+compiles the given files, or standard input if none are listed, into a
+single output script.  Files may be plain text or other compiled scripts.
+The options are as follows:
+.Bl -tag -width flag
+.It Fl l Ar language
+Override the language for any plain text files.  Normally,
+plain text files are compiled as AppleScript.
+.It Fl e Ar command
+Enter one line of a script.  Script commands given via
+.Fl e
+are prepended to the normal source, if any.  Multiple
+.Fl e
+options may be given to build up a multi-line script.  Because
+most scripts use characters that are special to many shell programs
+(e.g., AppleScript uses single and double quote marks,
+.Dq \&( ,
+.Dq \&) ,
+and
+.Dq * ) ,
+the command will have to be correctly quoted and escaped to get it
+past the shell intact.
+.It Fl o Ar name
+Place the output in the file 
+.Ar name .
+If 
+.Fl o
+is not specified, the resulting script is placed in the file
+.Dq a.scpt .
+The value of
+.Fl o
+partly determines the output file format; see below.
+.It Fl x
+Save the resulting script as execute-only.
+.El
+.Pp
+The following options are only relevant when creating a new bundled applet or droplet:
+.Bl -tag -width flag
+.It Fl s
+Stay-open applet.
+.It Fl u
+Use startup screen.
+.It Fl a Ar arch
+Create the applet or droplet for the specified target architecture
+.Ar arch .
+The allowable values are
+.Dq ppc ,
+.Dq i386 ,
+and
+.Dq x86_64 .
+The default is to create a universal binary.
+.El
+.Pp
+The following options control the packaging of the output file.
+You should only need them for compatibility with classic Mac OS
+or for custom file formats.
+.Bl -tag -width flag
+.It Fl d
+Place the resulting script in the data fork of the output file.
+This is the default.
+.It Fl r Ar type:id
+Place the resulting script in the resource fork of the output file, in the
+specified resource.
+.It Fl t Ar type
+Set the output file type to
+.Ar type ,
+where
+.Ar type
+is a four-character code.
+If this option is not specified, the creator code will not be set.
+.It Fl c Ar creator
+Set the output file creator to
+.Ar creator ,
+where
+.Ar creator
+is a four-character code.
+If this option is not specified, the creator code will not be set.
+.El
+.Pp
+If no options are specified,
+.Nm
+produces a Mac OS X format script file:
+data fork only, with no type or creator code.
+.Pp
+If the
+.Fl o
+option is specified and the file does not already exist,
+.Nm
+uses the filename extension to determine what type of file to create.  If the filename
+ends with 
+.Dq .app , 
+it creates a bundled applet or droplet.  If the filename ends with
+.Dq .scptd , 
+it creates a bundled compiled script.  Otherwise, it creates a flat file with the script
+data placed according to the values of the
+.Fl d
+and
+.Fl r
+options.
+.Sh EXAMPLES
+.Pp
+To produce a script compatible with classic Mac OS:
+.Pp
+.Dl osacompile -r scpt:128 -t osas -c ToyS example.applescript
+.Sh SEE ALSO
+.Xr osascript 1 ,
+.Xr osalang 1

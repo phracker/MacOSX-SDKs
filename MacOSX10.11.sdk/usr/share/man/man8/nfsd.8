@@ -1,0 +1,345 @@
+.\"
+.\" Copyright (c) 1999-2008 Apple Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.\" Copyright (c) 1989, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"	@(#)nfsd.8	8.4 (Berkeley) 3/29/95
+.\"
+.Dd November 10, 2008
+.Dt NFSD 8
+.Os
+.Sh NAME
+.Nm nfsd
+.Nd 
+.Tn NFS
+server daemon
+.Sh SYNOPSIS
+.Nm nfsd
+.Op Cm command
+.Nm
+.Op Fl F Ar exports_file
+.Cm checkexports
+.Nm
+.Op Fl NRrtuv
+.Op Fl F Ar exports_file
+.Op Fl n Ar num_servers
+.Op Fl p Ar nfsport
+.Op Fl P Ar mountport
+.Op Cm command
+.Sh DESCRIPTION
+.Nm nfsd
+runs on an NFS server machine to service
+.Tn NFS
+and
+.Tn MOUNT
+protocol requests from NFS client machines.  In order for a machine
+to act as an NFS server an NFS exports file,
+.Pa /etc/exports ,
+must exist and the
+.Nm
+service must be enabled.
+.Pp
+.Nm
+listens for NFS service requests at the port indicated in the
+.Tn NFS
+server specification (2049) and the mountd thread listens for MOUNT
+service requests at an available port registered with
+.Xr portmap 8 .
+.Pp
+For more information on the NFS and MOUNT protocols see
+.%T "Network File System Protocol Specification" ,
+RFC1094 and
+.%T "NFS: Network File System Version 3 Protocol Specification" .
+.Pp
+The
+.Nm
+daemon is a multi-threaded process that includes a number of threads
+processing NFS requests, a thread to accept new socket connections and
+a thread that processes NFS MOUNT protocol requests.
+.Pp
+When
+.Nm
+is started, it loads the export host addresses and options into the
+kernel using the
+.Xr nfssvc 2
+system call.  After changing the list of exports (either directly or
+indirectly via a change in netgroup membership), a hangup signal should
+be sent to the daemon to get it to reload the export information.  This
+can be accomplished with the
+.Cm update
+command described below.
+.Pp
+Any errors encountered while processing the export entries will
+be logged via
+.Xr syslog 3 .
+.Pp
+.Nm
+is normally launched by
+.Xr launchd 8 ;
+however, the
+.Nm
+command may also be used to manipulate the service
+using the following commands:
+.Pp
+.Bl -tag -width disable
+.It Cm enable
+Enables the
+.Nm
+service.
+.It Cm disable
+Disables the
+.Nm
+service.
+.It Cm start
+Starts the
+.Nm
+service.  Note: if the service is disabled it will not be restarted
+on reboot.  Use the
+.Cm enable
+command to make the change permanent.
+.It Cm stop
+Stops the
+.Nm
+service.  Note: if the service is enabled it will be restarted on
+reboot.  Use the
+.Cm disable
+command to make the change permanent.
+.It Cm restart
+Restarts the
+.Nm
+service (by stopping the service - it will restart automatically if
+the
+.Pa /etc/exports
+file exists).
+.It Cm update
+Sends a SIGHUP to the running
+.Nm
+daemon to cause it to update its configuration.
+.It Cm status
+Displays whether the
+.Nm
+service is enabled and whether the
+.Nm
+daemon is currently running.
+.It Cm checkexports
+Checks the exports file and reports any errors (to stderr).  Note that
+this can be useful to verify the validity of an alternate exports file
+(using the
+.Fl F
+option below) prior to putting the changes in place and updating
+.Nm .
+.It Cm verbose [up|down]+
+Sends USR1 and/or USR2 signal(s) to the running
+.Nm
+daemon to cause it to increase and/or decrease its logging level.  (See
+below for details about
+.Nm Ns 's
+logging).
+.El
+.Pp
+Logging is performed via
+.Xr syslog 3
+using the LOG_DAEMON facility.  By default, only messages up to priority
+LOG_WARNING are logged.  Setting the verbose level to one will add
+LOG_NOTICE messages which includes logging failed mount attempts.  A
+verbose level of two will increase the log level to LOG_INFO which
+includes logging successful mount attempts.  A log level of three or
+more will add LOG_DEBUG messages and cause increasing amounts of debug
+information to be logged.  The debug information exposes lots of
+information about
+.Nm Ns 's
+inner workings which is typically only useful to developers.
+Note: the
+.Xr syslog 8
+configuration may need to be adjusted in order to see the increased
+verbosity.
+.Pp
+The
+.Nm nfsd
+utility exits 0 on success, and >0 if an error occurs.
+When given the
+.Cm status
+command, it exits 0 if the service is enabled, and 1 if the service
+is disabled.
+.Pp
+The following is a list of command line options that are available.
+However, since
+.Nm
+is normally started by
+.Xr launchd 8 ,
+configuration of these options should be controlled using the equivalent
+settings in the NFS configuration file (see
+.Xr nfs.conf 5 Ns ).
+.Pp
+.Bl -tag -width Ds
+.It Fl F Ar exports_file
+The
+.Ar exports_file
+argument specifies an alternate location for the exports file
+(useful with the
+.Cm checkexports
+command).
+.It Fl N
+Allow non-root mount requests to be served.  This should only be
+specified if there are clients that require it.
+.It Fl P Ar #
+Specifies which port to use for the MOUNT service.
+.It Fl R
+Allow mount RPCs requests for regular files to be served.  Although
+this seems to violate the mount protocol specification, some diskless
+workstations do mount requests for their swapfiles and expect them to
+be regular files.  Since a regular file cannot be specified in
+.Pa /etc/exports ,
+the
+.Fl alldirs
+option will need to be used on the export in which the swap files reside.
+.It Fl n Ar #
+Specifies how many NFS server threads to create.
+.It Fl p Ar #
+Specifies which port to use for the NFS service (instead of the default of 2049).
+.It Fl r
+Register the
+.Tn NFS
+service with
+.Xr portmap 8 .
+This option can be used to re-register the NFS services if the portmap
+server is restarted.  This option is equivalent to the
+.Cm update
+command.
+.It Fl t
+Serve
+.Tn TCP NFS
+clients.  Note: only
+.Tn TCP
+will be used if no other options are specified.
+.It Fl u
+Serve
+.Tn UDP NFS
+clients.  Note: only
+.Tn UDP
+will be used if no other options are specified.
+.It Fl v
+Increase 
+.Nm Ns 's
+logging level by one (may be used multiple times).
+.El
+.Pp
+.Sh CONFIGURATION
+Unless otherwise specified, eight NFS server threads are started and both
+.Tn UDP
+and
+.Tn TCP
+transports are supported.
+.Pp
+A server should run enough threads to handle the maximum level of
+concurrency from its clients.
+.Pp
+See
+.Xr nfs.conf 5
+for a list of tunable parameters.
+.Sh NOTES
+The exports list displayed via
+.Xr showmount 8
+may contain additional information about the status of each export.
+This information is reported as entries in the export's group list.
+.Pp
+If an export is currently unavailable, the group list will begin with
+the entry "<offline>" (or "<offline*>" if it is unavailable to some but
+not all clients exported to).
+.Pp
+If an export allows non-default security mechanisms, the group list
+will contain an entry indicating what security mechanisms are allowed.
+For example: "<krb5:sys>".  The mechanisms are listed in no particular
+order and may not be available to all clients.
+.Pp
+If an export is available to all clients, the group list is usually
+empty.  But if additional status information is returned in the group
+list, then the list will also contain an explicit "(Everyone)" entry
+to indicate that the export is available to all clients.
+.Sh FILES
+.Bl -tag -width /var/run/mountdexptab -compact
+.It Pa /etc/exports
+The list of exported filesystems.
+.It Pa /var/run/nfsd.pid
+The pid of the currently running nfsd.
+.It Pa /var/run/mountd.pid
+The pid of the currently running mountd (provided for backwards
+compatibility with scripts that may HUP mountd to update exports).
+.It Pa /var/run/mountdtab
+The current list of outstanding mounts served.
+.It Pa /var/run/mountdexptab
+Information about exported file systems and directories (UUIDs, handles,
+...).
+.It Pa /System/Library/LaunchDaemons/com.apple.nfsd.plist
+The
+.Nm
+service's property list file for
+.Xr launchd 8 .
+.El
+.Sh SEE ALSO
+.Xr exports 5 ,
+.Xr nfs.conf 5 ,
+.Xr showmount 8 ,
+.Xr nfsstat 1 ,
+.Xr nfssvc 2 ,
+.Xr portmap 8 ,
+.Xr rpc.rquotad 8 ,
+.Xr launchd 8
+.Sh HISTORY
+The
+.Nm
+and
+.Cm mountd
+utilities first appeared in 4.4BSD.
+.Cm mountd
+functionality was merged into
+.Nm
+in Darwin 9.

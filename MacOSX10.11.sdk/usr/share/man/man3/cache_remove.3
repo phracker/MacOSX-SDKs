@@ -1,0 +1,97 @@
+.\" Copyright (c) 2009 Apple Inc. All rights reserved.
+.Dd May 7, 2009
+.Dt cache_set_and_retain 3
+.Os Darwin
+.Sh NAME
+.Nm cache_set_and_retain ,
+.Nm cache_get_and_retain ,
+.Nm cache_release_value ,
+.Nm cache_remove 
+.Nd Routines used to manage cached values
+.Sh SYNOPSIS
+.Fd #include <cache.h>
+.Ft int
+.Fo cache_set_and_retain
+.Fa "cache_t *cache, void *key, void *value, size_t cost"
+.Fc
+.Ft int
+.Fo cache_get_and_retain
+.Fa "cache_t *cache, void *key, void **value_out"
+.Fc
+.Ft int
+.Fo cache_release_value
+.Fa "cache_t *cache, void *value"
+.Fc
+.Ft int
+.Fo cache_remove
+.Fa "cache_t *cache, void *key"
+.Fc
+.Sh DESCRIPTION
+These routines are used to manipulate values added to an in memory cache created by 
+.Xr cache_create 3 .
+.Pp
+.Fn cache_set_and_retain
+Adds
+.Fa value 
+with 
+.Fa cost 
+to 
+.Fa cache 
+and associates it with 
+.Fa key .
+The caller retains a
+reference to value that will prevent value from being evicted from the cache
+until value is released in  
+.Fn cache_release_value .
+.Pp
+.Fn cache_get_and_retain
+Fetches value for 
+.Fa key
+from 
+.Fa cache 
+and places value in 
+.Fa value_out .
+The caller retains a reference to value that will prevent value from being evicted from the cache
+until value is release in 
+.Fn cache_release_value .
+.Pp
+.Fn cache_release_value
+Releases a reference on 
+.Fa value
+back to 
+.Fa cache
+so that value may be evicted.  Signals that the client is not actively using 
+.Fa value 
+and will use 
+.Fn cache_get_and_retain
+before using again.
+.Pp
+.Fn cache_remove
+Removes the value associated with 
+.Fa key
+from 
+.Fa cache .
+Note that if the value is referenced by a client, the value will not be finalized until the reference is released using
+.Fn cache_release_value .
+.Sh RETURN VALUES
+All functions return 0 for success and non-zero for failure.  The value ENOENT (see errno.h) indicates that a key or value passed as an argument does not exist in the cache.  EINVAL is used for invalid arguments.
+.Sh EXAMPLE
+The following example attempts to fetch a value from a cache using a key.  If the value is not present in the cache then it is created and added to the cache.  The value is then used and released back to
+the cache to allow the cache to evict it when needed.
+.Bd -literal -offset indent
+cache_t *mycache;
+cache_create("com.mycompany.mycache", &cache_attributes, &mycache);
+
+void *mykey = my_create_key();
+void *myvalue = NULL;
+
+if (cache_get_and_retain(mycache, mykey, &myvalue) != 0) {
+    myvalue = my_create_value_from_key(mykey);
+    cache_set_and_retain(mycache, mykey, myvalue, 0);
+}
+
+my_use_value(value);
+cache_release_value(mycache, myvalue);
+.Ed
+.Sh SEE ALSO
+.Xr cache 3

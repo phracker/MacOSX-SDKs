@@ -1,0 +1,113 @@
+.\"
+.\" Copyright (c) 2000-2008 Apple Computer, Inc.  All rights reserved.
+.\"
+.\"	$Id: ioclasscount.8,v 1.4 2003/11/06 19:16:54 sdouglas Exp $
+.\"
+.Dd November 06, 2008
+.Dt IOCLASSCOUNT 8
+.Os Darwin
+.Sh NAME
+.Nm ioclasscount
+.Sh SYNOPSIS
+.Nm
+.Op --track
+.Op --print
+.Op --leaks
+.Op --reset
+.Op --start
+.Op --stop
+.Op --exclude
+.Op --size=BYTES
+.Op --capsize=BYTES
+.Op classname
+.Op ...
+.Sh DESCRIPTION
+.Nm
+displays the instance counts of OSObject-based C++ classes in the kernel,
+incremented by the number of
+.Em direct
+subclasses that have an instance count of at least 1.
+For example, if IONetworkController is not directly instantiated,
+but its direct subclass IOEthernetController has any instances,
+then IONetworkController's instance count will be at least 1;
+if another direct subclass such as IOFWController has any instances,
+then IONetworkController's instance count will be at least 2; and so on.
+(This modification of instance counts prevents unloading of
+kexts defining superclasses that have no instances,
+but whose subclasses in other kexts have instances.)
+.Pp
+If classes are specified,
+instance counts are printed as a comma-separated list
+in the order specified.
+If no classes are specified,
+instance counts for all classes are printed,
+one per line of output and sorted by name.
+.Pp
+This information is useful for tracking leaks.
+Instance counts can also found in the root of the IORegistry
+in the
+.Dq IOKitDiagnostics
+property.
+.Sh TRACKING
+DEVELOPMENT or DEBUG kernels, running with boot-arg io=0x00400000, support collecting
+backtraces on object allocation, calls to IOMalloc*, and IOMemoryDescriptor mapping and
+wiring of memory.
+.Pp
+The following operands are available:
+.\" XXX
+.Bl -tag -width --capsize=n
+.It Cm --start
+Start capturing allocations.
+.It Cm --stop
+Stop capturing allocations.
+.It Cm --reset
+Reset any collected allocations.
+.It Cm --track
+Display symbolicated allocation backtraces, with bytes allocated and number of calls accumulated per
+callsite, ordered by size.
+.It Cm --print
+Log allocation backtraces to the kernel log, with bytes allocated and number of calls accumulated per
+callsite, ordered by size.
+.It Cm --leaks
+Display symbolicated allocation backtraces for potential leaks, with bytes allocated and number of calls accumulated per
+callsite, ordered by size. Leaks are detected by scanning kernel virtual memory for pointer references to an allocation; allocations with no references found are a potential leak.
+.It Cm --exclude
+If names are given, apply the command to all tracking categories excluding these names.
+.It Cm --size Ns = Ns Ar n
+Only report accumulated sizes >=
+.Ar n
+bytes. The default is 1 byte.
+.It Cm --capsize Ns = Ns Ar n
+Only capture allocations >=
+.Ar n
+bytes. The default is 1 byte.
+.El
+.Sh EXAMPLES
+Display instance counts for IOPCIDevice and AppleTestPCI:
+.Bl -tag -width findx
+.It Li "/usr/sbin/ioclasscount IOPCIDevice AppleTestPCI"
+IOPCIDevice = 2, AppleTestPCI = 1
+.El
+.Pp
+Start collecting backtraces for everything:
+.Bl -tag -width findx
+.It Li "/usr/sbin/ioclasscount --start"
+.El
+.Pp
+Display backtraces and allocation sizes for everything:
+.Bl -tag -width findx
+.It Li "/usr/sbin/ioclasscount --track"
+.El
+.Pp
+Display all backtraces and allocation sizes collected for OSData & OSSymbol:
+.Bl -tag -width findx
+.It Li "/usr/sbin/ioclasscount --track OSData OSSymbol"
+.El
+.Pp
+Display all backtraces and allocation sizes collected except for OSSymbol, IOMalloc*, IOMemoryDescriptor mapping and wiring (names from IOKitDebug.h):
+.Bl -tag -width findx
+.It Li "/usr/sbin/ioclasscount --track --exclude OSSymbol IOMalloc IOMap IOWire"
+.El
+.Sh SEE ALSO
+.Xr ioalloccount 8 ,
+.Xr ioreg 8

@@ -1,0 +1,566 @@
+'\"
+'\" Copyright (c) 1993 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\" Contributions from Don Porter, NIST, 2003.  (not subject to US copyright)
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: return.n,v 1.19 2007/12/13 15:22:33 dgp Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH return n 8.5 Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+return \- Return from a procedure, or set return code of a script
+.SH SYNOPSIS
+\fBreturn \fR?\fIresult\fR?
+.sp
+\fBreturn \fR?\fB\-code \fIcode\fR? ?\fIresult\fR?
+.sp
+\fBreturn \fR?\fIoption value \fR...? ?\fIresult\fR?
+.BE
+.SH DESCRIPTION
+.PP
+In its simplest usage, the \fBreturn\fR command is used without options
+in the body of a procedure to immediately return control to the caller
+of the procedure.  If a \fIresult\fR argument is provided, its value
+becomes the result of the procedure passed back to the caller.  
+If \fIresult\fR is not specified then an empty string will be returned
+to the caller as the result of the procedure.
+.PP
+The \fBreturn\fR command serves a similar function within script
+files that are evaluated by the \fBsource\fR command.  When \fBsource\fR
+evaluates the contents of a file as a script, an invocation of
+the \fBreturn\fR command will cause script evaluation
+to immediately cease, and the value \fIresult\fR (or an empty string)
+will be returned as the result of the \fBsource\fR command.
+.SH "EXCEPTIONAL RETURN CODES"
+.PP
+In addition to the result of a procedure, the return
+code of a procedure may also be set by \fBreturn\fR
+through use of the \fB\-code\fR option.
+In the usual case where the \fB\-code\fR option is not
+specified the procedure will return normally.
+However, the \fB\-code\fR option may be used to generate an
+exceptional return from the procedure.
+\fICode\fR may have any of the following values:
+.TP 13
+\fBok (or 0)\fR
+Normal return:  same as if the option is omitted.  The return code
+of the procedure is 0 (\fBTCL_OK\fR).
+.TP 13
+\fBerror (1)\fR
+Error return: the return code of the procedure is 1 (\fBTCL_ERROR\fR).
+The procedure command behaves in its calling context as if it
+were the command \fBerror \fIresult\fR.  See below for additional
+options.
+.TP 13
+\fBreturn (2)\fR
+The return code of the procedure is 2 (\fBTCL_RETURN\fR).  The
+procedure command behaves in its calling context as if it
+were the command \fBreturn\fR (with no arguments).
+.TP 13
+\fBbreak (3)\fR
+The return code of the procedure is 3 (\fBTCL_BREAK\fR).  The
+procedure command behaves in its calling context as if it
+were the command \fBbreak\fR.
+.TP 13
+\fBcontinue (4)\fR
+The return code of the procedure is 4 (\fBTCL_CONTINUE\fR).  The
+procedure command behaves in its calling context as if it
+were the command \fBcontinue\fR.
+.TP 13
+\fIvalue\fR
+\fIValue\fR must be an integer;  it will be returned as the
+return code for the current procedure.
+.LP
+When a procedure wants to signal that it has received invalid
+arguments from its caller, it may use \fBreturn -code error\fR
+with \fIresult\fR set to a suitable error message.  Otherwise
+usage of the \fBreturn -code\fR option is mostly limited to
+procedures that implement a new control structure.
+.PP
+The \fBreturn \-code\fR command acts similarly within script
+files that are evaluated by the \fBsource\fR command.  During the
+evaluation of the contents of a file as a script by \fBsource\fR,
+an invocation of the \fBreturn \-code \fIcode\fR command will cause
+the return code of \fBsource\fR to be \fIcode\fR.
+.SH "RETURN OPTIONS"
+.PP
+.VS 8.5
+In addition to a result and a return code, evaluation of a command
+in Tcl also produces a dictionary of return options.  In general
+usage, all \fIoption value\fR pairs given as arguments to \fBreturn\fR
+become entries in the return options dictionary, and any values at all
+are acceptable except as noted below.  The \fBcatch\fR command may be
+used to capture all of this information \(em the return code, the result,
+and the return options dictionary \(em that arise from evaluation of a
+script.
+.VE 8.5
+.PP
+As documented above, the \fB\-code\fR entry in the return options dictionary
+receives special treatment by Tcl.  There are other return options also
+recognized and treated specially by Tcl.  They are:
+.TP
+\fB\-errorcode \fIlist\fR
+The \fB\-errorcode\fR option receives special treatment only when the value
+of the \fB\-code\fR option is \fBTCL_ERROR\fR.  Then the \fIlist\fR value
+is meant to be additional information about the error,
+presented as a Tcl list for further processing by programs.
+If no \fB\-errorcode\fR option is provided to \fBreturn\fR when
+the \fB\-code error\fR option is provided, Tcl will set the value
+of the \fB\-errorcode\fR entry in the return options dictionary 
+to the default value of \fBNONE\fR.  The \fB\-errorcode\fR return
+option will also be stored in the global variable \fBerrorCode\fR.
+.TP
+\fB\-errorinfo \fIinfo\fR
+The \fB\-errorinfo\fR option receives special treatment only when the value
+of the \fB\-code\fR option is \fBTCL_ERROR\fR.  Then \fIinfo\fR is the initial
+stack trace, meant to provide to a human reader additional information
+about the context in which the error occurred.  The stack trace will
+also be stored in the global variable \fBerrorInfo\fR.  
+If no \fB\-errorinfo\fR option is provided to \fBreturn\fR when
+the \fB\-code error\fR option is provided, Tcl will provide its own
+initial stack trace value in the entry for \fB\-errorinfo\fR.  Tcl's
+initial stack trace will include only the call to the procedure, and
+stack unwinding will append information about higher stack levels, but
+there will be no information about the context of the error within
+the procedure.  Typically the \fIinfo\fR value is supplied from
+the value of \fB\-errorinfo\fR in a return options dictionary captured
+by the \fBcatch\fR command (or from the copy of that information
+stored in the global variable \fBerrorInfo\fR).
+.TP
+\fB\-level \fIlevel\fR
+.VS 8.5
+The \fB\-level\fR and \fB\-code\fR options work together to set the return
+code to be returned by one of the commands currently being evaluated.
+The \fIlevel\fR value must be a non-negative integer representing a number
+of levels on the call stack.  It defines the number of levels up the stack
+at which the return code of a command currently being evaluated should
+be \fIcode\fR.  If no \fB\-level\fR option is provided, the default value
+of \fIlevel\fR is 1, so that \fBreturn\fR sets the return code that the
+current procedure returns to its caller, 1 level up the call stack.  The
+mechanism by which these options work is described in more detail below.
+.VE 8.5
+.TP
+\fB\-options \fIoptions\fR
+.VS 8.5
+The value \fIoptions\fR must be a valid dictionary.  The entries of that
+dictionary are treated as additional \fIoption value\fR pairs for the
+\fBreturn\fR command.
+.VE 8.5
+.SH "RETURN CODE HANDLING MECHANISMS"
+.PP
+Return codes are used in Tcl to control program flow.  A Tcl script
+is a sequence of Tcl commands.  So long as each command evaluation
+returns a return code of \fBTCL_OK\fR, evaluation will continue to the next
+command in the script.  Any exceptional return code (non-\fBTCL_OK\fR)
+returned by a command evaluation causes the flow on to the next
+command to be interrupted.  Script evaluation ceases, and the
+exceptional return code from the command becomes the return code
+of the full script evaluation.  This is the mechanism by which
+errors during script evaluation cause an interruption and unwinding
+of the call stack.  It is also the mechanism by which commands
+like \fBbreak\fR, \fBcontinue\fR, and \fBreturn\fR cause script
+evaluation to terminate without evaluating all commands in sequence.
+.PP
+Some of Tcl's built-in commands evaluate scripts as part of their
+functioning.  These commands can make use of exceptional return
+codes to enable special features.  For example, the built-in
+Tcl commands that provide loops \(em such as \fBwhile\fR, \fBfor\fR,
+and \fBforeach\fR \(em evaluate a script that is the body of the
+loop.  If evaluation of the loop body returns the return code
+of \fBTCL_BREAK\fR or \fBTCL_CONTINUE\fR, the loop command can react in such
+a way as to give the \fBbreak\fR and \fBcontinue\fR commands
+their documented interpretation in loops.
+.PP
+.VS 8.5
+Procedure invocation also involves evaluation of a script, the body
+of the procedure.  Procedure invocation provides special treatment
+when evaluation of the procedure body returns the return code 
+\fBTCL_RETURN\fR.  In that circumstance, the \fB\-level\fR entry in the
+return options dictionary is decremented.  If after decrementing,
+the value of the \fB\-level\fR entry is 0, then the value of
+the \fB\-code\fR entry becomes the return code of the procedure.
+If after decrementing, the value of the \fB\-level\fR entry is
+greater than zero, then the return code of the procedure is
+\fBTCL_RETURN\fR.  If the procedure invocation occurred during the
+evaluation of the body of another procedure, the process will
+repeat itself up the call stack, decrementing the value of the
+\fB\-level\fR entry at each level, so that the \fIcode\fR will
+be the return code of the current command \fIlevel\fR levels
+up the call stack.  The \fBsource\fR command performs the
+same handling of the \fBTCL_RETURN\fR return code, which explains
+the similarity of \fBreturn\fR invocation during a \fBsource\fR
+to \fBreturn\fR invocation within a procedure.
+.PP
+The return code of the \fBreturn\fR command itself triggers this
+special handling by procedure invocation.  If \fBreturn\fR
+is provided the option \fB\-level 0\fR, then the return code
+of the \fBreturn\fR command itself will be the value \fIcode\fR
+of the \fB\-code\fR option (or \fBTCL_OK\fR by default).  Any other value
+for the \fB\-level\fR option (including the default value of 1)
+will cause the return code of the \fBreturn\fR command itself
+to be \fBTCL_RETURN\fR, triggering a return from the enclosing procedure.
+.VE 8.5
+.SH EXAMPLES
+First, a simple example of using \fBreturn\fR to return from a
+procedure, interrupting the procedure body.
+.CS
+proc printOneLine {} {
+   puts "line 1"    ;# This line will be printed.
+   \fBreturn\fR		
+   puts "line 2"    ;# This line will not be printed.
+}
+.CE
+.PP
+Next, an example of using \fBreturn\fR to set the value
+returned by the procedure.
+.CS
+proc returnX {} {\fBreturn\fR X}
+puts [returnX]    ;# prints "X"
+.CE
+.PP
+Next, a more complete example, using \fBreturn -code error\fR
+to report invalid arguments.
+.CS
+proc factorial {n} {
+   if {![string is integer $n] || ($n < 0)} {
+      \fBreturn\fR -code error \e
+            "expected non-negative integer,\e
+             but got \e"$n\e""
+   }
+   if {$n < 2} {
+      \fBreturn\fR 1
+   }
+   set m [expr {$n - 1}]
+   set code [catch {factorial $m} factor]
+   if {$code != 0} {
+      \fBreturn\fR -code $code $factor
+   }
+   set product [expr {$n * $factor}]
+   if {$product < 0} {
+      \fBreturn\fR -code error \e
+            "overflow computing factorial of $n"
+   }
+   \fBreturn\fR $product
+}
+.CE
+.PP
+Next, a procedure replacement for \fBbreak\fR.
+.CS
+proc myBreak {} {
+   \fBreturn\fR -code break
+}
+.CE
+.PP
+.VS 8.5
+With the \fB\-level 0\fR option, \fBreturn\fR itself can serve
+as a replacement for \fBbreak\fR.
+.CS
+interp alias {} Break {} \fBreturn\fR -level 0 -code break
+.CE
+.PP
+An example of using \fBcatch\fR and \fBreturn -options\fR to
+re-raise a caught error:
+.CS
+proc doSomething {} {
+   set resource [allocate]
+   catch {
+      # Long script of operations
+      # that might raise an error
+   } result options
+   deallocate $resource
+   \fBreturn\fR -options $options $result
+}
+.CE
+.PP
+Finally an example of advanced use of the \fBreturn\fR options
+to create a procedure replacement for \fBreturn\fR itself:
+.CS
+proc myReturn {args} {
+   set result ""
+   if {[llength $args] % 2} {
+      set result [lindex $args end]
+      set args [lrange $args 0 end-1]
+   }
+   set options [dict merge {-level 1} $args]
+   dict incr options -level
+   \fBreturn\fR -options $options $result
+}
+.CE
+.VE 8.5
+.SH "SEE ALSO"
+break(n), catch(n), continue(n), dict(n), error(n), proc(n), source(n), tclvars(n)
+.SH KEYWORDS
+break, catch, continue, error, procedure, return

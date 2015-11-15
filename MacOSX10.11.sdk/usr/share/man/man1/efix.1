@@ -1,0 +1,264 @@
+.TH EFIX 1 "February 1999" ""  ""
+.UC 1
+.SH NAME
+efix \- convert between fax, text, bit-map and gray-scale formats
+.SH SYNOPSIS
+
+.B efix
+[
+.I options
+]
+.I file...
+
+.SH OPTIONS
+
+Where \fIoptions\fP are:
+
+.TP 9
+.B -i  \fIf\fP
+the input image is in format \fIf\fP. Default is to automatically
+determine the input type from its contents.
+
+.TP 9
+.B 
+   fax
+fax ("Group3") 1-D coded image
+
+.TP 9
+.B 
+   text
+text.  Line feeds separate lines, form feeds cause page breaks
+and tabs are expanded assuming tabs every 8 columns.
+
+.TP 9
+.B 
+   pbm
+raw PBM (portable bit map)
+
+.TP 9
+.B 
+   tiffg3
+TIFF format with Group 3 (fax) compression.
+
+.TP 9
+.B 
+   tiffraw
+TIFF format with no compression.
+
+.TP 9
+.B -o  \fIf\fP
+write the output in format \fIf\fP.  Default is tiffg3.
+
+.TP 9
+.B 
+   fax
+fax ("Group3") 1-D coded image
+
+.TP 9
+.B 
+   pbm
+raw PBM
+
+.TP 9
+.B 
+   pgm
+raw PGM (Portable Gray Map).  Gray-scale values are produced by
+summing pixels in 4x4 pixel blocks.  The output file is 1/4 of
+the size given by -p.  The resulting image has 17 discrete values
+between 0 and 255.
+
+.TP 9
+.B 
+   pcl
+HP-PCL (e.g. HP LaserJet).
+
+.TP 9
+.B 
+   ps
+encapsulated Postscript (e.g. Apple Laserwriter).  The file is
+compressed using differential coding vertically and run-length
+coding horizontally.  There is no provision for positioning the
+image within the page and so the image will appear at the lower
+left corner of the page when printed.
+
+.TP 9
+.B 
+   tiffg3
+TIFF format with Group 3 (fax) compression.
+
+.TP 9
+.B 
+   tiffraw
+TIFF format with no compression.
+
+.TP 9
+.B -n \fIpat\fP
+use the printf(3) pattern \fIpath\fP to generate the output file
+name.  Up to three %d escapes will be replaced by the page number
+starting with 1 (e.g. -n order.%03d will create file names
+order.001, order.002, etc.)
+
+.TP 9
+.B -v \fIlvl\fP
+print messages of type in string \fIlvl\fP.  Each
+\fIlower-case\fP letter in \fIlvl\fP enables one type of message:
+
+.RS 12
+.B
+e - 
+errors
+.br
+.B
+w - 
+warnings
+.br
+.B
+i - 
+information messages
+.br
+.B
+a - 
+program arguments
+.br
+.B
+f - 
+file format details
+.RE
+
+.RS 9
+The default is "ewi".
+.RE
+
+.TP 9
+.B -f \fIfnt\fP
+use font file \fIfnt\fP for text.  The font file for an WxH font
+should be a bit map of an image of H rows and 256*W columns.
+Each successive WxH cell contains the bit map for characters with
+codes from 0 to 255.  The default is to use a built-in 8x16 font.
+
+.TP 9
+.B -s \fIX\fP\fRx\fP\fIY\fP
+scale the input by a factor of X horizontally and Y vertically.
+Scaling does not change the size of the output (use -p).  If Y is
+not specified it is assumed to be the same as X.  Any floating
+point value may be used for X and Y. The default is 1,1.
+
+.TP 9
+.B -d \fIR\fP\fR,\fP\fID\fP
+displace the output right by R and down by D (opposite if
+negative). See below for units.  Default is 0,0.
+
+.TP 9
+.B -p \fIW\fP\fRx\fP\fIH\fP
+truncate or pad the output to generate an image of width W and
+height H.  This does not scale the input.  See below for units.
+The default is the size of the input image if it can be
+determined or A4 (215x297mm) if it can't.
+
+.TP 9
+.B -r \fIX\fP\fRx\fP\fIY\fP
+assume an output device resolution of X by Y dots per inch.  If Y
+is not specified it is assumed to be the same as X.  The default
+is the input resolution if it can be determined or the fax
+resolution of 204.1x195.6 dpi if it can't.
+
+.TP 9
+.B -R \fIX\fP\fRx\fP\fIY\fP
+assume an input device resolution of X by Y dots per inch.  If Y
+is not specified it is assumed to be the same as X.  The default
+is the input resolution if it can be determined or the fax
+resolution of 204.1x195.6 dpi if it can't.
+
+.TP 9
+.B -l \fIn\fP
+place n lines per page during text input. Default is 66.
+
+.TP 9
+.B -O \fIf\fP
+overlay (logical OR) the image from file f into the output.  Use
+"-" for standard input (-O-).  Default is no overlay file.
+
+.TP 9
+.B -M
+ignore all other options and copy the standard input to the
+standard output while applying base64 (MIME) encoding as
+specified by RFC 1521.
+
+
+.SH FILES
+
+If no -n options are given, output is written to the standard
+output.
+
+.SH UNITS
+
+The units of the W, H, R, and D values above are in inches by
+default.  Any floating point value may be used.  Units of inches,
+centimetres, millimetres or points (72 per inch) can be used
+instead by appending one of the strings `in', `cm', `mm', or `pt'
+to the argument (e.g. -d2,4cm).
+
+.SH CUT AND PASTE
+
+The -d and -p options allow efix to cut out images from received
+faxes for use in other faxes or documents.  The -d option specifies
+the top left portion of the desired image and the -p option gives
+the size of the cut image.  For example, the command
+.RS
+.nf
+.ft CW
+	efix -d-5,-8 -p2,1 sample.001 >sig.001
+.ft P
+.fi
+.RE
+would cut out part of the input with its top left corner 5 inches
+from the left edge and 8 inches from top of the input image.  The
+output image would be 2 inches wide and 1 inch high.
+
+The -O option allows efix to superimpose two or more images.  The
+overlay image must be in fax format and cannot be scaled,
+truncated or shifted. However, multiple efix commands may be used
+to transform images before combining them.  For example, the
+commands
+.RS
+.nf
+.ft CW
+	efix -d4,8 signature >sig.fax
+	efix -O sig.fax letterhead >letterhead.fax
+	efix -O letterhead.fax letter.002 >letter.002.new
+.ft P
+.fi
+.RE
+will shift the image in the file signature down 8 inches and
+right 4 inches and combine (overlay) it with the images in the
+files letterhead and letter.002.
+
+.SH REFERENCES
+
+Gunter Born, "The File Formats Handbook", International Thompson
+Computer Press, 1995.
+
+.SH COPYRIGHT
+
+efix is copyright 1994 -- 1999 by Ed Casas.  It may be used,
+copied and modified under the terms of the GNU Public License.
+
+.SH DISCLAIMER
+
+Although \fBefix\fP has been tested it may have errors that will
+prevent it from working correctly on your system.  Some of these
+errors may cause serious problems including loss of data.
+
+.SH SEE ALSO
+
+.BR efax(1),
+.BR ghostscript(1),
+.BR pbm(5), 
+.BR pgm(5).
+
+.SH  BUGS
+
+Only reads two types of TIFF compression formats.
+
+Does not write multi-page TIFF files (a feature).
+

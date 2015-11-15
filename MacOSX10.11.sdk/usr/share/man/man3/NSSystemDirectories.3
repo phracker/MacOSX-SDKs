@@ -1,0 +1,205 @@
+.\" Copyright (c) 2014 Apple Computer, Inc. All rights reserved.
+.\" 
+.\" The contents of this file constitute Original Code as defined in and
+.\" are subject to the Apple Public Source License Version 1.1 (the
+.\" "License").  You may not use this file except in compliance with the
+.\" License.  Please obtain a copy of the License at
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\" 
+.\" This Original Code and all software distributed under the License are
+.\" distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+.\" License for the specific language governing rights and limitations
+.\" under the License.
+.\" 
+.
+.Dd October 9, 2014
+.Dt NSSystemDirectories 3
+.Os Darwin
+.
+.
+.Sh NAME
+.Nm NSStartSearchPathEnumeration , NSGetNextSearchPathEnumeration
+.Nd Enumeration of the filesystem paths for the various standard system directories where apps,
+resources, etc. get installed.
+.
+.
+.Sh SYNOPSIS
+.Fd #include <NSSystemDirectories.h>
+.Pp
+.Ft NSSearchPathEnumerationState
+.Fo NSStartSearchPathEnumeration
+.Fa "NSSearchPathDirectory dir"
+.Fa "NSSearchPathDomainMask domainMask"
+.Fc
+.Pp
+.Ft NSSearchPathEnumerationState
+.Fo NSGetNextSearchPathEnumeration
+.Fa "NSSearchPathEnumerationState state"
+.Fa "char *path"
+.Fc
+.
+.
+.Sh DESCRIPTION
+The
+.Nm NSSystemDirectories
+API returns the various standard system directories where apps, resources,
+etc. get installed. Because queries can return multiple directories, the API is
+in the form of an enumeration. The directories are returned in search path
+order: that is, the first place to look is returned first.
+.Pp
+.Fn NSStartSearchPathEnumeration
+begins enumeration of the filesystem paths for the specified directory and domain(s).
+The return value should be passed to one or more calls to
+.Fn NSGetNextSearchPathEnumeration
+to obtain the filesystem path and continue the enumeration.
+.Pp
+.Fn NSGetNextSearchPathEnumeration
+returns a filesystem path for the directory and domain(s) specified by the state value returned by
+.Fn NSStartSearchPathEnumeration .
+Subsequent calls to
+.Fn NSGetNextSearchPathEnumeration
+should pass the state value returned by the previous call to continue the
+enumeration in each domain. A state value of zero will be returned when all
+domains have been enumerated.
+.Pp
+The path buffer that is passed to
+.Fn NSGetNextSearchPathEnumeration
+will be filled with a null-terminated
+string, possibly containing as many as PATH_MAX-1 characters.
+.Pp
+Some directory paths returned may not exist on the filesystem.
+.Pp
+Some combinations of
+.Fa dir
+and
+.Fa domainMask
+may return no directory paths.
+.Pp
+Directory paths returned in the user domain will contain "~" to refer to the user's directory.
+.Pp
+The environment variable
+.Ev NEXT_ROOT
+is prepended as necessary to the returned directory paths.
+.Pp
+.
+.
+.Sh DIRECTORY CONSTANTS
+The following
+.Fa NSSearchPathDirectory
+constants are defined:
+.
+.Bl -tag -width 1234567890123456789012345678901
+.
+.It NSApplicationDirectory
+Supported applications (Applications)
+.It NSDemoApplicationDirectory
+Unsupported applications and demonstration versions (Applications/Demos)
+.It NSDeveloperApplicationDirectory
+Developer applications (Developer/Applications)
+Deprecated: As of Xcode 4.3, there is no longer a Developer Application directory directory;
+instead, Xcode.app is a self-contained application that gets installed in the user's
+Applications directory, by default, although it can be put anywhere.
+.It NSAdminApplicationDirectory
+System and network administration applications (Applications/Utilities)
+.It NSLibraryDirectory
+Various user-visible documentation, support, and configuration files, resources (Library)
+.It NSDeveloperDirectory
+Developer resources (Developer)
+Deprecated: As of Xcode 4.3, there is no longer a Developer directory; instead, Xcode.app
+is a self-contained application that gets installed in the user's Applications directory,
+by default, although it can be put anywhere.
+.It NSUserDirectory
+User home directories (Users)
+.It NSDocumentationDirectory
+Location of documentation (Library/Documentation)
+.It NSDocumentDirectory
+Location of documents (Documents)
+.It NSCoreServiceDirectory
+Location of core services (Library/CoreServices)
+.It NSAutosavedInformationDirectory
+Location of user's autosaved documents (Library/Autosave Information)
+.It NSDesktopDirectory
+Location of user's desktop directory (Desktop)
+.It NSCachesDirectory
+Location of discardable cache files (Library/Caches)
+.It NSApplicationSupportDirectory
+Location of application support files (Library/Application Support)
+.It NSDownloadsDirectory
+Location of user's downloads directory (Downloads)
+.It NSInputMethodsDirectory
+Location of input methods (Library/Input Methods)
+.It NSMoviesDirectory
+Location of user's Movies directory (Movies)
+.It NSMusicDirectory
+Location of user's Music directory (Music)
+.It NSPicturesDirectory
+Location of user's Pictures directory (Pictures)
+.It NSPrinterDescriptionDirectory
+Location of system's PPDs directory (Library/Printers/PPDs)
+.It NSSharedPublicDirectory
+Location of user's Public sharing directory (Public)
+.It NSPreferencePanesDirectory
+Location of the PreferencePanes directory for use with System Preferences (Library/PreferencePanes)
+.It NSAllApplicationsDirectory
+All directories where applications can occur (/Applications, /Applications/Utilities, ~/Applications, etc)
+.It NSAllLibrariesDirectory
+All directories where resources can occur (/Library, ~/Library, /Network/Library, etc)
+.
+.El
+.
+.
+.Sh DOMAIN CONSTANTS
+The following
+.Fa NSSearchPathDomainMask
+constants are defined:
+.
+.Bl -tag -width 1234567890123456789012345678901
+.
+.It NSUserDomainMask
+The user's home directory -- the place to install user's personal items
+.It NSLocalDomainMask
+Local to the current machine -- the place to install items available to everyone on this machine
+.It NSNetworkDomainMask
+Publically available location in the local area network -- the place to install items available on the network
+.It NSSystemDomainMask
+Provided by Apple -- can't be modified
+.It NSAllDomainsMask
+All domains -- all of the above and future domains
+.
+.El
+.Pp
+.
+.
+.Sh ENVIRONMENT
+The following environment variable affects the execution of
+.Nm NSGetNextSearchPathEnumeration :
+.Bl -tag -width NEXT_ROOT
+.It Ev NEXT_ROOT
+If the
+.Ev NEXT_ROOT
+environment variable is set and the current process is not tainted by uid or gid changes,
+.Ev NEXT_ROOT
+is prepended as necessary to the returned directory paths.
+.El
+.
+.
+.Sh EXAMPLES
+.Bd -literal
+#include <limits.h>
+#include <NSSystemDirectories.h>
+
+char path[PATH_MAX];
+NSSearchPathEnumerationState state = NSStartSearchPathEnumeration(dir, domainMask);
+while ( (state = NSGetNextSearchPathEnumeration(state, path)) != 0 ) {
+    // Handle directory path
+}
+.Ed
+.
+.
+.Sh HISTORY
+The
+.Nm NSSystemDirectories
+API first appeared in OS X version 10.0.

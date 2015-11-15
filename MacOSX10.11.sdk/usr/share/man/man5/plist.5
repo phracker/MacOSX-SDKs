@@ -1,0 +1,83 @@
+.\""Copyright (c) 2003-2011 Apple Computer, Inc. All Rights Reserved.
+.Dd July 9, 2003
+.Dt PLIST 5  
+.Os "Mac OS X"
+.Sh NAME
+.Nm plist
+.Nd property list format
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+Property lists organize data into named values and lists of values using several Core Foundation types: CFString, CFNumber, CFBoolean, CFDate, CFData, CFArray, and CFDictionary. These types give you the means to produce data that is meaningfully structured, transportable, storable, and accessible, but still as efficient as possible. The property list programming interface allows you to convert hierarchically structured combinations of these basic types to and from two formats: standard XML and an optimized, opaque binary format. This document describes the standard XML format. The data can be saved to disk and later used to reconstruct the original Core Foundation objects. Note that property lists should be used for data that consists primarily of strings and numbers because they are very inefficient when used with large blocks of binary data.
+.Pp
+\fBPROPERTY LIST STRUCTURE AND CONTENTS\fR
+.Pp
+Property lists are constructed from the basic Core Foundation types CFString, CFNumber, CFBoolean, CFDate, and CFData. To build a complex data structure out of these basic types, you put them inside a CFDictionary or CFArray. To simplify programming with property lists, any of the property list types can also be referred to using a reference of type CFPropertyListRef.
+.Pp
+In a CFDictionary, data is structured as key-value pairs, where each key is a string and the key's value can be a CFString, a CFNumber, a CFBoolean, a CFDate, a CFData, a CFArray, or another CFDictionary. When using CFDictionary as a property list, all keys must be strings.
+.Pp
+In a CFArray, data is structured as an ordered collection of objects that can be accessed by index. In a property list, a CFArray can contain any of the basic property list types, as well as CFDictionary and other CFArray objects.
+.Pp
+\fBPROPERTY LIST XML TAGS\fR
+.Pp
+When property lists convert a collection of Core Foundation objects into an XML property list, it wraps the property list using the document type tag \fB<plist>\fR. The other tags used for the Core Foundation data types are listed in the table below:
+.Pp
+.Sy Core Foundation Types with XML Equivalents 
+    \fICF type\fR		\fIXML tag\fR
+    \fBCFString\fR		<string>
+    \fBCFNumber\fR		<real> or <integer>
+    \fBCFDate\fR		<date>
+    \fBCFBoolean\fR		<true/> or <false/>
+    \fBCFData\fR		<data>
+    \fBCFArray\fR		<array>
+    \fBCFDictionary\fR	<dict>
+.Pp
+When encoding the contents of a CFDictionary, each member is encoded by placing the dictionary key in a <key> tag and immediately following it with the corresponding value in the appropriate tag from the table above. See EXAMPLES below for an example XML data generated from a property list.
+.Pp
+The XML data format is documented here strictly for help in understanding property lists and as a debugging aid. These tags may change in future releases so you shouldn't rely on them directly. You should not edit the XML data by hand unless you are very familiar with XML syntax and the format of property lists. If you want to modify the contents of a property list saved on disk as XML data, use the Property List Editor application. 
+.Pp
+More complete documentation can be found on disk at 
+.Pp
+/Developer/Documentation/CoreFoundation/ProgrammingTopics/CFPropertyLists/CFPropertyLists.html
+.Pp
+or online at 
+.Pp
+http://developer.apple.com/documentation/CoreFoundation/Conceptual/CFPropertyLists/index.html
+.Pp
+\fBBINARY FORMAT PROPERTY LISTS\fR
+.Pp
+The binary property list format is opaque and does not use XML. However, binary property lists and XML property lists are generally interchangeable. The 
+.Xr plutil 1
+utility may be used to convert property lists between different formats. For example, to view a binary property list in XML format on stdout:
+.Bd -literal -offset indent
+plutil -convert xml1 -o - <file name>
+.Ed
+.Sh EXAMPLES
+.Bd -literal -offset indent
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+        "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Year Of Birth</key>
+    <integer>1965</integer>
+    <key>Pets Names</key>
+    <array/>
+    <key>Picture</key>
+    <data>
+        PEKBpYGlmYFCPA==
+    </data>
+    <key>City of Birth</key>
+    <string>Springfield</string>
+    <key>Name</key>
+    <string>John Doe</string>
+    <key>Kids Names</key>
+    <array>
+        <string>John</string>
+        <string>Kyra</string>
+    </array>
+</dict>
+</plist>
+.Ed
+.Sh SEE ALSO
+.Xr plutil 1

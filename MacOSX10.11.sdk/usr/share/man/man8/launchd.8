@@ -1,0 +1,85 @@
+.Dd 25 November, 2013
+.Dt launchd 8 
+.Os Darwin
+.Sh NAME
+.Nm launchd
+.Nd System wide and per-user daemon/agent manager
+.Sh DESCRIPTION
+.Nm 
+manages processes, both for the system as a whole and for individual users.
+.Pp
+The primary and preferred interface to
+.Nm
+is via the
+.Xr launchctl 1
+tool which (among other options) allows the user or administrator to load and
+unload jobs. Where possible, it is preferable for jobs to launch on demand based
+on criteria specified in their respective configuration files.
+.Pp
+.Nm
+also manages XPC services that are bundled within applications and frameworks on
+the system.
+.Pp
+During boot
+.Nm
+is invoked by the kernel to run as the first process on the system and to
+further bootstrap the rest of the system.
+.Pp
+You cannot invoke
+.Nm
+directly.
+.Sh NOTES
+On Darwin operating systems, the canonical way to launch a daemon is through
+.Nm launchd
+as opposed to traditional POSIX and POSIX-like mechanisms or mechanisms provided
+in earlier versions of OS X. These alternate methods should be considered
+deprecated and not suitable for new projects.
+.Pp
+In the
+.Nm launchd
+lexicon, a daemon is, by definition, a system-wide service of which there is one
+instance for all clients. An agent is a service that runs on a per-user basis.
+Daemons should not attempt to display UI or interact directly with a user's
+login session. Any and all work that involves interacting with a user should be
+done through agents.
+.Pp
+XPC services which are marked with a ServiceType of System are functionally
+equivalent to daemons and run in the same environment, sharing the same Mach
+bootstrap namespace. XPC services which are marked with a ServiceType of User
+are equivalent to agents with the LimitLoadToSessionType key specifying the
+Background session and run in the same environment, sharing the same Mach
+bootstrap namespace. See
+.Xr launchd.plist 5
+for more information about user sessions.
+.Pp
+On Darwin platforms, a user environment includes a specific Mach bootstrap
+subset, audit session and other characteristics not recognized by POSIX.
+Therefore, making the appropriate
+.Xr setuid 2
+and
+.Xr setgid 2
+system calls is not sufficient to completely assume the identity for a given
+user. Running a service as a
+.Nm
+agent or a per-user XPC service is the only way to run a process with a complete
+identity of that user.
+.Sh FILES
+.Bl -tag -width "/System/Library/LaunchDaemons" -compact
+.It Pa ~/Library/LaunchAgents
+Per-user agents provided by the user.
+.It Pa /Library/LaunchAgents
+Per-user agents provided by the administrator.
+.It Pa /Library/LaunchDaemons
+System-wide daemons provided by the administrator.
+.It Pa /System/Library/LaunchAgents
+Per-user agents provided by Apple.
+.It Pa /System/Library/LaunchDaemons
+System-wide daemons provided by Apple.
+.El
+.Sh SEE ALSO 
+.Xr launchctl 1 ,
+.Xr launchd.plist 5 ,
+.Sh DEVELOPER DOCUMENTATION
+The Daemons and Services Programming Guide can be found at the following URL:
+.Pp
+.Nm http://developer.apple.com/documentation/MacOSX/Conceptual/BPSystemStartup/index.html

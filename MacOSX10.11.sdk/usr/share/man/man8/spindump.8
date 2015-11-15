@@ -1,0 +1,101 @@
+.Dd September 11, 2008
+.Dt spindump 8
+.Os Darwin
+.Sh NAME
+.Nm spindump 
+.Nd Profile entire system during a time interval
+.Sh SYNOPSIS
+.Nm spindump
+.Op pid | partial-name Op duration Op interval
+.Op <options>
+.Sh DESCRIPTION
+.Nm spindump 
+is used by various system components to create reports when an unresponsive application is force quit. Reports are stored at:
+.Pp
+/Library/Logs/DiagnosticReports/
+.Pp
+For normal application force quits spindump will display a dialog to offer the choice to view more details and/or send a report to Apple.
+.Pp
+-------------------------------------
+.Pp
+When run manually, spindump samples user and kernel stacks for every process in the system. Spindump supports two display formats for stacks, heavy and timeline, and includes a binary representation of its data at the end of reports for re-reporting with different options (see
+.Fl i
+). Spindump can also parse reports in timeline format even without a binary representation to re-report them in heavy format.
+.Pp
+When displayed in
+.Nm heavy
+format, stacks are sorted by count and each unique stack is displayed once. In this snippet:
+.Pp
+84  __CFRunLoopRun + 1161 (CoreFoundation + 460665) [0x7fff8d662779]
+.Pp
+Address 0x7fff8d662779 was sampled 84 times in total, not necessarily consecutively. The address corresponds __CFRunLoopRun in CoreFoundation.
+.Pp
+When displayed in
+.Nm timeline
+format, samples are sorted so that the leaf frames in the sample tree are presented in chronological order. Each frame includes a time range of consecutive samples in which the frame was seen, which can be compared with the range of other frames to determine concurrency. If multiple samples of the same stack were not consecutive, the stack will be displayed multiple times. In this snippet:
+.Pp
+23  __CFRunLoopRun + 1161 (CoreFoundation + 460665) [0x7fff8d662779] 50-72
+.Pp
+Address 0x7fff8d662779 was sampled 23 times consecutively from the 50th to 72nd sample.
+.Pp
+In timeline format, spindump notes state changes for threads, e.g.:
+.Pp
+<darwinbg, timers coalesced>
+.Pp
+which indicates the change in state for the samples that follow. Any state not mentioned is unchanged from previous samples. The state information spindump reports includes thread QoS, darwinbg, importance inheritance boost, suppression for App Nap, latency QoS (timers), IO throttling tier, and cpu priority.
+.Pp
+Leaf frames will indicate whether the thread was running/runnable or suspended.
+.Pp
+A leading star (*) indicates a kernel frame or library.
+.Sh ARGUMENTS
+.Nm pid
+or
+.Nm partial-name
+the process to be sorted topmost in the report. "-notarget" may be used to avoid providing a target process when specifying a duration and interval.
+.Pp
+.Nm duration
+the duration of the sampling in seconds. If not specified, the default of 10 seconds is used.
+.Pp
+.Nm interval
+the number of miliseconds between samples. If not specified, the default of 10 miliseconds is used.
+.Pp
+.Fl i Ar path
+Read in the binary format stored in the spindump file at
+.Ar path
+and re-report that data rather than sampling the live system. Spindump can also parse the stacks of a timeline formatted report without a binary format in order to re-report them in heavy format, in which case only stacks will be updated; summary information will not change.
+.Pp
+.Fl startIndex Ar s
+omit frames before sample number
+.Ar s
+.Pp
+.Fl endIndex Ar e
+omit frames after sample number
+.Ar e
+.Pp
+.Fl heavy
+sort stacks by count (default)
+.Pp
+.Fl timeline
+sort stacks chronologically
+.Pp
+.Fl file Ar path
+specifies where the report should be written. If
+.Ar path
+is a file, it will be overwritten. If
+.Ar path
+is a directory, a file will be created inside that directory with the name following the format <appname>_<pid>.spindump.txt. If a file by that name already exists, spindump will add a unique number to the filename. If not specified, spindump will output reports to files inside /tmp.
+.Pp
+.Fl wait
+wait for the process to exist before sampling. If the process already exists, spindump will begin sampling immediately.
+.Pp
+.Fl onlyrunnable
+only display runnable stacks
+.Pp
+.Fl onlytarget
+only sample the target process (allows faster sampling rates)
+.Pp
+.Fl sampleWithoutTarget
+keep sampling for the entire sampling duration even if the target process exits
+.Sh SEE ALSO
+.Xr SubmitDiagInfo 8 ,
+.Xr sample 1 
