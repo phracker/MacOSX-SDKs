@@ -101,6 +101,7 @@ protected:
 		UInt64				fMediumBlockCount64;
 #if !TARGET_OS_EMBEDDED
 		bool				fDeviceHasSATTranslation;
+        bool                fDeviceHasNVMETranslation;
 #endif /* !TARGET_OS_EMBEDDED */
 		bool				fProtocolSpecificPowerControl;
 		bool				fRequiresEjectWithStartStopUnit;
@@ -129,7 +130,11 @@ protected:
 #if !TARGET_OS_EMBEDDED
 	#define fDeviceHasSATTranslation fIOSCSIBlockCommandsDeviceReserved->fDeviceHasSATTranslation
 #endif /* !TARGET_OS_EMBEDDED */
-	
+
+#if !TARGET_OS_EMBEDDED
+    #define fDeviceHasNVMETranslation fIOSCSIBlockCommandsDeviceReserved->fDeviceHasNVMETranslation
+#endif /* !TARGET_OS_EMBEDDED */
+
 	// Device support protocol specific power off
 	#define fProtocolSpecificPowerControl fIOSCSIBlockCommandsDeviceReserved->fProtocolSpecificPowerControl
 	

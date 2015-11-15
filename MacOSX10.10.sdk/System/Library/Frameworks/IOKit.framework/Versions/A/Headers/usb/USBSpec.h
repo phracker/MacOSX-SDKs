@@ -252,6 +252,7 @@ enum {
     kUSBHubClass                	= 9,
     kUSBDataClass               	= 10,
 	kUSBPersonalHealthcareClass		= 15,
+    kUSBBillBoardClass              = 17,
     kUSBDiagnosticClass				= 220,
     kUSBWirelessControllerClass 	= 224,
     kUSBMiscellaneousClass			= 239,

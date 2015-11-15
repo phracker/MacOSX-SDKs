@@ -47,9 +47,7 @@ NS_CLASS_AVAILABLE_MAC(10_10)
     NSMutableSet                     *_dynamicFailureDependents;
     id                                _failureMap;
     
-#ifndef __OBJC2__
     id                                _reserved;
-#endif
 }
 
 /* valid action method signatures:
@@ -156,5 +154,6 @@ NS_CLASS_AVAILABLE_MAC(10_10)
 - (void)tabletPoint:(NSEvent *)event;
 - (void)magnifyWithEvent:(NSEvent *)event;
 - (void)rotateWithEvent:(NSEvent *)event;
+- (void)pressureChangeWithEvent:(NSEvent *)event NS_AVAILABLE_MAC(10_10_3);
 
 @end

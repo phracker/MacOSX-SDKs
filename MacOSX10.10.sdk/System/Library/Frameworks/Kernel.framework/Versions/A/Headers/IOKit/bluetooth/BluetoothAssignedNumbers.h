@@ -456,7 +456,7 @@ enum SDPServiceClasses
     kBluetoothSDPUUID16ServiceClassAVRemoteControlTarget					= 0x110C,
     kBluetoothSDPUUID16ServiceClassAdvancedAudioDistribution				= 0x110D,
     kBluetoothSDPUUID16ServiceClassAVRemoteControl							= 0x110E,
-    kBluetoothSDPUUID16ServiceClassVideoConferencing						= 0x110F,
+    kBluetoothSDPUUID16ServiceClassAVRemoteControlController				= 0x110F,
 	kBluetoothSDPUUID16ServiceClassIntercom									= 0x1110,	// 00001110-0000-1000-8000-00805f9b34fb
 	kBluetoothSDPUUID16ServiceClassFax										= 0x1111,	// 00001111-0000-1000-8000-00805f9b34fb
 	kBluetoothSDPUUID16ServiceClassHeadsetAudioGateway						= 0x1112,	// 00001112-0000-1000-8000-00805f9b34fb

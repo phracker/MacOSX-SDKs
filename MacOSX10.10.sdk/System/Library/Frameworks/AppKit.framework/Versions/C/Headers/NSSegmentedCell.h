@@ -9,13 +9,6 @@
 #import <AppKit/NSActionCell.h>
 #import <AppKit/NSSegmentedControl.h>
 
-
-typedef NS_ENUM(NSUInteger, NSSegmentSwitchTracking) {
-    NSSegmentSwitchTrackingSelectOne = 0,  // only one button can be selected
-    NSSegmentSwitchTrackingSelectAny = 1,  // any button can be selected
-    NSSegmentSwitchTrackingMomentary = 2   // only selected while tracking
-};
-
 @class NSMutableArray;
 
 @interface NSSegmentedCell : NSActionCell {

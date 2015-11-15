@@ -38,14 +38,14 @@ NS_CLASS_AVAILABLE(10_8, 6_0)
 @interface NSXPCConnection : NSObject <NSXPCProxyCreating> {
 @private
     void *_xconnection;
-    id _incomingReplyInfo;
+    id _repliesExpected;
     dispatch_queue_t _userQueue;
     uint32_t _state;
     uint32_t _state2;
     void (^_interruptionHandler)();
     void (^_invalidationHandler)();
     id _exportInfo;
-    id _replyTable;
+    id _repliesRequested;
     id _importInfo;
     id <NSObject> _otherInfo;
     id _reserved1;

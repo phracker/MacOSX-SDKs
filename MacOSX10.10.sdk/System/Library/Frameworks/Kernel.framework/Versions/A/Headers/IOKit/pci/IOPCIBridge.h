@@ -76,6 +76,10 @@ private:
 	IOReturn restoreTunnelState(IOPCIDevice * root, IOOptionBits options);
     IOReturn restoreMachineState( IOOptionBits options, IOPCIDevice * device );
     void tunnelsWait(IOPCIDevice * device);
+    static IOReturn finishMachineState(IOOptionBits options);
+	static IOReturn systemPowerChange(void * target, void * refCon,
+										UInt32 messageType, IOService * service,
+										void * messageArgument, vm_size_t argSize);
 
     IOReturn _restoreDeviceState( IOPCIDevice * device, IOOptionBits options );
     IOReturn resolveLegacyInterrupts( IOService * provider, IOPCIDevice * nub );

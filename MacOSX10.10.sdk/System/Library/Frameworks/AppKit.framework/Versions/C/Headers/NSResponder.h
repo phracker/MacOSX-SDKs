@@ -73,6 +73,8 @@
 /* Perform a Quick Look on the content at location in the event. If there are no Quick Look items at the location, call super. Also, see quickLookPreviewItems: further below. */
 - (void)quickLookWithEvent:(NSEvent *)event NS_AVAILABLE_MAC(10_8);
 
+- (void)pressureChangeWithEvent:(NSEvent *)event NS_AVAILABLE_MAC(10_10_3);
+
 - (void)noResponderFor:(SEL)eventSelector;
 @property (readonly) BOOL acceptsFirstResponder;
 - (BOOL)becomeFirstResponder;

@@ -49,7 +49,8 @@ APPKIT_EXTERN NSString *NSAnimationProgressMark; // NSNumber(float) with NSAnima
 	unsigned int delegateAnimationDidReachProgressMark:1;
 	unsigned int animating:1;
 	unsigned int blocking:1;
-	unsigned int reserved:25;
+        unsigned int sendProgressAllTheTime:1;
+	unsigned int reserved:24;
     } _aFlags;
     struct __aSettings {
 	unsigned int animationCurve:8;

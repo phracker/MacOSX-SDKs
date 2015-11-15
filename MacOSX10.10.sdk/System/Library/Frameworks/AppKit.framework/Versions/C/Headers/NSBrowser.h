@@ -429,7 +429,7 @@ APPKIT_EXTERN NSString *NSBrowserColumnConfigurationDidChangeNotification;
  */
 
 /* Optional for browsers with resize type NSBrowserNoColumnResizing, and NSBrowserUserColumnResizing.
- This method is used for both constraining column resize, and determining a columns initial size.  If 'forUserResize' is NO, this method should return the initial width for a newly added column.  If 'forUserResize' is YES, this method can be used to constrain resizing on a per-column basis.  (Currently per-column constraining is not implemented, so forUserResize will always be NO).
+ This method is used for both constraining column resize, and determining a columns initial size.  If 'forUserResize' is NO, this method should return the initial width for a newly added column.  If 'forUserResize' is YES, this method can be used to constrain resizing on a per-column basis.  (Currently per-column constraining is only implemented for single column resize).
  */
 - (CGFloat)browser:(NSBrowser *)browser shouldSizeColumn:(NSInteger)columnIndex forUserResize:(BOOL)forUserResize toWidth:(CGFloat)suggestedWidth;
 

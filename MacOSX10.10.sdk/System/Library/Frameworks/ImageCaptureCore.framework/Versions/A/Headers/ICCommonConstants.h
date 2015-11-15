@@ -146,7 +146,9 @@ typedef enum ICReturnCode
     ICReturnDeviceSoftwareInstallationCompleted   = -9947,
     ICReturnDeviceSoftwareInstallationCanceled    = -9948,
     ICReturnDeviceSoftwareInstallationFailed      = -9949,
-    ICReturnDeviceSoftwareNotAvailable            = -9950
+    ICReturnDeviceSoftwareNotAvailable            = -9950,
+    ICReturnDeviceCouldNotPair                    = -9951,
+    ICReturnDeviceCouldNotUnpair                  = -9952,
 } ICReturnCode;
 
 ////------------------------------------------------------------------------------------------------------------------------------

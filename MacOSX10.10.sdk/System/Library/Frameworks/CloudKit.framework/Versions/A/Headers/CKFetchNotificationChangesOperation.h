@@ -31,7 +31,9 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 
 /* Clients are responsible for saving the change token at the end of the operation and passing it in to the next call to CKFetchNotificationChangesOperation.
    Note that a fetch can fail partway. If that happens, an updated change token may be returned in the completion
-    block so that already fetched notifications don't need to be re-downloaded on a subsequent operation. */
+    block so that already fetched notifications don't need to be re-downloaded on a subsequent operation.
+   If the server returns a CKErrorChangeTokenExpired error, the previousServerChangeToken value was too old and the client should toss its local cache and
+   re-fetch notification changes starting with a nil previousServerChangeToken. */
 @property (nonatomic, copy) void (^fetchNotificationChangesCompletionBlock)(CKServerChangeToken *serverChangeToken, NSError *operationError);
 
 @end

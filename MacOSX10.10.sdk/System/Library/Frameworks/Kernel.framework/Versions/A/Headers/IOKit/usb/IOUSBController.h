@@ -252,6 +252,7 @@ protected:
         bool                _usePCIBusNumber;                   // T if we should use the PCI bus number in the calculations for USB Bus number
         UInt32              _acpiRootHubDepth;                  // depth of the root hub in the ACPI device tree, this value is either hard coded or set to
         bool                _onThunderbolt;						// T if this controller is on a Thunderbolt bus
+        UInt32              _locationID_SS;
     };
     ExpansionData *_expansionData;
 	

@@ -44,6 +44,7 @@ APPKIT_EXTERN const double NSAppKitVersionNumber;
 #define NSAppKitVersionNumber10_7_4 1138.47
 #define NSAppKitVersionNumber10_8 1187
 #define NSAppKitVersionNumber10_9 1265
+#define NSAppKitVersionNumber10_10 1343
 
 
 /* Modes passed to NSRunLoop */

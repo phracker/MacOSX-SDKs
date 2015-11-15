@@ -55,7 +55,9 @@ class IOStream : public IOService
     IOMemoryMap *           _outputQueueMap;
     
     IOStreamBufferQueue *   _outputQueue;   // Shared memory for buffers out to user space
+    UInt32                  _outputQueueEntryCount;
     IOStreamBufferQueue *   _inputQueue;    // Shared memory for buffers in from user space
+    UInt32                  _inputQueueEntryCount;
     
     mach_port_t             _outputPort;
     mach_port_t             _inputPort;
@@ -481,7 +483,7 @@ class IOStreamBuffer : public OSObject
 protected:
     IOMemoryDescriptor *     _dataBuffer;        // The data buffer is expected to be filled by hardware.
     IOMemoryDescriptor *     _controlBuffer;     // The control buffer is expected to be defined by the hardware driver.
-    
+        
     IOStreamBufferID         _bufferID;          // Client handle for this buffer.
     
     OSArray *                _clientMemoryMaps;  // Maps for clients who are sharing these buffers.

@@ -34,7 +34,8 @@ typedef NS_ENUM(NSUInteger, NSTextFieldBezelStyle) {
         unsigned int isButtonTitle:1;
         unsigned int allowTightening:1;
         unsigned int thcHighlighted:1;
-        unsigned int reservedTextFieldCell:11;
+        unsigned int shouldNotClipToBounds:1;
+        unsigned int reservedTextFieldCell:10;
     } _tfFlags;
 }
 

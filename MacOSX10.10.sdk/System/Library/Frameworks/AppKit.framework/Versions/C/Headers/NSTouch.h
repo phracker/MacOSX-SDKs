@@ -34,8 +34,8 @@ NS_CLASS_AVAILABLE(10_6, NA)
     NSPoint _normalizedPosition;
     NSInteger _privateFlags;
     NSView *_view;
-#if ! __LP64__
     id _reserved1;
+#if ! __LP64__
     id _reserved2;
     id _reserved3;
     id _reserved4;

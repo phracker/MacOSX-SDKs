@@ -56,10 +56,12 @@ extern hv_return_t hv_vmx_vcpu_write_vmcs(hv_vcpuid_t vcpu, uint32_t field,
  * @abstract   Enum type of VMX cabability fields
  */
 typedef enum {
-	HV_VMX_CAP_PINBASED,
-	HV_VMX_CAP_PROCBASED,
-	HV_VMX_CAP_PROCBASED2,
-	HV_VMX_CAP_ENTRY
+	HV_VMX_CAP_PINBASED = 0,         /* pin-based VMX capabilities */
+	HV_VMX_CAP_PROCBASED = 1,        /* primary proc.-based VMX capabilities */
+	HV_VMX_CAP_PROCBASED2 = 2,       /* second. proc.-based VMX capabilities */
+	HV_VMX_CAP_ENTRY = 3,            /* VM-entry VMX capabilities */
+	HV_VMX_CAP_EXIT = 4,             /* VM-exit VMX capabilities */
+	HV_VMX_CAP_PREEMPTION_TIMER = 32 /* VMX preemption timer frequency */
 } hv_vmx_capability_t;
 
 /*!

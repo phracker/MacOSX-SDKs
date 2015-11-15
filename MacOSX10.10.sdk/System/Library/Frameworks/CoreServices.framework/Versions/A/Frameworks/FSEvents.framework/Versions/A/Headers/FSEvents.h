@@ -477,7 +477,19 @@ enum {
    * Indicates the event was triggered by the current process.
    * (This flag is only ever set if you specified the MarkSelf flag when creating the stream.)
    */
-  kFSEventStreamEventFlagOwnEvent __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0) = 0x00080000
+  kFSEventStreamEventFlagOwnEvent __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0) = 0x00080000,
+
+  /* 
+   * Indicates the object at the specified path supplied in this event is a hard link.
+   * (This flag is only ever set if you specified the FileEvents flag when creating the stream.)
+   */
+  kFSEventStreamEventFlagItemIsHardlink __OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_9_0) = 0x00100000,
+
+  /* Indicates the object at the specific path supplied in this event was the last hard link.
+   * (This flag is only ever set if you specified the FileEvents flag when creating the stream.)
+   */
+  kFSEventStreamEventFlagItemIsLastHardlink __OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_9_0) = 0x00200000,
+
 };
 
 

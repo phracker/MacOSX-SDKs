@@ -74,7 +74,7 @@ enum
 @discussion
 Values used to set media lock state.
 @constant kMediaStateUnlocked
-Value to be passed in order unlock media and make it availabe for writing.
+Value to be passed in order to unlock media and make it availabe for writing.
 @constant kMediaStateLocked
 Value to be passed when the media is to be locked and made read-only. 
 */
@@ -100,7 +100,7 @@ class SCSIReducedBlockCommands;
 @superclass IOSCSIPrimaryCommandsDevice
 @discussion
 Implementation of the T10 device Reduced Block Commands device. This is the base
-driver for all subclasses implementiong peripheral device type 0xE. 
+driver for all subclasses implementing peripheral device type 0xE.
 */
 class IOSCSIReducedBlockCommandsDevice : public IOSCSIPrimaryCommandsDevice
 {
@@ -529,19 +529,19 @@ public:
 	
 	/*!
 	@function ReportEjectability
-	@abstract Reports wether or not the media is ejectable.
+	@abstract Reports whether or not the media is ejectable.
 	@discussion Called by IOBlockStorageDevice subclasses to determine wether or not the media is ejectable.
-	@param isEjectable a valid pointer a bool in which the ejectability of the media is to be stored.
+	@param isEjectable a valid pointer to a bool in which the ejectability of the media is to be stored.
 	@result A valid IOReturn value.
 	*/
 	virtual IOReturn	ReportEjectability ( bool * isEjectable );
 	
 	/*!
 	@function ReportLockability
-	@abstract Reports wether or not the media is lockable ( can be write protected ).
-	@discussion Called by IOBlockStorageDevice subclasses to determine wether or not the media is lockable 
+	@abstract Reports whether or not the media is lockable ( can be write protected ).
+	@discussion Called by IOBlockStorageDevice subclasses to determine whether or not the media is lockable
 	( can be write protected ).
-	@param isLockable a valid pointer a bool in which the lockability of the media is to be stored.
+	@param isLockable a valid pointer to a bool in which the lockability of the media is to be stored.
 	@result A valid IOReturn value.
 	*/  
 	virtual IOReturn	ReportLockability ( bool * isLockable );
@@ -629,7 +629,7 @@ public:
 	@discussion Static method called to poll for media.
 	@param pdtDriver a pointer to a valid IOSCSIReducedBlockCommandsDevice ( or subclass ) which is to
 	be polled.
-	@param refCon a pointer an additional object which can be determined by the implementer.
+	@param refCon a pointer to an additional object which can be determined by the implementer.
 	*/
 	static 	void		sPollForMedia ( void * pdtDriver, void * refCon );
 	
@@ -774,7 +774,7 @@ protected:
 	@param request a SCSITaskIdentifier in which the built command will be stored.
 	@param dataBuffer a point to a valid IOMemoryDescriptor in which the read data is to be stored.
 	@param blockSize used to specify the block size to be used for the read.
-	@param LOGICAL_BLOCK_ADDRESS used to specify the logical block address from which the read is to be initiated from.
+	@param LOGICAL_BLOCK_ADDRESS used to specify the logical block address from which the read is to be initiated.
 	@param TRANSFER_LENGTH the desired transfer length in blocks.
 	@result <code>true</code> if the command was successfully built and <code>false</code> if not.
 	*/
@@ -882,7 +882,7 @@ protected:
 	@abstract Builds a VERIFY command.
 	@discussion Builds a VERIFY command.
 	@param request a SCSITaskIdentifier in which the built command will be stored.
-	@param LOGICAL_BLOCK_ADDRESS used to specify the logical block address from which the verify should be initiated from.
+	@param LOGICAL_BLOCK_ADDRESS used to specify the logical block address from which the verify should be initiated.
 	@param VERIFICATION_LENGTH the desired length in blocks.
 	@result <code>true</code> if the command was successfully built and <code>false</code> if not.
 	*/
@@ -898,9 +898,9 @@ protected:
 	@discussion Builds a WRITE(10) command.
 	@param request a SCSITaskIdentifier in which the built command will be stored.
 	@param dataBuffer a point to a valid IOMemoryDescriptor in which the data to be written is stored.
-	@param blockSize used to specify the block size to be used for the read.
+	@param blockSize used to specify the block size to be used for the write.
 	@param FUA used specify whether or not the force unit access ( FUA ) bit should be set.
-	@param LOGICAL_BLOCK_ADDRESS used to specify the logical block address from which the write should be initiated from.
+	@param LOGICAL_BLOCK_ADDRESS used to specify the logical block address from which the write should be initiated.
 	@param TRANSFER_LENGTH the desired transfer length in blocks.
 	@result <code>true</code> if the command was successfully built and <code>false</code> if not.
 	*/

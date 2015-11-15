@@ -43,85 +43,9 @@ __BEGIN_DECLS
 
 #include <mach/clock_types.h>
 #include <stdint.h>
-#if	defined(KERNEL_BUILD)
-#include <kdebug.h>
-#endif /* KERNEL_BUILD */
 
+#include <Availability.h>
 
-typedef enum
-{
-	KD_CALLBACK_KDEBUG_ENABLED,   		// Trace is now enabled. No arguments
-	KD_CALLBACK_KDEBUG_DISABLED,  		// Trace is now disabled. No arguments
-	KD_CALLBACK_SYNC_FLUSH,      		// Request the latest entries from the IOP, and block until complete. No arguments
-	KD_CALLBACK_TYPEFILTER_CHANGED,		// Typefilter is enabled. A read-only pointer to the typefilter is provided, but is only valid while in the callback.
-} kd_callback_type;
-typedef void (*kd_callback_fn) (void* context, kd_callback_type reason, void* arg);
-
-struct kd_callback {
-	kd_callback_fn	func;
-	void*		context;
-	char		iop_name[8]; // null-terminated string with name of core.
-};
-
-typedef struct kd_callback kd_callback_t;
-
-/*
- * Registers an IOP for participation in tracing. 
- *  
- * The registered callback function will be called with the 
- * supplied context as the first argument, followed by a 
- * kd_callback_type and an associated void* argument. 
- *  
- * The return value is a nonzero coreid that shall be used in 
- * kernel_debug_enter() to refer to your IOP. If the allocation 
- * failed, then 0 will be returned. 
- *  
- *  
- * Caveats: 
- * Note that not all callback calls will indicate a change in 
- * state (e.g. disabling trace twice would send two disable 
- * notifications). 
- *  
- */
-extern int kernel_debug_register_callback(kd_callback_t callback);
-
-extern void kernel_debug_enter(
-	uint32_t	coreid,
-	uint32_t	debugid,
-	uint64_t	timestamp,
-	uintptr_t	arg1,
-	uintptr_t	arg2,
-	uintptr_t	arg3,
-	uintptr_t	arg4,
-	uintptr_t	threadid
-	);
-
-
-/*
- * state bits for hfs_update event
- */
-#define DBG_HFS_UPDATE_ACCTIME   0x01
-#define DBG_HFS_UPDATE_MODTIME	 0x02
-#define DBG_HFS_UPDATE_CHGTIME	 0x04
-#define DBG_HFS_UPDATE_MODIFIED	 0x08
-#define DBG_HFS_UPDATE_FORCE	 0x10
-#define DBG_HFS_UPDATE_DATEADDED 0x20
-
-
-/*
- * types of faults that vm_fault handles
- * and creates trace entries for
- */
-#define DBG_ZERO_FILL_FAULT   1
-#define DBG_PAGEIN_FAULT      2
-#define DBG_COW_FAULT         3
-#define DBG_CACHE_HIT_FAULT   4
-#define DBG_NZF_PAGE_FAULT    5
-#define DBG_GUARD_FAULT	      6	
-#define DBG_PAGEINV_FAULT     7
-#define DBG_PAGEIND_FAULT     8
-#define DBG_COMPRESSOR_FAULT  9
-#define DBG_COMPRESSOR_SWAPIN_FAULT  10
 
 
 /* The debug code consists of the following 
@@ -162,8 +86,11 @@ extern void kernel_debug_enter(
 #define DBG_BANK                40
 #define DBG_XPC                 41
 #define DBG_ATM                 42
+#define DBG_ARIADNE             43
+
 
 #define DBG_MIG			255
+
 
 /* **** The Kernel Debug Sub Classes for Mach (DBG_MACH) **** */
 #define	DBG_MACH_EXCP_KTRAP_x86	0x02	/* Kernel Traps on x86 */
@@ -236,6 +163,18 @@ extern void kernel_debug_enter(
 #define MACH_MULTIQ_GROUP     2
 #define MACH_MULTIQ_GLOBAL    3
 
+/* Arguments for vm_fault (DBG_MACH_VM) */
+#define DBG_ZERO_FILL_FAULT   1
+#define DBG_PAGEIN_FAULT      2
+#define DBG_COW_FAULT         3
+#define DBG_CACHE_HIT_FAULT   4
+#define DBG_NZF_PAGE_FAULT    5
+#define DBG_GUARD_FAULT	      6	
+#define DBG_PAGEINV_FAULT     7
+#define DBG_PAGEIND_FAULT     8
+#define DBG_COMPRESSOR_FAULT  9
+#define DBG_COMPRESSOR_SWAPIN_FAULT  10
+
 /* Codes for IPC (DBG_MACH_IPC) */
 #define	MACH_TASK_SUSPEND			0x0	/* Suspended a task */
 #define	MACH_TASK_RESUME 		  	0x1	/* Resumed a task */
@@ -273,15 +212,15 @@ extern void kernel_debug_enter(
 /* Codes for Selective Forced Idle (DBG_MACH_SFI) */
 #define SFI_SET_WINDOW			0x0
 #define SFI_CANCEL_WINDOW		0x1
-#define SFI_SET_CLASS_OFFTIME	0x2
+#define SFI_SET_CLASS_OFFTIME		0x2
 #define SFI_CANCEL_CLASS_OFFTIME	0x3
 #define SFI_THREAD_DEFER		0x4
 #define SFI_OFF_TIMER			0x5
 #define SFI_ON_TIMER			0x6
 #define SFI_WAIT_CANCELED		0x7
 #define SFI_PID_SET_MANAGED		0x8
-#define SFI_PID_CLEAR_MANAGED	0x9
-
+#define SFI_PID_CLEAR_MANAGED		0x9
+#define SFI_GLOBAL_DEFER		0xa
 /* **** The Kernel Debug Sub Classes for Network (DBG_NETWORK) **** */
 #define DBG_NETIP	1	/* Internet Protocol */
 #define DBG_NETARP	2	/* Address Resolution Protocol */
@@ -399,6 +338,16 @@ extern void kernel_debug_enter(
 #define DBG_THROTTLE  0x11    /* I/O Throttling events */	
 #define DBG_CONTENT_PROT 0xCF /* Content Protection Events: see bsd/sys/cprotect.h */
 
+/*
+ * For Kernel Debug Sub Class DBG_HFS, state bits for hfs_update event
+ */
+#define DBG_HFS_UPDATE_ACCTIME   0x01
+#define DBG_HFS_UPDATE_MODTIME	 0x02
+#define DBG_HFS_UPDATE_CHGTIME	 0x04
+#define DBG_HFS_UPDATE_MODIFIED	 0x08
+#define DBG_HFS_UPDATE_FORCE	 0x10
+#define DBG_HFS_UPDATE_DATEADDED 0x20
+
 /* The Kernel Debug Sub Classes for BSD */
 #define DBG_BSD_PROC		0x01	/* process/signals related */
 #define DBG_BSD_MEMSTAT		0x02	/* memorystatus / jetsam operations */
@@ -430,11 +379,17 @@ extern void kernel_debug_enter(
 #define DBG_TRACE_STRING    1
 #define	DBG_TRACE_INFO	    2
 
-/*
- * TRACE_DATA_NEWTHREAD			0x1
- * TRACE_DATA_EXEC			0x2
- */
-#define TRACE_DATA_THREAD_TERMINATE	0x3	/* thread has been queued for deallocation and can no longer run */
+/* The Kernel Debug events: */
+#define	TRACE_DATA_NEWTHREAD		(TRACEDBG_CODE(DBG_TRACE_DATA, 1))
+#define	TRACE_DATA_EXEC			(TRACEDBG_CODE(DBG_TRACE_DATA, 2))
+#define	TRACE_DATA_THREAD_TERMINATE	(TRACEDBG_CODE(DBG_TRACE_DATA, 3))
+#define	TRACE_STRING_NEWTHREAD		(TRACEDBG_CODE(DBG_TRACE_STRING, 1))
+#define	TRACE_STRING_EXEC		(TRACEDBG_CODE(DBG_TRACE_STRING, 2))
+#define	TRACE_PANIC			(TRACEDBG_CODE(DBG_TRACE_INFO, 0))
+#define	TRACE_TIMESTAMPS		(TRACEDBG_CODE(DBG_TRACE_INFO, 1))
+#define	TRACE_LOST_EVENTS		(TRACEDBG_CODE(DBG_TRACE_INFO, 2))
+#define	TRACE_WRITING_EVENTS		(TRACEDBG_CODE(DBG_TRACE_INFO, 3))
+#define	TRACE_INFO_STRING		(TRACEDBG_CODE(DBG_TRACE_INFO, 4))
 
 /* The Kernel Debug Sub Classes for DBG_CORESTORAGE */
 #define DBG_CS_IO	0
@@ -555,6 +510,7 @@ extern void kernel_debug_enter(
 #define DYLDDBG_CODE(SubClass,code) KDBG_CODE(DBG_DYLD, SubClass, code)
 #define QTDBG_CODE(SubClass,code) KDBG_CODE(DBG_QT, SubClass, code)
 #define APPSDBG_CODE(SubClass,code) KDBG_CODE(DBG_APPS, SubClass, code)
+#define ARIADNEDBG_CODE(SubClass, code) KDBG_CODE(DBG_ARIADNE, SubClass, code)
 #define CPUPM_CODE(code) IOKDBG_CODE(DBG_IOCPUPM, code)
 
 #define KMEM_ALLOC_CODE MACHDBG_CODE(DBG_MACH_LEAKS, 0)
@@ -605,6 +561,7 @@ extern unsigned int kdebug_enable;
 #define KDEBUG_ENABLE_ENTROPY 0x2		/* Obsolescent */
 #define KDEBUG_ENABLE_CHUD    0x4
 #define KDEBUG_ENABLE_PPT     0x8
+#define KDEBUG_ENABLE_SERIAL 0x10
 
 /*
  * Infer the supported kernel debug event level from config option.

@@ -3,9 +3,9 @@
 
     Contains:   AltiVec DSP Interfaces
 
-    Version:    vecLib-512.0
+    Version:    vecLib-516.0
 
-    Copyright:  � 2000-2014 by Apple Inc., all rights reserved.
+    Copyright:  � 2000-2015 by Apple Inc., all rights reserved.
 
     For vDSP documentation, search for "vDSP" at <http://developer.apple.com>
     or search for one of the routine names below.
@@ -216,7 +216,7 @@ extern "C" {
     vDSP_Version0 is a major version number.
     vDSP_Version1 is a minor version number.
 */
-#define vDSP_Version0   512
+#define vDSP_Version0   516
 #define vDSP_Version1   0
 
 
@@ -910,6 +910,21 @@ extern void vDSP_svdiv(
 
         When A[0] is not zero or NaN and B[n] is zero, C[n] is set to an
         infinity.
+    */
+
+
+// Sum of vector elements.
+extern void vDSP_sve(
+    const float *__vDSP_A,
+    vDSP_Stride  __vDSP_I,
+    float       *__vDSP_C,
+    vDSP_Length  __vDSP_N)
+        __OSX_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_4_0);
+    /*  Maps:  The default maps are used.
+
+        These compute:
+
+            C[0] = sum(A[n], 0 <= n < N);
     */
 
 

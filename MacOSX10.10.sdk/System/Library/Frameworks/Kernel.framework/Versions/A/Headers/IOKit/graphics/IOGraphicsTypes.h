@@ -711,6 +711,8 @@ enum {
     kConnectionGammaScale               = 'gsc ',
     kConnectionFlushParameters          = 'flus',
 
+    kConnectionVBLMultiplier            = 'vblm',
+
     kConnectionHandleDisplayPortEvent   = 'dpir',
 
     kConnectionPanelTimingDisable       = 'pnlt',

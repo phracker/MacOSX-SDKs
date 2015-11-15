@@ -41,8 +41,10 @@ typedef NS_ENUM(NSUInteger, NSSliderType) {
         unsigned int sliderType:2;
         unsigned int drawing:1;
         unsigned int snappedToTickMark:1;
+        unsigned int snappedToPreviousValue:1;
+        unsigned int snappedToDefaultValue:1;
         unsigned int snappingAllowed:1;
-        unsigned int reserved2:21;
+        unsigned int reserved2:19;
     } _scFlags;
 }
 

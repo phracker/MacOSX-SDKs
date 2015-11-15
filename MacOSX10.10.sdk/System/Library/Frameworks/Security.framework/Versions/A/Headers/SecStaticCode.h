@@ -148,6 +148,7 @@ enum {
 	kSecCSCheckNestedCode = 1 << 3,
 	kSecCSStrictValidate = 1 << 4,
 	kSecCSFullReport = 1 << 5,
+	kSecCSCheckGatekeeperArchitectures = (1 << 6) | kSecCSCheckAllArchitectures,
 };
 
 OSStatus SecStaticCodeCheckValidity(SecStaticCodeRef staticCode, SecCSFlags flags,

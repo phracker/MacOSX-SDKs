@@ -166,7 +166,15 @@ typedef enum _CGLContextParameter {
 	kCGLCPAbortOnGPURestartStatusBlacklisted OPENGL_ENUM_AVAILABLE(10_10) = 318, /* 1 param.  Establish action to take upon blacklisting */
 	kCGLCPSupportGPURestart OPENGL_ENUM_AVAILABLE(10_10)     = 319, /* 1 param.   Does driver support auto-restart of GPU on hang/crash? */
 	kCGLCPSupportSeparateAddressSpace OPENGL_ENUM_AVAILABLE(10_10) = 320, /* 1 param. Does context get its own GPU address space?   */
+	kCGLCPContextPriorityRequest OPENGL_ENUM_AVAILABLE(10_10) = 608, /* 1 param. kCGLCPContextPriorityRequest[High|Normal|Low] 0|1|2 */
 } CGLContextParameter;
+
+typedef enum
+{
+	kCGLCPContextPriorityRequestHigh   = 0,
+	kCGLCPContextPriorityRequestNormal = 1,
+	kCGLCPContextPriorityRequestLow    = 2
+} CGLCPContextPriorityRequest;
 
 /*
 ** Option names for CGLSetOption and CGLGetOption.

@@ -160,5 +160,6 @@ extern NSString *const IKSlideshowPDFDisplaysAsBook;    /* boolean */
 extern NSString *const IK_iPhotoBundleIdentifier;    /* com.apple.iPhoto */
 extern NSString *const IK_ApertureBundleIdentifier;  /* com.apple.Aperture */
 extern NSString *const IK_MailBundleIdentifier;      /* com.apple.mail */
+extern NSString *const IK_PhotosBundleIdentifier;    /* com.apple.Photos */
 
 #endif

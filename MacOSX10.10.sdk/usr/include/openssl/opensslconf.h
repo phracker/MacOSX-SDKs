@@ -20,9 +20,9 @@
 #ifndef OPENSSL_NO_GMP
 # define OPENSSL_NO_GMP
 #endif
-#ifndef OPENSSL_NO_IDEA
-# define OPENSSL_NO_IDEA
-#endif
+#ifndef OPENSSL_NO_IDEA                                                                                                                                          
+# define OPENSSL_NO_IDEA                                                                                                                                         
+#endif                                                                                                                                                           
 #ifndef OPENSSL_NO_JPAKE
 # define OPENSSL_NO_JPAKE
 #endif

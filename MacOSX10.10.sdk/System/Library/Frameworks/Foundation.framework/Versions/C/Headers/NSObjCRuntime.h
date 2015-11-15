@@ -290,6 +290,9 @@
 #define NS_EXTENSION_UNAVAILABLE_MAC(_msg)  __OSX_EXTENSION_UNAVAILABLE(_msg)
 #define NS_EXTENSION_UNAVAILABLE_IOS(_msg)  __IOS_EXTENSION_UNAVAILABLE(_msg)
 
+#define NS_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
+#define NS_ASSUME_NONNULL_END   _Pragma("clang assume_nonnull end")
+
 FOUNDATION_EXPORT double NSFoundationVersionNumber;
 
 #if TARGET_OS_MAC
