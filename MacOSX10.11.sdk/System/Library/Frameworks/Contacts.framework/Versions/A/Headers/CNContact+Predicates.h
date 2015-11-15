@@ -27,9 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 /*! To fetch contacts matching contact identifiers. */
 + (NSPredicate *)predicateForContactsWithIdentifiers:(NSArray<NSString*> *)identifiers;
 
-/*! To fetch the linked contacts for a unified contact, using any of the linked contacts. */
-+ (NSPredicate *)predicateForContactsLinkedToContact:(CNContact *)contact;
-
 + (NSPredicate *)predicateForContactsInGroupWithIdentifier:(NSString *)groupIdentifier;
 
 + (NSPredicate *)predicateForContactsInContainerWithIdentifier:(NSString *)containerIdentifier;

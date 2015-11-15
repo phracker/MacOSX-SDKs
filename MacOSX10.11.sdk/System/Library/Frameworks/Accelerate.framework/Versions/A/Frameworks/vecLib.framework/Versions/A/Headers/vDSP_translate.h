@@ -3,7 +3,7 @@
  
      Contains:   Master include for vecLib framework
  
-     Version:    vecLib-556.0
+     Version:    vecLib-563.3
  
      Copyright:  Copyright (c) 2000-2015 by Apple Inc. All rights reserved.
  
@@ -24,6 +24,11 @@
 #pragma once
 #endif
 
+#if defined __MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_11
+
+/*	When compiling for an OS X target earlier than 10.11, the legacy translates
+	are defined.
+*/
 #define vDSP_create_fftsetup create_fftsetup
 #define vDSP_destroy_fftsetup destroy_fftsetup
 #define vDSP_ctoz ctoz
@@ -146,6 +151,17 @@
 #define vDSP_zrvmulD zrvmulD
 #define vDSP_zrvsubD zrvsubD
 #define vDSP_zrdotprD zrdotprD
+
+#else	//	#if __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_11
+
+/*	When compiling for OS X 10.11 or later, the legacy translates are not
+	defined, and the old names are marked deprecated.  To do this, we define
+	a symbol telling vDSP.h to make such declarations.
+*/
+#define	vDSP_DeprecateTranslations
+
+
+#endif	//	#if __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_11
 
 
 #endif /* __VDSP_TRANSLATE__ */

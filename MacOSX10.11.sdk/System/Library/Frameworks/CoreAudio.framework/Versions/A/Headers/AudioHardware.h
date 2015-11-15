@@ -1402,7 +1402,10 @@ AudioDeviceStop(    AudioObjectID                   inDevice,
     @param          inDevice
                         The AudioDevice to from which to get the time.
     @param          outTime
-                        An AudioTimeStamp into which the current time is put.
+                        An AudioTimeStamp into which the current time is put. On entry, the
+                        mFlags field specifies which representations to provide. Because not every
+                        device supports all time representations, on exit, the mFlags field will
+                        indicate what values are actually valid.
     @result         An OSStatus indicating success or failure. kAudioHardwareNotRunningError will be
                     returned if the AudioDevice isn't running.
 */

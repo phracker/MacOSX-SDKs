@@ -183,7 +183,7 @@ typedef NS_ENUM(NSInteger, NSWindowTitleVisibility) {
     NSResponder		*_firstResponder;
     NSView		*_lastLeftHit;
     NSView		*_lastRightHit;
-    id                  _counterpart;
+    id                  _unusedWindow2;
     id                  _fieldEditor;
     int                 _winEventMask;
     NSInteger           _windowNum;
@@ -202,7 +202,7 @@ typedef NS_ENUM(NSInteger, NSWindowTitleVisibility) {
     NSURL		*_representedURL;
     NSSize		*_sizeLimits;
     NSString		*_frameSaveName;
-    id                  _reservedWindow2;
+    NSToolbar           *_toolbar;
     struct __wFlags {
         unsigned int  backing:2;
         unsigned int  visible:1;
@@ -250,7 +250,7 @@ typedef NS_ENUM(NSInteger, NSWindowTitleVisibility) {
         unsigned int  isImageCache:1;
         unsigned int  autolayoutEngagedSomewhere:1;
         unsigned int  hasRegisteredBackdropViews:1;
-        unsigned int  _unused:1;
+        unsigned int  hasSubLevel:1;
         unsigned int  keyViewSelectionDirection:2;
         unsigned int  defaultButtonCellKETemporarilyDisabled:1;
         unsigned int  defaultButtonCellKEDisabled:1;
@@ -313,7 +313,7 @@ If the url represents a filename or other resource with a known icon, that icon 
 @property (copy) NSString *representedFilename;
 - (void)setTitleWithRepresentedFilename:(NSString *)filename;
 @property (getter=isExcludedFromWindowsMenu) BOOL excludedFromWindowsMenu;
-@property (strong) __kindof NSView *contentView;
+@property (nullable, strong) __kindof NSView *contentView;
 @property (nullable, assign) id<NSWindowDelegate> delegate;
 @property (readonly) NSInteger windowNumber;
 @property NSUInteger styleMask;

@@ -64,5 +64,6 @@ typedef atm_memory_descriptor_t *atm_memory_descriptor_array_t;
 typedef uint64_t *atm_memory_size_array_t;
 
 #define ATM_SUBAID32_MAX 	(UINT32_MAX)
+#define ATM_TRACE_DISABLE       (0x100)
 
 #endif /* _ATM_ATM_TYPES_H_ */

@@ -129,7 +129,7 @@ NS_CLASS_AVAILABLE(10_5, 2_0)
 
 @property NSQualityOfService qualityOfService NS_AVAILABLE(10_10, 8_0);
 
-@property (assign /* actually retain */) dispatch_queue_t underlyingQueue NS_AVAILABLE(10_10, 8_0);
+@property (nullable, assign /* actually retain */) dispatch_queue_t underlyingQueue NS_AVAILABLE(10_10, 8_0);
 
 - (void)cancelAllOperations;
 

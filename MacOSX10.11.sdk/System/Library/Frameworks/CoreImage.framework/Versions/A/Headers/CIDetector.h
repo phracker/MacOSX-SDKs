@@ -93,10 +93,20 @@ CORE_IMAGE_EXPORT NSString* const CIDetectorAccuracyHigh NS_AVAILABLE(10_7, 5_0)
 CORE_IMAGE_EXPORT NSString* const CIDetectorTracking NS_AVAILABLE(10_8, 6_0);
 
 /* The key in the options dictionary used to specify the minimum size that the 
- detector will recognize as a feature.  The value for this key is an float NSNumber 
- from 0.0 ... 1.0 that represents a fraction of the minor dimension of the image. */
+ detector will recognize as a feature. */
 
-/* For rectangle detector, the value for this key is from 0.2 ... 1.0*/
+/* For face detector, the value for this key is an float NSNumber
+ from 0.0 ... 1.0 that represents a percentage of shorter edge of an input image. 
+ valid values range: 0.01 <= CIDetectorMinFeatureSize <= 0.5.
+ Setting a higher value for this parameter is used for performance gain only. The default value is 0.15. */
+
+/* For rectangle detector, the value for this key is an float NSNumber
+ from 0.0 ... 1.0 that represents a percentage of shorter edge of an input image.
+ valid values range: 0.2 <= CIDetectorMinFeatureSize <= 1.0 The default value is 0.2. */
+
+/* For text detector, the value for this key is an float NSNumber
+ from 0.0 ... 1.0 that represents a percentage of height of an input image.
+ valid values range: 0.0 <= CIDetectorMinFeatureSize <= 1.0. The default value is 10/(height of input image). */
 CORE_IMAGE_EXPORT NSString* const CIDetectorMinFeatureSize NS_AVAILABLE(10_8, 6_0);
 
 /* The key in the options dictionary used to specify number of angles, the value for this key is one of 1, 3, 5, 7, 9, 11.*/
@@ -122,6 +132,13 @@ CORE_IMAGE_EXPORT NSString* const CIDetectorFocalLength NS_AVAILABLE(10_10, 8_0)
 
 /* The value for this key is a float NSNumber. Specifies the aspect ratio of the rectangle detected.  */
 CORE_IMAGE_EXPORT NSString* const CIDetectorAspectRatio NS_AVAILABLE(10_10, 8_0);
+
+#if __OBJC2__
+/* The value for this key is a bool NSNumber. Controls whether the text detector should detect subfeatures or not. The default value is NO */
+CORE_IMAGE_EXPORT NSString* const CIDetectorReturnSubFeatures __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+#endif
+
+
 
 #undef CI_DICTIONARY
 #undef CI_ARRAY

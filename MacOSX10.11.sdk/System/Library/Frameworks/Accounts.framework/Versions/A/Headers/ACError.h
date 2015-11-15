@@ -31,4 +31,6 @@ typedef enum ACErrorCode {
     ACErrorFailedSerializingAccountInfo,
     ACErrorInvalidCommand,
     ACErrorMissingTransportMessageID,
+    ACErrorCredentialItemNotFound,          // Credential item wasn't saved because it could not be found.
+    ACErrorCredentialItemNotExpired,        // Credential item wasn't removed because it has not yet expired.
 } ACErrorCode;

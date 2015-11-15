@@ -42,12 +42,29 @@ typedef int CIFormat;
 CORE_IMAGE_EXPORT CIFormat kCIFormatARGB8 NS_AVAILABLE(10_4, 6_0);
 CORE_IMAGE_EXPORT CIFormat kCIFormatBGRA8;
 CORE_IMAGE_EXPORT CIFormat kCIFormatRGBA8;
+CORE_IMAGE_EXPORT CIFormat kCIFormatABGR8 NS_AVAILABLE(10_11, 9_0);
 
 CORE_IMAGE_EXPORT CIFormat kCIFormatRGBA16 NS_AVAILABLE_MAC(10_4);
 CORE_IMAGE_EXPORT CIFormat kCIFormatRGBAf NS_AVAILABLE(10_4, 7_0);
 
 /* RGBA values that are IEEE 754-2008 half float compliant. */
 CORE_IMAGE_EXPORT CIFormat kCIFormatRGBAh NS_AVAILABLE(10_4, 6_0);
+
+
+CORE_IMAGE_EXPORT CIFormat kCIFormatA8 NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatA16 NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatAh NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatAf NS_AVAILABLE(10_11, 9_0);
+
+CORE_IMAGE_EXPORT CIFormat kCIFormatR8 NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatR16 NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatRh NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatRf NS_AVAILABLE(10_11, 9_0);
+
+CORE_IMAGE_EXPORT CIFormat kCIFormatRG8 NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatRG16 NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatRGh NS_AVAILABLE(10_11, 9_0);
+CORE_IMAGE_EXPORT CIFormat kCIFormatRGf NS_AVAILABLE(10_11, 9_0);
 
 
 /* Image options dictionary keys. 
@@ -84,25 +101,25 @@ CORE_IMAGE_EXPORT NSString * const kCIImageTextureFormat NS_AVAILABLE_MAC(10_9);
 + (CIImage *)imageWithCGLayer:(CGLayerRef)layer
                       options:(nullable CI_DICTIONARY(NSString*,id) *)options NS_DEPRECATED_MAC(10_4,10_11);
 
-/* Creates a new image whose bitmap data is from 'd'. Each row contains 'bpr'
- * bytes. The dimensions of the image are defined by 'size'. 'f' defines
- * the format and size of each pixel. 'cs' defines the color space
+/* Creates a new image whose bitmap data is from 'data'. Each row contains 'bytesPerRow'
+ * bytes. The dimensions of the image are defined by 'size'. 'format' defines
+ * the format and size of each pixel. 'colorSpace' defines the color space
  * that the image is defined in, if nil, the image is not color matched. */
-+ (CIImage *)imageWithBitmapData:(NSData *)d
-                     bytesPerRow:(size_t)bpr
++ (CIImage *)imageWithBitmapData:(NSData *)data
+                     bytesPerRow:(size_t)bytesPerRow
                             size:(CGSize)size
-                          format:(CIFormat)f
-                      colorSpace:(nullable CGColorSpaceRef)cs;
+                          format:(CIFormat)format
+                      colorSpace:(nullable CGColorSpaceRef)colorSpace;
 
 /* Creates a new image referencing the contents of the GL texture object
  * with identifier 'name'. The texture should have dimensions as defined
- * by 'size'. If 'flag' is true, then the contents of the texture are
- * flipped vertically when referenced. 'cs' defines the color space
+ * by 'size'. If 'flipped' is true, then the contents of the texture are
+ * flipped vertically when referenced. 'colorSpace' defines the color space
  * that the image is defined in, if nil, the texture is not color matched.*/
 + (CIImage *)imageWithTexture:(unsigned int)name
                          size:(CGSize)size
-                      flipped:(BOOL)flag
-                   colorSpace:(nullable CGColorSpaceRef)cs NS_AVAILABLE(10_4, 6_0);
+                      flipped:(BOOL)flipped
+                   colorSpace:(nullable CGColorSpaceRef)colorSpace NS_AVAILABLE(10_4, 6_0);
 
 /* In the options dictionary you can specify the following:
  * - kCIImageColorSpace which should be a CGColorSpaceRef or [NSNull null]
@@ -111,7 +128,7 @@ CORE_IMAGE_EXPORT NSString * const kCIImageTextureFormat NS_AVAILABLE_MAC(10_9);
  */
 + (CIImage *)imageWithTexture:(unsigned int)name
                          size:(CGSize)size
-					  flipped:(BOOL)flag
+					  flipped:(BOOL)flipped
                       options:(nullable CI_DICTIONARY(NSString*,id) *)options NS_AVAILABLE_MAC(10_9);
 
 + (CIImage *)imageWithMTLTexture:(id<MTLTexture>)texture
@@ -131,8 +148,8 @@ CORE_IMAGE_EXPORT NSString * const kCIImageTextureFormat NS_AVAILABLE_MAC(10_9);
                             options:(nullable CI_DICTIONARY(NSString*,id) *)options NS_AVAILABLE(10_4, 9_0);
 
 /* Creates a new image whose data is from the contents of a CVPixelBufferRef. */
-+ (CIImage *)imageWithCVPixelBuffer:(CVPixelBufferRef)buffer NS_AVAILABLE(10_11, 5_0);
-+ (CIImage *)imageWithCVPixelBuffer:(CVPixelBufferRef)buffer
++ (CIImage *)imageWithCVPixelBuffer:(CVPixelBufferRef)pixelBuffer NS_AVAILABLE(10_11, 5_0);
++ (CIImage *)imageWithCVPixelBuffer:(CVPixelBufferRef)pixelBuffer
                             options:(nullable CI_DICTIONARY(NSString*,id) *)options NS_AVAILABLE(10_11, 5_0);
 
 /* Creates a new image from the contents of an IOSurface. */
@@ -165,24 +182,24 @@ CORE_IMAGE_EXPORT NSString * const kCIImageTextureFormat NS_AVAILABLE_MAC(10_9);
 - (nullable instancetype)initWithData:(NSData *)data
                               options:(nullable CI_DICTIONARY(NSString*,id) *)options;
 
-- (instancetype)initWithBitmapData:(NSData *)d
-                       bytesPerRow:(size_t)bpr
+- (instancetype)initWithBitmapData:(NSData *)data
+                       bytesPerRow:(size_t)bytesPerRow
                               size:(CGSize)size
-                            format:(CIFormat)f
-                        colorSpace:(nullable CGColorSpaceRef)cs;
+                            format:(CIFormat)format
+                        colorSpace:(nullable CGColorSpaceRef)colorSpace;
 
 - (instancetype)initWithTexture:(unsigned int)name
                            size:(CGSize)size
-                        flipped:(BOOL)flag
-                     colorSpace:(nullable CGColorSpaceRef)cs NS_AVAILABLE(10_4, 6_0);
+                        flipped:(BOOL)flipped
+                     colorSpace:(nullable CGColorSpaceRef)colorSpace NS_AVAILABLE(10_4, 6_0);
 
 - (instancetype)initWithTexture:(unsigned int)name
                            size:(CGSize)size
-                        flipped:(BOOL)flag
+                        flipped:(BOOL)flipped
                         options:(nullable CI_DICTIONARY(NSString*,id) *)options NS_AVAILABLE_MAC(10_9);
 
 - (instancetype)initWithMTLTexture:(id<MTLTexture>)texture
-                           options:(nullable CI_DICTIONARY(NSString*,id) *)dict NS_AVAILABLE(10_11, 9_0);
+                           options:(nullable CI_DICTIONARY(NSString*,id) *)options NS_AVAILABLE(10_11, 9_0);
 
 - (nullable instancetype)initWithContentsOfURL:(NSURL *)url;
 - (nullable instancetype)initWithContentsOfURL:(NSURL *)url
@@ -204,8 +221,8 @@ CORE_IMAGE_EXPORT NSString * const kCIImageTextureFormat NS_AVAILABLE_MAC(10_9);
 - (instancetype)initWithCVImageBuffer:(CVImageBufferRef)imageBuffer
                               options:(nullable CI_DICTIONARY(NSString*,id) *)options NS_AVAILABLE(10_4, 9_0);
 
-- (instancetype)initWithCVPixelBuffer:(CVPixelBufferRef)buffer NS_AVAILABLE(10_11, 5_0);
-- (instancetype)initWithCVPixelBuffer:(CVPixelBufferRef)buffer
+- (instancetype)initWithCVPixelBuffer:(CVPixelBufferRef)pixelBuffer NS_AVAILABLE(10_11, 5_0);
+- (instancetype)initWithCVPixelBuffer:(CVPixelBufferRef)pixelBuffer
                               options:(nullable CI_DICTIONARY(NSString*,id) *)options NS_AVAILABLE(10_11, 5_0);
 
 - (instancetype)initWithColor:(CIColor *)color;
@@ -229,7 +246,7 @@ CORE_IMAGE_EXPORT NSString * const kCIImageTextureFormat NS_AVAILABLE_MAC(10_9);
 - (CIImage *)imageByCompositingOverImage:(CIImage *)dest NS_AVAILABLE(10_4, 8_0);
 
 /* Return a new image cropped to a rectangle. */
-- (CIImage *)imageByCroppingToRect:(CGRect)r;
+- (CIImage *)imageByCroppingToRect:(CGRect)rect;
 
 /* Return a new infinte image by replicating the pixels of the receiver image's extent. */
 - (CIImage *)imageByClampingToExtent NS_AVAILABLE(10_10, 8_0);
@@ -261,9 +278,10 @@ CORE_IMAGE_EXPORT NSString * const kCIImageTextureFormat NS_AVAILABLE_MAC(10_9);
  * This method will return nil, if the color space cannot be determined. */
 @property (atomic, readonly, nullable) CGColorSpaceRef colorSpace NS_AVAILABLE(10_4, 9_0) CF_RETURNS_NOT_RETAINED;
 
-/* Returns the rectangle of image 'im" that is required to render
- * the rectangle 'r' of the receiver.  This may return a null rect. */
-- (CGRect)regionOfInterestForImage:(CIImage *)im inRect:(CGRect)r NS_AVAILABLE(10_11, 6_0);
+/* Returns the rectangle of 'image' that is required to render the
+ * rectangle 'rect' of the receiver.  This may return a null rect. */
+- (CGRect)regionOfInterestForImage:(CIImage *)image
+                            inRect:(CGRect)rect NS_AVAILABLE(10_11, 6_0);
 
 @end
 

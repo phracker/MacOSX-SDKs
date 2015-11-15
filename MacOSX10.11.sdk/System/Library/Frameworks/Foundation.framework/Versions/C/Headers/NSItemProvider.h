@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^NSItemProviderCompletionHandler)(id <NSSecureCoding> item, NSError * __null_unspecified error);
+typedef void (^NSItemProviderCompletionHandler)(__nullable id <NSSecureCoding> item, NSError * __null_unspecified error);
 typedef void (^NSItemProviderLoadHandler)(__null_unspecified NSItemProviderCompletionHandler completionHandler, __null_unspecified Class expectedValueClass, NSDictionary * __null_unspecified options);
 
 // An NSItemProvider is a high level abstraction for file-like data objects supporting multiple representations and preview images.
@@ -66,10 +66,10 @@ FOUNDATION_EXTERN NSString * __null_unspecified const NSItemProviderErrorDomain 
 
 // NSItemProvider-related error codes
 typedef NS_ENUM(NSInteger, NSItemProviderErrorCode) {
-    NSItemProviderUnknownError =                                           -1,
-    NSItemProviderItemUnavailableError =                                   -1000,
-    NSItemProviderUnexpectedValueClassError =                              -1100,
-    NSItemProviderValueUnavailableCoercionError NS_AVAILABLE(10_11, 9_0) = -1200
+    NSItemProviderUnknownError                                      = -1,
+    NSItemProviderItemUnavailableError                              = -1000,
+    NSItemProviderUnexpectedValueClassError                         = -1100,
+    NSItemProviderUnavailableCoercionError NS_AVAILABLE(10_11, 9_0) = -1200
 } NS_ENUM_AVAILABLE(10_10, 8_0);
 
 NS_ASSUME_NONNULL_END

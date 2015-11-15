@@ -76,8 +76,8 @@ NS_SWIFT_UNAVAILABLE("Use NSXPCConnection instead")
 - (void)removeRequestMode:(NSString *)rmode;
 @property (readonly, copy) NSArray<NSString *> *requestModes;
 
-- (BOOL)registerName:(NSString *) name;
-- (BOOL)registerName:(NSString *) name withNameServer:(NSPortNameServer *)server;
+- (BOOL)registerName:(nullable NSString *) name;
+- (BOOL)registerName:(nullable NSString *) name withNameServer:(NSPortNameServer *)server;
 
 + (nullable instancetype)connectionWithReceivePort:(nullable NSPort *)receivePort sendPort:(nullable NSPort *)sendPort;
 

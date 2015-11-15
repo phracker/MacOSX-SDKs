@@ -26,17 +26,17 @@ NS_CLASS_AVAILABLE(10_5, NA)
     } _NSTreeNodeFlags;
 }
 
-+ (null_unspecified instancetype)treeNodeWithRepresentedObject:(null_unspecified id)modelObject;
-- (instancetype)initWithRepresentedObject:(null_unspecified id)modelObject;
++ (instancetype)treeNodeWithRepresentedObject:(nullable id)modelObject;
+- (instancetype)initWithRepresentedObject:(nullable id)modelObject;
 
-@property (null_unspecified, readonly, strong) id representedObject;
+@property (nullable, readonly, strong) id representedObject;
 
     // stats
 @property (readonly, strong) NSIndexPath *indexPath; // represents the receivers location in entire tree
 @property (getter=isLeaf, readonly) BOOL leaf; // determined by (count of child nodes == 0)
     
 @property (nullable, readonly, copy) NSArray<NSTreeNode *> *childNodes;    // traversal
-@property (null_unspecified, readonly, strong) NSMutableArray<NSTreeNode *> *mutableChildNodes; // returns a mutable proxy - parentNode of inserted/removed child nodes is automatically updated
+@property (readonly, strong) NSMutableArray<NSTreeNode *> *mutableChildNodes; // returns a mutable proxy - parentNode of inserted/removed child nodes is automatically updated
 - (nullable NSTreeNode *)descendantNodeAtIndexPath:(NSIndexPath *)indexPath; // traversal begins with receiver
 
 @property (nullable, readonly, assign) NSTreeNode *parentNode;

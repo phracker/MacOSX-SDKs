@@ -49,7 +49,8 @@ NS_CLASS_AVAILABLE(10_4,3_0)
 		unsigned int _hasAttributesWithExternalDataReferences:1;
         unsigned int _hasNonstandardPrimitiveProperties:2;
         unsigned int _hasUniqueProperties:1;
-        unsigned int _reservedEntityDescription:20;
+        unsigned int _validationUniqueProperties:1;
+        unsigned int _reservedEntityDescription:19;
     } _entityDescriptionFlags;
     __strong void *_extraIvars;
     NSMutableDictionary *_userInfo;

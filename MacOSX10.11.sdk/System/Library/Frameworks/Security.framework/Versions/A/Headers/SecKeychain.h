@@ -38,6 +38,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*!
 	@enum KeychainStatus
 	@abstract Defines the current status of a keychain.
@@ -45,7 +47,7 @@ extern "C" {
 	@constant kSecReadPermStatus Indicates the keychain is readable.
 	@constant kSecWritePermStatus Indicates the keychain is writable.
 */
-enum
+CF_ENUM(UInt32)
 {
     kSecUnlockStateStatus        = 1,
     kSecReadPermStatus           = 2,
@@ -72,12 +74,6 @@ struct SecKeychainSettings
 };
 typedef struct SecKeychainSettings		SecKeychainSettings;
 
-/*! 
-    @typedef SecAuthenticationType
-	@abstract Represents the type of authentication to use for an Internet password.
-*/
-typedef FourCharCode SecAuthenticationType;
-
 /*!
 	@enum AuthenticationConstants
 	@abstract Defines constants you can use to identify the type of authentication to use for an Internet password.
@@ -97,7 +93,7 @@ typedef FourCharCode SecAuthenticationType;
 #define AUTH_TYPE_FIX_(x) (x)
 #endif
 
-enum
+typedef CF_ENUM(FourCharCode, SecAuthenticationType)
 {
     kSecAuthenticationTypeNTLM             = AUTH_TYPE_FIX_ ('ntlm'),
     kSecAuthenticationTypeMSN              = AUTH_TYPE_FIX_ ('msna'),
@@ -109,12 +105,6 @@ enum
     kSecAuthenticationTypeDefault          = AUTH_TYPE_FIX_ ('dflt'),
     kSecAuthenticationTypeAny              = AUTH_TYPE_FIX_ ( 0 )
 };
-
-/*!
-	@typedef SecProtocolType
-	@abstract Represents the protocol type associated with an AppleShare or Internet password.
-*/
-typedef FourCharCode SecProtocolType;
 
 /*!
 	@enum ProtocolTypeConstants
@@ -154,7 +144,7 @@ typedef FourCharCode SecProtocolType;
 	@constant kSecProtocolTypeSVN Indicates Subversion.
 	@constant kSecProtocolTypeAny Indicates that any protocol is acceptable. When performing a search, use this constant to avoid constraining your search results to a particular protocol.
 */
-enum
+typedef CF_ENUM(FourCharCode, SecProtocolType)
 {
     kSecProtocolTypeFTP         = 'ftp ',
     kSecProtocolTypeFTPAccount  = 'ftpa',
@@ -194,12 +184,6 @@ enum
 };
 
 /*!
-	@typedef SecKeychainEvent
-	@abstract Represents an event in which the state of a keychain or one of its items changed.
-*/
-typedef UInt32 SecKeychainEvent;
-
-/*!
 	@enum KeychainEventConstants
 	@abstract Defines the keychain-related event.
 	@constant kSecLockEvent Indicates a keychain was locked.
@@ -213,7 +197,7 @@ typedef UInt32 SecKeychainEvent;
 	@constant kSecKeychainListChangedEvent Indicates the list of keychains has changed.
 	@constant kSecTrustSettingsChangedEvent Indicates Trust Settings changed.
 */
-enum
+typedef CF_ENUM(UInt32, SecKeychainEvent)
 {
     kSecLockEvent                 = 1,
     kSecUnlockEvent               = 2,
@@ -226,12 +210,6 @@ enum
     kSecKeychainListChangedEvent  = 11,
 	kSecTrustSettingsChangedEvent = 12
 };
-
-/*!
-	@typedef SecKeychainEventMask
-	@abstract Represents a bit mask of keychain events
-*/
-typedef UInt32 SecKeychainEventMask;
 
 /*!
 	@enum KeychainEventConstants
@@ -247,7 +225,7 @@ typedef UInt32 SecKeychainEventMask;
 	@constant kSecTrustSettingsChangedEvent If the bit specified by this mask is set, your callback function will be invoked when there is a change in certificate Trust Settings. 
 	@constant kSecEveryEventMask If all the bits are set, your callback function will be invoked whenever any event occurs.
 */
-enum
+typedef CF_OPTIONS(UInt32, SecKeychainEventMask)
 {
     kSecLockEventMask            		= 1 << kSecLockEvent,
     kSecUnlockEventMask          		= 1 << kSecUnlockEvent,
@@ -273,10 +251,10 @@ enum
 */
 struct SecKeychainCallbackInfo 
 {
-    UInt32				version;
-    SecKeychainItemRef	item;
-    SecKeychainRef		keychain;
-	pid_t				pid;
+    UInt32                          version;
+    SecKeychainItemRef __nonnull	item;
+    SecKeychainRef __nonnull		keychain;
+	pid_t                           pid;
 };
 typedef struct SecKeychainCallbackInfo SecKeychainCallbackInfo;
 									
@@ -293,7 +271,7 @@ CFTypeID SecKeychainGetTypeID(void);
 	@param returnVers On return, a pointer to the version number of the Keychain Manager installed on the current system.
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainGetVersion(UInt32 *returnVers);
+OSStatus SecKeychainGetVersion(UInt32 * __nonnull returnVers);
 
 #pragma mark ---- Keychain Management ----
 /*!
@@ -305,7 +283,7 @@ OSStatus SecKeychainGetVersion(UInt32 *returnVers);
     @param keychain On return, a pointer to the keychain reference. The memory that keychain occupies must be released by calling CFRelease when finished with it.
 	@result A result code.  See "Security Error Codes" (SecBase.h). In addition, errSecParam (-50) may be returned if the keychain parameter is invalid (NULL).
 */
-OSStatus SecKeychainOpen(const char *pathName, SecKeychainRef *keychain);
+OSStatus SecKeychainOpen(const char *pathName, SecKeychainRef * __nonnull CF_RETURNS_RETAINED keychain);
 
 /*!
 	@function SecKeychainCreate
@@ -318,7 +296,7 @@ OSStatus SecKeychainOpen(const char *pathName, SecKeychainRef *keychain);
     @param keychain On return, a pointer to a keychain reference. The memory that keychain occupies must be released by calling CFRelease when finished with it.
 	@result A result code.  See "Security Error Codes" (SecBase.h). In addition, errSecParam (-50) may be returned if the keychain parameter is invalid (NULL).
 */
-OSStatus SecKeychainCreate(const char *pathName, UInt32 passwordLength, const void *password, Boolean promptUser, SecAccessRef initialAccess, SecKeychainRef *keychain);
+OSStatus SecKeychainCreate(const char *pathName, UInt32 passwordLength, const void * __nullable password, Boolean promptUser, SecAccessRef __nullable initialAccess, SecKeychainRef * __nonnull CF_RETURNS_RETAINED keychain);
 
 /*!
 	@function SecKeychainDelete
@@ -326,7 +304,7 @@ OSStatus SecKeychainCreate(const char *pathName, UInt32 passwordLength, const vo
     @param keychainOrArray A single keychain reference or a reference to an array of keychains to delete. IMPORTANT: SecKeychainDelete does not dispose the memory occupied by keychain references; use the CFRelease function when you are completely finished with a keychain.
 	@result A result code.  See "Security Error Codes" (SecBase.h). In addition, errSecInvalidKeychain (-25295) may be returned if the keychain parameter is invalid (NULL).
 */
-OSStatus SecKeychainDelete(SecKeychainRef keychainOrArray);
+OSStatus SecKeychainDelete(SecKeychainRef __nullable keychainOrArray);
 
 /*!
 	@function SecKeychainSetSettings
@@ -335,7 +313,7 @@ OSStatus SecKeychainDelete(SecKeychainRef keychainOrArray);
  	@param newSettings A pointer to the new keychain settings.
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainSetSettings(SecKeychainRef keychain, const SecKeychainSettings *newSettings);
+OSStatus SecKeychainSetSettings(SecKeychainRef __nullable keychain, const SecKeychainSettings *newSettings);
 
 /*!
 	@function SecKeychainCopySettings
@@ -344,7 +322,7 @@ OSStatus SecKeychainSetSettings(SecKeychainRef keychain, const SecKeychainSettin
     @param outSettings  A pointer to a keychain settings structure. Since this structure is versioned, you must preallocate it and fill in the version of the structure.
  @result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainCopySettings(SecKeychainRef keychain, SecKeychainSettings *outSettings);
+OSStatus SecKeychainCopySettings(SecKeychainRef __nullable keychain, SecKeychainSettings *outSettings);
 
 /*!
 	@function SecKeychainUnlock
@@ -356,7 +334,7 @@ OSStatus SecKeychainCopySettings(SecKeychainRef keychain, SecKeychainSettings *o
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion In most cases, your application does not need to call the SecKeychainUnlock function directly, since most Keychain Manager functions that require an unlocked keychain call SecKeychainUnlock automatically. If your application needs to verify that a keychain is unlocked, call the function SecKeychainGetStatus. 
 */
-OSStatus SecKeychainUnlock(SecKeychainRef keychain, UInt32 passwordLength, const void *password, Boolean usePassword);
+OSStatus SecKeychainUnlock(SecKeychainRef __nullable keychain, UInt32 passwordLength, const void * __nullable password, Boolean usePassword);
 
 /*!
 	@function SecKeychainLock
@@ -364,7 +342,7 @@ OSStatus SecKeychainUnlock(SecKeychainRef keychain, UInt32 passwordLength, const
     @param keychain A reference to the keychain to lock.
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainLock(SecKeychainRef	keychain);
+OSStatus SecKeychainLock(SecKeychainRef	__nullable keychain);
 
 /*!
 	@function SecKeychainLockAll
@@ -379,7 +357,7 @@ OSStatus SecKeychainLockAll(void);
 	@param keychain On return, a pointer to the default keychain reference.
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainCopyDefault(SecKeychainRef *keychain);
+OSStatus SecKeychainCopyDefault(SecKeychainRef * __nonnull CF_RETURNS_RETAINED keychain);
 
 /*!
 	@function SecKeychainSetDefault
@@ -387,7 +365,7 @@ OSStatus SecKeychainCopyDefault(SecKeychainRef *keychain);
 	@param keychain A reference to the keychain to set as default.
 	@result A result code.  See "Security Error Codes" (SecBase.h). In addition, errSecParam (-50) may be returned if the keychain parameter is invalid (NULL).
 */
-OSStatus SecKeychainSetDefault(SecKeychainRef keychain);
+OSStatus SecKeychainSetDefault(SecKeychainRef __nullable keychain);
 
 /*!
 	@function SecKeychainCopySearchList
@@ -395,7 +373,7 @@ OSStatus SecKeychainSetDefault(SecKeychainRef keychain);
 	@param searchList The returned list of keychains to search. When finished with the array, you must call CFRelease() to release the memory.
 	@result A result code.  See "Security Error Codes" (SecBase.h). In addition, errSecParam (-50) may be returned if the keychain list is not specified (NULL).
 */
-OSStatus SecKeychainCopySearchList(CFArrayRef *searchList);
+OSStatus SecKeychainCopySearchList(CFArrayRef * __nonnull CF_RETURNS_RETAINED searchList);
 
 /*!
 	@function SecKeychainSetSearchList
@@ -410,16 +388,16 @@ OSStatus SecKeychainSetSearchList(CFArrayRef searchList);
  *	New versions of {Copy,Get}{SearchList,Default} that address multiple preference domains.
  *	These calls subsume the old forms with domain == kPreferenceDomainUser.
  */
-typedef enum {
+typedef CF_ENUM(int, SecPreferencesDomain) {
 	kSecPreferencesDomainUser,			/* user domain */
 	kSecPreferencesDomainSystem,		/* system (daemon) domain */
 	kSecPreferencesDomainCommon,		/* preferences to be merged to everyone */
 	kSecPreferencesDomainDynamic		/* dynamic searchlist (typically removable keychains like smartcards) */
-} SecPreferencesDomain;
+};
 
-OSStatus SecKeychainCopyDomainDefault(SecPreferencesDomain domain, SecKeychainRef *keychain);
-OSStatus SecKeychainSetDomainDefault(SecPreferencesDomain domain, SecKeychainRef keychain);
-OSStatus SecKeychainCopyDomainSearchList(SecPreferencesDomain domain, CFArrayRef *searchList);
+OSStatus SecKeychainCopyDomainDefault(SecPreferencesDomain domain, SecKeychainRef * __nonnull CF_RETURNS_RETAINED keychain);
+OSStatus SecKeychainSetDomainDefault(SecPreferencesDomain domain, SecKeychainRef __nullable keychain);
+OSStatus SecKeychainCopyDomainSearchList(SecPreferencesDomain domain, CFArrayRef * __nonnull CF_RETURNS_RETAINED searchList);
 OSStatus SecKeychainSetDomainSearchList(SecPreferencesDomain domain, CFArrayRef searchList);
 OSStatus SecKeychainSetPreferenceDomain(SecPreferencesDomain domain);
 OSStatus SecKeychainGetPreferenceDomain(SecPreferencesDomain *domain);
@@ -432,7 +410,7 @@ OSStatus SecKeychainGetPreferenceDomain(SecPreferencesDomain *domain);
 	@param keychainStatus On return, a pointer to the status of the specified keychain.  See KeychainStatus for valid status constants.
     @result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainGetStatus(SecKeychainRef keychain, SecKeychainStatus *keychainStatus);
+OSStatus SecKeychainGetStatus(SecKeychainRef __nullable keychain, SecKeychainStatus *keychainStatus);
 
 /*!
 	@function SecKeychainGetPath
@@ -442,7 +420,7 @@ OSStatus SecKeychainGetStatus(SecKeychainRef keychain, SecKeychainStatus *keycha
 	@param pathName On return, the POSIX path to the keychain.
     @result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainGetPath(SecKeychainRef keychain, UInt32 *ioPathLength, char *pathName);
+OSStatus SecKeychainGetPath(SecKeychainRef __nullable keychain, UInt32 *ioPathLength, char *pathName);
 
 #pragma mark ---- Keychain Item Attribute Information ----
 /*!
@@ -454,7 +432,7 @@ OSStatus SecKeychainGetPath(SecKeychainRef keychain, UInt32 *ioPathLength, char 
     @result A result code.  See "Security Error Codes" (SecBase.h). In addition, errSecParam (-50) may be returned if not enough valid parameters were supplied (NULL).
 	@discussion Warning, this call returns more attributes than are support by the old style Keychain API and passing them into older calls will yield an invalid attribute error. The recommended call to retrieve the attribute values is the SecKeychainItemCopyAttributesAndData function.
 */
-OSStatus SecKeychainAttributeInfoForItemID(SecKeychainRef keychain,  UInt32 itemID, SecKeychainAttributeInfo **info);
+OSStatus SecKeychainAttributeInfoForItemID(SecKeychainRef __nullable keychain,  UInt32 itemID, SecKeychainAttributeInfo * __nullable * __nonnull info);
 
 /*!
 	@function SecKeychainFreeAttributeInfo
@@ -481,7 +459,7 @@ OSStatus SecKeychainFreeAttributeInfo(SecKeychainAttributeInfo *info);
 
 	To add your callback function, use the SecKeychainAddCallback function.  To remove your callback function, use the SecKeychainRemoveCallback function.
 */
-typedef OSStatus (*SecKeychainCallback)(SecKeychainEvent keychainEvent, SecKeychainCallbackInfo *info, void *context);
+typedef OSStatus (*SecKeychainCallback)(SecKeychainEvent keychainEvent, SecKeychainCallbackInfo *info, void * __nullable context);
 
 /*!
 	@function SecKeychainAddCallback
@@ -491,7 +469,7 @@ typedef OSStatus (*SecKeychainCallback)(SecKeychainEvent keychainEvent, SecKeych
 	@param userContext A pointer to application-defined storage that will be passed to your callback function. Your application can use this to associate any particular call of SecKeychainAddCallback with any particular call of your keychain event callback function.
     @result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainAddCallback(SecKeychainCallback callbackFunction, SecKeychainEventMask eventMask, void* userContext);
+OSStatus SecKeychainAddCallback(SecKeychainCallback callbackFunction, SecKeychainEventMask eventMask, void * __nullable userContext);
 
 /*!
 	@function SecKeychainRemoveCallback
@@ -523,7 +501,7 @@ OSStatus SecKeychainRemoveCallback(SecKeychainCallback callbackFunction);
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion The SecKeychainAddInternetPassword function adds a new Internet server password to the specified keychain. Required parameters to identify the password are serverName and accountName (you cannot pass NULL for both parameters). In addition, some protocols may require an optional securityDomain when authentication is requested. SecKeychainAddInternetPassword optionally returns a reference to the newly added item. 
 */
-OSStatus SecKeychainAddInternetPassword(SecKeychainRef keychain, UInt32 serverNameLength, const char *serverName, UInt32 securityDomainLength, const char *securityDomain, UInt32 accountNameLength, const char *accountName, UInt32 pathLength, const char *path, UInt16 port, SecProtocolType protocol, SecAuthenticationType authenticationType, UInt32 passwordLength, const void *passwordData, SecKeychainItemRef *itemRef);
+OSStatus SecKeychainAddInternetPassword(SecKeychainRef __nullable keychain, UInt32 serverNameLength, const char * __nullable serverName, UInt32 securityDomainLength, const char * __nullable securityDomain, UInt32 accountNameLength, const char * __nullable accountName, UInt32 pathLength, const char * __nullable path, UInt16 port, SecProtocolType protocol, SecAuthenticationType authenticationType, UInt32 passwordLength, const void *passwordData, SecKeychainItemRef * __nullable CF_RETURNS_RETAINED itemRef);
 
 /*!
 	@function SecKeychainFindInternetPassword
@@ -546,7 +524,7 @@ OSStatus SecKeychainAddInternetPassword(SecKeychainRef keychain, UInt32 serverNa
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion The SecKeychainFindInternetPassword function finds the first Internet password item which matches the attributes you provide. Most attributes are optional; you should pass only as many as you need to narrow the search sufficiently for your application's intended use. SecKeychainFindInternetPassword optionally returns a reference to the found item.
 */
-OSStatus SecKeychainFindInternetPassword(CFTypeRef keychainOrArray, UInt32 serverNameLength, const char *serverName, UInt32 securityDomainLength, const char *securityDomain, UInt32 accountNameLength, const char *accountName, UInt32 pathLength, const char *path, UInt16 port, SecProtocolType protocol, SecAuthenticationType authenticationType, UInt32 *passwordLength, void **passwordData, SecKeychainItemRef *itemRef);
+OSStatus SecKeychainFindInternetPassword(CFTypeRef __nullable keychainOrArray, UInt32 serverNameLength, const char * __nullable serverName, UInt32 securityDomainLength, const char * __nullable securityDomain, UInt32 accountNameLength, const char * __nullable accountName, UInt32 pathLength, const char * __nullable path, UInt16 port, SecProtocolType protocol, SecAuthenticationType authenticationType, UInt32 * __nullable passwordLength, void * __nullable * __nullable passwordData, SecKeychainItemRef * __nullable CF_RETURNS_RETAINED itemRef);
 
 /*!
 	@function SecKeychainAddGenericPassword
@@ -562,7 +540,7 @@ OSStatus SecKeychainFindInternetPassword(CFTypeRef keychainOrArray, UInt32 serve
 	@result A result code. See "Security Error Codes" (SecBase.h).
 	@discussion The SecKeychainAddGenericPassword function adds a new generic password to the default keychain. Required parameters to identify the password are serviceName and accountName, which are application-defined strings. SecKeychainAddGenericPassword optionally returns a reference to the newly added item. 
 */
-OSStatus SecKeychainAddGenericPassword(SecKeychainRef keychain, UInt32 serviceNameLength, const char *serviceName, UInt32 accountNameLength, const char *accountName, UInt32 passwordLength, const void *passwordData, SecKeychainItemRef *itemRef);
+OSStatus SecKeychainAddGenericPassword(SecKeychainRef __nullable keychain, UInt32 serviceNameLength, const char * __nullable serviceName, UInt32 accountNameLength, const char * __nullable accountName, UInt32 passwordLength, const void *passwordData, SecKeychainItemRef * __nullable CF_RETURNS_RETAINED itemRef);
 
 /*!
 	@function SecKeychainFindGenericPassword
@@ -578,7 +556,7 @@ OSStatus SecKeychainAddGenericPassword(SecKeychainRef keychain, UInt32 serviceNa
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion The SecKeychainFindGenericPassword function finds the first generic password item which matches the attributes you provide. Most attributes are optional; you should pass only as many as you need to narrow the search sufficiently for your application's intended use. SecKeychainFindGenericPassword optionally returns a reference to the found item. 
 */
-OSStatus SecKeychainFindGenericPassword(CFTypeRef keychainOrArray,  UInt32 serviceNameLength, const char *serviceName, UInt32 accountNameLength, const char *accountName, UInt32 *passwordLength, void **passwordData, SecKeychainItemRef *itemRef);
+OSStatus SecKeychainFindGenericPassword(CFTypeRef __nullable keychainOrArray,  UInt32 serviceNameLength, const char * __nullable serviceName, UInt32 accountNameLength, const char * __nullable accountName, UInt32 * __nullable passwordLength, void * __nullable * __nullable passwordData, SecKeychainItemRef * __nullable CF_RETURNS_RETAINED itemRef);
 
 #pragma mark ---- Managing User Interaction ----
 /*!
@@ -606,7 +584,7 @@ OSStatus SecKeychainGetUserInteractionAllowed(Boolean *state);
     @result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion This API is deprecated for 10.7. It should nho longer be needed.
 */
-OSStatus SecKeychainGetCSPHandle(SecKeychainRef keychain, CSSM_CSP_HANDLE *cspHandle)
+OSStatus SecKeychainGetCSPHandle(SecKeychainRef __nullable keychain, CSSM_CSP_HANDLE *cspHandle)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -617,7 +595,7 @@ OSStatus SecKeychainGetCSPHandle(SecKeychainRef keychain, CSSM_CSP_HANDLE *cspHa
     @result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion This API is deprecated for 10.7. It should nho longer be needed.
 */
-OSStatus SecKeychainGetDLDBHandle(SecKeychainRef keychain, CSSM_DL_DB_HANDLE *dldbHandle)
+OSStatus SecKeychainGetDLDBHandle(SecKeychainRef __nullable keychain, CSSM_DL_DB_HANDLE *dldbHandle)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 #pragma mark ---- Keychain Access Management ----
@@ -628,7 +606,7 @@ OSStatus SecKeychainGetDLDBHandle(SecKeychainRef keychain, CSSM_DL_DB_HANDLE *dl
     @param accessRef On return, a pointer to the access reference.
     @result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainCopyAccess(SecKeychainRef keychain, SecAccessRef *access);
+OSStatus SecKeychainCopyAccess(SecKeychainRef __nullable keychain, SecAccessRef * __nonnull CF_RETURNS_RETAINED access);
 
 /*!
 	@function SecKeychainSetAccess
@@ -637,7 +615,9 @@ OSStatus SecKeychainCopyAccess(SecKeychainRef keychain, SecAccessRef *access);
     @param accessRef An access reference.
     @result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainSetAccess(SecKeychainRef keychain, SecAccessRef access);
+OSStatus SecKeychainSetAccess(SecKeychainRef __nullable keychain, SecAccessRef access);
+
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

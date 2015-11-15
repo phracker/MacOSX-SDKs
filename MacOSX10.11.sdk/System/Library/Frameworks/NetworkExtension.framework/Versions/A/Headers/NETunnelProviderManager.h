@@ -8,6 +8,7 @@
 #endif
 
 #import <NetworkExtension/NEVPNManager.h>
+#import <NetworkExtension/NETunnelProvider.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -41,6 +42,12 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  * @discussion This function returns an array of NEAppRule objects.
  */
 - (nullable NSArray<NEAppRule *> *)copyAppRules NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ * @property routingMethod
+ * @discussion The method by which network traffic is routed to the tunnel. The default is NETunnelProviderRoutingMethodDestinationIP.
+ */
+@property (readonly) NETunnelProviderRoutingMethod routingMethod NS_AVAILABLE(10_11, 9_0);
 
 @end
 

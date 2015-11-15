@@ -3,19 +3,14 @@
 	
     Framework:  AVFoundation
 	
-    Copyright 2010-2012 Apple Inc. All rights reserved.
+    Copyright 2010-2015 Apple Inc. All rights reserved.
 	
  */
 
 #import <AVFoundation/AVBase.h>
 
-#if TARGET_OS_IPHONE
 #import <CoreGraphics/CGBase.h>
 #import <CoreGraphics/CGGeometry.h>
-#else // ! TARGET_OS_IPHONE
-#import <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGBase.h>
-#import <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGGeometry.h>
-#endif // ! TARGET_OS_IPHONE
 
 /*!
  @function					AVMakeRectWithAspectRatioInsideRect

@@ -1,4 +1,4 @@
-.TH "ZSHOPTIONS" "1" "October 7, 2014" "zsh 5\&.0\&.7"
+.TH "ZSHOPTIONS" "1" "May 31, 2015" "zsh 5\&.0\&.8"
 .SH "NAME"
 zshoptions \- zsh options
 .\" Yodl file: Zsh/options.yo
@@ -51,6 +51,10 @@ are changed from the default\&.
 If a command is issued that can\&'t be executed as a normal command,
 and the command is the name of a directory, perform the \fBcd\fP
 command to that directory\&.
+This option is only applicable if the option \fBSHIN_STDIN\fP is set,
+i\&.e\&. if commands are being read from standard input\&.  The option
+is designed for interactive use; it is recommended that \fBcd\fP
+be used explicitly in scripts to avoid ambiguity\&.
 .TP
 \fBAUTO_PUSHD\fP (\fB\-N\fP)
 Make \fBcd\fP push the old directory onto the directory stack\&.
@@ -291,9 +295,10 @@ for filename generation, etc\&.  (An initial unquoted `\fB~\fP\&'
 always produces named directory expansion\&.)
 .TP
 \fBFORCE_FLOAT\fP
-Constants in arithmetic evaluation will be treated as floating point
-even without the use of a decimal point\&.  Integers in any base
-will be converted\&.
+Constants in arithmetic evaluation will be treated as
+floating point even without the use of a decimal point; the
+values of integer variables will be converted to floating point when
+used in arithmetic expressions\&.  Integers in any base will be converted\&.
 .TP
 \fBGLOB\fP (\fB+F\fP, ksh: \fB+f\fP) <D>
 Perform filename generation (globbing)\&.
@@ -316,7 +321,7 @@ Do not require a leading `\fB\&.\fP\&' in a filename to be matched explicitly\&.
 .TP
 \fBGLOB_SUBST\fP <C> <K> <S>
 Treat any characters resulting from parameter expansion as being
-eligible for file expansion and filename generation, and any
+eligible for filename expansion and filename generation, and any
 characters resulting from command substitution as being eligible for
 filename generation\&.  Braces (and commas in between) do not become eligible
 for expansion\&.
@@ -490,7 +495,7 @@ and the duration (in seconds) to the history file\&.  The format of
 this prefixed data is:
 .RS
 .PP
-`\fB:\fP \fI<beginning time>\fP\fB:\fP\fI<elapsed seconds>\fP\fB;\fP\fI<command>\fP\&'\&.
+`\fB: \fP\fI<beginning time>\fP\fB:\fP\fI<elapsed seconds>\fP\fB;\fP\fI<command>\fP\&'\&.
 .RE
 .TP
 \fBHIST_ALLOW_CLOBBER\fP
@@ -498,7 +503,7 @@ Add `\fB|\fP\&' to output redirections in the history\&.  This allows history
 references to clobber files even when \fBCLOBBER\fP is unset\&.
 .TP
 \fBHIST_BEEP\fP <D>
-Beep when an attempt is made to access a history entry which
+Beep in ZLE when a widget attempts to access a history entry which
 isn\&'t there\&.
 .TP
 \fBHIST_EXPIRE_DUPS_FIRST\fP
@@ -572,7 +577,7 @@ being added to the history list\&.
 .TP
 \fBHIST_SAVE_BY_COPY\fP <D>
 When the history file is re\-written, we normally write out a copy of
-the file named $HISTFILE\&.new and then rename it over the old one\&.
+the file named \fB$HISTFILE\&.new\fP and then rename it over the old one\&.
 However, if this option is unset, we instead truncate the old
 history file and write out the new version in\-place\&.  If one of the
 history\-appending options is enabled, this option only has an effect
@@ -602,7 +607,7 @@ are added to the \fB$HISTFILE\fP incrementally (as soon as they are
 entered), rather than waiting until the shell exits\&.
 The file will still be periodically re\-written to trim it when the
 number of lines grows 20% beyond the value specified by
-\fB$SAVEHIST\fP (see also the HIST_SAVE_BY_COPY option)\&.
+\fB$SAVEHIST\fP (see also the \fBHIST_SAVE_BY_COPY\fP option)\&.
 .TP
 \fBINC_APPEND_HISTORY_TIME\fP
 This option is a variant of \fBINC_APPEND_HISTORY\fP in which, where
@@ -648,7 +653,7 @@ and then manually import commands whenever you need them using `\fBfc
 \fBALL_EXPORT\fP (\fB\-a\fP, ksh: \fB\-a\fP)
 All parameters subsequently defined are automatically exported\&.
 .TP
-\fBGLOBAL_EXPORT\fP (\fB<Z>\fP)
+\fBGLOBAL_EXPORT\fP <Z>
 If this option is set, passing the \fB\-x\fP flag to the builtins \fBdeclare\fP,
 \fBfloat\fP, \fBinteger\fP, \fBreadonly\fP and \fBtypeset\fP (but not \fBlocal\fP)
 will also set the \fB\-g\fP flag;  hence parameters exported to
@@ -892,10 +897,10 @@ shell is saved for output within a subshell (for example, within a
 pipeline)\&.  When the option is set, the output of \fBjobs\fP is empty
 until a job is started within the subshell\&.
 .PP
-When the option is set, it becomes possible to use the \fBwait\fP builtin to
-wait for the last job started in the background (as given by \fB$!\fP) even
-if that job has already exited\&.  This works even if the option is turned
-on temporarily around the use of the \fBwait\fP builtin\&.
+In previous versions of the shell, it was necessary to enable
+\fBPOSIX_JOBS\fP in order for the builtin command \fBwait\fP to return the
+status of background jobs that had already exited\&.  This is no longer
+the case\&.
 .RE
 .PP
 .SS "Prompting"
@@ -922,8 +927,8 @@ only successful if your terminal has automatic margins, which is typical)\&.
 .RS
 .PP
 When a partial line is preserved, by default you will see an inverse+bold
-character at the end of the partial line:  a "%" for a normal user or
-a "#" for root\&.  If set, the shell parameter \fBPROMPT_EOL_MARK\fP can be
+character at the end of the partial line:  a `\fB%\fP\&' for a normal user or
+a `\fB#\fP\&' for root\&.  If set, the shell parameter \fBPROMPT_EOL_MARK\fP can be
 used to customize how the end of partial lines are shown\&.
 .PP
 NOTE: if the \fBPROMPT_CR\fP option is not set, enabling this option will
@@ -1155,12 +1160,12 @@ of zsh before 5\&.0\&.1\&.
 \fBCSH_JUNKIE_HISTORY\fP <C>
 A history reference without an event specifier will always refer to the
 previous command\&.  Without this option, such a history reference refers
-to the same event as the previous history reference, defaulting to the
-previous command\&.
+to the same event as the previous history reference on the current 
+command line, defaulting to the previous command\&.
 .TP
 \fBCSH_JUNKIE_LOOPS\fP <C>
-Allow loop bodies to take the form `\fIlist\fP; \fBend\fP\&' instead of
-`\fBdo\fP \fIlist\fP; \fBdone\fP\&'\&.
+Allow loop bodies to take the form `\fIlist\fP\fB; end\fP\&' instead of
+`\fBdo \fP\fIlist\fP\fB; done\fP\&'\&.
 .TP
 \fBCSH_JUNKIE_QUOTES\fP <C>
 Changes the rules for single\- and double\-quoted text to match that of
@@ -1303,6 +1308,10 @@ builtins are
 In addition, various error conditions associated with the above builtins
 or \fBexec\fP cause a non\-interactive shell to exit and an interactive
 shell to return to its top\-level processing\&.
+.PP
+Furthermore, the \fBgetopts\fP builtin behaves in a POSIX\-compatible
+fashion in that the associated variable \fBOPTIND\fP is not made
+local to functions\&.
 .RE
 .TP
 \fBPOSIX_IDENTIFIERS\fP <K> <S>
@@ -1310,6 +1319,13 @@ When this option is set, only the ASCII characters \fBa\fP to \fBz\fP, \fBA\fP t
 \fBZ\fP, \fB0\fP to \fB9\fP and \fB_\fP may be used in identifiers (names
 of shell parameters and modules)\&.
 .RS
+.PP
+In addition, setting this option limits the effect of parameter
+substitution with no braces, so that the expression \fB$#\fP is treated as
+the parameter \fB$#\fP even if followed by a valid parameter name\&.
+When it is unset, zsh allows expresions of the form \fB$#\fP\fIname\fP
+to refer to the length of \fB$\fP\fIname\fP, even for special variables,
+for example in expressions such as \fB$#\-\fP and \fB$#*\fP\&.
 .PP
 When the option is unset and multibyte character support is enabled (i\&.e\&. it
 is compiled in and the option \fBMULTIBYTE\fP is set), then additionally any
@@ -1348,7 +1364,7 @@ and with the option on as the characters \fBa\fP, \fBb\fP, \fBd\fP\&.
 .RE
 .TP
 \fBPOSIX_TRAPS\fP <K> <S>
-When the is option is set, the usual zsh behaviour of executing
+When this option is set, the usual zsh behaviour of executing
 traps for \fBEXIT\fP on exit from shell functions is suppressed\&.
 In that case, manipulating \fBEXIT\fP traps always alters the global
 trap for exiting the shell; the \fBLOCAL_TRAPS\fP option is
@@ -1358,7 +1374,7 @@ value from the surrounding context, not from code executed within the
 trap\&.
 .TP
 \fBSH_FILE_EXPANSION\fP <K> <S>
-Perform filename expansion (e\&.g\&., ~ expansion) \fIbefore\fP
+Perform filename expansion (e\&.g\&., \fB~\fP expansion) \fIbefore\fP
 parameter expansion, command substitution, arithmetic expansion
 and brace expansion\&.
 If this option is unset, it is performed \fIafter\fP
@@ -1405,10 +1421,31 @@ If this option is not explicitly set, the shell becomes a login shell if
 the first character of the \fBargv[0]\fP passed to the shell is a `\fB\-\fP\&'\&.
 .TP
 \fBPRIVILEGED\fP (\fB\-p\fP, ksh: \fB\-p\fP)
-Turn on privileged mode\&. This is enabled automatically on startup if the
-effective user (group) ID is not equal to the real user (group) ID\&.  Turning
-this option off causes the effective user and group IDs to be set to the
-real user and group IDs\&. This option disables sourcing user startup files\&.
+Turn on privileged mode\&. Typically this is used when script is to be run
+with elevated privileges\&. This should be done as follows directly with
+the \fB\-p\fP option to zsh so that it takes effect during startup\&.
+.RS
+.PP
+.RS
+.nf
+\fB#!/bin/zsh \-p\fP
+.fi
+.RE
+.PP
+The option is enabled automatically on startup if the effective user
+(group) ID is not equal to the real user (group) ID\&. In this case,
+turning the option off causes the effective user and group IDs to be set
+to the real user and group IDs\&. Be aware that if that fails the shell may
+be running with different IDs than was intended so a script should check
+for failure and act accordingly, for example:
+.PP
+.RS
+.nf
+\fBunsetopt privileged || exit\fP
+.fi
+.RE
+.PP
+The \fBPRIVILEGED\fP option disables sourcing user startup files\&.
 If zsh is invoked as `\fBsh\fP\&' or `\fBksh\fP' with this option set,
 \fB/etc/suid_profile\fP is sourced (after \fB/etc/profile\fP on interactive
 shells)\&. Sourcing \fB~/\&.profile\fP is disabled and the contents of the
@@ -1416,6 +1453,7 @@ shells)\&. Sourcing \fB~/\&.profile\fP is disabled and the contents of the
 \fB\-m\fP option of \fBsetopt\fP and \fBunsetopt\fP, and changing it inside a
 function always changes it globally regardless of the \fBLOCAL_OPTIONS\fP
 option\&.
+.RE
 .TP
 \fBRESTRICTED\fP (\fB\-r\fP)
 Enables restricted mode\&.  This option cannot be changed using
@@ -1433,7 +1471,7 @@ taken as a file to run will instead be treated as a normal positional
 parameter\&.
 Note that setting or unsetting this option on the command line does not
 necessarily affect the state the option will have while the shell is
-running \- that is purely an indicator of whether on not commands are
+running \- that is purely an indicator of whether or not commands are
 \fIactually\fP being read from standard input\&.
 The value of this option can only be changed via flags supplied at
 invocation of the shell\&.

@@ -1048,9 +1048,6 @@ typedef struct {
 	CSSM_DL_DB_HANDLE			DlDbHandle;
 	CSSM_DB_UNIQUE_RECORD_PTR	UniqueRecord;
 
-	/* CRLReason code if cert is revoked */
-	sint32						CrlReason;
-
 } CSSM_TP_APPLE_EVIDENCE_INFO;
 
 /*

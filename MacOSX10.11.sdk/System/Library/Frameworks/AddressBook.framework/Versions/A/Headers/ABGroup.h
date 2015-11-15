@@ -5,6 +5,9 @@
 //  Copyright (c) 2003-2007 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABGROUP__
+#define __ABGROUP__
+
 #import <AddressBook/ABRecord.h>
 #import <AddressBook/ABTypedefs.h>
 
@@ -121,3 +124,4 @@
     // Note: Support for nil values was added to Mac OS X version 10.2.4
 @end
 
+#endif // __ABGROUP__

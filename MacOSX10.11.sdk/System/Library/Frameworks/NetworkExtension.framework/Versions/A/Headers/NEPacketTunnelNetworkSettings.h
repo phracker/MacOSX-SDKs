@@ -46,9 +46,15 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 /*!
  * @property tunnelOverheadBytes
- * @discussion An NSNumber object containing the number of bytes of overhead appended to each outbound packet through the tunnel.
+ * @discussion An NSNumber object containing the number of bytes of overhead appended to each outbound packet through the tunnel. The MTU for the TUN interface is computed by subtracting this value from the MTU of the primary physical interface.
  */
 @property (copy, nullable) NSNumber *tunnelOverheadBytes NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ * @property MTU
+ * @discussion An NSNumber object containing the Maximum Transmission Unit (MTU) size in bytes to assign to the TUN interface. If this property is set, the tunnelOverheadBytes property is ignored.
+ */
+@property (copy, nullable) NSNumber *MTU NS_AVAILABLE(10_11, 9_0);
 
 @end
 

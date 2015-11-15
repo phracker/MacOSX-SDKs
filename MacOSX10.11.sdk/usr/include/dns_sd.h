@@ -66,7 +66,7 @@
  */
 
 #ifndef _DNS_SD_H
-#define _DNS_SD_H 5980000
+#define _DNS_SD_H 6240102
 
 #ifdef  __cplusplus
 extern "C" {
@@ -730,9 +730,8 @@ enum
  * DNS server." Normally, most clients will use 0 for interface index to
  * automatically get the default sensible behaviour.
  *
- * If the client passes a positive interface index, then for multicast names that
- * indicates to do the operation only on that one interface. For unicast names the
- * interface index is ignored unless kDNSServiceFlagsForceMulticast is also set.
+ * If the client passes a positive interface index, then that indicates to do the
+ * operation only on that one specified interface.
  *
  * If the client passes kDNSServiceInterfaceIndexLocalOnly when registering
  * a service, then that service will be found *only* by other local clients
@@ -2661,34 +2660,6 @@ DNSServiceErrorType DNSSD_API DNSServiceSleepKeepalive
     DNSServiceSleepKeepaliveReply callBack,
     void                                *context
 );
-#endif
-
-#ifdef APPLE_OSX_mDNSResponder
-/* DNSServiceCreateDelegateConnection()
- *
- * Create a delegate connection to the daemon allowing efficient registration of
- * multiple individual records.
- *
- * Parameters:
- *
- * sdRef:           A pointer to an uninitialized DNSServiceRef. Deallocating
- *                  the reference (via DNSServiceRefDeallocate()) severs the
- *                  connection and deregisters all records registered on this connection.
- *
- * pid :            Process ID of the delegate
- *
- * uuid:            UUID of the delegate
- *
- *                  Note that only one of the two arguments (pid or uuid) can be specified. If pid
- *                  is zero, uuid will be assumed to be a valid value; otherwise pid will be used.
- *
- * return value:    Returns kDNSServiceErr_NoError on success, otherwise returns
- *                  an error code indicating the specific failure that occurred (in which
- *                  case the DNSServiceRef is not initialized). kDNSServiceErr_NotAuth is
- *                  returned to indicate that the calling process does not have entitlements
- *                  to use this API.
- */
-DNSServiceErrorType DNSSD_API DNSServiceCreateDelegateConnection(DNSServiceRef *sdRef, int32_t pid, uuid_t uuid);
 #endif
 
 #ifdef __APPLE_API_PRIVATE

@@ -307,9 +307,16 @@ NS_ENUM(NSInteger) {
 #define NS_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
 #define NS_ASSUME_NONNULL_END   _Pragma("clang assume_nonnull end")
 
-#define NS_REVISED_FOR_SWIFT CF_REVISED_FOR_SWIFT
+#define NS_REFINED_FOR_SWIFT CF_REFINED_FOR_SWIFT
 
 #define NS_SWIFT_NAME(_name) CF_SWIFT_NAME(_name)
+
+#if __has_attribute(swift_error)
+#define NS_SWIFT_NOTHROW __attribute__((swift_error(none)))
+#else
+#define NS_SWIFT_NOTHROW
+#endif
+
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -385,6 +392,10 @@ FOUNDATION_EXPORT double NSFoundationVersionNumber;
 #define NSFoundationVersionNumber10_9 1056
 #define NSFoundationVersionNumber10_9_1 1056
 #define NSFoundationVersionNumber10_9_2 1056.13
+#define NSFoundationVersionNumber10_10 1151.16
+#define NSFoundationVersionNumber10_10_1 1151.16
+#define NSFoundationVersionNumber10_10_2 1152.14
+#define NSFoundationVersionNumber10_10_3 1153.20
 #endif
 
 #if TARGET_OS_IPHONE
@@ -406,6 +417,8 @@ FOUNDATION_EXPORT double NSFoundationVersionNumber;
 #define NSFoundationVersionNumber_iOS_7_1 1047.25
 #define NSFoundationVersionNumber_iOS_8_0 1140.11
 #define NSFoundationVersionNumber_iOS_8_1 1141.1
+#define NSFoundationVersionNumber_iOS_8_2 1142.14
+#define NSFoundationVersionNumber_iOS_8_3 1144.17
 #endif
 
 #if TARGET_OS_WIN32

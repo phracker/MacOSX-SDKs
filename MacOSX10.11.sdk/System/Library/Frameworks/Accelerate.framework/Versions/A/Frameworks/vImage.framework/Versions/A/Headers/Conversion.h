@@ -27,7 +27,7 @@
  *  vImage does its work on the calling thread. This will help ensure that the data just produced on that thread by a previous pass 
  *  is resident in the correct L1 cache for the next pass.
  *
- *  @copyright Copyright (c) 2003-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2003-2015 by Apple Inc. All rights reserved.
  *
  *  @ignorefuncmacro VIMAGE_NON_NULL
  */

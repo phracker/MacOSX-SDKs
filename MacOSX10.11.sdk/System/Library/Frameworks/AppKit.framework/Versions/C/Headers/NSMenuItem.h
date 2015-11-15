@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
         unsigned int keShareMode:3;
         unsigned int state:2;
         unsigned int destructive:1;
-        unsigned int willSendActionNoteDone:1;
+        unsigned int RESERVED1:1;
         unsigned int limitedView:1;
         unsigned int nextItemIsAlternate:1;
         unsigned int blockKE:1;
@@ -73,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSMenuItem *)separatorItem;
 
-- (instancetype)initWithTitle:(NSString *)aString action:(null_unspecified SEL)aSelector keyEquivalent:(NSString *)charCode;
+- (instancetype)initWithTitle:(NSString *)aString action:(nullable SEL)aSelector keyEquivalent:(NSString *)charCode;
 
 @property (nullable, assign) NSMenu *menu;
     // Never call the set method directly it is there only for subclassers.
@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property NSInteger indentationLevel;
 
 @property (nullable, weak) id target;
-@property (null_unspecified) SEL action;
+@property (nullable) SEL action;
 
 @property NSInteger tag;
 

@@ -51,6 +51,13 @@ CORE_IMAGE_EXPORT NSString * const kCIContextWorkingColorSpace;
 * On OSX CPU the supported values for this key are RGBA8, RGBAh and RGBAf. If not specified RGBAh us used. */
 CORE_IMAGE_EXPORT NSString * const kCIContextWorkingFormat NS_AVAILABLE(10_4,8_0);
 
+/* A boolean NSNumber controlling the quality of affine downsample operations.
+ * @YES imply that more quality is desired.
+ * On iOS the the default value is @NO.
+ * On OSX the the default value is @YES. */
+CORE_IMAGE_EXPORT NSString * const kCIContextHighQualityDownsample NS_AVAILABLE(10_11,9_0);
+
+
 /* An NSNumber with a boolean value. When @YES the context will use
  * software rendering. */
 CORE_IMAGE_EXPORT NSString * const kCIContextUseSoftwareRenderer;
@@ -60,15 +67,15 @@ CORE_IMAGE_EXPORT NSString * const kCIContextUseSoftwareRenderer;
 CORE_IMAGE_EXPORT NSString * const kCIContextPriorityRequestLow NS_AVAILABLE_IOS(8_0);
 
 /* Create a new CoreImage context object, all output will be drawn
- * into the surface attached to the OpenGL context 'ctx'. If 'pf' is
- * non-null it should be the pixel format object used to create 'ctx';
+ * into the surface attached to the OpenGL context 'cglctx'. If 'pixelFormat' is
+ * non-null it should be the pixel format object used to create 'cglctx';
  * it's required to be valid for the lifetime of the CIContext.
  * The colorspace should be set to the colorspace of your target otherwise
  * CI will take the colorspace from the CGLContext if available. */
 #if !TARGET_OS_IPHONE
-+ (CIContext *)contextWithCGLContext:(CGLContextObj)ctx
-						 pixelFormat:(nullable CGLPixelFormatObj)pf
-						  colorSpace:(nullable CGColorSpaceRef)cs
++ (CIContext *)contextWithCGLContext:(CGLContextObj)cglctx
+						 pixelFormat:(nullable CGLPixelFormatObj)pixelFormat
+						  colorSpace:(nullable CGColorSpaceRef)colorSpace
 							 options:(nullable CI_DICTIONARY(NSString*,id) *)options
     NS_AVAILABLE_MAC(10_6);
 #endif
@@ -77,15 +84,15 @@ CORE_IMAGE_EXPORT NSString * const kCIContextPriorityRequestLow NS_AVAILABLE_IOS
 * for backward capability, make sure that you specify the colorspace
 * in the options dictionary */
 #if !TARGET_OS_IPHONE
-+ (CIContext *)contextWithCGLContext:(CGLContextObj)ctx
-						 pixelFormat:(nullable CGLPixelFormatObj)pf
++ (CIContext *)contextWithCGLContext:(CGLContextObj)cglctx
+						 pixelFormat:(nullable CGLPixelFormatObj)pixelFormat
 							 options:(nullable CI_DICTIONARY(NSString*,id) *)options
     NS_DEPRECATED_MAC(10_4,10_6);
 #endif
 
 /* Create a new CoreImage context object, all output will be drawn
- * into the CG context 'ctx'. */
-+ (CIContext *)contextWithCGContext:(CGContextRef)ctx
+ * into the CG context 'cgctx'. */
++ (CIContext *)contextWithCGContext:(CGContextRef)cgctx
                             options:(nullable CI_DICTIONARY(NSString*,id) *)options
     NS_AVAILABLE(10_4,9_0);
 
@@ -104,87 +111,105 @@ CORE_IMAGE_EXPORT NSString * const kCIContextPriorityRequestLow NS_AVAILABLE_IOS
     NS_AVAILABLE_IOS(5_0);
 #endif
 
-// If a system has more than one MTLDevice, then you can create a CIContext
-// that uses a specific device. If a client wishes to use the default MTLDevice
-// then call [CIContext contextWithOptions:] instead.
+/* If a system has more than one MTLDevice, then you can create a CIContext
+ * that uses a specific device. If a client wishes to use the default MTLDevice
+ * then call [CIContext contextWithOptions:] instead. */
 + (CIContext *)contextWithMTLDevice:(id<MTLDevice>)device NS_AVAILABLE(10_11,9_0);
 
 + (CIContext *)contextWithMTLDevice:(id<MTLDevice>)device
                             options:(nullable CI_DICTIONARY(NSString*,id) *)options
     NS_AVAILABLE(10_11,9_0);
 
+// The working color space of the CIContext
+@property (nonatomic, readonly) CGColorSpaceRef workingColorSpace NS_AVAILABLE(10_11,9_0);
+
+
 /* DEPRECATED, please use drawImage:inRect:fromRect: instead.
- * Render the subregion 'src' of 'im' to point 'p' in the context's destination. */
-- (void)drawImage:(CIImage *)im
-          atPoint:(CGPoint)p
-         fromRect:(CGRect)src NS_DEPRECATED(10_4,10_8, 5_0,6_0);
+ * Render the subregion 'fromRect' of 'image' to point 'atPoint' in the context's destination. */
+- (void)drawImage:(CIImage *)image
+          atPoint:(CGPoint)atPoint
+         fromRect:(CGRect)fromRect NS_DEPRECATED(10_4,10_8, 5_0,6_0);
 
-/* Render the rectangle 'src' of 'im' to the rectangle 'dest' in the
+/* Render the rectangle 'fromRect' of 'image' to the rectangle 'inRect' in the
  * context's destination. */
-- (void)drawImage:(CIImage *)im
-           inRect:(CGRect)dest
-         fromRect:(CGRect)src;
+- (void)drawImage:(CIImage *)image
+           inRect:(CGRect)inRect
+         fromRect:(CGRect)fromRect;
 
-/* Render the region 'r' of image 'im' into a temporary buffer using
+/* Render the region 'fromRect' of image 'image' into a temporary buffer using
  * the context, then create and return a new CoreGraphics image with
  * the results. The caller is responsible for releasing the returned
  * image. */
-- (CGImageRef)createCGImage:(CIImage *)im fromRect:(CGRect)r
+- (CGImageRef)createCGImage:(CIImage *)image
+                   fromRect:(CGRect)fromRect
 CF_RETURNS_RETAINED;
 
 /* Create a new CGImage from the specified subrect of the image. If
  * non-nil the new image will be created in the specified format and
  * colorspace. */
-- (CGImageRef)createCGImage:(CIImage *)im
-                   fromRect:(CGRect)r
-                     format:(CIFormat)f
-                 colorSpace:(nullable CGColorSpaceRef)cs
+- (CGImageRef)createCGImage:(CIImage *)image
+                   fromRect:(CGRect)fromRect
+                     format:(CIFormat)format
+                 colorSpace:(nullable CGColorSpaceRef)colorSpace
 CF_RETURNS_RETAINED;
 
 /* Create a CoreGraphics layer object suitable for creating content for
- * subsequently rendering into this CI context. The 'd' parameter is
+ * subsequently rendering into this CI context. The 'info' parameter is
  * passed into CGLayerCreate () as the auxiliaryInfo dictionary. */
 - (CGLayerRef)createCGLayerWithSize:(CGSize)size
-                               info:(nullable CFDictionaryRef)d
+                               info:(nullable CFDictionaryRef)info
 CF_RETURNS_RETAINED NS_DEPRECATED_MAC(10_4,10_11);
 
-/* Render to the given bitmap. 
- * Passing a colorspace value of null means:
+/* Render 'image' to the given bitmap.
+ * Passing a 'colorSpace' value of null means:
  *   Disable output color management if app is linked against iOS SDK
  *   Disable output color management if app is linked against OSX 10.11 SDK or later
  *   Match to context's output color space if app is linked against OSX 10.10 SDK or earlier
  */
-- (void)render:(CIImage *)im
+- (void)render:(CIImage *)image
 	  toBitmap:(void *)data
-	  rowBytes:(ptrdiff_t)rb
-		bounds:(CGRect)r
-		format:(CIFormat)f
-	colorSpace:(nullable CGColorSpaceRef)cs;
+	  rowBytes:(ptrdiff_t)rowBytes
+		bounds:(CGRect)bounds
+		format:(CIFormat)format
+	colorSpace:(nullable CGColorSpaceRef)colorSpace;
 
 #if !TARGET_OS_IPHONE
-/* Render to the given IOSurface. */
-- (void)render:(CIImage *)im
+/* Render 'image' to the given IOSurface.
+ * The 'bounds' parameter has the following behavior:
+ *    The 'image' is rendered into 'surface' so that
+ *      point (0,0) of 'image' aligns to the lower left corner of 'surface'.
+ *      The 'bounds' acts like a clip rect to limit what region of 'surface' is modified.
+ */
+- (void)render:(CIImage *)image
    toIOSurface:(IOSurfaceRef)surface
-		bounds:(CGRect)r
-	colorSpace:(nullable CGColorSpaceRef)cs NS_AVAILABLE_MAC(10_6);
+		bounds:(CGRect)bounds
+	colorSpace:(nullable CGColorSpaceRef)colorSpace NS_AVAILABLE_MAC(10_6);
 #endif
 
-/* Render 'image' into a CVPixelBuffer using the context. */
+/* Render 'image' into the given CVPixelBuffer. */
 - (void)render:(CIImage *)image 
 toCVPixelBuffer:(CVPixelBufferRef)buffer NS_AVAILABLE(10_11,5_0);
 
-- (void)render:(CIImage *)image 
+/* Render 'image' to the given CVPixelBufferRef.
+ * The 'bounds' parameter has the following behavior:
+ *    In OS X and iOS 9 and later:  The 'image' is rendered into 'buffer' so that
+ *      point (0,0) of 'image' aligns to the lower left corner of 'buffer'.
+ *      The 'bounds' acts like a clip rect to limit what region of 'buffer' is modified.
+ *    In iOS 8 and earlier: The 'bounds' parameter acts to specify the region of 'image' to render.
+ *      This region (regarless of its origin) is rendered at upper-left corner of 'buffer'.
+ */
+- (void)render:(CIImage *)image
 toCVPixelBuffer:(CVPixelBufferRef)buffer
-        bounds:(CGRect)r
-    colorSpace:(nullable CGColorSpaceRef)cs NS_AVAILABLE(10_11,5_0);
+        bounds:(CGRect)bounds
+    colorSpace:(nullable CGColorSpaceRef)colorSpace NS_AVAILABLE(10_11,5_0);
 
-// Render the bounds 'r' of 'image' to a Metal texture
-// optionally specifying what command buffer to use.
+/* Render 'bounds' of 'image' to a Metal texture
+ * optionally specifying what command buffer to use. */
 - (void)render:(CIImage *)image
   toMTLTexture:(id<MTLTexture>)texture
- commandBuffer:(nullable id<MTLCommandBuffer>)cb
-        bounds:(CGRect)r
-    colorSpace:(CGColorSpaceRef)cs NS_AVAILABLE(10_11,9_0);
+ commandBuffer:(nullable id<MTLCommandBuffer>)commandBuffer
+        bounds:(CGRect)bounds
+    colorSpace:(CGColorSpaceRef)colorSpace NS_AVAILABLE(10_11,9_0);
 
 /* Runs the context's garbage collector to reclaim any resources that
  * are no longer required (e.g. removes textures from the texture cache

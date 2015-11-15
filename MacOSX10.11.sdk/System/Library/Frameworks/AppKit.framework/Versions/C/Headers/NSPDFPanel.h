@@ -41,7 +41,7 @@ NS_CLASS_AVAILABLE_MAC(10_9)
 
 /*  The user-editable file name shown in the name field. The default value is the equivalent of 'Untitled' for the current locale. Note that this string should never include a file extension.
 */
-@property (null_unspecified, copy) NSString *defaultFileName;
+@property (copy) NSString *defaultFileName;
 
 /* Present a print panel to the user, document-modally. When the user has dismissed it, invoke the completionHandler block. If the user didn't click the 'Cancel' button, the given NSPDFInfo will be modified to reflect the user's chosen settings, if any.
  */

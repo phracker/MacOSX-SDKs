@@ -166,9 +166,9 @@ You can invoke this method on one thread and then message the returned NSProgres
 */
 - (void)resume NS_AVAILABLE(10_11, 9_0);
 
-/* Arbitrary values associated with the receiver. Returns a KVO-compliant dictionary that changes as -setUserInfoObject:forKey: is sent to the receiver. The dictionary will send all of its KVO notifications on the thread which updates the property. Some entries have meanings that are recognized by the NSProgress class itself. See the NSProgress...Key string constants listed below.
+/* Arbitrary values associated with the receiver. Returns a KVO-compliant dictionary that changes as -setUserInfoObject:forKey: is sent to the receiver. The dictionary will send all of its KVO notifications on the thread which updates the property. The result will never be nil, but may be an empty dictionary. Some entries have meanings that are recognized by the NSProgress class itself. See the NSProgress...Key string constants listed below.
 */
-@property (nullable, readonly, copy) NSDictionary *userInfo;
+@property (readonly, copy) NSDictionary *userInfo;
 
 /* Either a string identifying what kind of progress is being made, like NSProgressKindFile, or nil. If the value of the localizedDescription property has not been set to a non-nil value then the default implementation of -localizedDescription uses the progress kind to determine how to use the values of other properties, as well as values in the user info dictionary, to create a string that is presentable to the user. This is most useful when -localizedDescription is actually being invoked in another process, whose localization language may be different, as a result of using the publish and subscribe mechanism described here.
 */

@@ -41,34 +41,37 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
+
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 	/*! @abstract Indicates that no padding will be used when encrypting or decrypting. */
-	extern CFStringRef kSecPaddingNoneKey;
+	extern const CFStringRef kSecPaddingNoneKey;
 	/*! Indicates that PKCS1 padding will be used when encrypting or decrypting. */
-	extern CFStringRef kSecPaddingPKCS1Key;
+	extern const CFStringRef kSecPaddingPKCS1Key;
 	/*! Indicates that PKCS5 padding will be used when encrypting or decrypting. */
-	extern CFStringRef kSecPaddingPKCS5Key;
+	extern const CFStringRef kSecPaddingPKCS5Key;
 	/*! Indicates that PKCS7 padding will be used when encrypting or decrypting. */
-	extern CFStringRef kSecPaddingPKCS7Key;
+	extern const CFStringRef kSecPaddingPKCS7Key;
     /*! Indicates that PKCS7 padding will be used when encrypting or decrypting. */
-    extern CFStringRef kSecPaddingOAEPKey
+    extern const CFStringRef kSecPaddingOAEPKey
         __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_NA);
 	/*! Indicates that no mode will be used when encrypting or decrypting. */
-	extern CFStringRef kSecModeNoneKey;
+	extern const CFStringRef kSecModeNoneKey;
 	/*! Indicates that ECB mode will be used when encrypting or decrypting. */
-	extern CFStringRef kSecModeECBKey;
+	extern const CFStringRef kSecModeECBKey;
     /*! Indicates that CBC mode will be used when encrypting or decrypting. */
-	extern CFStringRef kSecModeCBCKey;
+	extern const CFStringRef kSecModeCBCKey;
 	/*! Indicates that CFB mode will be used when encrypting or decrypting. */
-	extern CFStringRef kSecModeCFBKey;
+	extern const CFStringRef kSecModeCFBKey;
 	/*! Indicates that OFB mode will be used when encrypting or decrypting. */
-	extern CFStringRef kSecModeOFBKey;
+	extern const CFStringRef kSecModeOFBKey;
 	
 	/*!
 	    @abstract
 		This attribute holds the encryption key for the transform. (ReadOnly)
 	 */
-	extern CFStringRef kSecEncryptKey;
+	extern const CFStringRef kSecEncryptKey;
 
 	/*!
 	    @abstract
@@ -77,7 +80,7 @@ extern "C" {
 		This key is optional.  If you do not supply a value for this key,
 	 	an appropriate value will be supplied for you.
 	*/
-	extern CFStringRef kSecPaddingKey;
+	extern const CFStringRef kSecPaddingKey;
 
 	/*!
 	    @abstract
@@ -86,7 +89,7 @@ extern "C" {
 		This key is optional.  If you do not supply a
 	 	value for this key, an appropriate value will be supplied for you.
 	*/
-	extern CFStringRef kSecIVKey;
+	extern const CFStringRef kSecIVKey;
 
 	/*!
      @abstract
@@ -95,7 +98,7 @@ extern "C" {
      This key is optional.  If you do not supply this key,
      an appropriate value will be supplied for you.
      */
-	extern CFStringRef kSecEncryptionMode;
+	extern const CFStringRef kSecEncryptionMode;
 	
 	/*!
      @abstract
@@ -105,7 +108,7 @@ extern "C" {
      and a specific messages size is desired.   If unset the minimum padding
      will be added.   It is ignored when the padding mode is not OAEP.
      */
-	extern CFStringRef kSecOAEPMessageLengthAttributeName
+	extern const CFStringRef kSecOAEPMessageLengthAttributeName
         __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_NA);
 	/*!
      @abstract
@@ -115,7 +118,7 @@ extern "C" {
      If unset a zero length CFDataRef is used.   It is ignored by non
      OAEP padding modes.
      */
-    extern CFStringRef kSecOAEPEncodingParametersAttributeName
+    extern const CFStringRef kSecOAEPEncodingParametersAttributeName
          __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_NA);
 	/*!
      @abstract
@@ -124,10 +127,9 @@ extern "C" {
      This should be set to a digest algorithm when the padding is set to OAEP.
      If unset SHA1 is used.   It is ifnored by non OAEP padding modes.
      */
-    extern CFStringRef kSecOAEPMGF1DigestAlgorithmAttributeName
+    extern const CFStringRef kSecOAEPMGF1DigestAlgorithmAttributeName
          __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_NA);
-	
-	
+
 	/*!
 	 @function SecEncryptTransformCreate
 	 @abstract			Creates an encryption SecTransform  object.
@@ -181,6 +183,9 @@ extern "C" {
 
 	CFTypeID SecEncryptTransformGetTypeID()
 	__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 };

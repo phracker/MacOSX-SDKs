@@ -497,12 +497,7 @@ typedef struct {
     overrides_t override;
     allow_options_t override_opts;
 
-    /* Custom response config. These can contain text or a URL to redirect to.
-     * if response_code_strings is NULL then there are none in the config,
-     * if it's not null then it's allocated to sizeof(char*)*RESPONSE_CODES.
-     * This lets us do quick merges in merge_core_dir_configs().
-     */
-
+    /* Used to be the custom response config. No longer used. */
     char **response_code_strings; /* from ErrorDocument, not from
                                    * ap_custom_response() */
 
@@ -617,10 +612,24 @@ typedef struct {
     /** Max number of Range reversals (eg: 200-300, 100-125) allowed **/
     int max_reversals;
 
-
     /** Named back references */
     apr_array_header_t *refs;
 
+    /** Custom response config with expression support. The hash table
+     * contains compiled expressions keyed against the custom response
+     * code.
+     */
+    apr_hash_t *response_code_exprs;
+
+#define AP_CGI_PASS_AUTH_OFF     (0)
+#define AP_CGI_PASS_AUTH_ON      (1)
+#define AP_CGI_PASS_AUTH_UNSET   (2)
+    /** CGIPassAuth: Whether HTTP authorization headers will be passed to
+     * scripts as CGI variables; affects all modules calling
+     * ap_add_common_vars(), as well as any others using this field as 
+     * advice
+     */
+    unsigned int cgi_pass_auth : 2;
 } core_dir_config;
 
 /* macro to implement off by default behaviour */

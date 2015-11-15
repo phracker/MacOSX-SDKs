@@ -55,9 +55,7 @@ class IOStream : public IOService
     IOMemoryMap *           _outputQueueMap;
     
     IOStreamBufferQueue *   _outputQueue;   // Shared memory for buffers out to user space
-    UInt32                  _outputQueueEntryCount;
     IOStreamBufferQueue *   _inputQueue;    // Shared memory for buffers in from user space
-    UInt32                  _inputQueueEntryCount;
     
     mach_port_t             _outputPort;
     mach_port_t             _inputPort;

@@ -210,6 +210,10 @@ __BEGIN_DECLS
 #define MACH_REMOTE_CANCEL_AST     0x26 /* Canceled deferred AST for remote processor */
 #define MACH_SCHED_CHANGE_PRIORITY 0x27 /* thread sched priority changed */
 #define MACH_SCHED_UPDATE_REC_CORES	0x28	/* Change to recommended processor bitmask */
+#define MACH_STACK_WAIT            0x29 /* Thread could not be switched-to because of kernel stack shortage */
+#define MACH_THREAD_BIND           0x2a /* Thread was bound (or unbound) to a processor */
+#define MACH_WAITQ_PROMOTE         0x2b /* Thread promoted by waitq boost */
+#define MACH_WAITQ_DEMOTE          0x2c /* Thread demoted from waitq boost */
 
 /* Variants for MACH_MULTIQ_DEQUEUE */
 #define MACH_MULTIQ_BOUND     1
@@ -406,7 +410,10 @@ __BEGIN_DECLS
 #define DBG_HFS_UPDATE_MODTIME	 0x02
 #define DBG_HFS_UPDATE_CHGTIME	 0x04
 #define DBG_HFS_UPDATE_MODIFIED	 0x08
+#define DBG_HFS_UPDATE_FORCE     0x10
 #define DBG_HFS_UPDATE_DATEADDED 0x20
+#define DBG_HFS_UPDATE_MINOR     0x40
+#define DBG_HFS_UPDATE_SKIPPED	 0x80
 
 /* The Kernel Debug Sub Classes for BSD */
 #define DBG_BSD_PROC		0x01	/* process/signals related */

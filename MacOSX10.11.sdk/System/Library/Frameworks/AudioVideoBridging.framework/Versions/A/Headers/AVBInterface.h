@@ -9,6 +9,8 @@
 
 #include <IOKit/IOKitLib.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class AVBMACAddress;
 @class AVBNetworkClient;
 
@@ -97,18 +99,18 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	entityDiscovery
 	@abstract	The IEEE Std 1722.1™-2013 entity discovery for the interface.
  */
-@property (retain, readonly) AVB17221EntityDiscovery *entityDiscovery;
+@property (retain, readonly, nullable) AVB17221EntityDiscovery *entityDiscovery;
 
 /*!
 	@property	aecp
 	@abstract	The IEEE Std 1722.1™-2013 AECP interface for the interface.
  */
-@property (retain, readonly) AVB17221AECPInterface *aecp;
+@property (retain, readonly, nullable) AVB17221AECPInterface *aecp;
 /*!
 	@property	acmp
 	@abstract	The IEEE Std 1722.1™-2013 ACMP interface for the interface.
  */
-@property (retain, readonly) AVB17221ACMPInterface *acmp;
+@property (retain, readonly, nullable) AVB17221ACMPInterface *acmp;
 
 /*!
  @method		macAddressForInterfaceNamed:
@@ -116,14 +118,14 @@ NS_CLASS_AVAILABLE(10_8, NA)
  @param		anInterfaceName	The BSD name of the interface to get the address for.
  @result		An instance of AVBMACAddress if the lookup was successful, nil otherwise.
  */
-+ (AVBMACAddress *)macAddressForInterfaceNamed:(NSString *)anInterfaceName;
++ (nullable AVBMACAddress *)macAddressForInterfaceNamed:(NSString *)anInterfaceName;
 
 /*!
 	@method		supportedInterfaces
 	@abstract	This method returns an array of BSD interface names of interfaces supporting AVB. An interface is included in this list if it claims it supports AVB.
 	@result		An NSArray of NSStrings, with each string being the BSD name of an interface. This may return nil.
  */
-+ (NSArray *)supportedInterfaces;
++ (nullable NSArray <NSString *>*)supportedInterfaces;
 
 /*!
 	@method		isAVBEnabledOnInterfaceNamed:
@@ -146,7 +148,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@param		anInterfaceName	The BSD name of the interface.
 	@result		The initialized receiver.
  */
-- (instancetype)initWithInterfaceName:(NSString *)anInterfaceName;
+- (nullable instancetype)initWithInterfaceName:(NSString *)anInterfaceName;
 
 /*!
  @method		myGUID
@@ -163,3 +165,5 @@ NS_CLASS_AVAILABLE(10_8, NA)
 + (uint64_t)myEntityID;
 
 @end
+
+NS_ASSUME_NONNULL_END

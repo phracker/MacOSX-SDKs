@@ -173,7 +173,7 @@ struct IOTracking
     queue_chain_t        link;
     IOTrackingCallSite * site;
 #if !defined(__LP64__)
-    uint32_t             __align64;
+    uint32_t             flags;
 #endif
 };
 
@@ -182,6 +182,9 @@ struct IOTrackingAddress
     IOTracking    tracking;
     uintptr_t     address;
     size_t        size;
+#if defined(__LP64__)
+    uint32_t      flags;
+#endif
 };
 
 void              IOTrackingInit(void);

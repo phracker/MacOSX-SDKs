@@ -28,7 +28,7 @@ typedef function_table_entry   *function_table_t;
 #endif /* AUTOTEST */
 
 #ifndef	iokit_MSG_COUNT
-#define	iokit_MSG_COUNT	85
+#define	iokit_MSG_COUNT	87
 #endif	/* iokit_MSG_COUNT */
 
 #include <mach/std_types.h>
@@ -1161,6 +1161,37 @@ kern_return_t io_service_add_notification_bin
 	io_async_ref_t reference,
 	mach_msg_type_number_t referenceCnt,
 	mach_port_t *notification
+);
+
+/* Routine io_registry_entry_get_path_ool */
+#ifdef	mig_external
+mig_external
+#else
+extern
+#endif	/* mig_external */
+kern_return_t io_registry_entry_get_path_ool
+(
+	mach_port_t registry_entry,
+	io_name_t plane,
+	io_string_inband_t path,
+	io_buf_ptr_t *path_ool,
+	mach_msg_type_number_t *path_oolCnt
+);
+
+/* Routine io_registry_entry_from_path_ool */
+#ifdef	mig_external
+mig_external
+#else
+extern
+#endif	/* mig_external */
+kern_return_t io_registry_entry_from_path_ool
+(
+	mach_port_t master_port,
+	io_string_inband_t path,
+	io_buf_ptr_t path_ool,
+	mach_msg_type_number_t path_oolCnt,
+	kern_return_t *result,
+	mach_port_t *registry_entry
 );
 
 __END_DECLS
@@ -2322,6 +2353,39 @@ __END_DECLS
 #ifdef  __MigPackStructs
 #pragma pack()
 #endif
+
+#ifdef  __MigPackStructs
+#pragma pack(4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+		NDR_record_t NDR;
+		mach_msg_type_number_t planeOffset; /* MiG doesn't use it */
+		mach_msg_type_number_t planeCnt;
+		char plane[128];
+	} __Request__io_registry_entry_get_path_ool_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack()
+#endif
+
+#ifdef  __MigPackStructs
+#pragma pack(4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+		/* start of the kernel processed data */
+		mach_msg_body_t msgh_body;
+		mach_msg_ool_descriptor_t path_ool;
+		/* end of the kernel processed data */
+		NDR_record_t NDR;
+		mach_msg_type_number_t pathOffset; /* MiG doesn't use it */
+		mach_msg_type_number_t pathCnt;
+		char path[4096];
+		mach_msg_type_number_t path_oolCnt;
+	} __Request__io_registry_entry_from_path_ool_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack()
+#endif
 #endif /* !__Request__iokit_subsystem__defined */
 
 /* union of all requests */
@@ -2407,6 +2471,8 @@ union __RequestUnion__iokit_subsystem {
 	__Request__io_service_get_matching_services_bin_t Request_io_service_get_matching_services_bin;
 	__Request__io_service_match_property_table_bin_t Request_io_service_match_property_table_bin;
 	__Request__io_service_add_notification_bin_t Request_io_service_add_notification_bin;
+	__Request__io_registry_entry_get_path_ool_t Request_io_registry_entry_get_path_ool;
+	__Request__io_registry_entry_from_path_ool_t Request_io_registry_entry_from_path_ool;
 };
 #endif /* !__RequestUnion__iokit_subsystem__defined */
 /* typedefs for all replies */
@@ -3497,6 +3563,41 @@ union __RequestUnion__iokit_subsystem {
 #ifdef  __MigPackStructs
 #pragma pack()
 #endif
+
+#ifdef  __MigPackStructs
+#pragma pack(4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+		/* start of the kernel processed data */
+		mach_msg_body_t msgh_body;
+		mach_msg_ool_descriptor_t path_ool;
+		/* end of the kernel processed data */
+		NDR_record_t NDR;
+		mach_msg_type_number_t pathOffset; /* MiG doesn't use it */
+		mach_msg_type_number_t pathCnt;
+		char path[4096];
+		mach_msg_type_number_t path_oolCnt;
+	} __Reply__io_registry_entry_get_path_ool_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack()
+#endif
+
+#ifdef  __MigPackStructs
+#pragma pack(4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+		/* start of the kernel processed data */
+		mach_msg_body_t msgh_body;
+		mach_msg_port_descriptor_t registry_entry;
+		/* end of the kernel processed data */
+		NDR_record_t NDR;
+		kern_return_t result;
+	} __Reply__io_registry_entry_from_path_ool_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack()
+#endif
 #endif /* !__Reply__iokit_subsystem__defined */
 
 /* union of all replies */
@@ -3582,6 +3683,8 @@ union __ReplyUnion__iokit_subsystem {
 	__Reply__io_service_get_matching_services_bin_t Reply_io_service_get_matching_services_bin;
 	__Reply__io_service_match_property_table_bin_t Reply_io_service_match_property_table_bin;
 	__Reply__io_service_add_notification_bin_t Reply_io_service_add_notification_bin;
+	__Reply__io_registry_entry_get_path_ool_t Reply_io_registry_entry_get_path_ool;
+	__Reply__io_registry_entry_from_path_ool_t Reply_io_registry_entry_from_path_ool;
 };
 #endif /* !__RequestUnion__iokit_subsystem__defined */
 
@@ -3664,7 +3767,9 @@ union __ReplyUnion__iokit_subsystem {
     { "io_service_get_matching_service_bin", 2880 },\
     { "io_service_get_matching_services_bin", 2881 },\
     { "io_service_match_property_table_bin", 2882 },\
-    { "io_service_add_notification_bin", 2883 }
+    { "io_service_add_notification_bin", 2883 },\
+    { "io_registry_entry_get_path_ool", 2885 },\
+    { "io_registry_entry_from_path_ool", 2886 }
 #endif
 
 #ifdef __AfterMigUserHeader

@@ -39,8 +39,7 @@ typedef NS_ENUM(NSUInteger, NSTextFieldBezelStyle) {
         unsigned int thcHighlighted:1;
         unsigned int shouldNotClipToBounds:1;
         unsigned int allowsDefaultTightening:1;
-        unsigned int wantsFirstBaselineOffset:1;
-        unsigned int reservedTextFieldCell:8;
+        unsigned int reservedTextFieldCell:9;
     } _tfFlags;
 }
 

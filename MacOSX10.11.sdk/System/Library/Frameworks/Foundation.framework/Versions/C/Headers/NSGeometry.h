@@ -32,7 +32,6 @@ typedef CGRect NSRect;
 typedef NSRect *NSRectPointer;
 typedef NSRect *NSRectArray;
 
-#if !defined(SWIFT_CLASS_EXTRA) || (defined(SWIFT_SDK_OVERLAY_FOUNDATION_EPOCH) && SWIFT_SDK_OVERLAY_FOUNDATION_EPOCH >= 4)
 typedef NS_ENUM(NSUInteger, NSRectEdge) {
     NSRectEdgeMinX = CGRectMinXEdge,
     NSRectEdgeMinY = CGRectMinYEdge,
@@ -44,14 +43,6 @@ typedef NS_ENUM(NSUInteger, NSRectEdge) {
     NSMaxXEdge NS_SWIFT_UNAVAILABLE("Use NSRectEdge.MaxX instead") = NSRectEdgeMaxX,
     NSMaxYEdge NS_SWIFT_UNAVAILABLE("Use NSRectEdge.MaxX instead") = NSRectEdgeMaxY,
 };
-#else // SWIFT
-#define NSMinXEdge CGRectMinXEdge
-#define NSMinYEdge CGRectMinYEdge
-#define NSMaxXEdge CGRectMaxXEdge
-#define NSMaxYEdge CGRectMaxYEdge
-
-typedef NSUInteger NSRectEdge;
-#endif // SWIFT
 
 #define NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES 1
 

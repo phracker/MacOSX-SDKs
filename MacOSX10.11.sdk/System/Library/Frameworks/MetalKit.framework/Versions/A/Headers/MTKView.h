@@ -9,7 +9,9 @@
 #import <MetalKit/MTKDefines.h>
 
 #import <AppKit/AppKit.h>
+
 #import <QuartzCore/CAMetalLayer.h>
+
 #import <Metal/Metal.h>
 
 @protocol MTKViewDelegate;
@@ -22,6 +24,21 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 @interface MTKView : NSView <NSCoding>
 
 /*!
+ @method initWithFrame:device
+ @abstract Initalize the view with a frame and device
+ @param frameRect The frame rectangle for the created view object.
+ @param device The MTLDevice to be used by the view to create Metal objects
+ */
+- (nonnull instancetype)initWithFrame:(CGRect)frameRect device:(nullable id<MTLDevice>)device NS_DESIGNATED_INITIALIZER;
+
+/*!
+ @method initWithCoder:
+ @abstract Returns a view initalized from data in a given unarchiver
+ @param coder An unarchiver object
+ */
+- (nonnull instancetype)initWithCoder:(nonnull NSCoder *)coder NS_DESIGNATED_INITIALIZER;
+
+/*!
  @property delegate
  @abstract The delegate handling common view operations
  */
@@ -29,15 +46,15 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 /*!
  @property device
- @abstract The MTLDevice used to create metal objects
- @discussion On iOS this is set to the default device.  On OS X this must be explicitly set by the application.
+ @abstract The MTLDevice used to create Metal objects
+ @discussion This must be explicitly set by the application unless it was passed into the initializer. Defaults to nil
   */
 @property (nonatomic, nullable) id <MTLDevice> device;
 
 /*!
  @property currentDrawable
  @abstract The drawable to be used for the current frame.
- @discussion currentDrawable is updated at the end -draw (i.e. after the delegate's drawInView method is called)
+ @discussion currentDrawable is updated at the end -draw (i.e. after the delegate's drawInMTKView method is called)
  */
 @property (nonatomic, readonly, nullable) id <CAMetalDrawable> currentDrawable;
 
@@ -104,8 +121,8 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 /*!
  @property multisampleColorTexture
- @abstract A multisample color sample texture that will be resolved into the currentDrawable's texture
- @discussion The view will generate the samplerBuffer buffer using the specified colorPixelFormat.  This will be nil if sampleCount is less than or equal to 1.
+ @abstract A multisample color texture that will be resolved into the currentDrawable's texture
+ @discussion The view will generate the multisample color buffer using the specified colorPixelFormat.  This will be nil if sampleCount is less than or equal to 1.
  */
 @property (nonatomic, readonly, nullable) id <MTLTexture> multisampleColorTexture;
 
@@ -118,7 +135,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 /*!
  @property currentRenderPassDescriptor
- @abstract A render pass descriptor generated from the  currentDrawable's texture and the view's depth, stencil, and sample buffers and clear values.
+ @abstract A render pass descriptor generated from the currentDrawable's texture and the view's depth, stencil, and sample buffers and clear values.
  @discussion This is a convience property.  The view does not use this descriptor and there is no requirement for an app to use this descriptor.
  */
 @property (nonatomic, readonly, nullable) MTLRenderPassDescriptor *currentRenderPassDescriptor;
@@ -126,49 +143,42 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 /*!
  @property preferredFramesPerSecond
  @abstract The rate you want the view to redraw its contents.
- @discussion When your application sets its preferred frame rate, the view chooses a frame rate as close to that as possible based on the capabilities of the screen the view is displayed on. The actual frame rate chosen is usually a factor of the maximum refresh rate of the screen to provide a consistent frame rate. For example, if the maximum refresh rate of the screen is 60 frames per second, that is also the highest frame rate the view sets as the actual frame rate. However, if you ask for a lower frame rate, it might choose 30, 20, 15 or some other factor to be the actual frame rate. Your application should choose a frame rate that it can consistently maintain. The default value is 30 frames per second.
+ @discussion When your application sets its preferred frame rate, the view chooses a frame rate as close to that as possible based on the capabilities of the screen the view is displayed on. The actual frame rate chosen is usually a factor of the maximum refresh rate of the screen to provide a consistent frame rate. For example, if the maximum refresh rate of the screen is 60 frames per second, that is also the highest frame rate the view sets as the actual frame rate. However, if you ask for a lower frame rate, it might choose 30, 20, 15 or some other factor to be the actual frame rate. Your application should choose a frame rate that it can consistently maintain. The default value is 60 frames per second.
  */
 @property(nonatomic) NSInteger preferredFramesPerSecond;
 
 /*!
- @property nominalFramesPerSecond
- @abstract The set number of achievable frames per second
- @discussion The nominal frames per second that was decided upon given the value for preferredFramesPerSecond and the screen on which the MTKView resides. The value chosen will be as close to preferredFramesPerSecond as possible, without exceeding the screen's refresh rate. This value does not account for dropped frames, so it is not a measurement of your statistical frames per second. It is the static value for which updates should take place.
- */
-@property (nonatomic, readonly) NSInteger nominalFramesPerSecond;
-
-/*!
   @property enableSetNeedsDisplay
   @abstract Controls whether the view responds to setNeedsDisplay.
-  @discussion If true, then the view behaves similarily to a UIView.  When the view has been marked for display, the drawRect method will be called during the next drawing cycle. If false, the view's draw method will never be called during the next drawing cycle. It is expected that -draw will be  called directly in this case and not automatically at the frame interval indicated by nominalFramesPerSecond. This value is false by default.
+  @discussion If true, then the view behaves similarily to a UIView or NSView, responding to calls to setNeedsDisplay. When the view has been marked for display, the view is automatically redisplayed on each pass through the application’s event loop. Setting enableSetNeedsDisplay to true will also pause the MTKView's internal render loop and updates will instead be event driven. The default value is false.
  */
 @property (nonatomic) BOOL enableSetNeedsDisplay;
 
 /*!
  @property autoResizeDrawable
  @abstract Controls whether to resize the drawable as the view changes size.
- @discussion If true, the size of the currentDrawable's texture, depthStencilTexture, and multisampleColorTexture will automatically resize as the view resizes.  If false, these textures will take on the size of drawableSize and drawaableSize will not change.  This is true by default.
+ @discussion If true, the size of the currentDrawable's texture, depthStencilTexture, and multisampleColorTexture will automatically resize as the view resizes.  If false, these textures will take on the size of drawableSize and drawaableSize will not change. The default value is true.
  */
 @property (nonatomic) BOOL autoResizeDrawable;
 
 /*!
  @property drawableSize
  @abstract The current size of drawable textures
- @discussion The size currentDrawable's texture, depthStencilTexture, and multisampleColorTexture.  If autoResizeDrawable is true this value will be updated as the view's size changes.  If autoResizeDrawable is falue, this can be set to fix the size of the drawable textures.
+ @discussion The size currentDrawable's texture, depthStencilTexture, and multisampleColorTexture.  If autoResizeDrawable is true this value will be updated as the view's size changes. If autoResizeDrawable is false, this can be set to fix the size of the drawable textures.
  */
 @property (nonatomic) CGSize drawableSize;
 
 /*!
  @property paused
  @abstract Controls whether the draw methods should countinue at preferredFramesPerSecond
- @discussion If true, the delegate will receive drawInview: messages or the subclass will receive drawRect: messages at nominalFramesPerSecond times per second.
+ @discussion If true, the delegate will receive drawInMTKView: messages or the subclass will receive drawRect: messages at a rate of preferredFramesPerSecond based on an internal timer. The default value is false.
  */
 @property (nonatomic, getter=isPaused) BOOL paused;
 
 /*!
  @method draw
- @abstract Render to the frame buffer
- @discussion Nominally called at nominalFramesPerSecond.  This calls the delegate drawInView method or (if MTKView is subclassed) the drawRect method.
+ @abstract Manually ask the view to draw new contents. This causes the view to call either the drawInMTKView (delegate) or drawRect (subclass) method.
+ @discussion Manually ask the view to draw new contents. This causes the view to call either the drawInMTKView (delegate) or drawRect (subclass) method. This should be used when the view's paused proprety is set to true and enableSetNeedsDisplay is set to false.
  */
 - (void)draw;
 
@@ -176,25 +186,25 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 /*!
  @class MTKViewDelegate
- @abstract Allows an object to render into the view at nominalFramesPerSecond and respond to events affecting rendering
+ @abstract Allows an object to render into the view and respond to resize events
  */
 NS_CLASS_AVAILABLE(10_11, 9_0)
 @protocol MTKViewDelegate <NSObject>
 
 /*!
- @method view:willLayoutWithSize:
- @abstract Called whenever view changes size (or orientation)
+ @method mtkView:drawableSizeWillChange:
+ @abstract Called whenever the drawableSize of the view will change
  @discussion Delegate can recompute view and projection matricies or regenerate any buffers to be compatible with the new view size or resolution
  @param view MTKView which called this method
- @param size New drawable size
+ @param size New drawable size in pixels
  */
-- (void)view:(nonnull MTKView *)view willLayoutWithSize:(CGSize)size;
+- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size;
 
 /*!
- @method drawInView:
- @abstract Called by view for delegate to render scene
- @discussion Nominally called by view after at nominalFramesPerSecond during -[MTKView display].
+ @method drawInMTKView:
+ @abstract Called on the delegate when it is asked to render into the view
+ @discussion Called on the delegate when it is asked to render into the view
  */
-- (void)drawInView:(nonnull MTKView *)view;
+- (void)drawInMTKView:(nonnull MTKView *)view;
 
 @end

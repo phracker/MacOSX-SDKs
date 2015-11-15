@@ -21,26 +21,26 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  @method initWithFileNamed:
  @abstract Convenience initializer that creates an AVAudioNode from the named audio asset in the main bundle.
  */
-- (instancetype)initWithFileNamed:(NSString *)name;
+- (nullable instancetype)initWithFileNamed:(NSString *)name;
 
 /*!
  @method initWithURL:
  @abstract Convenience initializer that creates an AVAudioNode from the URL that contain a audio asset.
  */
-- (instancetype)initWithURL:(NSURL *)url NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithURL:(NSURL *)url NS_DESIGNATED_INITIALIZER;
 
 /*!
  @method audioSourceNamed:
  @abstract Convenience class initializer that caches audioSources.
  */
-+ (instancetype)audioSourceNamed:(NSString *)fileName;
++ (nullable instancetype)audioSourceNamed:(NSString *)fileName;
 
 /*!
  @property positional
  @abstract Marks the audio source as positional so that the audio mix considers relative position and velocity with regards to the SCNSceneRenderer's current listener node. Defaults to YES.
  @see SCNSceneRenderer audioListener.
  */
-@property (nonatomic, getter=isPositional) BOOL positional;
+@property(nonatomic, getter=isPositional) BOOL positional;
 
 /*!
  @property volume
@@ -81,7 +81,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 @end
 
-
+NS_CLASS_AVAILABLE(10_11, 9_0)
 @interface SCNAudioPlayer : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -90,13 +90,13 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  @property initWithSource:
  @abstract Init an audio player with a source. Most people should use audioPlayerWithSource as it permits to recycle previous players instead of creating new ones for each instance.
  */
-- (instancetype) initWithSource:(SCNAudioSource *)source NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithSource:(SCNAudioSource *)source NS_DESIGNATED_INITIALIZER;
 
 /*!
  @property initWithAVAudioNode:
  @abstract Init an audio player with an AVAudioNode. Most people should use audioPlayerWithAVAudioNode as it permits to recycle previous players instead of creating new ones for each instance.
  */
-- (instancetype) initWithAVAudioNode:(AVAudioNode *)audioNode NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithAVAudioNode:(AVAudioNode *)audioNode NS_DESIGNATED_INITIALIZER;
 
 /*!
  @property audioPlayerWithSource:

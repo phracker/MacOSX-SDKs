@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
     id	_privateNSSpeechRecognizerVars;
 }
 
-- (instancetype)init;
+- (nullable instancetype)init;
 
 - (void)startListening;
 - (void)stopListening;
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol NSSpeechRecognizerDelegate <NSObject>
 @optional
-- (void)speechRecognizer:(NSSpeechRecognizer *)sender didRecognizeCommand:(nullable id)command;
+- (void)speechRecognizer:(NSSpeechRecognizer *)sender didRecognizeCommand:(NSString *)command;
 
 @end
 

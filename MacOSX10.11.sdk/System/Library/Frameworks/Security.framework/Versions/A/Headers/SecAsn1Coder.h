@@ -41,6 +41,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*
  * Opaque reference to a SecAsn1Coder object.
  */
@@ -50,11 +52,11 @@ typedef struct SecAsn1Coder *SecAsn1CoderRef;
  * Create/destroy SecAsn1Coder object. 
  */
 OSStatus SecAsn1CoderCreate(
-	SecAsn1CoderRef  *coder);
-	
+	SecAsn1CoderRef  __nullable * __nonnull coder);
+
 OSStatus SecAsn1CoderRelease(
 	SecAsn1CoderRef  coder);
-	
+
 /*
  * DER decode an untyped item per the specified template array. 
  * The result is allocated in this SecAsn1Coder's memory pool and 
@@ -75,13 +77,13 @@ OSStatus SecAsn1Decode(
 	size_t					len,
 	const SecAsn1Template 	*templates,	
 	void					*dest);
-		
+
 /* 
  * Convenience routine, decode from a SecAsn1Item.
  */
 OSStatus SecAsn1DecodeData(
 	SecAsn1CoderRef			coder,
-	const SecAsn1Item			*src,
+	const SecAsn1Item		*src,
 	const SecAsn1Template 	*templ,	
 	void					*dest);
 
@@ -100,7 +102,7 @@ OSStatus SecAsn1EncodeItem(
 	const void				*src,
 	const SecAsn1Template 	*templates,	
 	SecAsn1Item				*dest);
-		
+
 /*
  * Some alloc-related methods which come in handy when using
  * this object. All memory is allocated using this object's 
@@ -117,13 +119,13 @@ OSStatus SecAsn1EncodeItem(
 void *SecAsn1Malloc(
 	SecAsn1CoderRef			coder,
 	size_t					len); 
-	
+
 /* Allocate item.Data, set item.Length */
 OSStatus SecAsn1AllocItem(
 	SecAsn1CoderRef			coder,
 	SecAsn1Item				*item,
 	size_t					len);
-	
+
 /* Allocate and copy, various forms */
 OSStatus SecAsn1AllocCopy(
 	SecAsn1CoderRef			coder,
@@ -131,16 +133,18 @@ OSStatus SecAsn1AllocCopy(
 	size_t					len,		/* length to allocate & copy */
 	SecAsn1Item				*dest);		/* dest->Data allocated and copied to;
 										 *   dest->Length := len */
-	
+
 OSStatus SecAsn1AllocCopyItem(
 	SecAsn1CoderRef			coder,
-	const SecAsn1Item			*src,		/* src->Length bytes allocated and copied from 
+	const SecAsn1Item		*src,		/* src->Length bytes allocated and copied from
 										 *   src->Data */
 	SecAsn1Item				*dest);		/* dest->Data allocated and copied to;
 										 *   dest->Length := src->Length */
 
 /* Compare two decoded OIDs.  Returns true iff they are equivalent. */
 bool SecAsn1OidCompare(const SecAsn1Oid *oid1, const SecAsn1Oid *oid2);
+
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

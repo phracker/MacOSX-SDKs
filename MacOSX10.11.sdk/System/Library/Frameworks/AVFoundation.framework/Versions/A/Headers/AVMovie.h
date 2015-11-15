@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 			 // myMutableMovie is of type AVMutableMovie; the client wants to inspect and play it in its current state
 			 AVMovie *immutableSnapshotOfMyMovie = [myMutableMovie copy];
 			 AVPlayerItem *playerItemForSnapshotOfMovie = [[AVPlayerItem alloc] initWithAsset:immutableSnapshotOfMyMovie]; 
+ 
+ 					When performing media insertions, AVMutableMovie interleaves the media data from the tracks in the source asset in order to create movie files that are optimized for playback. It's possible, however, that performing a series of media insertions may result in a movie file that is not optimally interleaved. You can create a well-interleaved, self-contained, fast-start movie file from an instance of AVMutableMovie by passing that instance to an AVAssetExportSession using the export preset AVAssetExportPresetPassthrough and setting the setShouldOptimizeForNetworkUse property to YES.
 */
 
 // Keys for options dictionary for use with various AVMovie initialization methods
@@ -159,13 +161,15 @@ NS_CLASS_AVAILABLE_MAC(10_10)
 
 /*!
 	@enum			AVMovieWritingOptions
-	@abstract		These options can be passed into writeMovieHeaderToURL:fileType:options: to control the writing of a movie header to a destination URL.
+	@abstract		These options can be passed into writeMovieHeaderToURL:fileType:options:error: to control the writing of a movie header to a destination URL.
+	@constant		AVMovieWritingAddMovieHeaderToDestination
+					Writing the movie header will remove any existing movie header in the destination file and add a new movie header, preserving any other data in the file. If the destination file was empty, a file type box will be written at the beginning of the file.
 	@constant		AVMovieWritingTruncateDestinationToMovieHeaderOnly
-					If set, writing the movie header will truncate all existing data in the destination file and write a new movie header, thereby creating a pure reference movie file. 
-					A file type box will be written at the beginning of the file. If not set, writing the movie header will remove any existing movie header in the destination file and write a new movie header, preserving any other data in the file. If the destination file was empty, a file type box will be written at the beginning of the file.
+					If set, writing the movie header will truncate all existing data in the destination file and write a new movie header, thereby creating a pure reference movie file. A file type box will be written at the beginning of the file.
 	@discussion     You would not want to use the AVMovieWritingTruncateDestinationToMovieHeaderOnly option if you had written sample data to the destination file using (for example) -[AVMutableMovie insertTimeRange:ofAsset:atTime:copySampleData:error:] with copySampleData set to YES, since that data would be lost.
  */
 typedef NS_OPTIONS(NSUInteger, AVMovieWritingOptions) {
+	AVMovieWritingAddMovieHeaderToDestination =					0,
 	AVMovieWritingTruncateDestinationToMovieHeaderOnly =		(1UL << 0)
 } NS_AVAILABLE_MAC(10_11);
 
@@ -197,6 +201,15 @@ typedef NS_OPTIONS(NSUInteger, AVMovieWritingOptions) {
 	@discussion		Data references in the output movie header are adjusted to be relative to the destination URL. Note that modifications to instances of AVMutableMovie, to their constituent AVMutableMovieTracks, or to their collections of metadata are committed to storage when their movie headers are written.
 */
 - (BOOL)writeMovieHeaderToURL:(NSURL *)URL fileType:(NSString *)fileType options:(AVMovieWritingOptions)options error:(NSError * __nullable * __nullable)outError NS_AVAILABLE_MAC(10_11);
+
+/*!
+	@method			isCompatibleWithFileType:
+	@abstract		Indicates whether a movie header for the AVMovie object can be created for the specified file type.
+	@param			fileType
+					A UTI indicating a movie file format (e.g. AVFileTypeQuickTimeMovie for a QuickTime movie).
+	@discussion     This method returns a BOOL that indicates whether a movie header of the specified type can be created for the receiver. For example, this method returns NO if the movie contains tracks whose media types or media subtypes are not allowed by the specified file type.
+*/
+- (BOOL)isCompatibleWithFileType:(NSString *)fileType NS_AVAILABLE_MAC(10_11);
 
 @end
 
@@ -491,25 +504,25 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 	@param			mediaType
 					The media type of the new track (e.g. AVMediaTypeVideo for a video track).
 	@param			track
-					If you wish to transfer settings from an existing track, including track userdata and metadata, width, height, preferred volume, etc., pass a reference to an AVMovieTrack representing that track. Otherwise pass nil.
+					If you wish to transfer settings from an existing track, including track userdata and metadata, width, height, preferred volume, etc., pass a reference to an AVAssetTrack representing that track. Otherwise pass nil.
 	@param			options
 					An NSDictionary object that contains keys for specifying options for the initialization of the new AVMutableMovieTrack object. Currently no keys are defined; pass nil for default initialization behavior.
 	@result			An AVMutableMovieTrack object
     @discussion		The trackID of the newly added track is a property of the returned instance of AVMutableMovieTrack.
 */
-- (AVMutableMovieTrack *)addMutableTrackWithMediaType:(NSString *)mediaType copySettingsFromTrack:(nullable AVMovieTrack *)track options:(nullable NSDictionary<NSString *, id> *)options;
+- (AVMutableMovieTrack *)addMutableTrackWithMediaType:(NSString *)mediaType copySettingsFromTrack:(nullable AVAssetTrack *)track options:(nullable NSDictionary<NSString *, id> *)options;
 
 /*!
 	@method			addMutableTracksCopyingSettingsFromTracks:options:
 	@abstract		Adds one or more empty tracks to the target movie, copying track settings from the source tracks.
 	@param			existingTracks
-					An array of AVMovieTrack objects.
+					An array of AVAssetTrack objects.
 	@param			options
 					An NSDictionary object that contains keys for specifying options for the initialization of the new AVMutableMovieTrack objects. Currently no keys are defined; pass nil for default initialization behavior.
 	@result			An array of AVMutableMovieTrack objects; the index of a track in this array is the same as the index of its source track in the existingTracks array.
     @discussion		This method creates one or more empty tracks in the target movie and configures those tracks with settings (such as track userdata and metadata, width, height, and preferred volume) copied from the source tracks in the existingTracks array. Also, properties involving pairs of tracks (such as track references) are copied from the source tracks to the target tracks.
 */
-- (NSArray<AVMutableMovieTrack *> *)addMutableTracksCopyingSettingsFromTracks:(NSArray<AVMovieTrack *> *)existingTracks options:(nullable NSDictionary<NSString *, id> *)options;
+- (NSArray<AVMutableMovieTrack *> *)addMutableTracksCopyingSettingsFromTracks:(NSArray<AVAssetTrack *> *)existingTracks options:(nullable NSDictionary<NSString *, id> *)options;
 
 /*!
 	@method			removeTrack:

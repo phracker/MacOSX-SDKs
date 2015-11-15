@@ -25,15 +25,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreAudio/CoreAudioTypes.h>
 #include <AudioToolbox/AudioFormat.h>
-
-#if (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE || TARGET_OS_WIN32)
-	#include <CoreGraphics/CGBase.h>
-	#include <CoreGraphics/CGGeometry.h>
-#elif TARGET_OS_MAC
-	#include <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGBase.h>
-	#include <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGGeometry.h>
-#endif
-
+#include <CoreGraphics/CGBase.h>
+#include <CoreGraphics/CGGeometry.h>
 #include <CoreVideo/CoreVideo.h>
 
 #ifdef __cplusplus
@@ -122,7 +115,7 @@ CMFormatDescriptionCreate(
 																	Four character code identifying the sub-type of media. */
 	CFDictionaryRef CM_NULLABLE extensions,						/*! @param extensions
 																	Dictionary of extensions to be attached to the CMFormatDescription. May be NULL. */
-	CMFormatDescriptionRef CM_NULLABLE * CM_NONNULL descOut)	/*! @param descOut
+	CM_RETURNS_RETAINED_PARAMETER CMFormatDescriptionRef CM_NULLABLE * CM_NONNULL descOut)	/*! @param descOut
 																	Receives the newly-created CMFormatDescription. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
@@ -341,7 +334,7 @@ OSStatus CMAudioFormatDescriptionCreate(
 	CFDictionaryRef CM_NULLABLE extensions,								/*! @param extensions		Dictionary of extension key/value pairs.  Keys are always CFStrings.
 																			Values are always property list objects (ie. CFData, CFString, CFArray, CFDictionary,
 																			CFDate, CFBoolean, or CFNumber). Can be NULL. */
-	CMAudioFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)		/*! @param outDesc			Returned newly created audio CMFormatDescription */
+	CM_RETURNS_RETAINED_PARAMETER CMAudioFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)		/*! @param outDesc			Returned newly created audio CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -451,7 +444,7 @@ CM_EXPORT OSStatus CMAudioFormatDescriptionCreateSummary(
 		CFAllocatorRef CM_NULLABLE allocator,
 		CFArrayRef CM_NONNULL formatDescriptionArray, // CFArray[CMAudioFormatDescription]
 		uint32_t flags, // pass 0
-		CMAudioFormatDescriptionRef CM_NULLABLE * CM_NONNULL summaryFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMAudioFormatDescriptionRef CM_NULLABLE * CM_NONNULL summaryFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -734,10 +727,6 @@ CM_EXPORT const CFStringRef kCMFormatDescriptionYCbCrMatrix_SMPTE_240M_1995 __OS
 #define kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2				kCVImageBufferYCbCrMatrix_ITU_R_709_2			// CFString
 #define kCMFormatDescriptionYCbCrMatrix_ITU_R_601_4				kCVImageBufferYCbCrMatrix_ITU_R_601_4			// CFString
 #define kCMFormatDescriptionYCbCrMatrix_SMPTE_240M_1995			kCVImageBufferYCbCrMatrix_SMPTE_240M_1995		// CFString
-CM_EXPORT const CFStringRef kCMFormatDescriptionYCbCrMatrix_DCI_P3												// same as kCVImageBufferYCbCrMatrix_DCI_P3
-							__OSX_AVAILABLE_STARTING(__MAC_10_11,__IPHONE_9_0);
-CM_EXPORT const CFStringRef kCMFormatDescriptionYCbCrMatrix_P3_D65												// same as kCVImageBufferYCbCrMatrix_P3_D65
-							__OSX_AVAILABLE_STARTING(__MAC_10_11,__IPHONE_9_0);
 CM_EXPORT const CFStringRef kCMFormatDescriptionYCbCrMatrix_ITU_R_2020											// same as kCVImageBufferYCbCrMatrix_ITU_R_2020
 							__OSX_AVAILABLE_STARTING(__MAC_10_11,__IPHONE_9_0);
 
@@ -857,7 +846,7 @@ OSStatus CMVideoFormatDescriptionCreate(
 	CFDictionaryRef CM_NULLABLE extensions,							/*! @param extensions	Dictionary of extension key/value pairs. Keys are always CFStrings.
 																		Values are always property list objects (ie. CFData, CFString, CFArray,
 																		CFDictionary, CFDate, CFBoolean, or CFNumber). Can be NULL. */
-	CMVideoFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc		Returned newly created video CMFormatDescription */
+	CM_RETURNS_RETAINED_PARAMETER CMVideoFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc		Returned newly created video CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 /*!
@@ -881,7 +870,7 @@ OSStatus CMVideoFormatDescriptionCreateForImageBuffer(
 																		CFAllocator to be used when creating the CMFormatDescription. NULL will cause the default allocator to be used */
 	CVImageBufferRef CM_NONNULL imageBuffer,						/*! @param imageBuffer
 																		Image buffer for which we are creating the format description. */
-	CMVideoFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc
+	CM_RETURNS_RETAINED_PARAMETER CMVideoFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc
 																		Returned newly-created video CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
@@ -904,7 +893,7 @@ OSStatus CMVideoFormatDescriptionCreateFromH264ParameterSets(
 																				Points to a C array containing the size, in bytes, of each of the parameter sets. */
 	 int NALUnitHeaderLength,												/*! @param NALUnitHeaderLength
 																				Size, in bytes, of the NALUnitLength field in an AVC video sample or AVC parameter set sample. Pass 1, 2 or 4. */
-	CMFormatDescriptionRef CM_NULLABLE * CM_NONNULL formatDescriptionOut )	/*! @param formatDescriptionOut
+	CM_RETURNS_RETAINED_PARAMETER CMFormatDescriptionRef CM_NULLABLE * CM_NONNULL formatDescriptionOut )	/*! @param formatDescriptionOut
 																				Returned newly-created video CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_9,__IPHONE_7_0);
 
@@ -1083,7 +1072,7 @@ OSStatus CMMuxedFormatDescriptionCreate(
 	CFDictionaryRef CM_NULLABLE extensions,							/*! @param extensions		Dictionary of extension key/value pairs. Keys are always CFStrings.
 																		Values are always property list objects (ie. CFData, CFString, CFArray,
 																		CFDictionary, CFDate, CFBoolean, or CFNumber). Can be NULL. */
-	CMMuxedFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc		Returned newly created muxed CMFormatDescription */
+	CM_RETURNS_RETAINED_PARAMETER CMMuxedFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc		Returned newly created muxed CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -1350,6 +1339,8 @@ OSStatus CMTextFormatDescriptionGetDefaultStyle(
 	/* CM_NULLABLE */ CGFloat outColorComponents[4])	/*! @param outColorComponents
 													Components are in order red, green, blue, alpha. May be NULL. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
+	
+CF_IMPLICIT_BRIDGING_DISABLED
 
 /*!
 	@function	CMTextFormatDescriptionGetFontName
@@ -1363,9 +1354,11 @@ OSStatus CMTextFormatDescriptionGetFontName(
 																FormatDescription being interrogated. */
 	uint16_t localFontID,									/*! @param localFontID
 																Font number, local to the FormatDescription. */
-	CFStringRef CM_NULLABLE * CM_NONNULL outFontName)		/*! @param outFontName
+	CM_RETURNS_NOT_RETAINED_PARAMETER CFStringRef CM_NULLABLE * CM_NONNULL outFontName)		/*! @param outFontName
 																Name of the font. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
+	
+CF_IMPLICIT_BRIDGING_ENABLED
 
 #pragma mark CMSubtitleFormatDescription
 
@@ -1459,7 +1452,7 @@ OSStatus CMTimeCodeFormatDescriptionCreate(
 																			kCMTimeCodeFlag_DropFrame, kCMTimeCodeFlag_24HourMax, kCMTimeCodeFlag_NegTimesOK */
 	CFDictionaryRef CM_NULLABLE extensions,								/*! @param extensions
 																			Keys are always CFStrings. Values are always property list objects (ie. CFData). May be NULL. */
-	CMTimeCodeFormatDescriptionRef CM_NULLABLE * CM_NONNULL descOut)	/*! @param descOut
+	CM_RETURNS_RETAINED_PARAMETER CMTimeCodeFormatDescriptionRef CM_NULLABLE * CM_NONNULL descOut)	/*! @param descOut
 																			Receives the newly-created CMFormatDescription. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
@@ -1584,7 +1577,7 @@ OSStatus CMMetadataFormatDescriptionCreateWithKeys(
 																			kCMMetadataFormatDescriptionKey_Namespace
 																			kCMMetadataFormatDescriptionKey_Value
 																			kCMMetadataFormatDescriptionKey_LocalID */
-	CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc		Returned newly created metadata CMFormatDescription */
+	CM_RETURNS_RETAINED_PARAMETER CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc		Returned newly created metadata CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 CM_EXPORT
@@ -1592,7 +1585,7 @@ OSStatus CMMetadataFormatDescriptionCreateWithMetadataSpecifications(
 	CFAllocatorRef CM_NULLABLE allocator,								/*! @param allocator		CFAllocator to be used. kCFAllocatorDefault if you don't care. */
 	CMMetadataFormatType metadataType,									/*! @param metadataType		Currently the type must be kCMMetadataFormatType_Boxed. */
 	CFArrayRef CM_NONNULL metadataSpecifications,						/*! @param metadataSpecifications	An array of dictionaries, each dictionary supplies a metadata identifier, a datatype, and an optional language tag. */
-	CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc			Returned newly created metadata CMFormatDescription */
+	CM_RETURNS_RETAINED_PARAMETER CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc			Returned newly created metadata CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CM_EXPORT
@@ -1600,7 +1593,7 @@ OSStatus CMMetadataFormatDescriptionCreateWithMetadataFormatDescriptionAndMetada
 	CFAllocatorRef CM_NULLABLE allocator,								/*! @param allocator		CFAllocator to be used. kCFAllocatorDefault if you don't care. */
 	CMMetadataFormatDescriptionRef CM_NONNULL srcDesc,					/*! @param srcDesc			Source metadata format description being extended */
 	CFArrayRef CM_NONNULL metadataSpecifications,						/*! @param metadataSpecifications	An array of dictionaries, each dictionary supplies a metadata identifier, a datatype, and an optional language tag. */
-	CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc			Returned newly created metadata CMFormatDescription */
+	CM_RETURNS_RETAINED_PARAMETER CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc			Returned newly created metadata CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CM_EXPORT
@@ -1608,7 +1601,7 @@ OSStatus CMMetadataFormatDescriptionCreateByMergingMetadataFormatDescriptions(
 	CFAllocatorRef CM_NULLABLE allocator,								/*! @param allocator		CFAllocator to be used. kCFAllocatorDefault if you don't care. */
 	CMMetadataFormatDescriptionRef CM_NONNULL srcDesc1,					/*! @param srcDesc1			Metadata format description being merged */
 	CMMetadataFormatDescriptionRef CM_NONNULL srcDesc2,					/*! @param srcDesc2			Metadata format description being merged */
-	CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc			Returned newly created metadata CMFormatDescription */
+	CM_RETURNS_RETAINED_PARAMETER CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL outDesc)	/*! @param outDesc			Returned newly created metadata CMFormatDescription */
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED

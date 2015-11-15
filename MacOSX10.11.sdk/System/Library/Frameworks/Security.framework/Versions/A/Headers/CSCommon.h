@@ -36,12 +36,13 @@ extern "C" {
 #include <stdint.h>
 #include <CoreFoundation/CoreFoundation.h>
 
+CF_ASSUME_NONNULL_BEGIN
 
 /*
 	Code Signing specific OSStatus codes.
 	[Assigned range 0xFFFE_FAxx].
 */
-enum {
+CF_ENUM(OSStatus) {
 	errSecCSUnimplemented =				-67072,	/* unimplemented code signing feature */
 	errSecCSInvalidObjectRef =			-67071,	/* invalid API object reference */
 	errSecCSInvalidFlags =				-67070,	/* invalid or inappropriate API flag(s) specified */
@@ -116,7 +117,6 @@ enum {
 	errSecCSInvalidSymlink =			-67003,	/* invalid destination for symbolic link in bundle */
 };
 
-
 /*
  * Code Signing specific CFError "user info" keys.
  * In calls that can return CFErrorRef indications, if a CFErrorRef is actually
@@ -137,7 +137,6 @@ extern const CFStringRef kSecCFErrorGuestAttributes; /* CFTypeRef: Guest attribu
 extern const CFStringRef kSecCFErrorRequirementSyntax; /* CFStringRef: compilation error for Requirement source */
 extern const CFStringRef kSecCFErrorPath;			/* CFURLRef: subcomponent containing the error */
 
-
 /*!
 	@typedef SecCodeRef
 	This is the type of a reference to running code.
@@ -146,19 +145,19 @@ extern const CFStringRef kSecCFErrorPath;			/* CFURLRef: subcomponent containing
 	argument, which performs an implicit SecCodeCopyStaticCode call and
 	operates on the result.
 */
-typedef struct __SecCode *SecCodeRef;				/* running code */
+typedef struct CF_BRIDGED_TYPE(id) __SecCode *SecCodeRef;	/* running code */
 
 /*!
 	@typedef SecStaticCodeRef
 	This is the type of a reference to static code on disk.
 */
-typedef struct __SecCode const *SecStaticCodeRef;	/* code on disk */
+typedef struct CF_BRIDGED_TYPE(id) __SecCode const *SecStaticCodeRef;	/* code on disk */
 
 /*!
 	@typedef SecRequirementRef
 	This is the type of a reference to a code requirement.
 */
-typedef struct __SecRequirement *SecRequirementRef;	/* code requirement */
+typedef struct CF_BRIDGED_TYPE(id) __SecRequirement *SecRequirementRef;	/* code requirement */
 
 
 /*!
@@ -170,7 +169,7 @@ typedef struct __SecRequirement *SecRequirementRef;	/* code requirement */
 */
 typedef u_int32_t SecGuestRef;
 
-enum {
+CF_ENUM(SecGuestRef) {
 	kSecNoGuest = 0,		/* not a valid SecGuestRef */
 };
 
@@ -195,15 +194,14 @@ enum {
 	made by expired certificates be rejected. By default, expiration of participating
 	certificates is not automatic grounds for rejection.
 */
-typedef uint32_t SecCSFlags;
-
-enum {
+typedef CF_OPTIONS(uint32_t, SecCSFlags) {
     kSecCSDefaultFlags = 0,					/* no particular flags (default behavior) */
 	
     kSecCSConsiderExpiration = 1 << 31,		/* consider expired certificates invalid */
     kSecCSEnforceRevocationChecks = 1 << 30,	/* force revocation checks regardless of preference settings */
     kSecCSNoNetworkAccess = 1 << 29,            /* do not use the network, cancels "kSecCSEnforceRevocationChecks"  */
 	kSecCSReportProgress = 1 << 28,			/* make progress report call-backs when configured */
+    kSecCSCheckTrustedAnchors = 1 << 27, /* build certificate chain to system trust anchors, not to any self-signed certificate */
 };
 
 
@@ -238,9 +236,7 @@ enum {
 	@constant kSecCodeSignatureForceExpiration
 	Forces the kSecCSConsiderExpiration flag on all validations of the code.
  */
-typedef uint32_t SecCodeSignatureFlags;
-
-enum {
+typedef CF_OPTIONS(uint32_t, SecCodeSignatureFlags) {
 	kSecCodeSignatureHost = 0x0001,			/* may host guest code */
 	kSecCodeSignatureAdhoc = 0x0002,		/* must be used without signer */
 	kSecCodeSignatureForceHard = 0x0100,	/* always set HARD mode on launch */
@@ -292,8 +288,7 @@ enum {
 	(and live). Note however that a change in static validity does not necessarily trigger instant
 	death.
 */
-typedef uint32_t SecCodeStatus;
-enum {
+typedef CF_OPTIONS(uint32_t, SecCodeStatus) {
 	kSecCodeStatusValid =	0x0001,
 	kSecCodeStatusHard =	0x0100,
 	kSecCodeStatusKill =	0x0200,
@@ -304,9 +299,7 @@ enum {
 	@typedef SecRequirementType
 	An enumeration indicating different types of internal requirements for code.
  */
-typedef uint32_t SecRequirementType;
-
-enum {
+typedef CF_ENUM(uint32_t, SecRequirementType) {
 	kSecHostRequirementType =			1,	/* what hosts may run us */
 	kSecGuestRequirementType =			2,	/* what guests we may run */
 	kSecDesignatedRequirementType =		3,	/* designated requirement */
@@ -316,6 +309,7 @@ enum {
 	kSecRequirementTypeCount = kSecInvalidRequirementType /* number of valid requirement types */
 };
 
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

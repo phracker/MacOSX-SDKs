@@ -29,7 +29,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
+
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 	/*!
 	 @constant kSecDecodeTypeAttribute
 	 Used with SecTransformGetAttribute to query the attribute type.
@@ -56,16 +59,15 @@ extern "C" {
 	 */
 	
 	// See SecEncodeTransformCreate for encoding...
-	
+	__nullable
 	SecTransformRef SecDecodeTransformCreate(CFTypeRef DecodeType,
 											 CFErrorRef* error
 											 )
 	__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
-	
-	
-	
-	
-	
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
+
 #ifdef __cplusplus
 }
 #endif

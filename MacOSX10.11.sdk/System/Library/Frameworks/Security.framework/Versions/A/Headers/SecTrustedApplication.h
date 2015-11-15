@@ -38,6 +38,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*!
 	@function SecTrustedApplicationGetTypeID
 	@abstract Returns the type identifier of SecTrustedApplication instances.
@@ -54,7 +56,7 @@ CFTypeID SecTrustedApplicationGetTypeID(void);
     @param app On return, a pointer to the trusted application reference.
     @result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecTrustedApplicationCreateFromPath(const char *path, SecTrustedApplicationRef *app);
+OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app);
 
 /*!
 	@function SecTrustedApplicationCopyData
@@ -63,7 +65,7 @@ OSStatus SecTrustedApplicationCreateFromPath(const char *path, SecTrustedApplica
 	@param data On return, a pointer to a data reference of the trusted application.
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecTrustedApplicationCopyData(SecTrustedApplicationRef appRef, CFDataRef *data);
+OSStatus SecTrustedApplicationCopyData(SecTrustedApplicationRef appRef, CFDataRef * __nonnull CF_RETURNS_RETAINED data);
 
 /*!
 	@function SecTrustedApplicationSetData
@@ -74,6 +76,7 @@ OSStatus SecTrustedApplicationCopyData(SecTrustedApplicationRef appRef, CFDataRe
 */
 OSStatus SecTrustedApplicationSetData(SecTrustedApplicationRef appRef, CFDataRef data);
 
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

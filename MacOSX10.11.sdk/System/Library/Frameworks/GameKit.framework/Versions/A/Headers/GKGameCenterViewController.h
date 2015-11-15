@@ -37,6 +37,7 @@ NS_CLASS_AVAILABLE(10_9, 6_0)
     NSString *_leaderboardIdentifier;
     NSString *_leaderboardCategory;
     GKLeaderboardTimeScope _leaderboardTimeScope;
+    BOOL _internalFlag;
 }
 @end
 #endif

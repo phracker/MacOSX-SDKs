@@ -32,6 +32,7 @@
 #include <sys/cdefs.h>
 #include <stdint.h>
 #include <uuid/uuid.h>
+#include <mach/boolean.h>
 
 #include <TargetConditionals.h>
 
@@ -285,31 +286,33 @@ enum generic_snapshot_flags {
 	kKernel64_p 		= 0x2
 };
 
- enum task_snapshot_flags {
-	kTaskRsrcFlagged	= 0x4,   // In the EXC_RESOURCE danger zone?
- 	kTerminatedSnapshot	= 0x8,
-	kPidSuspended		= 0x10,  // true for suspended task 	
-	kFrozen				= 0x20,  // true for hibernated task (along with pidsuspended)
-	kTaskDarwinBG		= 0x40,
-	kTaskExtDarwinBG	= 0x80,
-	kTaskVisVisible		= 0x100,
-	kTaskVisNonvisible	= 0x200,
- 	kTaskIsForeground	= 0x400,
- 	kTaskIsBoosted		= 0x800,
-	kTaskIsSuppressed	= 0x1000,
-	kTaskIsTimerThrottled	= 0x2000,  /* deprecated */
-	kTaskIsImpDonor 	= 0x4000,
-	kTaskIsLiveImpDonor = 0x8000
- };
+enum task_snapshot_flags {
+	kTaskRsrcFlagged      = 0x4, // In the EXC_RESOURCE danger zone?
+	kTerminatedSnapshot   = 0x8,
+	kPidSuspended         = 0x10, // true for suspended task
+	kFrozen               = 0x20, // true for hibernated task (along with pidsuspended)
+	kTaskDarwinBG         = 0x40,
+	kTaskExtDarwinBG      = 0x80,
+	kTaskVisVisible       = 0x100,
+	kTaskVisNonvisible    = 0x200,
+	kTaskIsForeground     = 0x400,
+	kTaskIsBoosted        = 0x800,
+	kTaskIsSuppressed     = 0x1000,
+	kTaskIsTimerThrottled = 0x2000, /* deprecated */
+	kTaskIsImpDonor       = 0x4000,
+	kTaskIsLiveImpDonor   = 0x8000
+};
 
 enum thread_snapshot_flags {
-	kHasDispatchSerial	= 0x4,
-	kStacksPCOnly		= 0x8,    /* Stack traces have no frame pointers. */
-	kThreadDarwinBG		= 0x10,   /* Thread is darwinbg */
-	kThreadIOPassive	= 0x20,   /* Thread uses passive IO */
-	kThreadSuspended	= 0x40,   /* Thread is suspended */
-	kThreadTruncatedBT	= 0x80,   /* Unmapped pages caused truncated backtrace */
-	kGlobalForcedIdle	= 0x100   /* Thread performs global forced idle */
+	kHasDispatchSerial = 0x4,
+	kStacksPCOnly      = 0x8,  /* Stack traces have no frame pointers. */
+	kThreadDarwinBG    = 0x10, /* Thread is darwinbg */
+	kThreadIOPassive   = 0x20, /* Thread uses passive IO */
+	kThreadSuspended   = 0x40, /* Thread is suspended */
+	kThreadTruncatedBT = 0x80, /* Unmapped pages caused truncated backtrace */
+	kGlobalForcedIdle  = 0x100, /* Thread performs global forced idle */
+	kThreadDecompressedBT = 0x200,   /* Some thread stack pages were decompressed as part of BT */
+	kThreadFaultedBT = 0x400   /* Some thread stack pages were faulted in as part of BT */
 };
 
 #define VM_PRESSURE_TIME_WINDOW 5 /* seconds */
@@ -331,7 +334,8 @@ enum {
 	STACKSHOT_SAVE_IMP_DONATION_PIDS		= 0x2000,
 	STACKSHOT_SAVE_IN_KERNEL_BUFFER			= 0x4000,
 	STACKSHOT_RETRIEVE_EXISTING_BUFFER		= 0x8000,
-	STACKSHOT_KCDATA_FORMAT				= 0x10000
+	STACKSHOT_KCDATA_FORMAT				= 0x10000,
+	STACKSHOT_ENABLE_FAULTING			= 0x20000
 };
 
 /*

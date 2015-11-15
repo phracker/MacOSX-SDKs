@@ -49,12 +49,14 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*
  * Opaque reference to a CMS encoder object. 
  * This is a CF object, with standard CF semantics; dispose of it
  * with CFRelease().
  */
-typedef struct _CMSEncoder *CMSEncoderRef;
+typedef struct CF_BRIDGED_TYPE(id) _CMSEncoder *CMSEncoderRef;
 
 CFTypeID CMSEncoderGetTypeID(void)
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
@@ -63,11 +65,11 @@ CFTypeID CMSEncoderGetTypeID(void)
  * Create a CMSEncoder. Result must eventually be freed via CFRelease().
  */
 OSStatus CMSEncoderCreate(
-	CMSEncoderRef		*cmsEncoderOut)	/* RETURNED */
+	CMSEncoderRef * __nonnull CF_RETURNS_RETAINED cmsEncoderOut)	/* RETURNED */
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
-extern CFStringRef kCMSEncoderDigestAlgorithmSHA1;
-extern CFStringRef kCMSEncoderDigestAlgorithmSHA256;
+extern const CFStringRef kCMSEncoderDigestAlgorithmSHA1;
+extern const CFStringRef kCMSEncoderDigestAlgorithmSHA256;
 
 OSStatus CMSEncoderSetSignerAlgorithm(
 	CMSEncoderRef		cmsEncoder,
@@ -96,7 +98,7 @@ OSStatus CMSEncoderAddSigners(
  */
 OSStatus CMSEncoderCopySigners(
 	CMSEncoderRef		cmsEncoder,
-	CFArrayRef			*signersOut)		/* RETURNED */
+	CFArrayRef * __nonnull CF_RETURNS_RETAINED signersOut)		/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -123,7 +125,7 @@ OSStatus CMSEncoderAddRecipients(
  */
 OSStatus CMSEncoderCopyRecipients(
 	CMSEncoderRef		cmsEncoder,
-	CFArrayRef			*recipientsOut)	/* RETURNED */
+	CFArrayRef * __nonnull CF_RETURNS_RETAINED recipientsOut)	/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /* 
@@ -198,7 +200,7 @@ OSStatus CMSEncoderSetEncapsulatedContentTypeOID(
  */
 OSStatus CMSEncoderCopyEncapsulatedContentType(
 	CMSEncoderRef		cmsEncoder,
-	CFDataRef			*eContentTypeOut)		/* RETURNED */
+	CFDataRef * __nonnull CF_RETURNS_RETAINED eContentTypeOut)		/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -234,14 +236,14 @@ OSStatus CMSEncoderAddSupportingCerts(
  */
 OSStatus CMSEncoderCopySupportingCerts(
 	CMSEncoderRef		cmsEncoder,
-	CFArrayRef			*certsOut)			/* RETURNED */
+	CFArrayRef * __nonnull CF_RETURNS_RETAINED certsOut)			/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
  * Standard signed attributes, optionally specified in 
  * CMSEncoderAddSignedAttributes().
  */
-enum {
+typedef CF_ENUM(uint32_t, CMSSignedAttributes) {
 	kCMSAttrNone						= 0x0000,
     /* 
      * S/MIME Capabilities - identifies supported signature, encryption, and
@@ -262,7 +264,6 @@ enum {
      */
     kCMSAttrSigningTime					= 0x0008
 };
-typedef uint32_t CMSSignedAttributes;
 
 /*
  * Optionally specify signed attributes. Only meaningful when creating a 
@@ -277,14 +278,13 @@ OSStatus CMSEncoderAddSignedAttributes(
 /*
  * Specification of what certificates to include in a signed message.
  */
-enum {
+typedef CF_ENUM(uint32_t, CMSCertificateChainMode) {
 	kCMSCertificateNone = 0,		/* don't include any certificates */
 	kCMSCertificateSignerOnly,		/* only include signer certificate(s) */
 	kCMSCertificateChain,			/* signer certificate chain up to but not 
 									 *   including root certiticate */ 
 	kCMSCertificateChainWithRoot	/* signer certificate chain including root */
 };
-typedef uint32_t CMSCertificateChainMode;
 
 /* 
  * Optionally specify which certificates, if any, to include in a 
@@ -326,7 +326,7 @@ OSStatus CMSEncoderUpdateContent(
  */
 OSStatus CMSEncoderCopyEncodedContent(
 	CMSEncoderRef		cmsEncoder,
-	CFDataRef			*encodedContentOut)	/* RETURNED */
+	CFDataRef * __nonnull CF_RETURNS_RETAINED encodedContentOut)	/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -353,14 +353,14 @@ OSStatus CMSEncoderCopyEncodedContent(
  * please use CMSEncodeContent() instead.
  */
 OSStatus CMSEncode(
-	CFTypeRef			signers,
-	CFTypeRef			recipients,
-	const CSSM_OID		*eContentType,
-	Boolean				detachedContent,
-	CMSSignedAttributes	signedAttributes,
-	const void			*content,
-	size_t				contentLen,
-	CFDataRef			*encodedContentOut)	/* RETURNED */
+	CFTypeRef __nullable        signers,
+	CFTypeRef __nullable        recipients,
+	const CSSM_OID * __nullable eContentType,
+	Boolean                     detachedContent,
+	CMSSignedAttributes         signedAttributes,
+	const void *                content,
+	size_t                      contentLen,
+	CFDataRef * __nonnull CF_RETURNS_RETAINED encodedContentOut)	/* RETURNED */
 	/* DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER; */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
@@ -387,14 +387,14 @@ OSStatus CMSEncode(
  * encodedContent   : the result of the encoding.
  */
 OSStatus CMSEncodeContent(
-	CFTypeRef			signers,
-	CFTypeRef			recipients,
-	CFTypeRef			eContentTypeOID,
-	Boolean				detachedContent,
-	CMSSignedAttributes	signedAttributes,
-	const void			*content,
-	size_t				contentLen,
-	CFDataRef			*encodedContentOut)	/* RETURNED */
+	CFTypeRef __nullable    signers,
+	CFTypeRef __nullable    recipients,
+	CFTypeRef __nullable    eContentTypeOID,
+	Boolean                 detachedContent,
+	CMSSignedAttributes     signedAttributes,
+	const void              *content,
+	size_t                  contentLen,
+	CFDataRef * __nullable CF_RETURNS_RETAINED encodedContentOut)	/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 OSStatus CMSEncoderCopySignerTimestamp(
@@ -404,11 +404,13 @@ OSStatus CMSEncoderCopySignerTimestamp(
     __OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_NA);
 
 OSStatus CMSEncoderCopySignerTimestampWithPolicy(
-    CMSEncoderRef		cmsEncoder,
-    CFTypeRef            timeStampPolicy,
-    size_t				signerIndex,        /* usually 0 */
-    CFAbsoluteTime      *timestamp)			/* RETURNED */
+    CMSEncoderRef           cmsEncoder,
+    CFTypeRef __nullable    timeStampPolicy,
+    size_t                  signerIndex,        /* usually 0 */
+    CFAbsoluteTime          *timestamp)			/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_NA);
+
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

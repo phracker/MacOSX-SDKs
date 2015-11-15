@@ -4,7 +4,7 @@
  *
  *  See vImage/vImage.h for more on how to view the headerdoc documentation for functions declared herein.
  *
- *  @copyright Copyright (c) 2002-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2002-2015 by Apple Inc. All rights reserved.
  *
  *  @discussion Morphology functions modify the shape of dark and light elements in an image.  They can enlarge
  *              light structural elements (Dilate) or make them smaller by making the darker regions larger (Erode).

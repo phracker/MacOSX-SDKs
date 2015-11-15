@@ -84,7 +84,7 @@ int	pthread_sigmask(int, const sigset_t *, sigset_t *) __DARWIN_ALIAS(pthread_si
 int	sigaction(int, const struct sigaction * __restrict,
 	    struct sigaction * __restrict);
 int	sigaddset(sigset_t *, int);
-int	sigaltstack(const stack_t * __restrict, stack_t * __restrict)  __DARWIN_ALIAS(sigaltstack);
+int	sigaltstack(const stack_t * __restrict, stack_t * __restrict)  __DARWIN_ALIAS(sigaltstack) __WATCHOS_PROHIBITED;
 int	sigdelset(sigset_t *, int);
 int	sigemptyset(sigset_t *);
 int	sigfillset(sigset_t *);
@@ -96,7 +96,7 @@ int	sigpause(int) __DARWIN_ALIAS_C(sigpause);
 int	sigpending(sigset_t *);
 int	sigprocmask(int, const sigset_t * __restrict, sigset_t * __restrict);
 int	sigrelse(int);
-void    (*sigset(int, void (*)(int)))(int); 
+void    (*sigset(int, void (*)(int)))(int);
 int	sigsuspend(const sigset_t *) __DARWIN_ALIAS_C(sigsuspend);
 int	sigwait(const sigset_t * __restrict, int * __restrict) __DARWIN_ALIAS_C(sigwait);
 #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)

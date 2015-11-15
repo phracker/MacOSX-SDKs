@@ -59,7 +59,7 @@ typedef id (*IMP)(id, SEL, ...);
 #define OBJC_BOOL_DEFINED
 
 /// Type to represent a boolean value.
-#if (TARGET_OS_IPHONE && __LP64__)  ||  (__ARM_ARCH_7K__ >= 2)
+#if (TARGET_OS_IPHONE && __LP64__)  ||  TARGET_OS_WATCH
 #define OBJC_BOOL_IS_BOOL 1
 typedef bool BOOL;
 #else

@@ -7,8 +7,9 @@
 #import <Foundation/NSArray.h>
 #import <Foundation/NSDictionary.h>
 #import <Foundation/NSSet.h>
+#import <Foundation/NSProgress.h>
 
-@class NSArray<ObjectType>, NSDictionary<KeyType, ObjectType>, NSString, NSURL, NSError, NSUUID, NSProgress, NSSet<ObjectType>, NSLock, NSNumber;
+@class NSString, NSURL, NSError, NSUUID, NSLock, NSNumber;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -156,7 +157,7 @@ FOUNDATION_EXPORT NSString * const NSLoadedClasses;	// notification key
  The request object itself is lightweight. You may create as many as you need, for example to request the same set of tags in different components of your application.
 */
 NS_CLASS_AVAILABLE(NA, 9_0)
-@interface NSBundleResourceRequest : NSObject
+@interface NSBundleResourceRequest : NSObject <NSProgressReporting>
 
 - (instancetype)init NS_UNAVAILABLE;
 

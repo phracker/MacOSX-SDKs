@@ -25,7 +25,6 @@
 
 #include <IOKit/usb/StandardUSB.h>
 #include <IOKit/usb/IOUSBHostFamily.h>
-#include <IOKit/usb/IOUSBHostNub.h>
 #include <IOKit/usb/IOUSBHostPipe.h>
 #include <IOKit/IOBufferMemoryDescriptor.h>
 #include <IOKit/IOWorkLoop.h>
@@ -71,7 +70,7 @@ class AppleUSBHostResources;
  * @discussion  This class provides functionality to configure a device and to create IOUSBHostInterface objects to 
  * represent the interfaces of the device.
  */
-class IOUSBHostDevice : public IOUSBHostNub
+class IOUSBHostDevice : public IOService
 {
     friend class AppleUSBHostController;
     friend class IOUSBHostInterface;
@@ -117,6 +116,18 @@ public:
 protected:
     virtual bool initWithController(AppleUSBHostController* controller, UInt8 speed, tUSBHostDeviceAddress address);
     
+    // Pad slots for future expansion
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 0);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 1);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 2);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 3);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 4);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 5);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 6);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 7);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 8);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 9);
+    
 #pragma mark IOService overrides
 public:
     virtual bool attach(IOService* provider);
@@ -125,6 +136,8 @@ public:
     virtual void stop(IOService* provider);
     virtual void free(void);
 
+    virtual bool compareProperty(OSDictionary* matching, const char* key);
+    virtual bool compareProperty(OSDictionary* matching, const OSString* key);
     virtual bool matchPropertyTable(OSDictionary* table, SInt32* score);
 
     virtual bool open(IOService* forClient, IOOptionBits options = 0, void* arg = 0);
@@ -142,7 +155,20 @@ protected:
     
     virtual IOReturn openGated(IOService* forClient, IOOptionBits options, void* arg);
     virtual IOReturn closeGated(IOService* forClient, IOOptionBits options);
+
+    // Protected pad slots for IOService overrides
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 10);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 11);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 12);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 13);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 14);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 15);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 16);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 17);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 18);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 19);
     
+protected:
     int32_t                                  _terminationPending;
     AppleUSBHostResources*                   _resources;
     AppleUSBHostController*                  _controller;
@@ -167,7 +193,7 @@ public:
     virtual IOReturn      setPowerState(unsigned long stateNumber, IOService* whatDevice);
     virtual IOReturn      powerStateDidChangeTo(IOPMPowerFlags capabilities, unsigned long stateNumber, IOService* whatDevice);
     virtual unsigned long initialPowerStateForDomainState(IOPMPowerFlags domainState);
-    
+    virtual void          PMstop(void);
     virtual IOReturn      forcePower(tPowerState powerState, bool clamp, uint32_t timeoutMs = 0);
     
     /*!
@@ -201,10 +227,23 @@ public:
     };
     virtual IOReturn idleAssertion(IOService* forService, tIdleAssertion assertion);
 
+    // Public pad slots for power management
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 20);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 21);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 22);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 23);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 24);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 25);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 26);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 27);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 28);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 29);
+
 protected:
     static IOPMPowerState  _sPowerStates[kPowerStateCount];
     static const OSSymbol* _sPowerStateSymbols[kPowerStateCount];
     
+    virtual void     powerChangeDone(unsigned long stateNumber);
     virtual IOReturn powerStateWillChangeToGated(IOPMPowerFlags capabilities, unsigned long stateNumber, IOService* whatDevice);
     virtual IOReturn setPowerStateGated(unsigned long stateNumber, IOService* whatDevice);
     virtual IOReturn powerStateDidChangeToGated(IOPMPowerFlags capabilities, unsigned long stateNumber, IOService* whatDevice);
@@ -212,18 +251,35 @@ protected:
     virtual void     addPowerChildThreadCall(thread_call_t threadCall);
     virtual IOReturn addPowerChildGated(void);
 
+    virtual void     pmStopThreadCall(thread_call_t threadCall);
+
     virtual IOReturn allocateDownstreamBusCurrentGated(uint32_t& wakeUnits, uint32_t& sleepUnits);
 
     virtual IOReturn updateIdlePolicy(bool asynchronous = false);
     virtual void updateIdlePolicyAsync(thread_call_t threadCall);
     virtual IOReturn updateIdlePolicyGated();
 
-    bool _forcePowerInProgress;
-    IOLock*                                  _powerChildrenLock;
-    OSSet*                                   _powerChildren;
-    OSSet*                                   _activePowerChildren;
-    IOPMDriverAssertionID                    _externalDevicePowerAssertion;
-    tPowerState                              _currentPowerState;
+    // Protected pad slots for power management
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 30);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 31);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 32);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 33);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 34);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 35);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 36);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 37);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 38);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 39);
+    
+protected:
+    bool                    _allowUpdateIdlePolicy;
+    bool                    _forcePowerInProgress;
+    IOLock*                 _powerChildrenLock;
+    OSSet*                  _powerChildren;
+    OSSet*                  _activePowerChildren;
+    IOPMDriverAssertionID   _externalDevicePowerAssertion;
+    tPowerState             _currentPowerState;
+    bool                    _powerOffPending;
 
 #pragma mark Descriptors
 public:
@@ -352,6 +408,18 @@ public:
      */
     virtual const StandardUSB::StringDescriptor* getStringDescriptor(uint8_t index, uint16_t languageID = StandardUSB::kLanguageIDEnglishUS);
 
+    // Public pad slots for descriptors
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 40);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 41);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 42);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 43);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 44);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 45);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 46);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 47);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 48);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 49);
+
 protected:
     virtual IOReturn cacheDescriptorGated(const StandardUSB::Descriptor* descriptor, uint16_t length, uint8_t index, uint16_t languageID);
     
@@ -364,6 +432,19 @@ protected:
     };
     virtual IOReturn getDescriptorGated(uint8_t type, uint16_t& length, tDescriptorSelectors& selectors, const StandardUSB::Descriptor*& result);
     
+    // Protected pad slots for descriptors
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 50);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 51);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 52);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 53);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 54);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 55);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 56);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 57);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 58);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 59);
+
+protected:
     bool                         _getDescriptorInProgress;
     AppleUSBHostDescriptorCache* _descriptorCache;
     
@@ -426,7 +507,7 @@ public:
      *
      * @return IOReturn result code
      */
-    virtual IOReturn deviceRequest(IOService* forClient, StandardUSB::DeviceRequest& request, void* dataBuffer, IOUSBHostCompletion* completion, uint32_t completionTimeoutMs);
+    virtual IOReturn deviceRequest(IOService* forClient, StandardUSB::DeviceRequest& request, void* dataBuffer, IOUSBHostCompletion* completion, uint32_t completionTimeoutMs = kUSBHostDefaultControlCompletionTimeoutMS);
 
     /*!
      * @brief Issue an aynchronous setup request on the default control pipe
@@ -456,7 +537,7 @@ public:
      *
      * @return IOReturn result code
      */
-    virtual IOReturn deviceRequest(IOService* forClient, StandardUSB::DeviceRequest& request, IOMemoryDescriptor* dataBuffer, IOUSBHostCompletion* completion, uint32_t completionTimeoutMs);
+    virtual IOReturn deviceRequest(IOService* forClient, StandardUSB::DeviceRequest& request, IOMemoryDescriptor* dataBuffer, IOUSBHostCompletion* completion, uint32_t completionTimeoutMs = kUSBHostDefaultControlCompletionTimeoutMS);
     
     /*!
      * @brief Issue a synchronous setup request on the default control pipe.
@@ -485,7 +566,7 @@ public:
      *
      * @return IOReturn result code
      */
-    virtual IOReturn deviceRequest(IOService* forClient, StandardUSB::DeviceRequest& request, void* dataBuffer, uint32_t& bytesTransferred, uint32_t completionTimeoutMs);
+    virtual IOReturn deviceRequest(IOService* forClient, StandardUSB::DeviceRequest& request, void* dataBuffer, uint32_t& bytesTransferred, uint32_t completionTimeoutMs = kUSBHostDefaultControlCompletionTimeoutMS);
 
     /*!
      * @brief Issue a synchronous setup request on the default control pipe.
@@ -514,7 +595,7 @@ public:
      *
      * @return IOReturn result code
      */
-    virtual IOReturn deviceRequest(IOService* forClient, StandardUSB::DeviceRequest& request, IOMemoryDescriptor* dataBuffer, uint32_t& bytesTransferred, uint32_t completionTimeoutMs);
+    virtual IOReturn deviceRequest(IOService* forClient, StandardUSB::DeviceRequest& request, IOMemoryDescriptor* dataBuffer, uint32_t& bytesTransferred, uint32_t completionTimeoutMs = kUSBHostDefaultControlCompletionTimeoutMS);
 
     /*!
      * @brief Abort device requests made via the @link deviceRequest @\link methods by <code>forClient</code>
@@ -532,6 +613,18 @@ public:
      */
     virtual IOReturn abortDeviceRequests(IOService* forClient = NULL, IOOptionBits options = IOUSBHostIOSource::kAbortAsynchronous, IOReturn withError = kIOReturnAborted);
     
+    // Public pad slots for configuration, interface, and pipe management
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 60);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 61);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 62);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 63);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 64);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 65);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 66);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 67);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 68);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 69);
+
 protected:
     virtual IOReturn setConfigurationGated(uint8_t bConfigurationValue, bool matchInterfaces);
     
@@ -551,6 +644,18 @@ protected:
 
     virtual IOReturn abortDeviceRequestsGated(IOService* forClient, IOOptionBits options, IOReturn withError);
     
+    // Protected pad slots for configuration, interface, and pipe management
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 70);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 71);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 72);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 73);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 74);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 75);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 76);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 77);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 78);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 79);
+
 #pragma mark Miscellaneous
 public:
     /*!
@@ -617,6 +722,31 @@ public:
      * @return Pointer to the newly allocated memory descriptor or NULL
      */
     virtual IOBufferMemoryDescriptor* createIOBuffer(IOOptionBits options, mach_vm_size_t capacity);
+
+    // Public pad slots for miscellaneous
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 80);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 81);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 82);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 83);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 84);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 85);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 86);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 87);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 88);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 89);
+
+protected:
+    // Protected pad slots for miscellaneous
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 90);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 91);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 92);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 93);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 94);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 95);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 96);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 97);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 98);
+    OSMetaClassDeclareReservedUnused(IOUSBHostDevice, 99);
 
 public:
     // Removed legacy methods
@@ -814,18 +944,21 @@ protected:
     UInt8                                    _speed;
     StandardUSB::EndpointDescriptor          _endpointZero;
     IOBufferMemoryDescriptor**               _configList;
+    uint32_t                                 _configListCount;
     uint8_t                                  _currentConfigValue;
     bool                                     _setConfigurationInProgress;
     uint32_t                                 _configurationBusCurrent; // mA
     uint32_t                                 _allocatedWakeBusCurrent; // mA
     uint32_t                                 _allocatedSleepBusCurrent;// mA
+    uint32_t                                 _pendingCloseCount;
+    
+    uint32_t _debugLoggingMask;
 
     struct tExpansionData
     {
     };
 
     tExpansionData* _expansionData;
-
 
 private:
     enum

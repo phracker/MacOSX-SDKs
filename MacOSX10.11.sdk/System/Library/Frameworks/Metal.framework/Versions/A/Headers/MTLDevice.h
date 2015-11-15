@@ -61,7 +61,7 @@ typedef NS_ENUM(NSUInteger, MTLFeatureSet)
     MTLFeatureSet_iOS_GPUFamily1_v2 NS_ENUM_AVAILABLE_IOS(9_0) = 2,
     MTLFeatureSet_iOS_GPUFamily2_v2 NS_ENUM_AVAILABLE_IOS(9_0) = 3,
 
-    MTLFeatureSet_OSX_GPUFamily1_v1 NS_ENUM_AVAILABLE_MAC(10_11) = 10000,
+    MTLFeatureSet_OSX_GPUFamily1_v1 NS_ENUM_AVAILABLE_MAC(10_11)   = 10000,
 } NS_ENUM_AVAILABLE(10_11, 8_0);
 
 /*!
@@ -118,7 +118,7 @@ NS_AVAILABLE(10_11, 8_0)
  */
 @property (readonly, getter=isHeadless) BOOL headless NS_AVAILABLE_MAC(10_11);
 
-/*
+/*!
  @property depth24Stencil8PixelFormatSupported
  @abstract If YES, device supports MTLPixelFormatDepth24Unorm_Stencil8.
  */
@@ -266,22 +266,10 @@ NS_AVAILABLE(10_11, 8_0)
 - (void)newComputePipelineStateWithFunction:(id <MTLFunction>)computeFunction options:(MTLPipelineOption)options completionHandler:(MTLNewComputePipelineStateWithReflectionCompletionHandler)completionHandler;
 
 /*!
- @method newComputePipelineStateWithDescriptor:error:
- @abstract Create and compile a new MTLComputePipelineState object synchronously.
- */
-- (nullable id <MTLComputePipelineState>)newComputePipelineStateWithDescriptor:(MTLComputePipelineDescriptor *)descriptor error:(__autoreleasing NSError **)error NS_AVAILABLE(10_11, 9_0);
-
-/*!
  @method newComputePipelineStateWithDescriptor:options:reflection:error:
  @abstract Create and compile a new MTLComputePipelineState object synchronously.
  */
 - (nullable id <MTLComputePipelineState>)newComputePipelineStateWithDescriptor:(MTLComputePipelineDescriptor *)descriptor options:(MTLPipelineOption)options reflection:(MTLAutoreleasedComputePipelineReflection * __nullable)reflection error:(__autoreleasing NSError **)error NS_AVAILABLE(10_11, 9_0);
-
-/*!
- @method newComputePipelineStateWithDescriptor:completionHandler:
- @abstract Create and compile a new MTLComputePipelineState object asynchronously.
- */
-- (void)newComputePipelineStateWithDescriptor:(MTLComputePipelineDescriptor *)descriptor completionHandler:(MTLNewComputePipelineStateCompletionHandler)completionHandler NS_AVAILABLE(10_11, 9_0);
 
 /*!
  @method newComputePipelineStateWithDescriptor:options:completionHandler:
@@ -296,11 +284,11 @@ NS_AVAILABLE(10_11, 8_0)
 - (BOOL)supportsFeatureSet:(MTLFeatureSet)featureSet;
 
 /*!
- @method supportsSampleCount:
- @brief Query device if it supports given sampleCount.
- @return BOOL value. If YES, device supports given sampleCount. If NO, device does not support given sampleCount.
+ @method supportsTextureSampleCount:
+ @brief Query device if it support textures with a given sampleCount.
+ @return BOOL value. If YES, device supports the given sampleCount for textures. If NO, device does not support the given sampleCount.
  */
-- (BOOL)supportsSampleCount:(NSUInteger)sampleCount NS_AVAILABLE(10_11, 9_0);
+- (BOOL)supportsTextureSampleCount:(NSUInteger)sampleCount NS_AVAILABLE(10_11, 9_0);
 
 @end
 NS_ASSUME_NONNULL_END

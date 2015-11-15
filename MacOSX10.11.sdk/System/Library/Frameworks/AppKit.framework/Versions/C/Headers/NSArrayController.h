@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readonly, copy) NSArray<NSString *> *automaticRearrangementKeyPaths NS_AVAILABLE_MAC(10_5);    // computes the array of key paths that trigger automatic rearranging from the sort descriptors and filter predicates; subclasses may override this method to customize the default behavior (for example if additional arrangement criteria are used in custom implementations of -rearrangeObjects)
 - (void)didChangeArrangementCriteria NS_AVAILABLE_MAC(10_5);    // invoked by the controller itself when any criteria for arranging objects change (sort descriptors or filter predicates) to reset the key paths for automatic rearranging; subclasses should invoke this method if additional arrangement criteria are used in custom implementations of -rearrangeObjects and those criteria change
 
-@property (null_unspecified, copy) NSArray<NSSortDescriptor *> *sortDescriptors;
+@property (copy) NSArray<NSSortDescriptor *> *sortDescriptors;
 
 @property (nullable, strong) NSPredicate *filterPredicate;
 
@@ -73,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* All selection modification methods returning a BOOL indicate through that flag whether changing the selection was successful (changing the selection might trigger an commitEditing call which fails and thus deny's the selection change).
 */
-- (BOOL)setSelectionIndexes:(null_unspecified NSIndexSet *)indexes;    // to deselect all: empty index set, to select all: index set with indexes [0...count - 1]
+- (BOOL)setSelectionIndexes:(NSIndexSet *)indexes;    // to deselect all: empty index set, to select all: index set with indexes [0...count - 1]
 @property (readonly, copy) NSIndexSet *selectionIndexes;
 - (BOOL)setSelectionIndex:(NSUInteger)index;
 @property (readonly) NSUInteger selectionIndex;

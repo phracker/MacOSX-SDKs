@@ -57,6 +57,9 @@ uint32_t PE_get_random_seed(
 	unsigned char * dst_random_seed,
 	uint32_t request_size);
 
+uint32_t PE_i_can_has_debugger(
+	uint32_t *);
+
 
 
 void PE_init_kprintf(

@@ -80,7 +80,7 @@ typedef const struct CF_BRIDGED_TYPE(id) __SCDynamicStore *	SCDynamicStoreRef;
  */
 typedef struct {
 	CFIndex		version;
-	void *		info;
+	void *		__nullable info;
 	const void	* __nonnull (* __nullable retain)(const void *info);
 	void		(* __nullable release)(const void *info);
 	CFStringRef	__nonnull (* __nullable copyDescription)(const void *info);

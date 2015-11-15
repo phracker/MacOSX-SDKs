@@ -2,7 +2,7 @@
  *  @header Alpha.h
  *  vImage Framework
  *
- *  @copyright Copyright (c) 2003-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2003-2015 by Apple Inc. All rights reserved.
  *
  *  See vImage/vImage.h for more on how to better view the headerdoc documentation for functions declared herein.
  *

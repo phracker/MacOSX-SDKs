@@ -99,7 +99,6 @@ NS_CLASS_AVAILABLE_MAC(10_4)
 - (DOMElement *)createElementNS:(NSString *)namespaceURI qualifiedName:(NSString *)qualifiedName NS_AVAILABLE_MAC(10_5);
 - (DOMAttr *)createAttributeNS:(NSString *)namespaceURI qualifiedName:(NSString *)qualifiedName NS_AVAILABLE_MAC(10_5);
 - (DOMNodeList *)getElementsByTagNameNS:(NSString *)namespaceURI localName:(NSString *)localName NS_AVAILABLE_MAC(10_5);
-- (DOMElement *)getElementById:(NSString *)elementId;
 - (DOMNode *)adoptNode:(DOMNode *)source NS_AVAILABLE_MAC(10_5);
 - (DOMEvent *)createEvent:(NSString *)eventType;
 - (DOMRange *)createRange;
@@ -125,9 +124,10 @@ NS_CLASS_AVAILABLE_MAC(10_4)
 - (DOMCSSRuleList *)getMatchedCSSRules:(DOMElement *)element pseudoElement:(NSString *)pseudoElement authorOnly:(BOOL)authorOnly NS_AVAILABLE_MAC(10_5);
 - (DOMNodeList *)getElementsByClassName:(NSString *)classNames NS_AVAILABLE_MAC(10_6);
 - (BOOL)hasFocus NS_AVAILABLE_MAC(10_6);
+- (void)webkitCancelFullScreen NS_AVAILABLE_MAC(10_6);
+- (DOMElement *)getElementById:(NSString *)elementId;
 - (DOMElement *)querySelector:(NSString *)selectors NS_AVAILABLE_MAC(10_6);
 - (DOMNodeList *)querySelectorAll:(NSString *)selectors NS_AVAILABLE_MAC(10_6);
-- (void)webkitCancelFullScreen NS_AVAILABLE_MAC(10_6);
 @end
 
 @interface DOMDocument (DOMDocumentDeprecated)

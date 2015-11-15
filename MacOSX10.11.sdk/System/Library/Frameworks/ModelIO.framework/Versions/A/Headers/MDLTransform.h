@@ -30,6 +30,8 @@ MDL_EXPORT
 /** The matrix, at minimumTime */
 @property (nonatomic, assign) matrix_float4x4 matrix;
 
+/** If no animation data is present, minimumTime and maximumTime will be zero
+ */
 @property (nonatomic, readonly) NSTimeInterval minimumTime;
 @property (nonatomic, readonly) NSTimeInterval maximumTime;
 
@@ -42,14 +44,14 @@ MDL_EXPORT
 - (void)setLocalTransform:(matrix_float4x4)transform;
 
 
-/** returns the transform governing this transformable at the specified time
+/** Returns the transform governing this transformable at the specified time
     in the transformable's parent's space.
     If non-animated, all frame values will return the same result. 
  */
 - (matrix_float4x4)localTransformAtTime:(NSTimeInterval)time;
 
-/** returns the transform governing this transformable at the specified frame in 
-    the asset's space. If there is no parent, identity will be returned 
+/** Returns the transform governing this transformable at the specified frame in
+    world space. If there is no parent, identity will be returned
  */
 + (matrix_float4x4)globalTransformWithObject:(MDLObject *)object atTime:(NSTimeInterval)time;
 
@@ -64,11 +66,6 @@ MDL_EXPORT
  @discussion Setting any of scale, translation, or rotation individually will 
  set the matrix property, and clear any timing information.
  
- Initialization with a matrix assumes the matrix does not include any projective
- components. Checks are not made against those components, and retrieving 
- transform components after initialization with such a matrix will yield
- unexpected results.
- 
  */
 
 NS_CLASS_AVAILABLE(10_11, 9_0)
@@ -77,6 +74,12 @@ MDL_EXPORT
 
 - (instancetype)initWithIdentity NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTransformComponent:(id<MDLTransformComponent>)component;
+
+/**
+ Initialization with a matrix assumes the matrix is an invertible, homogeneous 
+ affine transform matrix. Retrieving transform components after initialization 
+ with a non-affine matrix will yield those of the identity transform.
+ */
 - (instancetype)initWithMatrix:(matrix_float4x4)matrix;
 
 /**
@@ -84,21 +87,29 @@ MDL_EXPORT
  */
 - (void)setIdentity;
 
-- (vector_float3)scaleAtTime:(NSTimeInterval)time;
 - (vector_float3)translationAtTime:(NSTimeInterval)time;
 - (vector_float3)rotationAtTime:(NSTimeInterval)time;
-- (void)setScale:(vector_float3)scale forTime:(NSTimeInterval)time;
+- (vector_float3)shearAtTime:(NSTimeInterval)time;
+- (vector_float3)scaleAtTime:(NSTimeInterval)time;
 - (void)setTranslation:(vector_float3)translation forTime:(NSTimeInterval)time;
 - (void)setRotation:(vector_float3)rotation forTime:(NSTimeInterval)time;
+- (void)setShear:(vector_float3)shear forTime:(NSTimeInterval)time;
+- (void)setScale:(vector_float3)scale forTime:(NSTimeInterval)time;
 
 /**
- If these properties are read, the earliest value is returned.
- If written, all timing information is removed. To retain or add timing information,
- use the set:forTime selectors instead.
+ Construct a right handed rotation matrix at the specified time
  */
-@property (nonatomic, readwrite) vector_float3 scale;
+- (matrix_float4x4)rotationMatrixAtTime:(NSTimeInterval)time;
+
+/**
+ If these properties are read and animation data exists the earliest value is returned.
+ Otherwise, if there is no animation data, the value of the property is the same at all times and that value is returned.
+ If written, timing information for said property is removed. To retain or add timing information, use the set:forTime selectors instead.
+ */
 @property (nonatomic, readwrite) vector_float3 translation;
-@property (nonatomic, readwrite) vector_float3 rotation;     // Euler XYZ
+@property (nonatomic, readwrite) vector_float3 rotation;     // Euler XYZ radians
+@property (nonatomic, readwrite) vector_float3 shear;
+@property (nonatomic, readwrite) vector_float3 scale;
 
 @end
 

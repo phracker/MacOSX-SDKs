@@ -33,8 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isEqualToSet:(NSSet<ObjectType> *)otherSet;
 - (BOOL)isSubsetOfSet:(NSSet<ObjectType> *)otherSet;
 
-- (void)makeObjectsPerformSelector:(SEL)aSelector;
-- (void)makeObjectsPerformSelector:(SEL)aSelector withObject:(nullable id)argument;
+- (void)makeObjectsPerformSelector:(SEL)aSelector NS_SWIFT_UNAVAILABLE("Use enumerateObjectsUsingBlock: or a for loop instead");
+- (void)makeObjectsPerformSelector:(SEL)aSelector withObject:(nullable id)argument NS_SWIFT_UNAVAILABLE("Use enumerateObjectsUsingBlock: or a for loop instead");
 
 - (NSSet<ObjectType> *)setByAddingObject:(ObjectType)anObject NS_AVAILABLE(10_5, 2_0);
 - (NSSet<ObjectType> *)setByAddingObjectsFromSet:(NSSet<ObjectType> *)other NS_AVAILABLE(10_5, 2_0);

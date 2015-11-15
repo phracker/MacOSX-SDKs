@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2012 Apple Inc. All rights reserved.
+ * Copyright (c) 2003-2015 Apple Inc. All rights reserved.
  *
  * @APPLE_OSREFERENCE_LICENSE_HEADER_START@
  * 
@@ -101,17 +101,6 @@ struct kevent64_s {
 	uint64_t	ext[2];		/* filter-specific extensions */
 };
 
-struct kevent_qos_s {
-	uint64_t	ident;		/* identifier for this event */
-	int16_t		filter;		/* filter for event */
-	uint16_t	flags;		/* general flags */
-	int32_t		qos;		/* quality of service */
-	uint64_t	udata;		/* opaque user data identifier */
-	uint32_t	fflags;		/* filter-specific flags */
-	uint32_t	xflags;		/* extra filter-specific flags */
-	int64_t		data;		/* filter-specific data */
-	uint64_t	ext[4];		/* filter-specific extensions */
-};
 
 #define EV_SET(kevp, a, b, c, d, e, f) do {	\
 	struct kevent *__kevp__ = (kevp);	\
@@ -135,20 +124,11 @@ struct kevent_qos_s {
 	__kevp__->ext[1] = (h);				\
 } while(0)
 
-#define EV_SET_QOS 0
-/*
- * Rather than provide an EV_SET_QOS macro for kevent_qos_t structure
- * initialization, we encourage use of named field initialization support
- * instead.
- */
-
 
 /* kevent system call flags */
 #define KEVENT_FLAG_NONE		0x00	/* no flag value */
 #define KEVENT_FLAG_IMMEDIATE		0x01	/* immediate timeout */
 #define KEVENT_FLAG_ERROR_EVENTS	0x02	/* output events only include change errors */
-#define KEVENT_FLAG_STACK_EVENTS	0x04	/* output events treated as stack (grows down) */
-#define KEVENT_FLAG_STACK_DATA		0x08	/* output data allocated as stack (grows down) */
 
 
 /* actions */
@@ -189,14 +169,20 @@ struct kevent_qos_s {
  * semantics. These semantics dictate always returning true for regular files,
  * regardless of the amount of unread data in the file.  
  *
- * On input, EV_OOBAND specifies that only OOB data should be looked for.
- * The returned data count is the number of bytes beyond the current OOB marker.
+ * On input, EV_OOBAND specifies that filter should actively return in the
+ * presence of OOB on the descriptor. It implies that filter will return
+ * if there is OOB data available to read OR when any other condition
+ * for the read are met (for example number of bytes regular data becomes >=
+ * low-watermark).
+ * If EV_OOBAND is not set on input, it implies that the filter should not actively
+ * return for out of band data on the descriptor. The filter will then only return
+ * when some other condition for read is met (ex: when number of regular data bytes
+ * >=low-watermark OR when socket can't receive more data (SS_CANTRCVMORE)).
  *
- * On output, EV_OOBAND indicates that OOB data is present
+ * On output, EV_OOBAND indicates the presence of OOB data on the descriptor.
  * If it was not specified as an input parameter, then the data count is the
- * number of bytes before the current OOB marker. If at the marker, the
- * data count indicates the number of bytes available after it.  In either
- * case, it's the amount of data one could expect to receive next.
+ * number of bytes before the current OOB marker, else data count is the number
+ * of bytes beyond OOB marker.
  */
 #define EV_POLL		EV_FLAG0
 #define EV_OOBAND	EV_FLAG1
@@ -376,11 +362,8 @@ int     kevent64(int kq,
 		 struct kevent64_s *eventlist, int nevents,
 		 unsigned int flags, 
 		 const struct timespec *timeout);
-int     kevent_qos(int kq, 
-		   const struct kevent_qos_s *changelist, int nchanges,
-		   struct kevent_qos_s *eventlist, int nevents,
-		   void *data_out, size_t *data_available,
-		   unsigned int flags);
+
+
 __END_DECLS
 
 

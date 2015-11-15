@@ -34,6 +34,7 @@
 #include <MacTypes.h>
 #include <Availability.h>
 #include <CoreFoundation/CFAvailability.h>
+#include <CoreFoundation/CFBase.h>
 
 #include <stdio.h>
 
@@ -41,6 +42,7 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
 
 /*!
 	@header Authorization
@@ -81,7 +83,7 @@ extern "C" {
     errAuthorizationSuccess can't include a string as it's also errSecSuccess in libsecurity_keychain/lib/SecBase.h
 */
 
-enum {
+CF_ENUM(OSStatus) {
 	errAuthorizationSuccess                 = 0,
 	errAuthorizationInvalidSet              = -60001, /* The authorization rights are invalid. */
 	errAuthorizationInvalidRef              = -60002, /* The authorization reference is invalid. */
@@ -230,7 +232,7 @@ typedef AuthorizationItemSet AuthorizationEnvironment;
 		The reason for passing in this flag is to provide correct audit trail information and to avoid unnecessary user interaction.
 
     @param rights (input/optional) An AuthorizationItemSet containing rights for which authorization is being requested.  If none are specified the resulting AuthorizationRef will authorize nothing at all.
-    @param environment (input/optional) An AuthorizationItemSet containing enviroment state used when making the autorization decision.  See the AuthorizationEnvironment type for details.
+    @param environment (input/optional) An AuthorizationItemSet containing environment state used when making the autorization decision.  See the AuthorizationEnvironment type for details.
     @param flags (input) options specified by the AuthorizationFlags enum.  set all unused bits to zero to allow for future expansion.
     @param authorization (output optional) A pointer to an AuthorizationRef to be returned.  When the returned AuthorizationRef is no longer needed AuthorizationFree should be called to prevent anyone from using the aquired rights.  If NULL is specified no new rights are returned, but the system will attempt to authorize all the requested rights and return the appropriate status.
 
@@ -242,10 +244,10 @@ typedef AuthorizationItemSet AuthorizationEnvironment;
 
 	errAuthorizationInteractionNotAllowed -60007 The authorization was denied since no interaction with the user was allowed.
 */
-OSStatus AuthorizationCreate(const AuthorizationRights *rights,
-	const AuthorizationEnvironment *environment,
+OSStatus AuthorizationCreate(const AuthorizationRights * __nullable rights,
+	const AuthorizationEnvironment * __nullable environment,
 	AuthorizationFlags flags,
-	AuthorizationRef *authorization);
+	AuthorizationRef __nullable * __nullable authorization);
 
 
 /*!
@@ -288,7 +290,7 @@ OSStatus AuthorizationFree(AuthorizationRef authorization, AuthorizationFlags fl
 
     @param authorization (input) The authorization object on which this operation is performed.
     @param rights (input) A rights set (see AuthorizationCreate).
-    @param environment (input/optional) An AuthorizationItemSet containing enviroment state used when making the autorization decision.  See the AuthorizationEnvironment type for details.
+    @param environment (input/optional) An AuthorizationItemSet containing environment state used when making the autorization decision.  See the AuthorizationEnvironment type for details.
     @param flags (input) options specified by the AuthorizationFlags enum.  set all unused bits to zero to allow for future expansion.
     @param authorizedRights (output/optional) A pointer to a newly allocated AuthorizationInfoSet in which the authorized subset of rights are returned (authorizedRights should be deallocated by calling AuthorizationFreeItemSet() when it is no longer needed).  If NULL the only information returned is the status.  Note that if the kAuthorizationFlagPreAuthorize flag was specified rights that could not be preauthorized are returned in authorizedRights, but their flags contains the kAuthorizationFlagCanNotPreAuthorize bit.
 
@@ -302,9 +304,9 @@ OSStatus AuthorizationFree(AuthorizationRef authorization, AuthorizationFlags fl
 */
 OSStatus AuthorizationCopyRights(AuthorizationRef authorization, 
 	const AuthorizationRights *rights,
-	const AuthorizationEnvironment *environment,
+	const AuthorizationEnvironment * __nullable environment,
 	AuthorizationFlags flags,
-	AuthorizationRights **authorizedRights);
+	AuthorizationRights * __nullable * __nullable authorizedRights);
 
 	
 #ifdef __BLOCKS__
@@ -316,7 +318,7 @@ OSStatus AuthorizationCopyRights(AuthorizationRef authorization,
 	@param err (output) The result of the AuthorizationCopyRights call.
 	@param blockAuthorizedRights (output) The authorizedRights from the AuthorizationCopyRights call to be deallocated by calling AuthorizationFreeItemSet() when it is no longer needed.
 */
-typedef void (^AuthorizationAsyncCallback)(OSStatus err, AuthorizationRights *blockAuthorizedRights);
+typedef void (^AuthorizationAsyncCallback)(OSStatus err, AuthorizationRights * __nullable blockAuthorizedRights);
 
 /*!
 	@function AuthorizationCopyRightsAsync
@@ -326,7 +328,7 @@ typedef void (^AuthorizationAsyncCallback)(OSStatus err, AuthorizationRights *bl
 */
 void AuthorizationCopyRightsAsync(AuthorizationRef authorization,
 	const AuthorizationRights *rights,
-	const AuthorizationEnvironment *environment,
+	const AuthorizationEnvironment * __nullable environment,
 	AuthorizationFlags flags,
 	AuthorizationAsyncCallback callbackBlock);
 
@@ -352,8 +354,8 @@ void AuthorizationCopyRightsAsync(AuthorizationRef authorization,
     errAuthorizationInvalidPointer -60004 The info parameter is invalid.
 */
 OSStatus AuthorizationCopyInfo(AuthorizationRef authorization, 
-	AuthorizationString tag,
-	AuthorizationItemSet **info);
+	AuthorizationString __nullable tag,
+	AuthorizationItemSet * __nullable * __nonnull info);
 
 
 /*!
@@ -376,7 +378,7 @@ OSStatus AuthorizationCopyInfo(AuthorizationRef authorization,
 
 */
 OSStatus AuthorizationMakeExternalForm(AuthorizationRef authorization,
-	AuthorizationExternalForm *extForm);
+	AuthorizationExternalForm * __nonnull extForm);
 
 
 /*!
@@ -389,7 +391,7 @@ OSStatus AuthorizationMakeExternalForm(AuthorizationRef authorization,
 	@result errAuthorizationInternalizeNotAllowed -60010 Internalizing this authorization is not allowed.
 */
 OSStatus AuthorizationCreateFromExternalForm(const AuthorizationExternalForm *extForm,
-	AuthorizationRef *authorization);
+	AuthorizationRef __nullable * __nonnull authorization);
 
 
 /*!
@@ -430,8 +432,8 @@ OSStatus AuthorizationFreeItemSet(AuthorizationItemSet *set);
 OSStatus AuthorizationExecuteWithPrivileges(AuthorizationRef authorization,
 	const char *pathToTool,
 	AuthorizationFlags options,
-	char * const *arguments,
-	FILE **communicationsPipe) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_1,__MAC_10_7,__IPHONE_NA,__IPHONE_NA);
+	char * __nonnull const * __nonnull arguments,
+	FILE * __nullable * __nullable communicationsPipe) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_1,__MAC_10_7,__IPHONE_NA,__IPHONE_NA);
 
 
 /*!
@@ -446,9 +448,10 @@ OSStatus AuthorizationExecuteWithPrivileges(AuthorizationRef authorization,
 	Use a launchd-launched helper tool and/or the Service Mangement framework
 	for this functionality.
  */
-OSStatus AuthorizationCopyPrivilegedReference(AuthorizationRef *authorization,
+OSStatus AuthorizationCopyPrivilegedReference(AuthorizationRef __nullable * __nonnull authorization,
 	AuthorizationFlags flags) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_1,__MAC_10_7,__IPHONE_NA,__IPHONE_NA);
 
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

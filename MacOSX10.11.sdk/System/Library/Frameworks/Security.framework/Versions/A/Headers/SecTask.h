@@ -32,11 +32,14 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
     @typedef SecTaskRef
     @abstract CFType used for representing a task
 */
-typedef struct __SecTask *SecTaskRef;
+typedef struct CF_BRIDGED_TYPE(id) __SecTask *SecTaskRef;
 
 /*!
     @function SecTaskGetTypeID
@@ -53,7 +56,8 @@ CFTypeID SecTaskGetTypeID(void);
     @result The newly created SecTask object or NULL on error.  The caller must
     CFRelease the returned object.
 */
-SecTaskRef SecTaskCreateWithAuditToken(CFAllocatorRef allocator, audit_token_t token);
+__nullable
+SecTaskRef SecTaskCreateWithAuditToken(CFAllocatorRef __nullable allocator, audit_token_t token);
 
 /*!
     @function SecTaskCreateFromSelf
@@ -61,7 +65,8 @@ SecTaskRef SecTaskCreateWithAuditToken(CFAllocatorRef allocator, audit_token_t t
     @result The newly created SecTask object or NULL on error.  The caller must
     CFRelease the returned object.
 */
-SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator);
+__nullable
+SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef __nullable allocator);
 
 /*!
     @function SecTaskCopyValueForEntitlement
@@ -80,6 +85,7 @@ SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator);
     the entitlement is simply not present.  In the latter case, no CFError is
     returned.
 */
+__nullable
 CFTypeRef SecTaskCopyValueForEntitlement(SecTaskRef task, CFStringRef entitlement, CFErrorRef *error);
 
 /*!
@@ -94,7 +100,11 @@ CFTypeRef SecTaskCopyValueForEntitlement(SecTaskRef task, CFStringRef entitlemen
     returned dictionary, the entitlement is not set on the task.  The caller
     must CFRelease the returned value
 */
+__nullable
 CFDictionaryRef SecTaskCopyValuesForEntitlements(SecTaskRef task, CFArrayRef entitlements, CFErrorRef *error);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

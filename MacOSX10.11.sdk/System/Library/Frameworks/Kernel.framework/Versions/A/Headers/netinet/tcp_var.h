@@ -396,6 +396,7 @@ struct	tcpstat {
 	u_int32_t	tcps_tfo_syn_data_sent;	/* SYN+data+cookie sent */
 	u_int32_t	tcps_tfo_syn_data_acked;/* SYN+data has been acknowledged */
 	u_int32_t	tcps_tfo_syn_loss;	/* SYN+TFO has been lost and we fallback */
+	u_int32_t	tcps_tfo_blackhole;	/* TFO got blackholed by a middlebox. */
 };
 
 struct tcpstat_local {

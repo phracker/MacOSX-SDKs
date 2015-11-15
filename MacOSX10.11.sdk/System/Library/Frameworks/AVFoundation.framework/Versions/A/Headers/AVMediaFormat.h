@@ -302,8 +302,6 @@ AVF_EXPORT NSString *const AVFileTypeAppleM4V NS_AVAILABLE(10_7, 4_0);
  */
 AVF_EXPORT NSString *const AVFileTypeAppleM4A NS_AVAILABLE(10_7, 4_0);
 
-#if TARGET_OS_IPHONE
-
 /*!
  @constant AVFileType3GPP
  @abstract A UTI for the 3GPP file format.
@@ -311,7 +309,7 @@ AVF_EXPORT NSString *const AVFileTypeAppleM4A NS_AVAILABLE(10_7, 4_0);
  The value of this UTI is @"public.3gpp".
  Files are identified with the .3gp, .3gpp, and .sdv extensions.
  */
-AVF_EXPORT NSString *const AVFileType3GPP NS_AVAILABLE_IOS(4_0);
+AVF_EXPORT NSString *const AVFileType3GPP NS_AVAILABLE(10_11, 4_0);
 
 /*!
  @constant AVFileType3GPP2
@@ -320,9 +318,7 @@ AVF_EXPORT NSString *const AVFileType3GPP NS_AVAILABLE_IOS(4_0);
  The value of this UTI is @"public.3gpp2".
  Files are identified with the .3g2, .3gp2 extensions.
  */
-AVF_EXPORT NSString *const AVFileType3GPP2 NS_AVAILABLE_IOS(7_0);
-
-#endif // TARGET_OS_IPHONE
+AVF_EXPORT NSString *const AVFileType3GPP2 NS_AVAILABLE(10_11, 4_0);
 
 /*!
  @constant AVFileTypeCoreAudioFormat

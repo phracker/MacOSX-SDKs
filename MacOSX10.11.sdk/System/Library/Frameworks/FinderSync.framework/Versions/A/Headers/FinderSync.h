@@ -10,8 +10,6 @@
 
 #if __OBJC2__
 
-#if __has_feature(objc_generics) && __has_feature(assume_nonnull)
-
 NS_ASSUME_NONNULL_BEGIN
 @interface FIFinderSyncController : NSExtensionContext
 
@@ -49,7 +47,7 @@ typedef NS_ENUM(NSUInteger, FIMenuKind) {
 
 /* The extension should build a list of menu items to be displayed in the specified kind of menu. See FIFinderSyncController's -targetedURL and -selectedItemURLs. This will be called for any of the menu kinds when the target or selection is inside the directoryURLs. For FIToolbarItemMenu it will always be called, even if the target and selection are not related to the extension. The extension's principal object provides a method for each menu item's assigned action.
 
-    Specific menu item properties are used: title, action, image, and enabled. Starting in OS X 10.11: tag and indentationLevel also work, and submenus are allowed.
+    Specific menu item properties are used: title, action, image, and enabled. Starting in OS X 10.11: tag, state, and indentationLevel also work, and submenus are allowed.
  */
 - (nullable NSMenu*)menuForMenuKind:(FIMenuKind)menu;
 
@@ -74,39 +72,5 @@ typedef NS_ENUM(NSUInteger, FIMenuKind) {
 @interface FIFinderSync : NSObject<FIFinderSync, NSExtensionRequestHandling>
 @end
 NS_ASSUME_NONNULL_END
-
-#else
-
-/* Legacy section for compatibilty with older clang */
-@interface FIFinderSyncController : NSExtensionContext
-+ (instancetype)defaultController;
-@property (copy) NSSet *directoryURLs;
-- (void)setBadgeImage:(NSImage *)image label:(NSString *)label forBadgeIdentifier:(NSString *)badgeID;
-- (void)setBadgeIdentifier:(NSString *)badgeID forURL:(NSURL *)url;
-- (NSURL *)targetedURL;
-- (NSArray *)selectedItemURLs;
-@end
-
-typedef NS_ENUM(NSUInteger, FIMenuKind) {
-    FIMenuKindContextualMenuForItems = 0,       /* contextual menu for one or more files/directories */
-    FIMenuKindContextualMenuForContainer = 1,   /* contextual menu for the directory being displayed */
-    FIMenuKindContextualMenuForSidebar = 2,     /* contextual menu for an item in the sidebar */
-    FIMenuKindToolbarItemMenu = 3               /* the menu displayed when the user clicks the sync extension's toolbar item */
-};
-
-@protocol FIFinderSync
-@optional
-- (NSMenu*)menuForMenuKind:(FIMenuKind)menu;
-- (void)beginObservingDirectoryAtURL:(NSURL *)url;
-- (void)endObservingDirectoryAtURL:(NSURL *)url;
-- (void)requestBadgeIdentifierForURL:(NSURL *)url;
-@property (copy, readonly) NSString *toolbarItemName;
-@property (copy, readonly) NSImage *toolbarItemImage;
-@property (copy, readonly) NSString *toolbarItemToolTip;
-@end
-
-@interface FIFinderSync : NSObject<FIFinderSync, NSExtensionRequestHandling>
-@end
-#endif
 
 #endif // OBJC2

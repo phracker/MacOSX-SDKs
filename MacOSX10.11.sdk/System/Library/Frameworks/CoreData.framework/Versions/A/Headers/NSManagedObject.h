@@ -55,7 +55,7 @@ NS_CLASS_AVAILABLE(10_4,3_0) NS_REQUIRES_PROPERTY_DEFINITIONS
 @property (nonatomic, readonly, strong) NSEntityDescription *entity;
 @property (nonatomic, readonly, strong) NSManagedObjectID *objectID;
 
-// state - methods can be used through KVC, for example for enabling/disabling widgets based on the state of the object
+// state - methods
 @property (nonatomic, getter=isInserted, readonly) BOOL inserted;
 @property (nonatomic, getter=isUpdated, readonly) BOOL updated;
 @property (nonatomic, getter=isDeleted, readonly) BOOL deleted;

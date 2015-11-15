@@ -10,6 +10,8 @@
 
 #include <Foundation/NSObjCRuntime.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 #if !defined(_LP64)
 
 #define AVB_LEGACY_OBJC_RUNTIME	1
@@ -1011,5 +1013,6 @@ typedef NS_ENUM(uint8_t, AVB17221AECPAddressAccessTLVMode)
  */
 FOUNDATION_EXPORT NSString * const AVBErrorDomain;
 
+NS_ASSUME_NONNULL_END
 
 #endif

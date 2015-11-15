@@ -1,4 +1,4 @@
-.TH "ZSHMISC" "1" "October 7, 2014" "zsh 5\&.0\&.7"
+.TH "ZSHMISC" "1" "May 31, 2015" "zsh 5\&.0\&.8"
 .SH "NAME"
 zshmisc \- everything and then some
 .\" Yodl file: Zsh/grammar.yo
@@ -171,7 +171,7 @@ use the positional parameters instead of the \fIword\fPs\&.
 .PP
 More than one parameter \fIname\fP can appear before the list of
 \fIword\fPs\&.  If \fIN\fP \fIname\fPs are given, then on each execution of the
-loop the next \fBN\fP \fIword\fPs are assigned to the corresponding
+loop the next \fIN\fP \fIword\fPs are assigned to the corresponding
 parameters\&.  If there are more \fIname\fPs than remaining \fIword\fPs, the
 remaining parameters are each set to the empty string\&.  Execution of the
 loop ends when there is no remaining \fIword\fP to assign to the first
@@ -212,6 +212,16 @@ that matches \fIword\fP, if any\&.  The form of the patterns
 is the same as that used for filename generation\&.  See
 the section `Filename Generation\&'\&.
 .RS
+.PP
+Note further that, unless the \fBSH_GLOB\fP option is set, the whole
+pattern with alternatives is treated by the shell as equivalent to a
+group of patterns within parentheses, although white space may appear
+about the parentheses and the vertical bar and will be stripped from the
+pattern at those points\&.  White space may appear elsewhere in the
+pattern; this is not stripped\&.  If the \fBSH_GLOB\fP option is set, so
+that an opening parenthesis can be unambiguously treated as part of the
+case syntax, the expression is parsed into separate words and these are
+treated as strict alternatives (as in other shells)\&.
 .PP
 If the \fIlist\fP that is executed is terminated with \fB;&\fP rather than
 \fB;;\fP, the following list is also executed\&.  The rule for
@@ -325,7 +335,7 @@ the \fB{\fP and \fB}\fP\&.  See the section `Functions\&'\&.
 .RS
 .PP
 If the option \fBSH_GLOB\fP is set for compatibility with other shells, then
-whitespace may appear between between the left and right parentheses when
+whitespace may appear between the left and right parentheses when
 there is a single \fIword\fP;  otherwise, the parentheses will be treated as
 forming a globbing pattern in that case\&.
 .PP
@@ -364,8 +374,9 @@ code is a concern\&.
 The short versions below only work if \fIsublist\fP is of the form `\fB{\fP
 \fIlist\fP \fB}\fP\&' or if the \fBSHORT_LOOPS\fP option is set\&.  For the \fBif\fP,
 \fBwhile\fP and \fBuntil\fP commands, in both these cases the test part of the
-loop must also be suitably delimited, such as by `\fB[[ \&.\&.\&. ]]\fP\&' or `\fB((
-\&.\&.\&. ))\fP\&', else the end of the test will not be recognized\&.  For the
+loop must also be suitably delimited, such as by `\fB[[\fP \fI\&.\&.\&.\fP \fB]]\fP\&' or
+`\fB((\fP \fI\&.\&.\&.\fP \fB))\fP\&',
+else the end of the test will not be recognized\&.  For the
 \fBfor\fP, \fBrepeat\fP, \fBcase\fP and \fBselect\fP commands no such special form
 for the arguments is necessary, but the other condition (the special form
 of \fIsublist\fP or use of the \fBSHORT_LOOPS\fP option) still applies\&.
@@ -400,7 +411,7 @@ does \fInot\fP, since the test is not suitably delimited\&.
 .RE
 .TP
 \fBif\fP \fIlist\fP \fIsublist\fP
-A short form of the alternate `if\&'\&.  The same limitations on the form of
+A short form of the alternate \fBif\fP\&.  The same limitations on the form of
 \fIlist\fP apply as for the previous form\&.
 .TP
 \fBfor\fP \fIname\fP \&.\&.\&. \fB(\fP \fIword\fP \&.\&.\&. \fB)\fP \fIsublist\fP
@@ -430,7 +441,7 @@ This is a short form of \fBrepeat\fP\&.
 \fBcase\fP \fIword\fP \fB{\fP [ [\fB(\fP] \fIpattern\fP [ \fB|\fP \fIpattern\fP ] \&.\&.\&. \fB)\fP \fIlist\fP (\fB;;\fP|\fB;&\fP|\fB;|\fP) ] \&.\&.\&. \fB}\fP
 An alternative form of \fBcase\fP\&.
 .TP
-\fBselect\fP \fIname\fP [ \fBin\fP \fIword\fP \fIterm\fP ] \fIsublist\fP
+\fBselect\fP \fIname\fP [ \fBin\fP \fIword\fP \&.\&.\&. \fIterm\fP ] \fIsublist\fP
 where \fIterm\fP is at least one newline or \fB;\fP\&.
 A short form of \fBselect\fP\&.
 .SH "RESERVED WORDS"
@@ -544,27 +555,64 @@ with the third character of the \fBhistchars\fP parameter
 (`\fB#\fP\&' by default) causes that word and all the following
 characters up to a newline to be ignored\&.
 .SH "ALIASING"
-Every token in the shell input is checked to see if there
+Every eligible \fIword\fP in the shell input is checked to see if there
 is an alias defined for it\&.
 If so, it is replaced by the text of the alias if it is in command
 position (if it could be the first word of a simple command),
 or if the alias is global\&.
-If the text ends with a space, the next word in the shell input
-is treated as though it were in command position for purposes of alias
-expansion\&.
+If the replacement text ends with a space, the next word in the shell input
+is always eligible for purposes of alias expansion\&.
 An alias is defined using the \fBalias\fP builtin; global aliases
 may be defined using the \fB\-g\fP option to that builtin\&.
+.PP
+A \fIword\fP is defined as:
+.PP
+.PD 0
+.TP
+.PD
+\(bu
+Any plain string or glob pattern
+.TP
+\(bu
+Any quoted string, using any quoting method (note that the quotes
+must be part of the alias definition for this to be eligible)
+.TP
+\(bu
+Any parameter reference or command substitution
+.TP
+\(bu
+Any series of the foregoing, concatenated without whitespace or
+other tokens between them
+.TP
+\(bu
+Any reserved word (\fBcase\fP, \fBdo\fP, \fBelse\fP, etc\&.)
+.TP
+\(bu
+With global aliasing, any command separator, any redirection
+operator, and `\fB(\fP\&' or `\fB)\fP' when not part of a glob pattern
+.PP
+It is not presently possible to alias the `\fB((\fP\&' token that
+introduces arithmetic expressions, because until a full statement has been
+parsed, it cannot be distinguished from two consecutive `\fB(\fP\&'
+tokens introducing nested subshells\&.
+.PP
+When \fBPOSIX_ALIASES\fP is set, only plain unquoted strings are eligible
+for aliasing\&.  The \fBalias\fP builtin does not reject ineligible aliases,
+but they are not expanded\&.
 .PP
 Alias expansion is done on the shell input before any other expansion
 except history expansion\&.  Therefore, if an alias is defined for the
 word \fBfoo\fP, alias expansion may be avoided by quoting part of the
 word, e\&.g\&. \fB\efoo\fP\&.  Any form of quoting works, although there is
 nothing to prevent an alias being defined for the quoted form such as
-\fB\efoo\fP as well\&.  For use with completion, which would remove an
-initial backslash followed by a character that isn\&'t special, it may be
-more convenient to quote the word by starting with a single quote,
-i\&.e\&. \fB\&'foo\fP; completion will automatically add the trailing single
-quote\&.
+\fB\efoo\fP as well\&.  Also, if a separator such as \fB&&\fP is aliased,
+\fB\e&&\fP turns into the two tokens \fB\e&\fP and \fB&\fP, each of which may
+have been aliased separately\&.  Similarly for \fB\e<<\fP, \fB\e>|\fP, etc\&.
+.PP
+For use with completion, which would remove an initial backslash followed
+by a character that isn\&'t special, it may be more convenient to quote the
+word by starting with a single quote, i\&.e\&. \fB\&'foo\fP; completion will
+automatically add the trailing single quote\&.
 .PP
 There is a commonly encountered problem with aliases
 illustrated by the following code:
@@ -830,7 +878,7 @@ The `\fB|&\fP\&' command separator described in
 is a shorthand for `\fB2>&1 |\fP\&'\&.
 .PP
 The various forms of process substitution, `\fB<(\fP\fIlist\fP\fB)\fP\&',
-and `\fB=(\fP\fIlist\fP())\&' for input and
+and `\fB=(\fP\fIlist\fP\fB)\fP\&' for input and
 `\fB>(\fP\fIlist\fP\fB)\fP\&' for output, are often used together with
 redirection\&.  For example, if \fIword\fP in an output redirection is of the
 form `\fB>(\fP\fIlist\fP\fB)\fP\&' then the output is piped to the
@@ -848,7 +896,7 @@ between the closing brace and the redirection character\&.  For example:
 .PP
 .RS
 .nf
-\&.\&.\&. {myfd}>&1
+\&.\&.\&. \fB{myfd}>&1\fP
 .fi
 .RE
 .PP
@@ -981,11 +1029,12 @@ However, all files redirected to are actually opened, so
 .PP
 .RS
 .nf
-\fBecho foo > bar > baz\fP
+\fBecho Hello > bar > baz\fP
 .fi
 .RE
 .PP
-when \fBMULTIOS\fP is unset will truncate bar, and write `\fBfoo\fP\&' into baz\&.
+when \fBMULTIOS\fP is unset will truncate `\fBbar\fP\&', and write `\fBHello\fP'
+into `\fBbaz\fP\&'\&.
 .PP
 There is a problem when an output multio is attached to an external
 program\&.  A simple example shows this:
@@ -1332,10 +1381,10 @@ example, when a notification about an exiting job is displayed\&.
 .TP
 \fBpreexec\fP
 Executed just after a command has been read and is about to be
-executed\&.  If the history mechanism is active (and the line was not
-discarded from the history buffer), the string that the user typed is
-passed as the first argument, otherwise it is an empty string\&.  The
-actual command that will be executed (including expanded aliases) is
+executed\&.  If the history mechanism is active (regardless of whether the
+line was discarded from the history buffer), the string that the user
+typed is passed as the first argument, otherwise it is an empty string\&.
+The actual command that will be executed (including expanded aliases) is
 passed in two different forms: the second argument is a single\-line,
 size\-limited version of the command (with things like function bodies
 elided); the third argument contains the full text that is being
@@ -1624,7 +1673,8 @@ the section MULTIOS in the \fIzshmisc\fP(1) manual page\&.
 .\" Yodl file: Zsh/arith.yo
 .SH "ARITHMETIC EVALUATION"
 The shell can perform integer and floating point arithmetic, either using
-the builtin \fBlet\fP, or via a substitution of the form \fB$((\&.\&.\&.))\fP\&.  For
+the builtin \fBlet\fP, or via a substitution of the form
+\fB$((\fP\fI\&.\&.\&.\fP\fB))\fP\&.  For
 integers, the shell is usually compiled to use 8\-byte precision where this
 is available, otherwise precision is 4 bytes\&.  This can be tested, for
 example, by giving the command `\fBprint \- $(( 12345678901 ))\fP\&'; if the
@@ -1662,7 +1712,8 @@ both assigning the value 3 to the shell variable \fBval\fP and returning a
 zero status\&.
 .PP
 Integers can be in bases other than 10\&.
-A leading `\fB0x\fP\&' or `\fB0X\fP' denotes hexadecimal\&.
+A leading `\fB0x\fP\&' or `\fB0X\fP' denotes hexadecimal and a leading
+`\fB0b\fP\&' or `\fB0B\fP' binary\&.
 Integers may also be of the form `\fIbase\fP\fB#\fP\fIn\fP\&',
 where \fIbase\fP is a decimal number between two and thirty\-six
 representing the arithmetic base and \fIn\fP
@@ -1732,8 +1783,8 @@ print $(( [#_] sqrt(1e7) ))\fP
 outputs `\fB3_162\&.277_660_168_379_5\fP\&' (the number of decimal places
 shown may vary)\&.
 .PP
-If the \fBC_BASES\fP option is set, hexadecimal numbers in the standard C
-format, for example \fB0xFF\fP instead of the usual `\fB16#FF\fP\&'\&.  If the
+If the \fBC_BASES\fP option is set, hexadecimal numbers are output in the standard C
+format, for example `\fB0xFF\fP\&' instead of the usual `\fB16#FF\fP'\&.  If the
 option \fBOCTAL_ZEROES\fP is also set (it is not by default), octal numbers
 will be treated similarly and hence appear as `\fB077\fP\&' instead of
 `\fB8#77\fP\&'\&.  This option has no effect on the output of bases other than
@@ -1867,7 +1918,7 @@ comma operator
 .PP
 Note the precedence of exponentiation in both cases is below
 that of unary operators, hence `\fB\-3**2\fP\&' evaluates as `\fB9\fP', not
-\fB\-9\fP\&.  Use parentheses where necessary: `\fB\-(3**2)\fP\&'\&.  This is
+`\fB\-9\fP\&'\&.  Use parentheses where necessary: `\fB\-(3**2)\fP'\&.  This is
 for compatibility with other shells\&.
 .PP
 Mathematical functions can be called with the syntax
@@ -1880,12 +1931,12 @@ functions\&.
 .PP
 An expression of the form `\fB##\fP\fIx\fP\&' where \fIx\fP is any character
 sequence such as `\fBa\fP\&', `\fB^A\fP', or `\fB\eM\-\eC\-x\fP' gives the value of
-this character and an expression of the form `\fB#\fP\fIfoo\fP\&' gives the
-value of the first character of the contents of the parameter \fIfoo\fP\&.
+this character and an expression of the form `\fB#\fP\fIname\fP\&' gives the
+value of the first character of the contents of the parameter \fIname\fP\&.
 Character values are according to the character set used in the current
 locale; for multibyte character handling the option \fBMULTIBYTE\fP must be
-set\&.  Note that this form is different from `\fB$#\fP\fIfoo\fP\&', a standard
-parameter substitution which gives the length of the parameter \fIfoo\fP\&.
+set\&.  Note that this form is different from `\fB$#\fP\fIname\fP\&', a standard
+parameter substitution which gives the length of the parameter \fIname\fP\&.
 `\fB#\e\fP\&' is accepted instead of `\fB##\fP', but its use is deprecated\&.
 .PP
 Named parameters and subscripted arrays can be referenced by name within an
@@ -1920,6 +1971,15 @@ necessary\&.  In addition, if any operator which requires an integer
 (`\fB~\fP\&', `\fB&\fP', `\fB|\fP', `\fB^\fP', `\fB%\fP', `\fB<<\fP', `\fB>>\fP' and their
 equivalents with assignment) is given a floating point argument, it will be
 silently rounded down to the next integer\&.
+.PP
+Users should beware that, in common with many other programming
+languages but not software designed for calculation, the evaluation of
+an expression in zsh is taken a term at a time and promotion of integers
+to floating point does not occur in terms only containing integers\&.  A
+typical result of this is that a division such as \fB6/8\fP is truncated,
+in this being rounded down to 0\&.  The \fBFORCE_FLOAT\fP shell option can
+be used in scripts or functions where floating point evaluation is
+required throughout\&.
 .PP
 Scalar variables can hold integer or floating point values at different
 times; there is no memory of the numeric type in this case\&.
@@ -2069,7 +2129,7 @@ If the option \fBBASH_REMATCH\fP is not set the scalar parameter
 the integer parameters \fBMBEGIN\fP and \fBMEND\fP to the index of the start
 and end, respectively, of the match in \fIstring\fP, such that if
 \fIstring\fP is contained in variable \fBvar\fP the expression
-`${var[$MBEGIN,$MEND]}\&' is identical to `$MATCH'\&.  The setting
+`\fB${var[$MBEGIN,$MEND]}\fP\&' is identical to `\fB$MATCH\fP'\&.  The setting
 of the option \fBKSH_ARRAYS\fP is respected\&.  Likewise, the array
 \fBmatch\fP is set to the substrings that matched parenthesised
 subexpressions and the arrays \fBmbegin\fP and \fBmend\fP to the indices of
@@ -2078,9 +2138,9 @@ the start and end positions, respectively, of the substrings within
 subexpresssions\&.  For example, if the string `\fBa short string\fP\&' is matched
 against the regular expression `\fBs(\&.\&.\&.)t\fP\&', then (assuming the
 option \fBKSH_ARRAYS\fP is not set) \fBMATCH\fP, \fBMBEGIN\fP
-and \fBMEND\fP are `\fBshort\fP\&', 3 and 7, respectively, while \fBmatch\fP,
+and \fBMEND\fP are `\fBshort\fP\&', \fB3\fP and \fB7\fP, respectively, while \fBmatch\fP,
 \fBmbegin\fP and \fBmend\fP are single entry arrays containing
-the strings `\fBhor\fP\&', `\fB4\fP' and `\fB6\fP, respectively\&.
+the strings `\fBhor\fP\&', `\fB4\fP' and `\fB6\fP', respectively\&.
 .PP
 If the option \fBBASH_REMATCH\fP is set the array
 \fBBASH_REMATCH\fP is set to the substring that matched the pattern
@@ -2160,7 +2220,11 @@ test command\&.
 .PP
 For example,
 .PP
+.RS
+.nf
 \fB[[ \-n file*(#qN) ]]\fP
+.fi
+.RE
 .PP
 produces status zero if and only if there is at least one file in the
 current directory beginning with the string `\fBfile\fP\&'\&.  The globbing
@@ -2181,7 +2245,8 @@ even if the underlying system does not support
 the \fB/dev/fd\fP directory\&.
 .PP
 In the forms which do numeric comparison, the expressions \fIexp\fP
-undergo arithmetic expansion as if they were enclosed in \fB$((\&.\&.\&.))\fP\&.
+undergo arithmetic expansion as if they were enclosed in
+\fB$((\fP\fI\&.\&.\&.\fP\fB))\fP\&.
 .PP
 For example, the following:
 .PP
@@ -2283,7 +2348,7 @@ the latter case it will also work non\-interactively\&.
 \fB%d\fP
 .TP
 .PD
-\fB/\fP
+\fB%/\fP
 Current working directory\&.  If an integer follows the `\fB%\fP\&',
 it specifies a number of trailing components of the current working
 directory to show; zero means the whole path\&.  A negative integer
@@ -2484,7 +2549,7 @@ The value of the first element of the \fBpsvar\fP array parameter\&.  Following
 the `\fB%\fP\&' with an integer gives that element of the array\&.  Negative
 integers count from the end of the array\&.
 .TP
-\fB%(\fP\fIx\&.true\-text\&.false\-text\fP\fB)\fP
+\fB%(\fP\fIx\fP\fB\&.\fP\fItrue\-text\fP\fB\&.\fP\fIfalse\-text\fP\fB)\fP
 Specifies a ternary expression\&.  The character following the \fIx\fP is
 arbitrary; the same character is used to separate the text for the
 `true\&' result from that for the `false' result\&.
@@ -2623,16 +2688,17 @@ level (i\&.e\&. truncations inside a `\fB%(\fP\&' are separate), which
 ever comes first\&.  In particular, a truncation with argument zero
 (e\&.g\&., `\fB%<<\fP\&') marks the end of the range of the string to be
 truncated while turning off truncation from there on\&. For example, the
-prompt \&'%10<\&.\&.\&.<%~%<<%# ' will print a truncated representation of the
+prompt `\fB%10<\&.\&.\&.<%~%<<%# \fP\&' will print a truncated representation of the
 current directory, followed by a `\fB%\fP\&' or `\fB#\fP', followed by a
 space\&.  Without the `\fB%<<\fP\&', those two characters would be included
-in the string to be truncated\&.  Note that `\fB%\-0<<\fP\&' is a distinct
+in the string to be truncated\&.  Note that `\fB%\-0<<\fP\&' is not equivalent
+to `\fB%<<\fP\&' but specifies that the prompt is truncated at the right margin\&.
 .PP
 Truncation applies only within each individual line of the prompt, as
 delimited by embedded newlines (if any)\&.  If the total length of any line
 of the prompt after truncation is greater than the terminal width, or if
 the part to be truncated contains embedded newlines, truncation behavior
 is undefined and may change in a future version of the shell\&.  Use
-`\fB%\-\fIn\fP(l\&.\fItrue\-text\fP\&.\fIfalse\-text\fP)\fP\&' to remove parts
+`\fB%\-\fP\fIn\fP\fB(l\&.\fP\fItrue\-text\fP\fB\&.\fP\fIfalse\-text\fP\fB)\fP\&' to remove parts
 of the prompt when the available space is less than \fIn\fP\&.
 .RE

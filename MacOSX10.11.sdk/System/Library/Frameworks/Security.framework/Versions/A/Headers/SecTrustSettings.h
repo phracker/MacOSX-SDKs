@@ -39,6 +39,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*
  * Any certificate (cert) which resides in a keychain can have associated with 
  * it a set of Trust Settings. Trust Settings specify conditions in which a 
@@ -177,8 +179,8 @@ extern "C" {
 
 /* 
  * Key usage bits, the value for Usage Constraints key kSecTrustSettingsKeyUsage.
- */ 
-enum {
+ */
+typedef CF_OPTIONS(uint32, SecTrustSettingsKeyUsage) {
 	/* sign/verify data */
 	kSecTrustSettingsKeyUseSignature		= 0x00000001,	
 	/* bulk encryption */
@@ -194,12 +196,11 @@ enum {
 	/* any usage (the default if this value is not specified) */
 	kSecTrustSettingsKeyUseAny				= 0xffffffff	
 };
-typedef uint32 SecTrustSettingsKeyUsage;
 
 /*
  * The effective Trust Setting result.
  */
-enum {
+typedef CF_ENUM(uint32, SecTrustSettingsResult) {
 	kSecTrustSettingsResultInvalid = 0,		/* Never valid in a Trust Settings array or 
 											 * in an API call. */
 	kSecTrustSettingsResultTrustRoot,		/* Root cert is explicitly trusted */
@@ -208,19 +209,17 @@ enum {
 	kSecTrustSettingsResultUnspecified		/* Neither trusted nor distrusted; evaluation
 											 * proceeds as usual */
 };
-typedef uint32 SecTrustSettingsResult;
 
 /* 
  * Specify user, local administrator, or system domain Trust Settings. 
  * Note that kSecTrustSettingsDomainSystem settings are read-only, even by
  * root.  
  */
-enum {
+typedef CF_ENUM(uint32, SecTrustSettingsDomain) {
 	kSecTrustSettingsDomainUser = 0,
 	kSecTrustSettingsDomainAdmin,
 	kSecTrustSettingsDomainSystem
 };
-typedef uint32 SecTrustSettingsDomain;
 
 /*
  * SecCertificateRef value indicating the default Root Certificate Trust Settings 
@@ -249,7 +248,7 @@ typedef uint32 SecTrustSettingsDomain;
 OSStatus SecTrustSettingsCopyTrustSettings(
 	SecCertificateRef		certRef, 
 	SecTrustSettingsDomain	domain,	
-	CFArrayRef				*trustSettings);	/* RETURNED */
+	CFArrayRef * __nonnull CF_RETURNS_RETAINED trustSettings);	/* RETURNED */
 
 /* 
  * Specify Trust Settings for specified cert. If specified cert
@@ -262,7 +261,7 @@ OSStatus SecTrustSettingsCopyTrustSettings(
 OSStatus SecTrustSettingsSetTrustSettings(
 	SecCertificateRef		certRef, 
 	SecTrustSettingsDomain	domain,	
-	CFTypeRef				trustSettingsDictOrArray);
+	CFTypeRef __nullable	trustSettingsDictOrArray);
 
 /*
  * Delete Trust Settings for specified cert. 
@@ -282,7 +281,7 @@ OSStatus SecTrustSettingsRemoveTrustSettings(
  */
 OSStatus SecTrustSettingsCopyCertificates(
 	SecTrustSettingsDomain	domain,		
-	CFArrayRef				*certArray);
+	CFArrayRef * __nullable CF_RETURNS_RETAINED certArray);
 
 /* 
  * Obtain the time at which a specified cert's Trust Settings
@@ -293,7 +292,7 @@ OSStatus SecTrustSettingsCopyCertificates(
 OSStatus SecTrustSettingsCopyModificationDate(
 	SecCertificateRef		certRef, 
 	SecTrustSettingsDomain	domain,
-	CFDateRef				*modificationDate);	/* RETURNED */
+	CFDateRef * __nonnull CF_RETURNS_RETAINED modificationDate);	/* RETURNED */
 
 /*
  * Obtain an external, portable representation of the specified 
@@ -303,7 +302,7 @@ OSStatus SecTrustSettingsCopyModificationDate(
  */
 OSStatus SecTrustSettingsCreateExternalRepresentation(
 	SecTrustSettingsDomain	domain,
-	CFDataRef				*trustSettings);
+	CFDataRef * __nonnull CF_RETURNS_RETAINED trustSettings);
 
 /*
  * Import trust settings, obtained via SecTrustSettingsCreateExternalRepresentation,
@@ -312,6 +311,8 @@ OSStatus SecTrustSettingsCreateExternalRepresentation(
 OSStatus SecTrustSettingsImportExternalRepresentation(
 	SecTrustSettingsDomain	domain,
 	CFDataRef				trustSettings);
+
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

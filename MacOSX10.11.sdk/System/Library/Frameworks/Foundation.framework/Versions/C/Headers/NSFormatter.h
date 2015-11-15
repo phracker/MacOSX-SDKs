@@ -36,7 +36,7 @@ typedef NS_ENUM(NSInteger, NSFormattingContext) {
 /*
  * There are 3 widths: long, medium, and short.
  * For example, for English, when formatting "3 pounds"
- * Long is "3 pounds"; medium is "3 lb"; short is "3#”;
+ * Long is "3 pounds"; medium is "3 lb"; short is "3#";
  */
 typedef NS_ENUM(NSInteger, NSFormattingUnitStyle) {
     NSFormattingUnitStyleShort = 1,

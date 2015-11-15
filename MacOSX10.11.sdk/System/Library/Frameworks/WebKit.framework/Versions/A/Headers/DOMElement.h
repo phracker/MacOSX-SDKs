@@ -56,12 +56,12 @@ NS_CLASS_AVAILABLE_MAC(10_4)
 @property (copy) NSString *innerHTML;
 @property (copy) NSString *outerHTML;
 @property (copy) NSString *className;
-@property (readonly, strong) DOMElement *firstElementChild NS_AVAILABLE_MAC(10_6);
-@property (readonly, strong) DOMElement *lastElementChild NS_AVAILABLE_MAC(10_6);
+@property (readonly, copy) NSString *innerText NS_AVAILABLE_MAC(10_5);
 @property (readonly, strong) DOMElement *previousElementSibling NS_AVAILABLE_MAC(10_6);
 @property (readonly, strong) DOMElement *nextElementSibling NS_AVAILABLE_MAC(10_6);
+@property (readonly, strong) DOMElement *firstElementChild NS_AVAILABLE_MAC(10_6);
+@property (readonly, strong) DOMElement *lastElementChild NS_AVAILABLE_MAC(10_6);
 @property (readonly) unsigned childElementCount NS_AVAILABLE_MAC(10_6);
-@property (readonly, copy) NSString *innerText NS_AVAILABLE_MAC(10_5);
 
 - (NSString *)getAttribute:(NSString *)name;
 - (void)setAttribute:(NSString *)name value:(NSString *)value NS_AVAILABLE_MAC(10_5);
@@ -85,9 +85,9 @@ NS_CLASS_AVAILABLE_MAC(10_4)
 - (void)scrollByLines:(int)lines NS_AVAILABLE_MAC(10_5);
 - (void)scrollByPages:(int)pages NS_AVAILABLE_MAC(10_5);
 - (DOMNodeList *)getElementsByClassName:(NSString *)name NS_AVAILABLE_MAC(10_6);
+- (void)webkitRequestFullScreen:(unsigned short)flags NS_AVAILABLE_MAC(10_6);
 - (DOMElement *)querySelector:(NSString *)selectors NS_AVAILABLE_MAC(10_6);
 - (DOMNodeList *)querySelectorAll:(NSString *)selectors NS_AVAILABLE_MAC(10_6);
-- (void)webkitRequestFullScreen:(unsigned short)flags NS_AVAILABLE_MAC(10_6);
 @end
 
 @interface DOMElement (DOMElementDeprecated)

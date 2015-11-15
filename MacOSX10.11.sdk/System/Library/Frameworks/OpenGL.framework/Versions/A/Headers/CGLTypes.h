@@ -11,6 +11,21 @@
 extern "C" {
 #endif
 
+#if __has_feature(assume_nonnull)
+#define OPENGL_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
+#define OPENGL_ASSUME_NONNULL_END _Pragma("clang assume_nonnull end")
+#else
+#define OPENGL_ASSUME_NONNULL_BEGIN
+#define OPENGL_ASSUME_NONNULL_END
+#endif
+
+#if __has_feature(nullability)
+#define OPENGL_NULLABLE __nullable
+#define OPENGL_NONNULL __nonnull
+#else
+#define OPENGL_NULLABLE
+#define OPENGL_NONNULL
+#endif
 
 /*
 ** CGL opaque data.

@@ -16,6 +16,7 @@
 extern "C" {
 #endif
 
+OPENGL_ASSUME_NONNULL_BEGIN
 
 /*
 ** CGL API version.
@@ -25,11 +26,10 @@ extern "C" {
 #define CGL_VERSION_1_2  1
 #define CGL_VERSION_1_3  1
 
-
 /*
 ** Pixel format functions
 */
-extern CGLError CGLChoosePixelFormat(const CGLPixelFormatAttribute *attribs, CGLPixelFormatObj *pix, GLint *npix);
+extern CGLError CGLChoosePixelFormat(const CGLPixelFormatAttribute *attribs, CGLPixelFormatObj OPENGL_NULLABLE * OPENGL_NONNULL pix, GLint *npix);
 extern CGLError CGLDestroyPixelFormat(CGLPixelFormatObj pix);
 extern CGLError CGLDescribePixelFormat(CGLPixelFormatObj pix, GLint pix_num, CGLPixelFormatAttribute attrib, GLint *value);
 extern void CGLReleasePixelFormat(CGLPixelFormatObj pix) OPENGL_AVAILABLE(10_5);
@@ -39,25 +39,25 @@ extern GLuint CGLGetPixelFormatRetainCount(CGLPixelFormatObj pix) OPENGL_AVAILAB
 /*
 ** Renderer information functions
 */
-extern CGLError CGLQueryRendererInfo(GLuint display_mask, CGLRendererInfoObj *rend, GLint *nrend);
+extern CGLError CGLQueryRendererInfo(GLuint display_mask, CGLRendererInfoObj OPENGL_NULLABLE * OPENGL_NONNULL rend, GLint *nrend);
 extern CGLError CGLDestroyRendererInfo(CGLRendererInfoObj rend);
-extern CGLError CGLDescribeRenderer(CGLRendererInfoObj rend, GLint rend_num, CGLRendererProperty prop, GLint *value);
+extern CGLError CGLDescribeRenderer(CGLRendererInfoObj rend, GLint rend_num, CGLRendererProperty prop, GLint * OPENGL_NULLABLE value);
 
 /*
 ** Context functions
 */
-extern CGLError CGLCreateContext(CGLPixelFormatObj pix, CGLContextObj share, CGLContextObj *ctx);
+extern CGLError CGLCreateContext(CGLPixelFormatObj pix, CGLContextObj OPENGL_NULLABLE share, CGLContextObj OPENGL_NULLABLE * OPENGL_NONNULL ctx);
 extern CGLError CGLDestroyContext(CGLContextObj ctx);
 extern CGLError CGLCopyContext(CGLContextObj src, CGLContextObj dst, GLbitfield mask) OPENGL_DEPRECATED(10_0, 10_8);
 extern CGLContextObj CGLRetainContext(CGLContextObj ctx) OPENGL_AVAILABLE(10_5);
 extern void CGLReleaseContext(CGLContextObj ctx) OPENGL_AVAILABLE(10_5);
 extern GLuint CGLGetContextRetainCount(CGLContextObj ctx) OPENGL_AVAILABLE(10_5);
-extern CGLPixelFormatObj CGLGetPixelFormat(CGLContextObj ctx) OPENGL_AVAILABLE(10_5);
+extern CGLPixelFormatObj OPENGL_NULLABLE CGLGetPixelFormat(CGLContextObj ctx) OPENGL_AVAILABLE(10_5);
 
 /*
 ** PBuffer functions
 */
-extern CGLError CGLCreatePBuffer(GLsizei width, GLsizei height, GLenum target, GLenum internalFormat, GLint max_level, CGLPBufferObj *pbuffer) OPENGL_DEPRECATED(10_3, 10_7);
+extern CGLError CGLCreatePBuffer(GLsizei width, GLsizei height, GLenum target, GLenum internalFormat, GLint max_level, CGLPBufferObj OPENGL_NULLABLE * OPENGL_NONNULL pbuffer) OPENGL_DEPRECATED(10_3, 10_7);
 extern CGLError CGLDestroyPBuffer(CGLPBufferObj pbuffer) OPENGL_DEPRECATED(10_3, 10_7);
 extern CGLError CGLDescribePBuffer(CGLPBufferObj obj, GLsizei *width, GLsizei *height, GLenum *target, GLenum *internalFormat, GLint *mipmap) OPENGL_DEPRECATED(10_3, 10_7);
 extern CGLError CGLTexImagePBuffer(CGLContextObj ctx, CGLPBufferObj pbuffer, GLenum source) OPENGL_DEPRECATED(10_3, 10_7);
@@ -69,12 +69,12 @@ extern GLuint CGLGetPBufferRetainCount(CGLPBufferObj pbuffer) OPENGL_DEPRECATED(
 ** Drawable Functions
 */
 extern CGLError CGLSetOffScreen(CGLContextObj ctx, GLsizei width, GLsizei height, GLint rowbytes, void *baseaddr) OPENGL_DEPRECATED(10_0, 10_7);
-extern CGLError CGLGetOffScreen(CGLContextObj ctx, GLsizei *width, GLsizei *height, GLint *rowbytes, void **baseaddr) OPENGL_DEPRECATED(10_0, 10_7);
+extern CGLError CGLGetOffScreen(CGLContextObj ctx, GLsizei *width, GLsizei *height, GLint *rowbytes, void * OPENGL_NULLABLE * OPENGL_NONNULL baseaddr) OPENGL_DEPRECATED(10_0, 10_7);
 extern CGLError CGLSetFullScreen(CGLContextObj ctx) OPENGL_DEPRECATED(10_0, 10_6);
 extern CGLError CGLSetFullScreenOnDisplay(CGLContextObj ctx, GLuint display_mask) OPENGL_DEPRECATED(10_5, 10_7);
 
 extern CGLError CGLSetPBuffer(CGLContextObj ctx, CGLPBufferObj pbuffer, GLenum face, GLint level, GLint screen) OPENGL_DEPRECATED(10_3, 10_7);
-extern CGLError CGLGetPBuffer(CGLContextObj ctx, CGLPBufferObj *pbuffer, GLenum *face, GLint *level, GLint *screen) OPENGL_DEPRECATED(10_3, 10_7);
+extern CGLError CGLGetPBuffer(CGLContextObj ctx, CGLPBufferObj OPENGL_NULLABLE * OPENGL_NONNULL pbuffer, GLenum *face, GLint *level, GLint *screen) OPENGL_DEPRECATED(10_3, 10_7);
 
 extern CGLError CGLClearDrawable(CGLContextObj ctx);
 extern CGLError CGLFlushDrawable(CGLContextObj ctx);
@@ -99,7 +99,7 @@ extern CGLError CGLUpdateContext(CGLContextObj ctx) OPENGL_AVAILABLE(10_7);
 /*
 ** Global library options
 */
-extern CGLError CGLSetGlobalOption(CGLGlobalOption pname, const GLint *params) OPENGL_AVAILABLE(10_6);
+extern CGLError CGLSetGlobalOption(CGLGlobalOption pname, const GLint * OPENGL_NULLABLE params) OPENGL_AVAILABLE(10_6);
 extern CGLError CGLGetGlobalOption(CGLGlobalOption pname, GLint *params) OPENGL_AVAILABLE(10_6);
 
 extern CGLError CGLSetOption(CGLGlobalOption pname, GLint param);  /* Use CGLSetGlobalOption */
@@ -115,13 +115,14 @@ extern CGLError CGLUnlockContext(CGLContextObj ctx) OPENGL_AVAILABLE(10_4);
 /*
 ** Version numbers
 */
-extern void CGLGetVersion(GLint *majorvers, GLint *minorvers);
+extern void CGLGetVersion(GLint * OPENGL_NULLABLE majorvers, GLint * OPENGL_NULLABLE minorvers);
 
 /*
 ** Convert an error code to a string
 */
 const char *CGLErrorString(CGLError error);
 
+OPENGL_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

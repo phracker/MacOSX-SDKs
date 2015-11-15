@@ -310,7 +310,7 @@ NS_CLASS_AVAILABLE(NA, 7_0)
 
 /*!
  @property stringValue
- @abstract Returns the receiver’s errorCorrectedData decoded into a human-readable string.
+ @abstract Returns the receiver's errorCorrectedData decoded into a human-readable string.
  @discussion
     The value of this property is an NSString created by decoding the binary payload according to the format of the machine
     readable code.  Returns nil if a string representation cannot be created from the payload.

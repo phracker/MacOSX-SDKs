@@ -29,21 +29,11 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 
 @property (nonatomic, assign) NSUInteger resultsLimit;
 
-/* If fetchAllChanges is YES then this operation will send repeated requests to the server until moreComing is NO. 
-   serverChangeTokenFetchedBlock will be called with an incremental change token after every request.
-   This value is YES by default if you are linked on or after iOS 9.0 or OS X 10.11 */
-@property (nonatomic, assign) BOOL fetchAllChanges NS_AVAILABLE(10_11, 9_0);
-
 /* Declares which user-defined keys should be fetched and added to the resulting CKRecords.  If nil, declares the entire record should be downloaded. If set to an empty array, declares that no user fields should be downloaded.  Defaults to nil. */
 @property (nonatomic, copy, nullable) NSArray <NSString *> *desiredKeys;
 
 @property (nonatomic, copy, nullable) void (^recordChangedBlock)(CKRecord *record);
 @property (nonatomic, copy, nullable) void (^recordWithIDWasDeletedBlock)(CKRecordID *recordID);
-
-/* If fetchAllChanges is YES, this operation will continue sending requests to the server until all changes have been fetched (moreComing == NO).
-   Change tokens will be returned incrementally after each request. Your application should save those change tokens so it can efficiently 
-    restart in the case of a network failure or other error that may interrupt a CKFetchRecordChangesOperation */
-@property (nonatomic, copy, nullable) void (^serverChangeTokenFetchedBlock)(CKServerChangeToken *serverChangeToken) NS_AVAILABLE(10_11, 9_0);
 
 /* Will be set before fetchRecordChangesCompletionBlock is called. If moreComing is true then the server wasn't able to return all the changes in this response.
     Another CKFetchRecordChangesOperation operation should be run with the updated serverChangeToken token from this operation. */

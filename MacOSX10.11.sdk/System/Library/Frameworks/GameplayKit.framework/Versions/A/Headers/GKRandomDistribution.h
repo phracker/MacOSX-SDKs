@@ -141,24 +141,10 @@ GK_BASE_AVAILABILITY @interface GKGaussianDistribution : GKRandomDistribution
  * A shuffled distribution tries to make sure individual samples are not clustered whilst retaining a uniform distribution of values
  * over time. This is often referred to as fair or less random, as the predicatability of the outcomes in a series is vastly increased,
  * yet the distribution of values is uniform.
+ *
+ * Do not use with distributions ranging more than 256 between lowest and highest as the shuffling seqeunce is stored internally in memory.
  */
 GK_BASE_AVAILABILITY @interface GKShuffledDistribution : GKRandomDistribution
-
-/**
- * A number in the range [0, 1] that is applied as a fraction to the distribution range to determine if a random number generated is far enough way from
- * the previous number generated.
- *
- * Defaults to the fraction of the range that corresponds to a distance of 1. Thus ensuring that numbers generated are at least always different.
- */
-@property (nonatomic, assign) float uniformDistance;
-
-/**
- * Initializes a shuffled random distribution within the range [lowest, highest] where the delta between neighboring values is at least delta.
- * The given delta is also converted to a uniformDistance so that uniform float values can be fetched.
- *
- * @see uniformDistance
- */
-- (instancetype)initWithRandomSource:(id<GKRandom>)source lowestValue:(NSInteger)lowestInclusive highestValue:(NSInteger)highestInclusive delta:(NSInteger)delta;
 
 @end
 

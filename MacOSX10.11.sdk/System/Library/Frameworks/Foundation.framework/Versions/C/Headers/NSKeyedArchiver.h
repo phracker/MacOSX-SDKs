@@ -94,8 +94,8 @@ FOUNDATION_EXPORT NSString * const NSKeyedArchiveRootObjectKey NS_AVAILABLE(10_9
     void *  __strong _reserved0;
 }
 
-+ (nullable id)unarchiveObjectWithData:(NSData *)data NS_SWIFT_UNAVAILABLE("Use 'unarchiveObjectWithData() throws' instead");
-+ (nullable id)unarchiveObjectWithData:(NSData *)data error:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'unarchiveObjectWithData() throws' instead");
++ (nullable id)unarchiveObjectWithData:(NSData *)data;
++ (nullable id)unarchiveTopLevelObjectWithData:(NSData *)data error:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'unarchiveTopLevelObjectWithData(_:) throws' instead");
 + (nullable id)unarchiveObjectWithFile:(NSString *)path;
 
 - (instancetype)initForReadingWithData:(NSData *)data;
@@ -114,7 +114,7 @@ FOUNDATION_EXPORT NSString * const NSKeyedArchiveRootObjectKey NS_AVAILABLE(10_9
 
 - (BOOL)containsValueForKey:(NSString *)key;
 
-- (nullable id)decodeObjectForKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use 'decodeObjectForKey(_) throws' instead");
+- (nullable id)decodeObjectForKey:(NSString *)key;
 - (BOOL)decodeBoolForKey:(NSString *)key;
 - (int)decodeIntForKey:(NSString *)key;		// may raise a range exception
 - (int32_t)decodeInt32ForKey:(NSString *)key;

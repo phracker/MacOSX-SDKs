@@ -109,7 +109,7 @@ typedef void (*MTAudioProcessingTapInitCallback)(
 	@param		tap
 				The processing tap.
 */
-typedef void (*MTAudioProcessingTapFinalizeCallback)(CM_NONNULL MTAudioProcessingTapRef tap);
+typedef void (*MTAudioProcessingTapFinalizeCallback)(MTAudioProcessingTapRef CM_NONNULL tap);
 
 /*!
 	@typedef	MTAudioProcessingTapPrepareCallback
@@ -166,7 +166,7 @@ typedef void (*MTAudioProcessingTapPrepareCallback)(
 	@param		tap
 				The processing tap.
 */
-typedef void (*MTAudioProcessingTapUnprepareCallback)(CM_NONNULL MTAudioProcessingTapRef tap);
+typedef void (*MTAudioProcessingTapUnprepareCallback)(MTAudioProcessingTapRef CM_NONNULL tap);
 
 /*!
 	@typedef	MTAudioProcessingTapProcessCallback

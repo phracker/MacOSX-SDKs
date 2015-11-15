@@ -74,7 +74,7 @@ typedef CF_OPTIONS(CFOptionFlags, CTLineBoundsOptions) {
     kCTLineBoundsUseHangingPunctuation      = 1 << 2,
     kCTLineBoundsUseGlyphPathBounds         = 1 << 3,
     kCTLineBoundsUseOpticalBounds           = 1 << 4,
-    kCTLineBoundsIncludeLanguageExtents CT_ENUM_AVAILABLE_IOS(8_0) = 1 << 5,
+    kCTLineBoundsIncludeLanguageExtents CT_ENUM_AVAILABLE(10_11, 8_0) = 1 << 5,
 };
 
 

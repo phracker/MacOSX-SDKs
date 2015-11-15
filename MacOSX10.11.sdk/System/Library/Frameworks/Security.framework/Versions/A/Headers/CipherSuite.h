@@ -43,7 +43,7 @@ typedef uint32_t SSLCipherSuite;
 typedef uint16_t SSLCipherSuite;
 #endif
 
-enum
+CF_ENUM(SSLCipherSuite)
 {   SSL_NULL_WITH_NULL_NULL =                   0x0000,
     SSL_RSA_WITH_NULL_MD5 =                     0x0001,
     SSL_RSA_WITH_NULL_SHA =                     0x0002,

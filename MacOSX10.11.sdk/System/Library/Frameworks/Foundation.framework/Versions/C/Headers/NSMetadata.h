@@ -29,7 +29,7 @@ NS_CLASS_AVAILABLE(10_4, 5_0)
 @property (nullable, copy) NSArray<NSString *> *groupingAttributes;
 @property NSTimeInterval notificationBatchingInterval;
 
-@property (copy) NSArray<NSString *> *searchScopes;
+@property (copy) NSArray *searchScopes;
 // scopes is an NSArray of NSURL objects (file URLs only) and/or string
 // paths and/or the special string constants below, which specifies the
 // locations to which the search is limited; an empty array means no

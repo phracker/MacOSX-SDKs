@@ -556,7 +556,7 @@ extern DAReturn DADiskSetOptions( DADiskRef disk, DADiskOptions options, Boolean
 
 extern void DAUnregisterCallback( DASessionRef session, void * callback, void * __nullable context );
 
-/*!
+/*
  * @function   DAUnregisterApprovalCallback
  * @abstract   Unregisters a registered callback function.
  * @param      session  The session object.
@@ -564,7 +564,7 @@ extern void DAUnregisterCallback( DASessionRef session, void * callback, void * 
  * @param      context  The user-defined context parameter.
  */
 
-extern void DAUnregisterApprovalCallback( DASessionRef session, void * callback, void * context ) CF_SWIFT_UNAVAILABLE( "Use DASessionRef instead" );
+extern void DAUnregisterApprovalCallback( DASessionRef session, void * callback, void * __nullable context ) CF_SWIFT_UNAVAILABLE( "Use DAUnregisterCallback instead" );
 
 #endif /* !__DISKARBITRATIOND__ */
 

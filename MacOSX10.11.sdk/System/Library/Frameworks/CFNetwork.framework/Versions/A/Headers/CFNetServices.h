@@ -432,7 +432,7 @@ CFNetServiceBrowserGetTypeID(void) CF_AVAILABLE(10_2, 2_0);
  *  
  */
 CFN_EXPORT CFNetServiceRef 
-CFNetServiceCreate(CFAllocatorRef alloc, CFStringRef domain, CFStringRef serviceType, CFStringRef name, SInt32 port) CF_AVAILABLE(10_2, 2_0);
+CFNetServiceCreate(CFAllocatorRef __nullable alloc, CFStringRef domain, CFStringRef serviceType, CFStringRef name, SInt32 port) CF_AVAILABLE(10_2, 2_0);
 
 
 

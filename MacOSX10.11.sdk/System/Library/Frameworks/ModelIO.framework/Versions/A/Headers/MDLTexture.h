@@ -77,8 +77,8 @@ MDL_EXPORT
  Creates a texture from a source in the main bundle named in a manner matching
   name.
  */
-+ (instancetype)textureNamed:(NSString *)name;
-+ (instancetype)textureNamed:(NSString *)name bundle:(nullable NSBundle*)bundleOrNil;
++ (nullable instancetype)textureNamed:(NSString *)name;
++ (nullable instancetype)textureNamed:(NSString *)name bundle:(nullable NSBundle*)bundleOrNil;
 
 /**
   Creates a cube texture map image using 6 faces of the same dimensions, 
@@ -96,17 +96,17 @@ MDL_EXPORT
   - if a single image is given it will be used without conversion if in column 
     orientation and demosaiced in all other instances.
  */
-+ (instancetype)textureCubeWithImagesNamed:(NSArray<NSString *> *)names;
-+ (instancetype)textureCubeWithImagesNamed:(NSArray<NSString *> *)names bundle:(nullable NSBundle*)bundleOrNil;
++ (nullable instancetype)textureCubeWithImagesNamed:(NSArray<NSString *> *)names;
++ (nullable instancetype)textureCubeWithImagesNamed:(NSArray<NSString *> *)names bundle:(nullable NSBundle*)bundleOrNil;
 
 + (instancetype)irradianceTextureCubeWithTexture:(MDLTexture*)texture
                                             name:(nullable NSString*)name
                                       dimensions:(vector_int2)dimensions;
 
-+ (instancetype)irradianceTextureCubeWithConvolution:(MDLTexture*)reflectiveTexture
-                                                name:(nullable NSString*)name
-                                          dimensions:(vector_int2)dimensions
-                                           roughness:(float)roughness;
++ (instancetype)irradianceTextureCubeWithTexture:(MDLTexture*)texture
+                                            name:(nullable NSString*)name
+                                      dimensions:(vector_int2)dimensions
+                                       roughness:(float)roughness;
 
 - (instancetype)initWithData:(nullable NSData *)pixelData
                topLeftOrigin:(BOOL)topLeftOrigin
@@ -117,8 +117,13 @@ MDL_EXPORT
              channelEncoding:(MDLTextureChannelEncoding)channelEncoding
                       isCube:(BOOL)isCube NS_DESIGNATED_INITIALIZER;
 
-- (BOOL)writeToFile:(NSString *)path atomically:(BOOL)atomically;
-- (BOOL)writeToURL:(NSURL *)URL atomically:(BOOL)atomically;
+/** writeToURL, deducing type from path extension */
+- (BOOL)writeToURL:(NSURL *)URL;
+
+/** writeToURL using a specific UT type */
+- (BOOL)writeToURL:(NSURL *)nsurl type:(CFStringRef)type;
+
+- (nullable CGImageRef)imageFromTexture;
 
 - (nullable NSData *)texelDataWithTopLeftOrigin;
 - (nullable NSData *)texelDataWithBottomLeftOrigin;
@@ -131,7 +136,7 @@ MDL_EXPORT
 @property (nonatomic, readonly) NSUInteger channelCount;
 @property (nonatomic, readonly) NSUInteger mipLevelCount;
 @property (nonatomic, readonly) MDLTextureChannelEncoding channelEncoding;
-@property (nonatomic, readonly) BOOL isCube;
+@property (nonatomic) BOOL isCube;
 
 @end
 
@@ -148,14 +153,12 @@ MDL_EXPORT
 @interface MDLURLTexture : MDLTexture
 
 - (instancetype)initWithURL:(NSURL*)URL name:(nullable NSString*)name;
-- (instancetype)initWithPath:(NSString*)path name:(nullable NSString*)name;
 
 @property (nonatomic, copy) NSURL* URL;
 
 @end
 
 /** 
- MDLDataTexture
 MDLCheckerboardTexture
  A two color checkboard with a certain number of divisions
  
@@ -176,13 +179,12 @@ MDL_EXPORT
                            color2:(CGColorRef)color2;
 
 @property (nonatomic, assign) float divisions;
-@property (nonatomic) CGColorRef color1;
-@property (nonatomic) CGColorRef color2;
+@property (nullable, nonatomic) CGColorRef color1;
+@property (nullable, nonatomic) CGColorRef color2;
 
 @end
 
 /**
- MDLDataTexture
 MDLSkyCubeTexture
  @summary A physically realistic sky as a cube texture
  
@@ -202,6 +204,7 @@ MDLSkyCubeTexture
  @property horizonElevation If the lower half of the environment is being replaced
            by a color, horizonElevation is angle, in radians, below which the
            replacement should occur. Negative values are below the horizon.
+
  @property groundColor If this value is set, the environment will be replaced with
            the color below the horizonElevation value.
  
@@ -224,14 +227,13 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 MDL_EXPORT
 @interface MDLSkyCubeTexture : MDLTexture
 
-- (instancetype)initWithTopOrigin:(BOOL)top
-                             name:(nullable NSString*)name
-                  channelEncoding:(MDLTextureChannelEncoding)channelEncoding
-                textureDimensions:(vector_int2)textureDimensions   // the size of one cube face
-                        turbidity:(float)turbidity                 // the clearness of the sky
-                     sunElevation:(float)sunElevation              // from 0 to 1 zenith to nadir
-        upperAtmosphereScattering:(float)upperAtmosphereScattering // how intense the sun looks, 0 to 1
-                     groundAlbedo:(float)groundAlbedo;             // how much sky color is reflected from the Earth
+- (instancetype)initWithName:(nullable NSString*)name
+             channelEncoding:(MDLTextureChannelEncoding)channelEncoding
+           textureDimensions:(vector_int2)textureDimensions   // the size of one cube face
+                   turbidity:(float)turbidity                 // the clearness of the sky
+                sunElevation:(float)sunElevation              // from 0 to 1 zenith to nadir
+   upperAtmosphereScattering:(float)upperAtmosphereScattering // how intense the sun looks, 0 to 1
+                groundAlbedo:(float)groundAlbedo;             // how much sky color is reflected from the Earth
 
 /**
  Call updateTexture if parameters have been changed and a new sky is required.
@@ -244,7 +246,7 @@ MDL_EXPORT
 @property (nonatomic, assign) float groundAlbedo;
 
 @property (nonatomic, assign) float horizonElevation;
-@property (nonatomic) CGColorRef groundColor;
+@property (nullable, nonatomic) CGColorRef groundColor;
 
 @property (nonatomic, assign) float gamma;
 @property (nonatomic, assign) float exposure;

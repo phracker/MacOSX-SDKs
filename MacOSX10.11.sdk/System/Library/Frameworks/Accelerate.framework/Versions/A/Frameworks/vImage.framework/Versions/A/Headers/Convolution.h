@@ -4,7 +4,7 @@
  *
  *  See vImage/vImage.h for more on how to view the headerdoc documentation for functions declared herein.
  *
- *  @copyright Copyright (c) 2002-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2002-2015 by Apple Inc. All rights reserved.
  *
  *  @discussion Convolution is a weighted average between a pixel and its neighboring pixels. By smoothing
  *              out high frequency signal, convolution can be used to blur an image. By subtracting out the

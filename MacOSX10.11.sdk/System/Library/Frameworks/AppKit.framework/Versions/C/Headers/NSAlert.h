@@ -70,7 +70,7 @@ typedef NS_ENUM(NSUInteger, NSAlertStyle) {
  This was intended for use by apps migrating from the C-based API.  This uses alternate return codes that were compatible with this C-based API, but not with modern alerts, see NSAlertDefaultReturn, etc. in NSPanel.h
  Alerts should be created with the -init method and setting properties.
  */
-+ (NSAlert *)alertWithMessageText:(nullable NSString *)message defaultButton:(nullable NSString *)defaultButton alternateButton:(nullable NSString *)alternateButton otherButton:(nullable NSString *)otherButton informativeTextWithFormat:(nullable NSString *)format, ... NS_FORMAT_FUNCTION(5,6) NS_DEPRECATED_MAC(10_3, 10_10, "Use -init instead");
++ (NSAlert *)alertWithMessageText:(nullable NSString *)message defaultButton:(nullable NSString *)defaultButton alternateButton:(nullable NSString *)alternateButton otherButton:(nullable NSString *)otherButton informativeTextWithFormat:(NSString *)format, ... NS_FORMAT_FUNCTION(5,6) NS_DEPRECATED_MAC(10_3, 10_10, "Use -init instead");
 
 
 @property (copy) NSString *messageText;

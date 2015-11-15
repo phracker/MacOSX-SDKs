@@ -85,8 +85,9 @@ typedef NS_OPTIONS(NSUInteger, NSWorkspaceIconCreationOptions) {
 /* Get the full path for a given application name, which may or may not have the .app extension.  This indicates the application that will be opened by methods such as launchApplication:.  If the application could not be found, returns nil. */
 - (nullable NSString *)fullPathForApplication:(NSString *)appName;
 
-/* Activate the Finder and open a window selecting the file at the given path.  If fullPath is nil, this will instead open the directory specified by rootFullPath, and not select any file. */
-- (BOOL)selectFile:(nullable NSString *)fullPath inFileViewerRootedAtPath:(nullable NSString *)rootFullPath;
+/* Activate the Finder and open a window selecting the file at the given path.  If fullPath is nil, this will instead open the directory specified by rootFullPath, and not select any file. If rootFullPath is the empty string (@""), the file is selected in the main viewer. Otherwise, a new file viewer is opened.
+ */
+- (BOOL)selectFile:(nullable NSString *)fullPath inFileViewerRootedAtPath:(NSString *)rootFullPath;
 
 /* Activate the Finder, and open one or more windows selecting the files at the given fileURLs. */
 - (void)activateFileViewerSelectingURLs:(NSArray<NSURL *> *)fileURLs NS_AVAILABLE_MAC(10_6);
@@ -115,7 +116,7 @@ typedef NS_OPTIONS(NSUInteger, NSWorkspaceIconCreationOptions) {
 
 
 /* If image is not nil, this sets a custom icon for the file at the given path.  If image is nil, this removes any custom icon at the given path.  Returns YES if successful, NO if not. */
-- (BOOL)setIcon:(NSImage *)image forFile:(NSString *)fullPath options:(NSWorkspaceIconCreationOptions)options;
+- (BOOL)setIcon:(nullable NSImage *)image forFile:(NSString *)fullPath options:(NSWorkspaceIconCreationOptions)options;
 
 /* Get the array of file labels as NSStrings.  The file label index for a particular file is available as a property on the URL.  You may listen for NSWorkspaceDidChangeFileLabelsNotification to be notified when these change. */
 @property (readonly, copy) NSArray<NSString *> *fileLabels NS_AVAILABLE_MAC(10_6);

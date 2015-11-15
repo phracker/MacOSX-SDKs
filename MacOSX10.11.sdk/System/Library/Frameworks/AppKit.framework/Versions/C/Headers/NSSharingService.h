@@ -97,7 +97,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 /* Returns whether a service can do something with all the provided items. This can be used to validate a custom UI such as a dedicated Twitter button. If items is nil, the method will return YES when the service is configured. Therefore you could call it once at launch time with nil items to check whether to display the button or not, and then with real items to enable and disable the button depending on the context or selection.
    The items represent the objects to be shared and must conform to the <NSPasteboardWriting> protocol or be an NSItemProvider. (e.g. NSString, NSImage, NSURL, etc.)
  */
-- (BOOL)canPerformWithItems:(NSArray *)items;
+- (BOOL)canPerformWithItems:(nullable NSArray *)items;
 
 
 /* Manually performs the service on the provided items. In most cases this will display a sharing window.

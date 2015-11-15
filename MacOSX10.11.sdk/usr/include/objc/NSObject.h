@@ -63,9 +63,9 @@ OBJC_EXPORT
 #endif
     ;
 
-+ (instancetype)new;
-+ (instancetype)allocWithZone:(struct _NSZone *)zone;
-+ (instancetype)alloc;
++ (instancetype)new OBJC_SWIFT_UNAVAILABLE("use object initializers instead");
++ (instancetype)allocWithZone:(struct _NSZone *)zone OBJC_SWIFT_UNAVAILABLE("use object initializers instead");
++ (instancetype)alloc OBJC_SWIFT_UNAVAILABLE("use object initializers instead");
 - (void)dealloc OBJC_SWIFT_UNAVAILABLE("use 'deinit' to define a de-initializer");
 
 - (void)finalize;

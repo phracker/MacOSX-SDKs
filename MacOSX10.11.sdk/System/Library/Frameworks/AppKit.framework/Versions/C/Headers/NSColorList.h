@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class NSColor, NSBundle;
 
-@interface NSColorList : NSObject <NSCoding> {
+@interface NSColorList : NSObject <NSSecureCoding> {
     /*All instance variables are private*/
     NSMutableArray *_keyArray;
     NSMutableArray *_colorArray;

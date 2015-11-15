@@ -30,7 +30,7 @@
   @method pictureTaker
   @abstract Returns the shared IKPictureTaker instance, creating it if necessary.
 */
-+ (IKPictureTaker *) pictureTaker;
++ (IKPictureTaker *) pictureTaker NS_SWIFT_NAME(pictureTaker());
 
 /*!
   @method runModal

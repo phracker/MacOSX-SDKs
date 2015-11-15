@@ -24,8 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
  *	This key is used to indicate the Remediation URL. The URL should follow the scheme
  *	http or https to be used by the content filter.
  */
-NEFILTER_EXPORT NSString const *NEFilterProviderRemediationMapRemediationURLs NS_AVAILABLE(10_11, 9_0);			// Key for RemediationURL
-NEFILTER_EXPORT NSString const *NEFilterProviderRemediationMapRemediationButtonTexts NS_AVAILABLE(10_11, 9_0);	// Key for Remediation button text
+NEFILTER_EXPORT NSString const *NEFilterProviderRemediationMapRemediationURLs NS_AVAILABLE(NA, 9_0);			// Key for RemediationURL
+NEFILTER_EXPORT NSString const *NEFilterProviderRemediationMapRemediationButtonTexts NS_AVAILABLE(NA, 9_0);	// Key for Remediation button text
 
 /*!
  *	Strings which can be appended or inserted into the remediation URL
@@ -46,7 +46,7 @@ NEFILTER_EXPORT NSString const *NEFilterProviderRemediationMapRemediationButtonT
  *
  * NEFilterProvider is part of NetworkExtension.framework
  */
-NS_CLASS_AVAILABLE(10_11, 9_0)
+NS_CLASS_AVAILABLE(NA, 9_0)
 @interface NEFilterProvider : NEProvider
 
 /*!
@@ -54,7 +54,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  * @discussion This function is called by the framework when the content filter is being started. Subclasses must override this method and perform whatever steps are necessary to start the filter.
  * @param completionHandler A block that must be called when the process of starting the filter is complete. If the filter was started successfully, subclass implementations must pass the nil value to this block. If an error occurred while starting the filter, sublcass implementations must pass a non-nil NSError containing more details about the error.
  */
-- (void)startFilterWithCompletionHandler:(void (^)(NSError * __nullable error))completionHandler NS_AVAILABLE(10_11, 9_0);
+- (void)startFilterWithCompletionHandler:(void (^)(NSError * __nullable error))completionHandler NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @method stopFilterWithReason:completionHandler:
@@ -62,13 +62,13 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  * @param reason An NEProviderStopReason indicating why the filter is being stopped.
  * @param completionHandler A block that must be called when the process of stopping the filter is complete.
  */
-- (void)stopFilterWithReason:(NEProviderStopReason)reason completionHandler:(void (^)(void))completionHandler NS_AVAILABLE(10_11, 9_0);
+- (void)stopFilterWithReason:(NEProviderStopReason)reason completionHandler:(void (^)(void))completionHandler NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @property filterConfiguration
  * @discussion An NEContentFilterConfiguration object containing the current filter configuration. The value of this property can change during the lifetime of a filter. Filter implementations can use KVO to be notified when the configuration changes.
  */
-@property (readonly) NEFilterProviderConfiguration *filterConfiguration NS_AVAILABLE(10_11, 9_0);
+@property (readonly) NEFilterProviderConfiguration *filterConfiguration NS_AVAILABLE(NA, 9_0);
 
 @end
 
@@ -78,7 +78,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  *
  * NEFilterVerdict is part of NetworkExtension.framework
  */
-NS_CLASS_AVAILABLE(10_11, 9_0)
+NS_CLASS_AVAILABLE(NA, 9_0)
 @interface NEFilterVerdict : NSObject <NSSecureCoding,NSCopying>
 @end
 
@@ -88,7 +88,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  *
  * NEFilterNewFlowVerdict is part of NetworkExtension.framework
  */
-NS_CLASS_AVAILABLE(10_11, 9_0)
+NS_CLASS_AVAILABLE(NA, 9_0)
 @interface NEFilterNewFlowVerdict : NEFilterVerdict <NSSecureCoding,NSCopying>
 
 /*!
@@ -96,28 +96,28 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  * @discussion This class method returns a verdict indicating that control provider needs to be asked how to handle the new flow. The control provider can either drop or allow the flow, or update the rules and ask the data provider to decide on the new flow again.
  * @return The NEFilterNewFlowVerdict object.
  */
-+ (NEFilterNewFlowVerdict *) needRulesVerdict;
++ (NEFilterNewFlowVerdict *) needRulesVerdict NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @method allowVerdict
  * @discussion This class method returns a verdict indicating that the flow should be allowed.
  * @return The NEFilterNewFlowVerdict object.
  */
-+ (NEFilterNewFlowVerdict *) allowVerdict NS_AVAILABLE(10_11, 9_0);
++ (NEFilterNewFlowVerdict *) allowVerdict NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @method dropVerdict
  * @discussion This class method returns a verdict indicating that the flow should be dropped.
  * @return The NEFilterNewFlowVerdict object.
  */
-+ (NEFilterNewFlowVerdict *) dropVerdict NS_AVAILABLE(10_11, 9_0);
++ (NEFilterNewFlowVerdict *) dropVerdict NS_AVAILABLE(NA, 9_0);
 /*!
  * @method remediateVerdictWithRemediationURLMapKey:remediationButtonTextMapKey:
  * @discussion This class method returns a verdict indicating that a "content blocked" page should be displayed to the user. The block page should contain a link to the given URL.
  * @param remediationURLMapKey Remediation map key used by data plugin to get remediation url
  * @return The NEFilterNewFlowVerdict object.
  */
-+ (NEFilterNewFlowVerdict *)remediateVerdictWithRemediationURLMapKey:(NSString *)remediationURLMapKey remediationButtonTextMapKey:(NSString *)remediationButtonTextMapKey NS_AVAILABLE(10_11, 9_0);
++ (NEFilterNewFlowVerdict *)remediateVerdictWithRemediationURLMapKey:(NSString *)remediationURLMapKey remediationButtonTextMapKey:(NSString *)remediationButtonTextMapKey NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @method URLAppendStringVerdictWithMapKey
@@ -125,7 +125,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  * @param urlAppendMapKey URL Append map key to be used by the data plugin to notify what the url should be appended with
  * @return The NEFilterNewFlowVerdict object.
  */
-+ (NEFilterNewFlowVerdict *)URLAppendStringVerdictWithMapKey:(NSString *)urlAppendMapKey NS_AVAILABLE(10_11, 9_0);
++ (NEFilterNewFlowVerdict *)URLAppendStringVerdictWithMapKey:(NSString *)urlAppendMapKey NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @method filterDataVerdictWithFilterInbound:peekInboundBytes:filterOutbound:peekOutboundBytes:
@@ -136,7 +136,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  * @param peekOutboundBytes The number of outbound bytes that the filter needs to see in the subsequent call to -[NEFilterDataProvider handleOutboundDataFromFlow:readBytesStartOffset:readBytes:].
  * @return The new flow verdict.
  */
-+ (NEFilterNewFlowVerdict *)filterDataVerdictWithFilterInbound:(BOOL)filterInbound peekInboundBytes:(NSUInteger)peekInboundBytes filterOutbound:(BOOL)filterOutbound peekOutboundBytes:(NSUInteger)peekOutboundBytes NS_AVAILABLE(10_11, 9_0);
++ (NEFilterNewFlowVerdict *)filterDataVerdictWithFilterInbound:(BOOL)filterInbound peekInboundBytes:(NSUInteger)peekInboundBytes filterOutbound:(BOOL)filterOutbound peekOutboundBytes:(NSUInteger)peekOutboundBytes NS_AVAILABLE(NA, 9_0);
 
 @end
 
@@ -146,7 +146,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  *
  * NEFilterControlVerdict is part of NetworkExtension.framework
  */
-NS_CLASS_AVAILABLE(10_11, 9_0)
+NS_CLASS_AVAILABLE(NA, 9_0)
 @interface NEFilterControlVerdict : NEFilterNewFlowVerdict <NSSecureCoding,NSCopying>
 
 /*!
@@ -155,7 +155,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  * @param updateRules YES if the control provider has updated the rules and wants to communicate that to the data provider
  * @return The NEFilterControlVerdict object.
  */
-+ (NEFilterControlVerdict *)allowVerdictWithUpdateRules:(BOOL)updateRules;
++ (NEFilterControlVerdict *)allowVerdictWithUpdateRules:(BOOL)updateRules NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @method dropVerdictWithUpdateRules:
@@ -163,14 +163,14 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  * @param updateRules YES if the control provider has updated the rules and wants to communicate that to the data provider
  * @return The NEFilterControlVerdict object.
  */
-+ (NEFilterControlVerdict *)dropVerdictWithUpdateRules:(BOOL)updateRules;
++ (NEFilterControlVerdict *)dropVerdictWithUpdateRules:(BOOL)updateRules NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @method updateRules
  * @discussion This class method returns a verdict indicating that the flow should be handled by the data provider, and the rules needed by the data provider have been set.
  * @return The NEFilterControlVerdict object.
  */
-+ (NEFilterControlVerdict *)updateRules;
++ (NEFilterControlVerdict *)updateRules NS_AVAILABLE(NA, 9_0);
 
 @end
 

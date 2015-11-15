@@ -183,30 +183,34 @@ CF_ASSUME_NONNULL_BEGIN
 	will only return this component when performing a specific, non-wildcard search for the
 	component, i.e. with non-zero values of componentType, componentSubType, and
 	componentManufacturer. This can be useful when privately registering a component.
-	Available starting in Mac OS X 10.7 and iOS 5.0.
 	
 	@constant	kAudioComponentFlag_SandboxSafe
 	
 	An AudioComponent sets this bit in its componentFlags to indicate to the system that the
 	AudioComponent is safe to open in a sandboxed process.
-	Available starting in Mac OS X 10.8.
 	
 	@constant	kAudioComponentFlag_IsV3AudioUnit
 	
 	The system sets this flag automatically when registering components which implement a version 3
 	Audio Unit.
-	Available starting in Mac OS X 10.11 and iOS 9.0.
 	
 	@constant	kAudioComponentFlag_RequiresAsyncInstantiation
 	
 	The system sets this flag automatically when registering components which require asynchronous
 	instantiation via AudioComponentInstantiate (v3 audio units with views).
+	
+	@constant	kAudioComponentFlag_CanLoadInProcess
+	
+	The system sets this flag automatically when registering components which can be loaded into
+	the current process. This is always true for V2 audio units; it depends on the packaging
+	in the case of a V3 audio unit.
 */
 typedef CF_OPTIONS(UInt32, AudioComponentFlags) {
     kAudioComponentFlag_Unsearchable                CF_ENUM_AVAILABLE(10_7, 5_0)   = 1,
     kAudioComponentFlag_SandboxSafe                 CF_ENUM_AVAILABLE(10_8, 6_0)   = 2,
     kAudioComponentFlag_IsV3AudioUnit               CF_ENUM_AVAILABLE(10_11, 9_0)  = 4,
-    kAudioComponentFlag_RequiresAsyncInstantiation  CF_ENUM_AVAILABLE(10_11, 9_0)  = 8
+    kAudioComponentFlag_RequiresAsyncInstantiation  CF_ENUM_AVAILABLE(10_11, 9_0)  = 8,
+	kAudioComponentFlag_CanLoadInProcess			CF_ENUM_AVAILABLE(10_11, 9_0)  = 0x10
 };
 
 /*! @enum       AudioComponentInstantiationOptions
@@ -442,6 +446,27 @@ AudioComponentGetVersion(   AudioComponent                      inComponent,
                             UInt32 *                            outVersion)
                                                                             __OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_2_0);
 
+#if __OBJC__ && !TARGET_OS_IPHONE
+@class NSImage;
+
+/*!
+    @function       AudioComponentGetIcon
+    @abstract       Fetches an icon representing the component.
+    @param          comp
+        The component whose icon is to be retrieved.
+    @result
+        An autoreleased NSImage object.
+    @discussion
+        For a component originating in an app extension, the returned icon will be that of the
+        application containing the extension.
+        
+        For components loaded from bundles, the icon will be that of the bundle.
+*/
+extern NSImage * __nullable
+AudioComponentGetIcon(AudioComponent comp)
+                                                                            __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_NA);
+#endif
+
 /*!
     @function       AudioComponentInstanceNew
     @abstract       Creates an audio component instance.
@@ -469,6 +494,9 @@ AudioComponentInstanceNew(      AudioComponent                                in
     @discussion     This is an asynchronous version of AudioComponentInstanceNew(). It must be
                     used to instantiate any component with kAudioComponentFlag_RequiresAsyncInstantiation
                     set in its component flags. It may be used for other components as well.
+					
+					Note: Do not block the main thread while waiting for the completion handler
+					to be called; this can deadlock.
     @param          inComponent
                         the audio component
     @param          inOptions
@@ -495,7 +523,6 @@ extern OSStatus
 AudioComponentInstanceDispose(  AudioComponentInstance          inInstance)
                                                                             __OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_2_0);
 
-// retrieves the class object associated with the instance
 /*!
     @function       AudioComponentInstanceGetComponent
     @abstract       Retrieve the audio component from its instance

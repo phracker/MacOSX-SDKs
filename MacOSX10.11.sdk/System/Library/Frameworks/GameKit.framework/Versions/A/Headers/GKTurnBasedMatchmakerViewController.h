@@ -26,6 +26,7 @@ NS_CLASS_AVAILABLE(10_8, 5_0)
     id<GKTurnBasedMatchmakerViewControllerDelegate> _turnBasedMatchmakerDelegateWeak;
     GKMatchRequest *_matchRequest;
     BOOL _showExistingMatches;
+    BOOL _internalFlag;
 }
 @end
 #endif
@@ -46,7 +47,7 @@ NS_CLASS_AVAILABLE(10_8, 5_0)
 - (void)turnBasedMatchmakerViewControllerWasCancelled:(GKTurnBasedMatchmakerViewController *)viewController NS_AVAILABLE(10_8, 5_0);
 
 // Matchmaking has failed with an error
-- (void)turnBasedMatchmakerViewController:(GKTurnBasedMatchmakerViewController *)viewController didFailWithError:(nullable NSError *)error NS_AVAILABLE(10_8, 5_0);
+- (void)turnBasedMatchmakerViewController:(GKTurnBasedMatchmakerViewController *)viewController didFailWithError:(NSError *)error NS_AVAILABLE(10_8, 5_0);
 
 
 @optional

@@ -46,6 +46,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*!
 	@header SecCodeHost
 	This header describes the Code Signing Hosting API. These are calls made
@@ -127,14 +129,14 @@ extern "C" {
 	hash from the loaded in-memory signature of its guest and pass the result as an
 	attribute with key kSecGuestAttributeHash.
 */
-enum {
+CF_ENUM(uint32_t) {
 	kSecCSDedicatedHost = 1 << 0,
 	kSecCSGenerateGuestHash = 1 << 1,
 };
 
 OSStatus SecHostCreateGuest(SecGuestRef host,
-	uint32_t status, CFURLRef path, CFDictionaryRef attributes,
-	SecCSFlags flags, SecGuestRef *newGuest);
+	uint32_t status, CFURLRef path, CFDictionaryRef __nullable attributes,
+	SecCSFlags flags, SecGuestRef * __nonnull newGuest);
 
 
 /*!
@@ -184,7 +186,7 @@ OSStatus SecHostSelectGuest(SecGuestRef guestRef, SecCSFlags flags);
 	@result Upon success, errSecSuccess. Upon error, an OSStatus value documented in
 	CSCommon.h or certain other Security framework headers.
 */
-OSStatus SecHostSelectedGuest(SecCSFlags flags, SecGuestRef *guestRef);
+OSStatus SecHostSelectedGuest(SecCSFlags flags, SecGuestRef * __nonnull guestRef);
 
 
 /*!
@@ -206,7 +208,7 @@ OSStatus SecHostSelectedGuest(SecCSFlags flags, SecGuestRef *guestRef);
 	CSCommon.h or certain other Security framework headers.
  */
 OSStatus SecHostSetGuestStatus(SecGuestRef guestRef,
-	uint32_t status, CFDictionaryRef attributes,
+	uint32_t status, CFDictionaryRef __nullable attributes,
 	SecCSFlags flags);
 
 
@@ -233,6 +235,7 @@ OSStatus SecHostSetGuestStatus(SecGuestRef guestRef,
  */
 OSStatus SecHostSetHostingPort(mach_port_t hostingPort, SecCSFlags flags);
 
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

@@ -437,6 +437,14 @@
  * 20120211.39 (2.4.11-dev) Add ap_proxy_connect_uds().
  * 20120211.40 (2.4.11-dev) Add ap_log_data(), ap_log_rdata(), etc.
  * 20120211.41 (2.4.11-dev) Add ap_proxy_de_socketfy to mod_proxy.h
+ * 20120211.42 (2.4.13-dev) Add response_code_exprs to http_core.h
+ * 20120211.43 (2.4.13-dev) Add keep_alive_timeout_set to server_rec
+ * 20120211.44 (2.4.13-dev) Add cgi_pass_auth and AP_CGI_PASS_AUTH_* to 
+ *                          core_dir_config
+ * 20120211.45 (2.4.13-dev) Add ap_proxy_connection_reusable()
+ * 20120211.46 (2.4.13-dev) Add ap_map_http_request_error()
+ * 20120211.47 (2.4.13-dev) Add ap_some_authn_required, ap_force_authn hook.
+ *                          Deprecate broken ap_some_auth_required.
  */
 
 #define MODULE_MAGIC_COOKIE 0x41503234UL /* "AP24" */
@@ -444,7 +452,7 @@
 #ifndef MODULE_MAGIC_NUMBER_MAJOR
 #define MODULE_MAGIC_NUMBER_MAJOR 20120211
 #endif
-#define MODULE_MAGIC_NUMBER_MINOR 41                   /* 0...n */
+#define MODULE_MAGIC_NUMBER_MINOR 47                   /* 0...n */
 
 /**
  * Determine if the server's current MODULE_MAGIC_NUMBER is at least a

@@ -7,6 +7,8 @@
 
 #import <Foundation/NSObject.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSNibConnector : NSObject <NSCoding>
 {
     @private
@@ -15,8 +17,10 @@
     NSString *_label;	/* The label of the connection. */
 }
 @property (assign) id source;
-@property (assign) id destination;
+@property (nullable, assign) id destination;
 @property (copy) NSString *label;
 - (void)replaceObject:(id)oldObject withObject:(id)newObject;
 - (void)establishConnection;
 @end
+
+NS_ASSUME_NONNULL_END

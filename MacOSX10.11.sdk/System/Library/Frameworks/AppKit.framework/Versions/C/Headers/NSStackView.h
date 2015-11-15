@@ -114,9 +114,8 @@ NS_CLASS_AVAILABLE(10_9, NA)
     NSLayoutPriority _horizontalHuggingPriority;
     
     BOOL _unused;
-    
-    id _animator;
-    NSDictionary *_animationsDictionary;
+    id _unused2;
+    id _unused3;
     
     id _private;
     
@@ -162,7 +161,7 @@ NS_CLASS_AVAILABLE(10_9, NA)
 - (void)removeView:(NSView *)aView;
 
 - (NSArray<__kindof NSView *> *)viewsInGravity:(NSStackViewGravity)gravity; // Getters will return the views that are contained by the corresponding gravity area, regardless of detach-status.
-- (void)setViews:(NSArray<__kindof NSView *> *)views inGravity:(NSStackViewGravity)gravity; // Setters will update the views and the layout for that gravity area.
+- (void)setViews:(NSArray<NSView *> *)views inGravity:(NSStackViewGravity)gravity; // Setters will update the views and the layout for that gravity area.
 
 /*
  Returns an array of all the views managed by this StackView, regardless of detach-status or gravity area.
@@ -171,7 +170,7 @@ NS_CLASS_AVAILABLE(10_9, NA)
 @property (readonly, copy) NSArray<__kindof NSView *> *views;
 @property (readonly, copy) NSArray<__kindof NSView *> *detachedViews; // Returns the list of all of the detached views, regardless of gravity area
 
-/// If YES, when a stacked view's `hidden` property is set to YES, the view will be detached from the stack and reattached when set to NO. Similarly, if the view has a lowered visibility priority and is detached from the stack view, it will be set as `hidden` rather than removed from the view hierarchy. Defaults to NO.
+/// If YES, when a stacked view's `hidden` property is set to YES, the view will be detached from the stack and reattached when set to NO. Similarly, if the view has a lowered visibility priority and is detached from the stack view, it will be set as `hidden` rather than removed from the view hierarchy. Defaults to YES for apps linked on the 10.11 SDK or later.
 @property BOOL detachesHiddenViews NS_AVAILABLE_MAC(10_11);
 
 /*
@@ -260,8 +259,8 @@ NS_CLASS_AVAILABLE(10_9, NA)
  These are called when the StackView detaches or readds a view (or multiple views) after it was detached.
  This is not called when a view is explicitly added or removed from the StackView
  */
-- (void)stackView:(NSStackView *)stackView willDetachViews:(NSArray<__kindof NSView *> *)views;
-- (void)stackView:(NSStackView *)stackView didReattachViews:(NSArray<__kindof NSView *> *)views;
+- (void)stackView:(NSStackView *)stackView willDetachViews:(NSArray<NSView *> *)views;
+- (void)stackView:(NSStackView *)stackView didReattachViews:(NSArray<NSView *> *)views;
 
 @end
 

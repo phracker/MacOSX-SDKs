@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
+OPENGL_ASSUME_NONNULL_BEGIN
+
 typedef struct CGLShareGroupRec	*CGLShareGroupObj OPENGL_AVAILABLE(10_6);
 
-CGLShareGroupObj CGLGetShareGroup(CGLContextObj ctx) OPENGL_AVAILABLE(10_6);
+CGLShareGroupObj OPENGL_NULLABLE CGLGetShareGroup(CGLContextObj ctx) OPENGL_AVAILABLE(10_6);
 
 typedef struct _cl_device_id *      cl_device_id OPENGL_AVAILABLE(10_10);
   
@@ -26,6 +28,8 @@ typedef struct _cl_device_id *      cl_device_id OPENGL_AVAILABLE(10_10);
 ** undefined.
  */
 cl_device_id CGLGetDeviceFromGLRenderer(GLint rendererID) OPENGL_AVAILABLE(10_10);
+
+OPENGL_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

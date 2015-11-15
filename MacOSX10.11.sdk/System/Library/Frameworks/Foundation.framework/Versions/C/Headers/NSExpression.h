@@ -25,7 +25,9 @@ typedef NS_ENUM(NSUInteger, NSExpressionType) {
     NSSubqueryExpressionType NS_ENUM_AVAILABLE(10_5, 3_0) = 13,
     NSAggregateExpressionType NS_ENUM_AVAILABLE(10_5, 3_0) = 14,
     NSAnyKeyExpressionType NS_ENUM_AVAILABLE(10_9, 7_0) = 15,
-    NSBlockExpressionType = 19
+    NSBlockExpressionType = 19,
+    NSConditionalExpressionType NS_ENUM_AVAILABLE(10_11, 9_0) = 20
+
 };
 
 NS_CLASS_AVAILABLE(10_4, 3_0)
@@ -99,6 +101,7 @@ NS_CLASS_AVAILABLE(10_4, 3_0)
 + (NSExpression *)expressionForFunction:(NSExpression *)target selectorName:(NSString *)name arguments:(nullable NSArray *)parameters NS_AVAILABLE(10_5, 3_0);    // Expression that invokes the selector on target with parameters. Will throw at runtime if target does not implement selector or if parameters are wrong.
 + (NSExpression *)expressionForAnyKey NS_AVAILABLE(10_9, 7_0);
 + (NSExpression *)expressionForBlock:(id (^)(id __nullable evaluatedObject, NSArray *expressions, NSMutableDictionary * __nullable context))block arguments:(nullable NSArray<NSExpression *> *)arguments NS_AVAILABLE(10_6, 4_0); // Expression that invokes the block with the parameters; note that block expressions are not encodable or representable as parseable strings.
++ (NSExpression *)expressionForConditional:(NSPredicate *)predicate trueExpression:(NSExpression *)trueExpression falseExpression:(NSExpression *)falseExpression  NS_AVAILABLE(10_11, 9_0); // Expression that will return the result of trueExpression or falseExpression depending on the value of predicate
 
 - (instancetype)initWithExpressionType:(NSExpressionType)type NS_DESIGNATED_INITIALIZER;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_DESIGNATED_INITIALIZER;
@@ -116,6 +119,10 @@ NS_CLASS_AVAILABLE(10_4, 3_0)
 @property (readonly, copy) NSPredicate *predicate NS_AVAILABLE(10_5, 3_0);
 @property (readonly, copy) NSExpression *leftExpression NS_AVAILABLE(10_5, 3_0); // expression which represents the left side of a set expression
 @property (readonly, copy) NSExpression *rightExpression NS_AVAILABLE(10_5, 3_0); // expression which represents the right side of a set expression
+
+
+@property (readonly, copy) NSExpression *trueExpression NS_AVAILABLE(10_11, 9_0); // expression which will be evaluated if a conditional expression's predicate evaluates to true
+@property (readonly, copy) NSExpression *falseExpression NS_AVAILABLE(10_11, 9_0); // expression which will be evaluated if a conditional expression's predicate evaluates to false
 
 @property (readonly, copy) id (^expressionBlock)(id __nullable, NSArray *, NSMutableDictionary * __nullable) NS_AVAILABLE(10_6, 4_0);
 

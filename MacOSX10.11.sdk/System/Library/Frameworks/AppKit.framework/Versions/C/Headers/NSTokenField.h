@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 // substring is the partial string that is being completed.  tokenIndex is the index of the token being completed.
 // selectedIndex allows you to return by reference an index specifying which of the completions should be selected initially. 
 // The default behavior is not to have any completions.
-- (nullable NSArray *)tokenField:(NSTokenField *)tokenField completionsForSubstring:(NSString *)substring indexOfToken:(NSInteger)tokenIndex indexOfSelectedItem:(null_unspecified NSInteger *)selectedIndex;
+- (nullable NSArray *)tokenField:(NSTokenField *)tokenField completionsForSubstring:(NSString *)substring indexOfToken:(NSInteger)tokenIndex indexOfSelectedItem:(nullable NSInteger *)selectedIndex;
 
 // return an array of represented objects you want to add.
 // If you want to reject the add, return an empty array.

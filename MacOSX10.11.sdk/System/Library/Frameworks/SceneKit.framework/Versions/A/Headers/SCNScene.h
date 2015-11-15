@@ -92,7 +92,7 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
 /*!
  @property background
  @abstract Specifies the background of the receiver.
- @discussion The background is rendered before the rest of the scene. The background can be rendered as a skybox by setting a NSArray of six images to its contents (see SCNMaterialProperty.h).
+ @discussion The background is rendered before the rest of the scene. The background can be rendered as a skybox by setting a NSArray of six images to its contents (see SCNMaterialProperty.h). Setting a color will have no effect (use SCNView's backgroundColor instead).
  */
 @property(nonatomic, readonly) SCNMaterialProperty *background NS_AVAILABLE(10_9, 8_0);
 

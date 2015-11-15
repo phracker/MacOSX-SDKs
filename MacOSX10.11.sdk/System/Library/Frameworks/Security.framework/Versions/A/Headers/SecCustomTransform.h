@@ -31,6 +31,9 @@
 
 CF_EXTERN_C_BEGIN
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
     @header
 
@@ -304,7 +307,7 @@ int main (int argc, const char *argv[])
             connection. This metadata is read only.
 */
 
-enum
+typedef CF_ENUM(CFIndex, SecTransformMetaAttributeType)
 {
     kSecTransformMetaAttributeValue,
     kSecTransformMetaAttributeName,
@@ -318,8 +321,6 @@ enum
     kSecTransformMetaAttributeHasOutboundConnections,
     kSecTransformMetaAttributeHasInboundConnection
 };
-
-typedef CFIndex SecTransformMetaAttributeType;
 
 /*!
     @typedef        SecTransformAttributeRef
@@ -403,7 +404,7 @@ typedef CFTypeRef SecTransformStringOrAttributeRef;
 @/textblock
 </pre>
 */
-typedef CFTypeRef (^SecTransformActionBlock)(void);
+typedef CFTypeRef __nullable (^SecTransformActionBlock)(void);
 
 /*!
     @typedef        SecTransformAttributeActionBlock
@@ -425,7 +426,7 @@ typedef CFTypeRef (^SecTransformActionBlock)(void);
     @discussion     See the example program in this header for more details.
 
 */
-typedef CFTypeRef (^SecTransformAttributeActionBlock)(
+typedef CFTypeRef __nullable (^SecTransformAttributeActionBlock)(
                                 SecTransformAttributeRef attribute,
                                 CFTypeRef value);
                                 
@@ -455,7 +456,7 @@ typedef CFTypeRef (^SecTransformAttributeActionBlock)(
 
     @discussion     See the example program for more details.
 */
-typedef CFTypeRef (^SecTransformDataBlock)(CFTypeRef data);
+typedef CFTypeRef __nullable (^SecTransformDataBlock)(CFTypeRef data);
 
 /*!
     @typedef        SecTransformInstanceBlock
@@ -471,7 +472,7 @@ typedef CFTypeRef (^SecTransformDataBlock)(CFTypeRef data);
                     see the example at the head of this file.
 
 */
-typedef CFErrorRef (^SecTransformInstanceBlock)(void);
+typedef CFErrorRef __nullable (^SecTransformInstanceBlock)(void);
 
 /*!
     @typedef        SecTransformImplementationRef
@@ -530,10 +531,10 @@ typedef const struct OpaqueSecTransformImplementation* SecTransformImplementatio
                     what was there previously.
 
 */
-CF_EXPORT
+CF_EXPORT __nullable
 CFErrorRef SecTransformSetAttributeAction(SecTransformImplementationRef ref,
                                 CFStringRef action,
-                                SecTransformStringOrAttributeRef attribute,
+                                SecTransformStringOrAttributeRef __nullable attribute,
                                 SecTransformAttributeActionBlock newAction);
 /*!
     @function       SecTransformSetDataAction
@@ -584,7 +585,7 @@ CFErrorRef SecTransformSetAttributeAction(SecTransformImplementationRef ref,
                     it overwrites what was there previously.
 
 */
-CF_EXPORT
+CF_EXPORT __nullable
 CFErrorRef SecTransformSetDataAction(SecTransformImplementationRef ref,
                                     CFStringRef action,
                                     SecTransformDataBlock newAction);
@@ -634,7 +635,7 @@ CFErrorRef SecTransformSetDataAction(SecTransformImplementationRef ref,
     @result         A CFErrorRef if an error occured NULL otherwise.
         
 */
-CF_EXPORT
+CF_EXPORT __nullable
 CFErrorRef SecTransformSetTransformAction(SecTransformImplementationRef ref,
                                 CFStringRef action, 
                                 SecTransformActionBlock newAction);
@@ -657,7 +658,7 @@ CFErrorRef SecTransformSetTransformAction(SecTransformImplementationRef ref,
  @result         The value of the attribute.
  
  */
-CF_EXPORT
+CF_EXPORT __nullable
 CFTypeRef SecTranformCustomGetAttribute(SecTransformImplementationRef ref, 
                                         SecTransformStringOrAttributeRef attribute,
                                         SecTransformMetaAttributeType type) AVAILABLE_MAC_OS_X_VERSION_10_7_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
@@ -680,7 +681,7 @@ CFTypeRef SecTranformCustomGetAttribute(SecTransformImplementationRef ref,
  @result         The value of the attribute.
  
  */
-CF_EXPORT
+CF_EXPORT __nullable
 CFTypeRef SecTransformCustomGetAttribute(SecTransformImplementationRef ref, 
                                         SecTransformStringOrAttributeRef attribute,
                                         SecTransformMetaAttributeType type) __asm__("_SecTranformCustomGetAttribute");
@@ -710,11 +711,11 @@ CFTypeRef SecTransformCustomGetAttribute(SecTransformImplementationRef ref,
                     is bound to the ref parameter.
 
 */
-CF_EXPORT
+CF_EXPORT __nullable
 CFTypeRef SecTransformCustomSetAttribute(SecTransformImplementationRef ref,
                                     SecTransformStringOrAttributeRef attribute,
                                     SecTransformMetaAttributeType type,
-                                    CFTypeRef value);
+                                    CFTypeRef __nullable value);
 /*!
     @function       SecTransformPushbackAttribute
 
@@ -735,7 +736,7 @@ CFTypeRef SecTransformCustomSetAttribute(SecTransformImplementationRef ref,
     @result         A CFErrorRef if an error occured , NULL otherwise.
 
 */
-CF_EXPORT
+CF_EXPORT __nullable
 CFTypeRef SecTransformPushbackAttribute(SecTransformImplementationRef ref,
                                 SecTransformStringOrAttributeRef attribute,
                                 CFTypeRef value);
@@ -767,7 +768,7 @@ CFTypeRef SecTransformPushbackAttribute(SecTransformImplementationRef ref,
                     example in the header section of this file for more detail.
 */
 
-typedef SecTransformInstanceBlock (*SecTransformCreateFP)(CFStringRef name, 
+typedef SecTransformInstanceBlock __nonnull (*SecTransformCreateFP)(CFStringRef name,
                             SecTransformRef newTransform, 
                             SecTransformImplementationRef ref);
 
@@ -904,7 +905,7 @@ Boolean SecTransformRegister(CFStringRef uniqueName,
                     released with CFRelease when you are done with it.  This
                     function returns NULL if an error occurred.
  */
-CF_EXPORT
+CF_EXPORT __nullable
 SecTransformRef SecTransformCreate(CFStringRef name, CFErrorRef *error)
                             __OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
 
@@ -937,6 +938,9 @@ SecTransformRef SecTransformCreate(CFStringRef name, CFErrorRef *error)
 */
 CF_EXPORT
 CFTypeRef SecTransformNoData(void);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
 

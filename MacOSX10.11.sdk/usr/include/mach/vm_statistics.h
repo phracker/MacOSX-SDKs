@@ -222,6 +222,7 @@ typedef struct vm_purgeable_info	*vm_purgeable_info_t;
 #define VM_PAGE_QUERY_PAGE_EXTERNAL	0x80
 #define VM_PAGE_QUERY_PAGE_CS_VALIDATED	0x100
 #define VM_PAGE_QUERY_PAGE_CS_TAINTED	0x200
+#define VM_PAGE_QUERY_PAGE_CS_NX	0x400
 
 
 /*
@@ -288,7 +289,8 @@ typedef struct vm_purgeable_info	*vm_purgeable_info_t;
 #define VM_FLAGS_USER_REMAP	(VM_FLAGS_FIXED |    \
 				 VM_FLAGS_ANYWHERE | \
 				 VM_FLAGS_OVERWRITE| \
-				 VM_FLAGS_RETURN_DATA_ADDR)
+				 VM_FLAGS_RETURN_DATA_ADDR |\
+				 VM_FLAGS_RESILIENT_CODESIGN)
 
 #define VM_FLAGS_SUPERPAGE_SHIFT 16
 #define SUPERPAGE_NONE			0	/* no superpages, if all bits are 0 */

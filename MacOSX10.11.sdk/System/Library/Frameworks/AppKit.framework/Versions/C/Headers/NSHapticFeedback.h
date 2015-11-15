@@ -8,6 +8,8 @@
 #import <Foundation/NSObjCRuntime.h>
 #import <Foundation/NSObject.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_ENUM(NSInteger, NSHapticFeedbackPattern) {
     NSHapticFeedbackPatternGeneric = 0, // when none of the other options apply
     NSHapticFeedbackPatternAlignment,  // Alignment of any type: guides, best fit, etc...
@@ -33,3 +35,5 @@ NS_CLASS_AVAILABLE(10_11, NA)
  */
 + (id<NSHapticFeedbackPerformer>)defaultPerformer;
 @end
+
+NS_ASSUME_NONNULL_END

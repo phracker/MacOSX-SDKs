@@ -56,6 +56,7 @@ NS_CLASS_AVAILABLE(10_5, 3_0)
 
 /* the designated initializer for object stores. */
 - (instancetype)initWithPersistentStoreCoordinator:(nullable NSPersistentStoreCoordinator *)root configurationName:(nullable NSString *)name URL:(NSURL *)url options:(nullable NSDictionary *)options NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 /*  Store metadata must be accessible before -load: is called, but there is no way to return an error if the store is invalid 
 */

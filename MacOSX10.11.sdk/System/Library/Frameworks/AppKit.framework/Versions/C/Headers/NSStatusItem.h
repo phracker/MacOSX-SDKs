@@ -35,7 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
         unsigned int disableImageReplicationCount:4;
         unsigned int updatingReplicant:1;
         unsigned int didInactiveTemplateStyling:1;
-        unsigned int reserved:16;
+        unsigned int needsAdditionalReplicantUpdate:1;
+        unsigned int reserved:15;
     }	 _fFlags;
     id		 _statusItemMenu;
     NSMutableDictionary *_replicants;

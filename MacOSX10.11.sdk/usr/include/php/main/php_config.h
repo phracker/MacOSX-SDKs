@@ -474,7 +474,7 @@
 #define HAVE_BUILTIN_ATOMIC 1
 
 /* */
-#define HAVE_BUNDLED_PCRE 1
+/* #undef HAVE_BUNDLED_PCRE */
 
 /* */
 #define HAVE_BZ2 1
@@ -1257,7 +1257,7 @@
 #define HAVE_PACKED_OBJECT_VALUE 0
 
 /* */
-/* #undef HAVE_PCRE */
+#define HAVE_PCRE 1
 
 /* */
 /* #undef HAVE_PDO_DBLIB */
@@ -2034,6 +2034,9 @@
 /* iconv() is aliased to libiconv() in -liconv */
 /* #undef ICONV_ALIASED_LIBICONV */
 
+/* Whether iconv supports IGNORE */
+#define ICONV_BROKEN_IGNORE 0
+
 /* Whether iconv supports error no or not */
 #define ICONV_SUPPORTS_ERRNO 1
 
@@ -2128,7 +2131,7 @@
 #define PHP_BLOWFISH_CRYPT 1
 
 /* PHP build date */
-#define PHP_BUILD_DATE "2015-05-12"
+#define PHP_BUILD_DATE "2015-08-22"
 
 /* Define if your system has fork/vfork/CreateProcess */
 #define PHP_CAN_SUPPORT_PROC_OPEN 1
@@ -2203,7 +2206,7 @@
 #define PHP_STD_DES_CRYPT 1
 
 /* uname -a output */
-#define PHP_UNAME "Darwin osx002.apple.com 15.0 Darwin Kernel Version 15.0.0: Tue Mar 17 02:05:25 PDT 2015; root:xnu-3117.0.0.0.1~1/DEVELOPMENT_X86_64 x86_64"
+#define PHP_UNAME "Darwin osx004.apple.com 15.0 Darwin Kernel Version 15.0.0: Fri May 22 22:03:51 PDT 2015; root:xnu-3216.0.0.1.11~1/DEVELOPMENT_X86_64 x86_64"
 
 /* Whether PHP has to use its own crypt_r for blowfish, des and ext des */
 #define PHP_USE_PHP_CRYPT_R 1

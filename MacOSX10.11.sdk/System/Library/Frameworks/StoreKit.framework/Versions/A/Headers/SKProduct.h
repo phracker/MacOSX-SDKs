@@ -14,23 +14,23 @@ NS_CLASS_AVAILABLE(10_7, NA)
     id _internal;
 }
 
-@property(readonly) NSString *localizedDescription;
+@property(nullable, readonly) NSString *localizedDescription;
 
-@property(readonly) NSString *localizedTitle;
+@property(nullable, readonly) NSString *localizedTitle;
 
-@property(readonly) NSDecimalNumber *price;
+@property(nullable, readonly) NSDecimalNumber *price;
 
-@property(readonly) NSLocale *priceLocale;
+@property(nullable, readonly) NSLocale *priceLocale;
 
-@property(readonly) NSString *productIdentifier;
+@property(nullable, readonly) NSString *productIdentifier;
 
 // YES if the product's assets are hosted by the App Store. NO otherwise. 
 @property(readonly) BOOL downloadable;
 
 // Version string of the product
-@property(readonly) NSString* contentVersion;
+@property(nullable, readonly) NSString* contentVersion;
 
 // An array of filesizes of the assets associated with the product
-@property(readonly) NSArray* contentLengths;
+@property(nullable, readonly) NSArray<NSNumber *> *contentLengths;
 
 @end

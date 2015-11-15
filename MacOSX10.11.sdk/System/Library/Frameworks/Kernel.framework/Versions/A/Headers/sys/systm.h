@@ -162,7 +162,7 @@ typedef struct __throttle_info_handle *throttle_info_handle_t;
 int	throttle_info_ref_by_mask(uint64_t throttle_mask, throttle_info_handle_t *throttle_info_handle);
 void	throttle_info_rel_by_mask(throttle_info_handle_t throttle_info_handle);
 void	throttle_info_update_by_mask(void *throttle_info_handle, int flags);
-void 	throttle_info_disable_throttle(int devno);
+void 	throttle_info_disable_throttle(int devno, boolean_t isfusion);
 /*
  * 'throttle_info_handle' acquired via 'throttle_info_ref_by_mask'
  * 'policy' should be specified as either IOPOL_UTILITY or IPOL_THROTTLE,

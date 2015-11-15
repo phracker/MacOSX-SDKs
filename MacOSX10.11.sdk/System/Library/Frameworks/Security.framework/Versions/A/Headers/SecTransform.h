@@ -27,7 +27,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 CF_EXTERN_C_BEGIN
-
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
 	@header
@@ -175,7 +176,7 @@ CF_EXPORT const CFStringRef kSecTransformAbortOriginatorKey;
 						
 */
 
-enum
+CF_ENUM(CFIndex)
 {
 	kSecTransformErrorAttributeNotFound = 1,
 	kSecTransformErrorInvalidOperation = 2,
@@ -276,7 +277,7 @@ CF_EXPORT const CFStringRef kSecTransformAbortAttributeName __OSX_AVAILABLE_STAR
 						is non-null, it contains the specific error data.
 						
 */
-CF_EXPORT 
+CF_EXPORT __nullable
 SecTransformRef SecTransformCreateFromExternalRepresentation(
 								CFDictionaryRef dictionary,
 								CFErrorRef *error) 
@@ -426,7 +427,7 @@ SecGroupTransformRef SecTransformCreateGroupTransform(void);
 						transform.
 */
 
-CF_EXPORT 
+CF_EXPORT __nullable
 SecGroupTransformRef SecTransformConnectTransforms(SecTransformRef sourceTransformRef,
 						   CFStringRef sourceAttributeName,
 						   SecTransformRef destinationTransformRef,
@@ -489,7 +490,7 @@ Boolean SecTransformSetAttribute(SecTransformRef transformRef,
 	@discussion			This may be called after SecTransformExecute. 
 */
 
-CF_EXPORT 
+CF_EXPORT __nullable
 CFTypeRef SecTransformGetAttribute(SecTransformRef transformRef,
 								   CFStringRef key) 
 								__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);								   
@@ -514,7 +515,7 @@ CFTypeRef SecTransformGetAttribute(SecTransformRef transformRef,
 						was not found.
 */
 
-CF_EXPORT 
+CF_EXPORT __nullable
 SecTransformRef SecTransformFindByName(SecGroupTransformRef transform, 
 								CFStringRef name)
 								__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);								   
@@ -536,7 +537,7 @@ SecTransformRef SecTransformFindByName(SecGroupTransformRef transform,
 						is determined by the transform being executed.
 						
 	@discussion			There are two phases that occur when executing a 
-						transform. The first phase checks to see if tthe ranforms
+						transform. The first phase checks to see if the tranforms
 						have all of their required attributes set.
 						If a GroupTransform is being executed, then a required 
 						attribute for a transform is valid if it is connected
@@ -576,7 +577,7 @@ CFTypeRef SecTransformExecute(SecTransformRef transformRef, CFErrorRef* errorRef
 						otherwise it is an intermediate result.
 */
 
-typedef void (^SecMessageBlock)(CFTypeRef message, CFErrorRef error, 
+typedef void (^SecMessageBlock)(CFTypeRef __nullable message, CFErrorRef __nullable error,
 								Boolean isFinal);						
 						
 /*!
@@ -612,7 +613,8 @@ void SecTransformExecuteAsync(SecTransformRef transformRef,
 							SecMessageBlock deliveryBlock) 
 						   __OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
 
-
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 CF_EXTERN_C_END
 
 #endif /* _SEC_TRANSFORM_H__ */

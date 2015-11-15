@@ -12,6 +12,7 @@
 #import <AVKit/AVKitDefines.h>
 
 #if TARGET_OS_IPHONE
+#import <AVKit/AVError.h>
 #import <AVKit/AVPictureInPictureController.h>
 #import <AVKit/AVPlayerViewController.h>
 #else

@@ -162,14 +162,14 @@ typedef struct __MFlags {
 - (void)renewRows:(NSInteger)newRows columns:(NSInteger)newCols;
 - (void)putCell:(NSCell *)newCell atRow:(NSInteger)row column:(NSInteger)col;
 - (void)addRow;
-- (void)addRowWithCells:(NSArray<__kindof NSCell *> *)newCells;
+- (void)addRowWithCells:(NSArray<NSCell *> *)newCells;
 - (void)insertRow:(NSInteger)row;
-- (void)insertRow:(NSInteger)row withCells:(NSArray<__kindof NSCell *> *)newCells;
+- (void)insertRow:(NSInteger)row withCells:(NSArray<NSCell *> *)newCells;
 - (void)removeRow:(NSInteger)row;
 - (void)addColumn;
-- (void)addColumnWithCells:(NSArray<__kindof NSCell *> *)newCells;
+- (void)addColumnWithCells:(NSArray<NSCell *> *)newCells;
 - (void)insertColumn:(NSInteger)column;
-- (void)insertColumn:(NSInteger)column withCells:(NSArray<__kindof NSCell *> *)newCells;
+- (void)insertColumn:(NSInteger)column withCells:(NSArray<NSCell *> *)newCells;
 - (void)removeColumn:(NSInteger)col;
 - (nullable __kindof NSCell *)cellWithTag:(NSInteger)anInt;
 @property (nullable) SEL doubleAction;

@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class AVBInterface;
 
 /*!
@@ -93,3 +95,5 @@ NS_CLASS_AVAILABLE(10_10, NA)
 + (void)releaseDynamicEntityModelID:(uint64_t)entityModelID;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -53,7 +53,7 @@ typedef NS_ENUM(NSInteger, CNAuthorizationStatus)
 NS_CLASS_AVAILABLE(10_11, 9_0)
 @interface CNContactStore : NSObject
 
-#pragma mark -- Privacy Access
+#pragma mark - Privacy Access
 
 /*!
  * @abstract Indicates the current authorization status to access contact data.
@@ -82,7 +82,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 /*!
  * @abstract Fetch all unified contacts matching a given predicate.
  *
- * @discussion Use only predicates from CNContact+Predicates.h. Compound predicates are not supported. Due to unification the returned contacts may have a different identifiers. 
+ * @discussion Use only predicates from CNContact+Predicates.h. Compound predicates are not supported. Due to unification the returned contacts may have a different identifier. 
  *
  * @note To fetch all contacts use enumerateContactsWithFetchRequest:error:usingBlock:.
  *

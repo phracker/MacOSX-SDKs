@@ -50,6 +50,9 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
 	@enum CertificateItemAttributes
 	@abstract Indicates the type of a certificate item attribute.
@@ -92,7 +95,7 @@ CFTypeID SecCertificateGetTypeID(void)
     @result A result code. See "Security Error Codes" (SecBase.h).
 	@discussion This API is deprecated in 10.7  Please use the SecCertificateCreateWithData API instead.
 */
-OSStatus SecCertificateCreateFromData(const CSSM_DATA *data, CSSM_CERT_TYPE type, CSSM_CERT_ENCODING encoding, SecCertificateRef *certificate)
+OSStatus SecCertificateCreateFromData(const CSSM_DATA *data, CSSM_CERT_TYPE type, CSSM_CERT_ENCODING encoding, SecCertificateRef * __nonnull CF_RETURNS_RETAINED certificate)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -102,7 +105,8 @@ OSStatus SecCertificateCreateFromData(const CSSM_DATA *data, CSSM_CERT_TYPE type
     @param certificate DER encoded X.509 certificate.
 	@result On return, a reference to the certificate. Returns NULL if the passed-in data is not a valid DER-encoded X.509 certificate.
 */
-SecCertificateRef SecCertificateCreateWithData(CFAllocatorRef allocator, CFDataRef data)
+__nullable
+SecCertificateRef SecCertificateCreateWithData(CFAllocatorRef __nullable allocator, CFDataRef data)
 	__OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_2_0);
 
 /*!
@@ -114,7 +118,7 @@ SecCertificateRef SecCertificateCreateWithData(CFAllocatorRef allocator, CFDataR
 	@discussion This function is successful only if the certificate was created using the SecCertificateCreateFromData or
 	SecCertificateCreateWithData functions, and the certificate has not yet been added to the specified keychain.
 */
-OSStatus SecCertificateAddToKeychain(SecCertificateRef certificate, SecKeychainRef keychain)
+OSStatus SecCertificateAddToKeychain(SecCertificateRef certificate, SecKeychainRef __nullable keychain)
 	__OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_NA);
 
 /*!
@@ -133,7 +137,7 @@ OSStatus SecCertificateGetData(SecCertificateRef certificate, CSSM_DATA_PTR data
 	@abstract Returns the DER representation of an X.509 certificate.
     @param certificate A reference to a certificate.
 	@result On return, a data reference containing the DER encoded representation of the X.509 certificate.
-*/
+ */
 CFDataRef SecCertificateCopyData(SecCertificateRef certificate)
 	__OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_2_0);
 
@@ -163,7 +167,7 @@ OSStatus SecCertificateGetType(SecCertificateRef certificate, CSSM_CERT_TYPE *ce
         }
 	   This API is deprecated in 10.7. Please use the SecCertificateCopyValues API instead. 
 */
-OSStatus SecCertificateGetSubject(SecCertificateRef certificate, const CSSM_X509_NAME **subject)
+OSStatus SecCertificateGetSubject(SecCertificateRef certificate, const CSSM_X509_NAME * __nullable * __nonnull subject)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -181,7 +185,7 @@ OSStatus SecCertificateGetSubject(SecCertificateRef certificate, const CSSM_X509
         }
 		This API is deprecated in 10.7. Please use the SecCertificateCopyValues API instead. 
 */
-OSStatus SecCertificateGetIssuer(SecCertificateRef certificate, const CSSM_X509_NAME **issuer)
+OSStatus SecCertificateGetIssuer(SecCertificateRef certificate, const CSSM_X509_NAME * __nullable * __nonnull issuer)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -203,7 +207,7 @@ OSStatus SecCertificateGetCLHandle(SecCertificateRef certificate, CSSM_CL_HANDLE
     @result A result code. See "Security Error Codes" (SecBase.h).
 	discussion This API is deprecated in 10.7. Please use the SecCertificateCopyValues API instead.
 */
-OSStatus SecCertificateGetAlgorithmID(SecCertificateRef certificate, const CSSM_X509_ALGORITHM_IDENTIFIER **algid)
+OSStatus SecCertificateGetAlgorithmID(SecCertificateRef certificate, const CSSM_X509_ALGORITHM_IDENTIFIER * __nullable * __nonnull algid)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -213,7 +217,7 @@ OSStatus SecCertificateGetAlgorithmID(SecCertificateRef certificate, const CSSM_
     @param key On return, a reference to the public key for the specified certificate. Your code must release this reference by calling the CFRelease function.
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecCertificateCopyPublicKey(SecCertificateRef certificate, SecKeyRef *key)
+OSStatus SecCertificateCopyPublicKey(SecCertificateRef certificate, SecKeyRef * __nonnull CF_RETURNS_RETAINED key)
 	__OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_NA);
 
 /*!
@@ -226,7 +230,7 @@ OSStatus SecCertificateCopyPublicKey(SecCertificateRef certificate, SecKeyRef *k
 	Note that the certificate's common name field may not be present, or may be inadequate to describe the certificate; for display purposes,
 	you should consider using SecCertificateCopySubjectSummary instead of this function.
 */
-OSStatus SecCertificateCopyCommonName(SecCertificateRef certificate, CFStringRef *commonName)
+OSStatus SecCertificateCopyCommonName(SecCertificateRef certificate, CFStringRef * __nonnull CF_RETURNS_RETAINED commonName)
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*!
@@ -247,7 +251,7 @@ CFStringRef SecCertificateCopySubjectSummary(SecCertificateRef certificate)
 	Your code must release this array reference by calling the CFRelease function.
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecCertificateCopyEmailAddresses(SecCertificateRef certificate, CFArrayRef *emailAddresses)
+OSStatus SecCertificateCopyEmailAddresses(SecCertificateRef certificate, CFArrayRef * __nonnull CF_RETURNS_RETAINED emailAddresses)
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*!
@@ -260,7 +264,7 @@ OSStatus SecCertificateCopyEmailAddresses(SecCertificateRef certificate, CFArray
     @discussion This function will typically be used to obtain the preferred encryption certificate for an email recipient.
 	This API is deprecated in 10.7. Please use the SecCertificateCopyPreferred API instead.
 */
-OSStatus SecCertificateCopyPreference(CFStringRef name, uint32 keyUsage, SecCertificateRef *certificate)
+OSStatus SecCertificateCopyPreference(CFStringRef name, uint32 keyUsage, SecCertificateRef * __nonnull CF_RETURNS_RETAINED certificate)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -271,8 +275,9 @@ OSStatus SecCertificateCopyPreference(CFStringRef name, uint32 keyUsage, SecCert
     @result On return, a reference to the preferred certificate, or NULL if none was found. You are responsible for releasing this reference by calling the CFRelease function.
     @discussion This function will typically be used to obtain the preferred encryption certificate for an email recipient. If a preferred certificate has not been set
 	for the supplied name, the returned reference will be NULL. Your code should then perform a search for possible certificates, using the SecItemCopyMatching API.
-*/
-SecCertificateRef SecCertificateCopyPreferred(CFStringRef name, CFArrayRef keyUsage)
+ */
+__nullable
+SecCertificateRef SecCertificateCopyPreferred(CFStringRef name, CFArrayRef __nullable keyUsage)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
@@ -286,7 +291,7 @@ SecCertificateRef SecCertificateCopyPreferred(CFStringRef name, CFArrayRef keyUs
     @discussion This function will typically be used to set the preferred encryption certificate for an email recipient, either manually (when encrypting email to a recipient) or automatically upon receipt of encrypted email.
 	This API is deprecated in 10.7. Plese use the SecCertificateSetPreferred API instead.
 */
-OSStatus SecCertificateSetPreference(SecCertificateRef certificate, CFStringRef name, uint32 keyUsage, CFDateRef date)
+OSStatus SecCertificateSetPreference(SecCertificateRef certificate, CFStringRef name, uint32 keyUsage, CFDateRef __nullable date)
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*!
@@ -299,7 +304,7 @@ OSStatus SecCertificateSetPreference(SecCertificateRef certificate, CFStringRef 
     @discussion This function will typically be used to set the preferred encryption certificate for an email recipient, either manually (when encrypting email to a recipient)
 	or automatically upon receipt of encrypted email.
 */
-OSStatus SecCertificateSetPreferred(SecCertificateRef certificate, CFStringRef name, CFArrayRef keyUsage)
+OSStatus SecCertificateSetPreferred(SecCertificateRef __nullable certificate, CFStringRef name, CFArrayRef __nullable keyUsage)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
@@ -311,24 +316,24 @@ OSStatus SecCertificateSetPreferred(SecCertificateRef certificate, CFStringRef n
  @constant kSecPropertyKeyValue The value of the entry
  */
 	
-extern CFStringRef kSecPropertyKeyType __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyKeyLabel __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyKeyLocalizedLabel __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyKeyValue __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyKeyType __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyKeyLabel __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyKeyLocalizedLabel __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyKeyValue __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
 	@enum kSecPropertyType
 	@abstract Public Constants for property list values returned by SecCertificateCopyValues
 	@discussion Note that kSecPropertyTypeTitle and kSecPropertyTypeError are defined in SecTrust.h
 */
-extern CFStringRef kSecPropertyTypeWarning __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyTypeSuccess __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyTypeSection __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyTypeData __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyTypeString __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyTypeURL __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-extern CFStringRef kSecPropertyTypeDate __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-	
+extern const CFStringRef kSecPropertyTypeWarning __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyTypeSuccess __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyTypeSection __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyTypeData __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyTypeString __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyTypeURL __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+extern const CFStringRef kSecPropertyTypeDate __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+
 /*!
     @function SecCertificateCopyValues
 	@abstract		Creates a dictionary that represents a certificate's contents.
@@ -352,7 +357,8 @@ extern CFStringRef kSecPropertyTypeDate __OSX_AVAILABLE_STARTING(__MAC_10_7, __I
 					value entry. The value entry may be any CFType, although it 
 					is usually a CFStringRef, CFArrayRef or a CFDictionaryRef. 
 */
-CFDictionaryRef SecCertificateCopyValues(SecCertificateRef certificate, CFArrayRef keys, CFErrorRef *error)
+__nullable
+CFDictionaryRef SecCertificateCopyValues(SecCertificateRef certificate, CFArrayRef __nullable keys, CFErrorRef *error)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
@@ -387,7 +393,8 @@ extern const CFStringRef kSecCertificateUsageDeriveAndSign __OSX_AVAILABLE_START
 	@discussion			Note that the format of this string may change in the future
 */
 
-CFStringRef SecCertificateCopyLongDescription(CFAllocatorRef alloc, SecCertificateRef certificate, CFErrorRef *error)
+__nullable
+CFStringRef SecCertificateCopyLongDescription(CFAllocatorRef __nullable alloc, SecCertificateRef certificate, CFErrorRef *error)
 					__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
@@ -407,7 +414,8 @@ CFStringRef SecCertificateCopyLongDescription(CFAllocatorRef alloc, SecCertifica
  @discussion			Note that the format of this string may change in the future
 */
 
-CFStringRef SecCertificateCopyShortDescription(CFAllocatorRef alloc, SecCertificateRef certificate, CFErrorRef *error)
+__nullable
+CFStringRef SecCertificateCopyShortDescription(CFAllocatorRef __nullable alloc, SecCertificateRef certificate, CFErrorRef *error)
 		__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
@@ -422,6 +430,7 @@ CFStringRef SecCertificateCopyShortDescription(CFAllocatorRef alloc, SecCertific
 						number.   The caller must CFRelease the value returned.
 */
 
+__nullable
 CFDataRef SecCertificateCopySerialNumber(SecCertificateRef certificate, CFErrorRef *error)
 		__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
@@ -439,6 +448,7 @@ CFDataRef SecCertificateCopySerialNumber(SecCertificateRef certificate, CFErrorR
 						the value returned.
 */
 
+__nullable
 CFDataRef SecCertificateCopyNormalizedIssuerContent(SecCertificateRef certificate, CFErrorRef *error)
 		__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
@@ -456,8 +466,12 @@ CFDataRef SecCertificateCopyNormalizedIssuerContent(SecCertificateRef certificat
 						the value returned.
 */
 
+__nullable
 CFDataRef SecCertificateCopyNormalizedSubjectContent(SecCertificateRef certificate, CFErrorRef *error)
 		__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

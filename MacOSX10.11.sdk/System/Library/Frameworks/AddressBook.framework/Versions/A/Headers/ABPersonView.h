@@ -5,6 +5,9 @@
 //  Copyright 2009-2014 Apple, Inc. All rights reserved.
 //
 
+#ifndef __ABPERSONVIEW__
+#define __ABPERSONVIEW__
+
 #import <Cocoa/Cocoa.h>
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
@@ -47,3 +50,5 @@
 @end
 
 #endif
+
+#endif // __ABPERSONVIEW__

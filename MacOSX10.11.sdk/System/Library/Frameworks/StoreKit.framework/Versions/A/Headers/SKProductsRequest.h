@@ -9,8 +9,9 @@
 
 
 
-@class SKProductsRequest, SKProductsResponse;
+@class SKProductsRequest, SKProductsResponse, SKProduct;
 
+NS_ASSUME_NONNULL_BEGIN
 @protocol SKProductsRequestDelegate <SKRequestDelegate>
 
 @required
@@ -18,10 +19,12 @@
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response;
 
 @end
+NS_ASSUME_NONNULL_END
 
 
 // request information about products for your application
 NS_CLASS_AVAILABLE(10_7, NA)
+NS_ASSUME_NONNULL_BEGIN
 @interface SKProductsRequest : SKRequest {
 @private
     id _productsRequestInternal;
@@ -30,23 +33,26 @@ NS_CLASS_AVAILABLE(10_7, NA)
 // Set of string product identifiers
 - (id)initWithProductIdentifiers:(NSSet *)productIdentifiers;
 
-@property(assign) id <SKProductsRequestDelegate> delegate;
+@property(nullable, assign) id <SKProductsRequestDelegate> delegate;
 
 @end
+NS_ASSUME_NONNULL_END
 
 
 NS_CLASS_AVAILABLE(10_7, NA)
+NS_ASSUME_NONNULL_BEGIN
 @interface SKProductsResponse : NSObject {
 @private
     id _internal;
 }
 
 // Array of SKProduct instances.
-@property(readonly) NSArray *products;
+@property(nullable, readonly) NSArray<SKProduct *> *products;
 
 // Array of invalid product identifiers.
-@property(readonly) NSArray *invalidProductIdentifiers;
+@property(nullable, readonly) NSArray<NSString *> *invalidProductIdentifiers;
 
 @end
+NS_ASSUME_NONNULL_END
 
 

@@ -1,5 +1,5 @@
 /*
- * "$Id: ipp.h 11830 2014-04-24 12:10:41Z msweet $"
+ * "$Id: ipp.h 12669 2015-05-27 19:42:43Z msweet $"
  *
  * Internet Printing Protocol definitions for CUPS.
  *
@@ -246,11 +246,11 @@ typedef enum ipp_op_e			/**** IPP operations ****/
   IPP_OP_CUPS_INVALID = -1,		/* Invalid operation name for @link ippOpValue@ */
   IPP_OP_CUPS_NONE = 0,			/* No operation @private@ */
   IPP_OP_PRINT_JOB = 0x0002,		/* Print a single file */
-  IPP_OP_PRINT_URI,			/* Print a single URL @private@ */
+  IPP_OP_PRINT_URI,			/* Print a single URL */
   IPP_OP_VALIDATE_JOB,			/* Validate job options */
   IPP_OP_CREATE_JOB,			/* Create an empty print job */
   IPP_OP_SEND_DOCUMENT,			/* Add a file to a job */
-  IPP_OP_SEND_URI,			/* Add a URL to a job @private@ */
+  IPP_OP_SEND_URI,			/* Add a URL to a job */
   IPP_OP_CANCEL_JOB,			/* Cancel a job */
   IPP_OP_GET_JOB_ATTRIBUTES,		/* Get job attributes */
   IPP_OP_GET_JOBS,			/* Get a list of jobs */
@@ -261,7 +261,7 @@ typedef enum ipp_op_e			/**** IPP operations ****/
   IPP_OP_PAUSE_PRINTER = 0x0010,	/* Stop a printer */
   IPP_OP_RESUME_PRINTER,		/* Start a printer */
   IPP_OP_PURGE_JOBS,			/* Cancel all jobs */
-  IPP_OP_SET_PRINTER_ATTRIBUTES,	/* Set printer attributes @private@ */
+  IPP_OP_SET_PRINTER_ATTRIBUTES,	/* Set printer attributes */
   IPP_OP_SET_JOB_ATTRIBUTES,		/* Set job attributes */
   IPP_OP_GET_PRINTER_SUPPORTED_VALUES,	/* Get supported attribute values */
   IPP_OP_CREATE_PRINTER_SUBSCRIPTIONS,	/* Create one or more printer subscriptions @since CUPS 1.2/OS X 10.5@ */
@@ -279,32 +279,45 @@ typedef enum ipp_op_e			/**** IPP operations ****/
   IPP_OP_ENABLE_PRINTER,		/* Start a printer */
   IPP_OP_DISABLE_PRINTER,		/* Stop a printer */
   IPP_OP_PAUSE_PRINTER_AFTER_CURRENT_JOB,
-					/* Stop printer after the current job @private@ */
-  IPP_OP_HOLD_NEW_JOBS,			/* Hold new jobs @private@ */
-  IPP_OP_RELEASE_HELD_NEW_JOBS,		/* Release new jobs @private@ */
-  IPP_OP_DEACTIVATE_PRINTER,		/* Stop a printer @private@ */
-  IPP_OP_ACTIVATE_PRINTER,		/* Start a printer @private@ */
-  IPP_OP_RESTART_PRINTER,		/* Restart a printer @private@ */
-  IPP_OP_SHUTDOWN_PRINTER,		/* Turn a printer off @private@ */
-  IPP_OP_STARTUP_PRINTER,		/* Turn a printer on @private@ */
-  IPP_OP_REPROCESS_JOB,			/* Reprint a job @private@ */
-  IPP_OP_CANCEL_CURRENT_JOB,		/* Cancel the current job @private@ */
-  IPP_OP_SUSPEND_CURRENT_JOB,		/* Suspend the current job @private@ */
-  IPP_OP_RESUME_JOB,			/* Resume the current job @private@ */
-  IPP_OP_PROMOTE_JOB,			/* Promote a job to print sooner @private@ */
-  IPP_OP_SCHEDULE_JOB_AFTER,		/* Schedule a job to print after another @private@ */
-  IPP_OP_CANCEL_DOCUMENT = 0x0033,	/* Cancel-Document @private@ */
-  IPP_OP_GET_DOCUMENT_ATTRIBUTES,	/* Get-Document-Attributes @private@ */
-  IPP_OP_GET_DOCUMENTS,			/* Get-Documents @private@ */
-  IPP_OP_DELETE_DOCUMENT,		/* Delete-Document @private@ */
-  IPP_OP_SET_DOCUMENT_ATTRIBUTES,	/* Set-Document-Attributes @private@ */
+					/* Stop printer after the current job */
+  IPP_OP_HOLD_NEW_JOBS,			/* Hold new jobs */
+  IPP_OP_RELEASE_HELD_NEW_JOBS,		/* Release new jobs */
+  IPP_OP_DEACTIVATE_PRINTER,		/* Stop a printer */
+  IPP_OP_ACTIVATE_PRINTER,		/* Start a printer */
+  IPP_OP_RESTART_PRINTER,		/* Restart a printer */
+  IPP_OP_SHUTDOWN_PRINTER,		/* Turn a printer off */
+  IPP_OP_STARTUP_PRINTER,		/* Turn a printer on */
+  IPP_OP_REPROCESS_JOB,			/* Reprint a job */
+  IPP_OP_CANCEL_CURRENT_JOB,		/* Cancel the current job */
+  IPP_OP_SUSPEND_CURRENT_JOB,		/* Suspend the current job */
+  IPP_OP_RESUME_JOB,			/* Resume the current job */
+  IPP_OP_PROMOTE_JOB,			/* Promote a job to print sooner */
+  IPP_OP_SCHEDULE_JOB_AFTER,		/* Schedule a job to print after another */
+  IPP_OP_CANCEL_DOCUMENT = 0x0033,	/* Cancel-Document */
+  IPP_OP_GET_DOCUMENT_ATTRIBUTES,	/* Get-Document-Attributes */
+  IPP_OP_GET_DOCUMENTS,			/* Get-Documents */
+  IPP_OP_DELETE_DOCUMENT,		/* Delete-Document */
+  IPP_OP_SET_DOCUMENT_ATTRIBUTES,	/* Set-Document-Attributes */
   IPP_OP_CANCEL_JOBS,			/* Cancel-Jobs */
   IPP_OP_CANCEL_MY_JOBS,		/* Cancel-My-Jobs */
   IPP_OP_RESUBMIT_JOB,			/* Resubmit-Job */
   IPP_OP_CLOSE_JOB,			/* Close-Job */
-  IPP_OP_IDENTIFY_PRINTER,		/* Identify-Printer @private@ */
-  IPP_OP_VALIDATE_DOCUMENT,		/* Validate-Document @private@ */
-  IPP_OP_SEND_HARDCOPY_DOCUMENT,	/* Send-Hardcopy-Document @private@ */
+  IPP_OP_IDENTIFY_PRINTER,		/* Identify-Printer */
+  IPP_OP_VALIDATE_DOCUMENT,		/* Validate-Document */
+  IPP_OP_SEND_HARDCOPY_DOCUMENT,	/* Send-Hardcopy-Document */
+  IPP_OP_ACKNOWLEDGE_DOCUMENT,		/* Acknowledge-Document */
+  IPP_OP_ACKNOWLEDGE_IDENTIFY_PRINTER,	/* Acknowledge-Identify-Printer */
+  IPP_OP_ACKNOWLEDGE_JOB,		/* Acknowledge-Job */
+  IPP_OP_FETCH_DOCUMENT,		/* Fetch-Document */
+  IPP_OP_FETCH_JOB,			/* Fetch-Job */
+  IPP_OP_GET_OUTPUT_DEVICE_ATTRIBUTES,	/* Get-Output-Device-Attributes */
+  IPP_OP_UPDATE_ACTIVE_JOBS,		/* Update-Active-Jobs */
+  IPP_OP_DEREGISTER_OUTPUT_DEVICE,	/* Deregister-Output-Device */
+  IPP_OP_UPDATE_DOCUMENT_STATUS,	/* Update-Document-Status */
+  IPP_OP_UPDATE_JOB_STATUS,		/* Update-Job-Status */
+  IPP_OP_UPDATE_OUTPUT_DEVICE_ATTRIBUTES,
+					/* Update-Output-Device-Attributes */
+  IPP_OP_GET_NEXT_DOCUMENT_DATA,	/* Get-Next-Document-Data */
 
   IPP_OP_PRIVATE = 0x4000,		/* Reserved @private@ */
   IPP_OP_CUPS_GET_DEFAULT,		/* Get the default printer */
@@ -1021,5 +1034,5 @@ extern const char	*ippStateString(ipp_state_t state) _CUPS_API_2_0;
 #endif /* !_CUPS_IPP_H_ */
 
 /*
- * End of "$Id: ipp.h 11830 2014-04-24 12:10:41Z msweet $".
+ * End of "$Id: ipp.h 12669 2015-05-27 19:42:43Z msweet $".
  */

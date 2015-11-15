@@ -39,10 +39,11 @@ typedef cl_mem_object_type cl_image_type;
 #define CL_IMAGE_2D CL_MEM_OBJECT_IMAGE2D
 #define CL_IMAGE_3D CL_MEM_OBJECT_IMAGE3D
 
-#define CL_DISPATCH_QUEUE_PRIORITY_DEFAULT  (cl_ulong)0
-#define CL_DISPATCH_QUEUE_PRIORITY_LOW      ((cl_ulong)1 << 63)
-#define CL_DISPATCH_QUEUE_PRIORITY_HIGH     ((cl_ulong)1 << 62)  
-#define CL_DEVICE_TYPE_USE_ID               ((cl_ulong)1 << 61)
+#define CL_DISPATCH_QUEUE_PRIORITY_DEFAULT          ((cl_ulong)1 << 59)
+#define CL_DISPATCH_QUEUE_PRIORITY_BACKGROUND       ((cl_ulong)1 << 60)
+#define CL_DISPATCH_QUEUE_PRIORITY_HIGH             ((cl_ulong)1 << 62)
+#define CL_DISPATCH_QUEUE_PRIORITY_LOW              ((cl_ulong)1 << 63)
+#define CL_DEVICE_TYPE_USE_ID                       ((cl_ulong)1 << 61)
   
 typedef enum clk_sampler_type
 {
@@ -82,7 +83,7 @@ typedef enum clk_sampler_type
 DISPATCH_RETURNS_RETAINED
 #endif
 extern dispatch_queue_t __nullable gcl_create_dispatch_queue(cl_queue_flags flags, 
-                                                  cl_device_id __nonnull device_id) GCL_API_SUFFIX__VERSION_1_1;
+                                                  cl_device_id __nullable device_id) GCL_API_SUFFIX__VERSION_1_1;
 
 //************************************************************************************************************************
 // The following APIs describe how to create OpenCL memory objects
@@ -111,7 +112,7 @@ extern cl_image __nullable gcl_create_image(const cl_image_format * __nonnull im
                                             size_t image_width, 
                                             size_t image_height, 
                                             size_t image_depth, 
-                                            IOSurfaceRef __nonnull io_surface) GCL_API_SUFFIX__VERSION_1_1;
+                                            IOSurfaceRef __nullable io_surface) GCL_API_SUFFIX__VERSION_1_1;
 
 extern void gcl_retain_image(cl_image __nonnull image) GCL_API_SUFFIX__VERSION_1_1;
 

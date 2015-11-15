@@ -10,11 +10,12 @@
 
 
 
-@class SKPayment, SKPaymentTransaction;
+@class SKPayment, SKPaymentTransaction, SKDownload;
 @protocol SKPaymentTransactionObserver;
 
 // SKPaymentQueue interacts with the server-side payment queue
 NS_CLASS_AVAILABLE(10_7, NA)
+NS_ASSUME_NONNULL_BEGIN
 @interface SKPaymentQueue : NSObject
 {
 	@private
@@ -31,7 +32,7 @@ NS_CLASS_AVAILABLE(10_7, NA)
 
 // Asynchronous.  Will add completed transactions for the current user back to the queue to be re-completed.  User will be asked to authenticate.  Observers will receive 0 or more -paymentQueue:updatedTransactions:, followed by either -paymentQueueRestoreCompletedTransactionsFinished: on success or -paymentQueue:restoreCompletedTransactionsFailedWithError: on failure.  In the case of partial success, some transactions may still be delivered.
 - (void) restoreCompletedTransactions;
-- (void) restoreCompletedTransactionsWithApplicationUsername:(NSString *)username;
+- (void) restoreCompletedTransactionsWithApplicationUsername:(nullable NSString *)username;
 
 // Asynchronous.  Remove a finished (i.e. failed or completed) transaction from the queue.  Attempting to finish a purchasing transaction will throw an exception.
 - (void) finishTransaction:(SKPaymentTransaction *)transaction;
@@ -41,25 +42,27 @@ NS_CLASS_AVAILABLE(10_7, NA)
 - (void) removeTransactionObserver:(id <SKPaymentTransactionObserver>)observer;
 
 // Array of unfinished SKPaymentTransactions.  Only valid while the queue has observers.  Updated asynchronously.
-@property(readonly) NSArray *transactions;
+@property(nullable, readonly) NSArray<SKPaymentTransaction *> *transactions;
 
 //
-- (void) startDownloads:(NSArray *)downloads;
-- (void) pauseDownloads:(NSArray *)downloads;
-- (void) resumeDownloads:(NSArray *)downloads;
-- (void) cancelDownloads:(NSArray *)downloads;
+- (void) startDownloads:(NSArray <SKDownload *> *)downloads;
+- (void) pauseDownloads:(NSArray <SKDownload *> *)downloads;
+- (void) resumeDownloads:(NSArray <SKDownload *> *)downloads;
+- (void) cancelDownloads:(NSArray <SKDownload *> *)downloads;
 
 @end
+NS_ASSUME_NONNULL_END
 
 
+NS_ASSUME_NONNULL_BEGIN
 @protocol SKPaymentTransactionObserver <NSObject>
 @required
 // Sent when the transaction array has changed (additions or state changes).  Client should check state of transactions and finish as appropriate.
-- (void) paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions;
+- (void) paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray <SKPaymentTransaction *> *)transactions;
 
 @optional
 // Sent when transactions are removed from the queue (via finishTransaction:).
-- (void) paymentQueue:(SKPaymentQueue *)queue removedTransactions:(NSArray *)transactions;
+- (void) paymentQueue:(SKPaymentQueue *)queue removedTransactions:(NSArray <SKPaymentTransaction *> *)transactions;
 
 // Sent when an error is encountered while adding transactions from the user's purchase history back to the queue.
 - (void) paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error;
@@ -68,8 +71,9 @@ NS_CLASS_AVAILABLE(10_7, NA)
 - (void) paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue;
 
 // Sent when the download state has changed.
-- (void) paymentQueue:(SKPaymentQueue *)queue updatedDownloads:(NSArray *)downloads;
+- (void) paymentQueue:(SKPaymentQueue *)queue updatedDownloads:(NSArray <SKDownload *> *)downloads;
 
 @end
+NS_ASSUME_NONNULL_END
 
 

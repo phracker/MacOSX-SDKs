@@ -139,6 +139,11 @@ typedef NS_ENUM(NSInteger, WKNavigationResponsePolicy) {
  */
 - (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *__nullable credential))completionHandler;
 
+/*! @abstract Invoked when the web view's web content process is terminated.
+ @param webView The web view whose underlying web content process was terminated.
+ */
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView NS_AVAILABLE(10_11, 9_0);
+
 @end
 
 NS_ASSUME_NONNULL_END

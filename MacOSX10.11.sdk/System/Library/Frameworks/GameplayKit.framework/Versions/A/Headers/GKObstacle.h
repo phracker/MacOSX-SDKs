@@ -53,7 +53,7 @@ GK_BASE_AVAILABILITY @interface GKPolygonObstacle : GKObstacle
 
 /**
  * Creates a polygon obstacle with an array of points.
- * @param points array of points in clockwise order that are the vertexes of a convex polygon
+ * @param points array of points in counter-clockwise order that are the vertices of a convex polygon
  * @param numPoints the number of points in the array
  */
 + (instancetype)obstacleWithPoints:(vector_float2 *)points count:(size_t)numPoints;
@@ -61,7 +61,7 @@ GK_BASE_AVAILABILITY @interface GKPolygonObstacle : GKObstacle
 
 /**
  * Returns the vertex at the indicated index
- @param index index of the vertex to retrieve
+ * @param index index of the vertex to retrieve
  */
 - (vector_float2)vertexAtIndex:(NSUInteger)index;
 

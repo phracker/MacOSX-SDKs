@@ -30,6 +30,11 @@ NS_CLASS_AVAILABLE(10_11, 9_0) @interface GKPath : NSObject
  */
 @property (nonatomic, assign, getter=isCyclical) BOOL cyclical;
 
+/**
+ * Number of points in this path
+ */
+@property (readonly) NSUInteger numPoints;
+
 + (instancetype)pathWithPoints:(vector_float2 *)points count:(size_t)count radius:(float)radius cyclical:(BOOL)cyclical;
 - (instancetype)initWithPoints:(vector_float2 *)points count:(size_t)count radius:(float)radius cyclical:(BOOL)cyclical NS_DESIGNATED_INITIALIZER;
 
@@ -42,6 +47,11 @@ NS_CLASS_AVAILABLE(10_11, 9_0) @interface GKPath : NSObject
  */
 + (instancetype)pathWithGraphNodes:(NSArray<GKGraphNode2D *> *)graphNodes radius:(float)radius;
 - (instancetype)initWithGraphNodes:(NSArray<GKGraphNode2D *> *)graphNodes radius:(float)radius;
+
+/**
+ * Returns the point at the given index
+ */
+-(vector_float2)pointAtIndex:(NSUInteger)index;
 
 @end
 

@@ -89,11 +89,11 @@ CM_ASSUME_NONNULL_BEGIN
 		If a destination pixel aspect ratio is not set, the source image's pixel aspect ratio is used.
 		The pixel aspect ratio used is set on the destination image buffer.
 */
-VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_ScalingMode VT_AVAILABLE_STARTING(10_8); // Read/write, CFStringRef, one of:
-VT_EXPORT const CFStringRef kVTScalingMode_Normal VT_AVAILABLE_STARTING(10_8); // Copy full width and height.  Write adjusted clean aperture and pixel aspect ratios to compensate for any change in dimensions.
-VT_EXPORT const CFStringRef kVTScalingMode_CropSourceToCleanAperture VT_AVAILABLE_STARTING(10_8); // Crop to remove edge processing region; scale remainder to destination clean aperture.
-VT_EXPORT const CFStringRef kVTScalingMode_Letterbox VT_AVAILABLE_STARTING(10_8); // Preserve aspect ratio of the source, and fill remaining areas with black in to fit destination dimensions
-VT_EXPORT const CFStringRef kVTScalingMode_Trim VT_AVAILABLE_STARTING(10_8); // Preserve aspect ratio of the source, and crop picture to fit destination dimensions
+VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_ScalingMode __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Read/write, CFStringRef, one of:
+VT_EXPORT const CFStringRef kVTScalingMode_Normal __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Copy full width and height.  Write adjusted clean aperture and pixel aspect ratios to compensate for any change in dimensions.
+VT_EXPORT const CFStringRef kVTScalingMode_CropSourceToCleanAperture __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Crop to remove edge processing region; scale remainder to destination clean aperture.
+VT_EXPORT const CFStringRef kVTScalingMode_Letterbox __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Preserve aspect ratio of the source, and fill remaining areas with black in to fit destination dimensions
+VT_EXPORT const CFStringRef kVTScalingMode_Trim __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Preserve aspect ratio of the source, and crop picture to fit destination dimensions
 
 /*!
 	@constant	kVTPixelTransferPropertyKey_DestinationCleanAperture
@@ -105,7 +105,7 @@ VT_EXPORT const CFStringRef kVTScalingMode_Trim VT_AVAILABLE_STARTING(10_8); // 
 		This property is ignored in kVTScalingMode_Normal.  
 		This property defaults to NULL, meaning the clean aperture is the full width and height.
 */
-VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationCleanAperture VT_AVAILABLE_STARTING(10_8); // Read/write, CFDictionary with same keys as used in kCVImageBufferCleanApertureKey dictionary.  Used as applicable to current kVTPixelTransferPropertyKey_ScalingMode value.
+VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationCleanAperture __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Read/write, CFDictionary with same keys as used in kCVImageBufferCleanApertureKey dictionary.  Used as applicable to current kVTPixelTransferPropertyKey_ScalingMode value.
 
 /*!
 	@constant	kVTPixelTransferPropertyKey_DestinationPixelAspectRatio
@@ -118,7 +118,7 @@ VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationCleanAperture
 		This property defaults to NULL, meaning 1:1 (for kVTScalingMode_CropSourceToCleanAperture) 
 		or no change in pixel aspect ratio (for kVTScalingMode_Letterbox and kVTScalingMode_Trim).
 */
-VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationPixelAspectRatio VT_AVAILABLE_STARTING(10_8); // Read/write, CFDictionary with same keys as used in kCVImageBufferPixelAspectRatioKey dictionary.  Used as applicable to current kVTPixelTransferPropertyKey_ScalingMode value.
+VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationPixelAspectRatio __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Read/write, CFDictionary with same keys as used in kCVImageBufferPixelAspectRatioKey dictionary.  Used as applicable to current kVTPixelTransferPropertyKey_ScalingMode value.
 
 // Properties for configuring up/down sampling
 
@@ -129,9 +129,9 @@ VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationPixelAspectRa
 	@discussion
 		This property is ignored if chroma downsampling is not performed.
 */
-VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DownsamplingMode VT_AVAILABLE_STARTING(10_8); // Read/write, CFStringRef, one of:
-VT_EXPORT const CFStringRef kVTDownsamplingMode_Decimate VT_AVAILABLE_STARTING(10_8); // Default, decimate extra samples
-VT_EXPORT const CFStringRef kVTDownsamplingMode_Average VT_AVAILABLE_STARTING(10_8); // Average missing samples (default center)
+VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DownsamplingMode __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Read/write, CFStringRef, one of:
+VT_EXPORT const CFStringRef kVTDownsamplingMode_Decimate __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Default, decimate extra samples
+VT_EXPORT const CFStringRef kVTDownsamplingMode_Average __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Average missing samples (default center)
 
 // Properties for color information
 
@@ -146,7 +146,7 @@ VT_EXPORT const CFStringRef kVTDownsamplingMode_Average VT_AVAILABLE_STARTING(10
 		matching operation may need to be performed between the source and
 		the destination.
 */
-VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationColorPrimaries VT_AVAILABLE_STARTING(10_8); // Read/write, CFString (see kCMFormatDescriptionExtension_ColorPrimaries), Optional
+VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationColorPrimaries __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Read/write, CFString (see kCMFormatDescriptionExtension_ColorPrimaries), Optional
 
 /*!
 	@constant	kVTPixelTransferPropertyKey_DestinationTransferFunction
@@ -157,7 +157,7 @@ VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationColorPrimarie
 		matching operation may need to be performed between the source and
 		the destination.
 */
-VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationTransferFunction VT_AVAILABLE_STARTING(10_8); // Read/write, CFString (see kCMFormatDescriptionExtension_TransferFunction), Optional
+VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationTransferFunction __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Read/write, CFString (see kCMFormatDescriptionExtension_TransferFunction), Optional
 
 /*!
 	@constant	kVTPixelTransferPropertyKey_DestinationICCProfile
@@ -168,7 +168,7 @@ VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationTransferFunct
 		matching operation may need to be performed between the source and
 		the destination.
 */
-VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationICCProfile VT_AVAILABLE_STARTING(10_8); // Read/write, CFData (see kCMFormatDescriptionExtension_ICCProfile), Optional
+VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationICCProfile __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Read/write, CFData (see kCMFormatDescriptionExtension_ICCProfile), Optional
 
 #endif // VT_SUPPORT_COLORSYNC_PIXEL_TRANSFER
     
@@ -182,7 +182,7 @@ VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationICCProfile VT
 		matching operation may need to be performed between the source and
 		the destination.
 */
-VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationYCbCrMatrix VT_AVAILABLE_STARTING(10_8); // Read/write, CFString (see kCMFormatDescriptionExtension_YCbCrMatrix), Optional
+VT_EXPORT const CFStringRef kVTPixelTransferPropertyKey_DestinationYCbCrMatrix __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_9_0); // Read/write, CFString (see kCMFormatDescriptionExtension_YCbCrMatrix), Optional
 
 	
 CM_ASSUME_NONNULL_END

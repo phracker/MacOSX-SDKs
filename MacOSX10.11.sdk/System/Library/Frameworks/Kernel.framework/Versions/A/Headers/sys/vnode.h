@@ -1365,6 +1365,7 @@ int	vfs_get_notify_attributes(struct vnode_attr *vap);
  */
 #define VNODE_LOOKUP_NOFOLLOW		0x01
 #define	VNODE_LOOKUP_NOCROSSMOUNT	0x02
+#define	VNODE_LOOKUP_CROSSMOUNTNOWAIT	0x04
 /*!
  @function vnode_lookup
  @abstract Convert a path into a vnode.

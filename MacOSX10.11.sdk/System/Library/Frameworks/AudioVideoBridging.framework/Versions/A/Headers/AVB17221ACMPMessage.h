@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class AVBMACAddress;
 
 /*!
@@ -96,7 +98,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	destinationMAC
 	@abstract	The dest_mac field of the ACMP message.
  */
-@property (copy) AVBMACAddress *destinationMAC;
+@property (copy, nullable) AVBMACAddress *destinationMAC;
 /*!
 	@property	connectionCount
 	@abstract	The connection_count field of the ACMP message.
@@ -122,6 +124,9 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	sourceMAC
 	@abstract	The source_mac field of the ACMP message.
  */
-@property (copy) AVBMACAddress *sourceMAC;
+@property (copy, nullable) AVBMACAddress *sourceMAC;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

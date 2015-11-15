@@ -5,6 +5,9 @@
 //  Copyright (c) 2003-2007 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABADDRESSBOOK__
+#define __ABADDRESSBOOK__
+
 #import <AddressBook/ABTypedefs.h>
 #import <AddressBook/ABGlobals.h>
 
@@ -168,3 +171,4 @@ extern NSString *ABMultiValueIdentifiersErrorKey AVAILABLE_MAC_OS_X_VERSION_10_7
 
 @end
 
+#endif // __ABADDRESSBOOK__

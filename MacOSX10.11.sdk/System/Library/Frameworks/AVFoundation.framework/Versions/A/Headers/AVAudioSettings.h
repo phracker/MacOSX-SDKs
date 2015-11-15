@@ -25,7 +25,7 @@ AVF_EXPORT NSString *const AVLinearPCMIsBigEndianKey;					/* value is a BOOL */
 AVF_EXPORT NSString *const AVLinearPCMIsFloatKey;						/* value is a BOOL */
 
 AVF_EXPORT NSString *const AVLinearPCMIsNonInterleaved                  NS_AVAILABLE(10_7, 4_0);   /* value is a BOOL */
-AVF_EXPORT NSString *const AVLinearPCMIsNonInterleavedKey               NS_AVAILABLE(10_7, 4_0);   /* value is a BOOL This is an alias of AVLinearPCMIsNonInterleaved. */
+#define AVLinearPCMIsNonInterleavedKey AVLinearPCMIsNonInterleaved
 
 /* encoder property keys */
 AVF_EXPORT NSString *const AVEncoderAudioQualityKey;					/* value is an integer from enum AVAudioQuality */

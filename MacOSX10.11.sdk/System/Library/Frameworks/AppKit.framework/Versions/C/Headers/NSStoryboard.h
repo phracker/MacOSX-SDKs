@@ -22,10 +22,10 @@ NS_CLASS_AVAILABLE_MAC(10_10)
 + (instancetype)storyboardWithName:(NSString *)name bundle:(nullable NSBundle *)storyboardBundleOrNil;
 
 /* Every storyboard may have an initial view or window controller. Each invocation of this method instantiates an instance of the initial controller. The developer chooses the initial controller in an inspector within Interface Builder. */
-- (id)instantiateInitialController;
+- (nullable id)instantiateInitialController;
 
 /* Controllers in Interface Builder have an optional identifier within the storyboard. That identifier is set from the inspector in Interface Builder. The identifiers are optional, meaning that the developer only has to assign an identifier to a controller if they want to be able to manually invoke this method from code. */
-- (nullable id)instantiateControllerWithIdentifier:(NSString *)identifier;
+- (id)instantiateControllerWithIdentifier:(NSString *)identifier;
 
 @end
 

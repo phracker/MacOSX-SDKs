@@ -213,7 +213,7 @@ CM_EXPORT OSStatus
 CMTimebaseCreateWithMasterClock( 
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMClockRef CM_NONNULL masterClock,
-		CMTimebaseRef CM_NULLABLE * CM_NONNULL timebaseOut )
+		CM_RETURNS_RETAINED_PARAMETER CMTimebaseRef CM_NULLABLE * CM_NONNULL timebaseOut )
 			__OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_6_0);
 
 /*!
@@ -226,7 +226,7 @@ CM_EXPORT OSStatus
 CMTimebaseCreateWithMasterTimebase( 
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMTimebaseRef CM_NONNULL masterTimebase,
-		CMTimebaseRef CM_NULLABLE * CM_NONNULL timebaseOut )
+		CM_RETURNS_RETAINED_PARAMETER CMTimebaseRef CM_NULLABLE * CM_NONNULL timebaseOut )
 			__OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_6_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED

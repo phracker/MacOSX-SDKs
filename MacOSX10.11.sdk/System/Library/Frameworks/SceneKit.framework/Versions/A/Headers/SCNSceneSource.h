@@ -226,7 +226,7 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
  @param url The URL to read scenes from.
  @param options An optional dictionary for future extensions. 
  */
-+ (instancetype)sceneSourceWithURL:(NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
++ (nullable instancetype)sceneSourceWithURL:(NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 
 /*!
  @method sceneSourceWithData:options:
@@ -234,7 +234,7 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
  @param data The scene data.
  @param options An optional dictionary for future extensions. 
  */
-+ (instancetype)sceneSourceWithData:(NSData *)data options:(nullable NSDictionary<NSString *, id> *)options;
++ (nullable instancetype)sceneSourceWithData:(NSData *)data options:(nullable NSDictionary<NSString *, id> *)options;
 
 /*!
  @method initWithURL:options:
@@ -242,7 +242,7 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
  @param url The URL to read scenes from.
  @param options An optional dictionary for future extensions. 
  */
-- (instancetype)initWithURL:(NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
+- (nullable instancetype)initWithURL:(NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 
 /*!
  @method initWithData:options:
@@ -250,7 +250,7 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
  @param data The data to read scenes from.
  @param options An optional dictionary for future extensions. 
  */
-- (instancetype)initWithData:(NSData *)data options:(nullable NSDictionary<NSString *, id> *)options;
+- (nullable instancetype)initWithData:(NSData *)data options:(nullable NSDictionary<NSString *, id> *)options;
 
 /*!
  @property url
@@ -301,7 +301,7 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
  @discussion Returns NULL if the receiver's library doesn't contains such an uid for the specified type.
  */
 #if defined(SWIFT_SDK_OVERLAY2_SCENEKIT_EPOCH) && SWIFT_SDK_OVERLAY2_SCENEKIT_EPOCH >= 1
-- (nullable id)entryWithIdentifier:(NSString *)uid withClass:(Class)entryClass NS_SWIFT_UNAVAILABLE("Exposed in Swift as: func entryWithIdentifier<T>(uid: String, withClass entryClass: T.Type) -> T?");
+- (nullable id)entryWithIdentifier:(NSString *)uid withClass:(Class)entryClass NS_REFINED_FOR_SWIFT;
 #else
 - (nullable id)entryWithIdentifier:(NSString *)uid withClass:(Class)entryClass;
 #endif

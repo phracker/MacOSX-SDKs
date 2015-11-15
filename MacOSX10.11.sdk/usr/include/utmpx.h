@@ -145,8 +145,8 @@ struct lastlogx *
 struct lastlogx *
 	getlastlogxbyname(const char*, struct lastlogx *)__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_2_0);
 struct utmp;	/* forward reference */
-void	getutmp(const struct utmpx *, struct utmp *) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5, __MAC_10_9, __IPHONE_2_0, __IPHONE_7_0);
-void	getutmpx(const struct utmp *, struct utmpx *) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5, __MAC_10_9, __IPHONE_2_0, __IPHONE_7_0);
+void	getutmp(const struct utmpx *, struct utmp *) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5, __MAC_10_9, __IPHONE_2_0, __IPHONE_7_0) __WATCHOS_PROHIBITED;
+void	getutmpx(const struct utmp *, struct utmpx *) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5, __MAC_10_9, __IPHONE_2_0, __IPHONE_7_0) __WATCHOS_PROHIBITED;
 #endif /* !_POSIX_C_SOURCE || _DARWIN_C_SOURCE */
 
 struct utmpx *

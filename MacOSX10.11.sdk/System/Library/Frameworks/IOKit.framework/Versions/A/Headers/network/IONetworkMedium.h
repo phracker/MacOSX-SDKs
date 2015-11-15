@@ -107,7 +107,9 @@ enum {
 	kIOMediumEthernet10GBaseSR    =  ( IFM_10G_SR  | IFM_ETHER ),
 	kIOMediumEthernet10GBaseLR    =  ( IFM_10G_LR  | IFM_ETHER ),
     kIOMediumEthernet10GBaseCX4   =  ( IFM_10G_CX4 | IFM_ETHER ),
-    kIOMediumEthernet10GBaseT     =  ( IFM_10G_T   | IFM_ETHER )
+    kIOMediumEthernet10GBaseT     =  ( IFM_10G_T   | IFM_ETHER ),
+    kIOMediumEthernet2500BaseT    =  ( IFM_2500_T  | IFM_ETHER ),
+    kIOMediumEthernet5000BaseT    =  ( IFM_5000_T  | IFM_ETHER )
 };
 
 // IEEE 802.11 Wireless.

@@ -30,6 +30,9 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
     @abstract Specifies a base 64 encoding
  */
@@ -95,16 +98,15 @@ extern const CFStringRef kSecCompressionRatio;
  */
 
 // See SecDecodeTransformCreate for decoding...
-	
+__nullable
 SecTransformRef SecEncodeTransformCreate(CFTypeRef encodeType,
 										 CFErrorRef* error
 										 )
 __OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
 	
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
-
-	
-	
 #ifdef __cplusplus
 }
 #endif

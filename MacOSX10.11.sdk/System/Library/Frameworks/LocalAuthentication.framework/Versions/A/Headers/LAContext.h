@@ -75,7 +75,7 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 ///              contains error information if policy evaluation is not possible.
 ///
 /// @return YES if the policy can be evaluated, NO otherwise.
-- (BOOL)canEvaluatePolicy:(LAPolicy)policy error:(NSError * __autoreleasing *)error;
+- (BOOL)canEvaluatePolicy:(LAPolicy)policy error:(NSError * __autoreleasing *)error __attribute__((swift_error(none)));
 
 /// Evaluates the specified policy.
 ///
@@ -139,9 +139,9 @@ typedef NS_ENUM(NSInteger, LACredentialType)
 {
     /// Password provided by application
     ///
-    /// @discussion If not set the LocalAuthentication will ask for the password when necessary. It will use
+    /// @discussion If not set, LocalAuthentication will ask for the password when necessary. It will use
     ///             its own user interface depending on the evaluated policy or ACL.
-    ///             Applications can provide the password using the setCredential code. In such case,
+    ///             Applications can provide the password using the setCredential method. In such case,
     ///             LocalAuthentication will not show password entry user interface.
     ///             When entered from the LocalAuthentication user interface, the password is stored as
     ///             UTF-8 encoded string.
@@ -200,8 +200,8 @@ typedef NS_ENUM(NSInteger, LAAccessControlOperation)
 ///             queue internal to the framework in an unspecified threading context. Other than that,
 ///             no guarantee is made about which queue, thread, or run-loop the block is executed on.
 ///
-///             Successfully evaluated access control can be used with keychain operations, so that
-///             they do not require user to authenticate.
+///             After successful access control evaluation, the LAContext can be used with keychain operations,
+///             so that they do not require user to authenticate.
 ///
 ///             Access control evaluation may fail for various reasons, including user cancel, system cancel
 ///             and others, see LAError codes.

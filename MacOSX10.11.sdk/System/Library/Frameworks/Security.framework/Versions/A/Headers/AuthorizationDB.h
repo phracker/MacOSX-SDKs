@@ -36,6 +36,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*!
 	@header AuthorizationDB
 	Version 1.0
@@ -107,7 +109,7 @@ extern "C" {
 
 */
 OSStatus AuthorizationRightGet(const char *rightName,
-	CFDictionaryRef *rightDefinition);
+	CFDictionaryRef * __nullable CF_RETURNS_RETAINED rightDefinition);
 
 /*!
 	@function AuthorizationRightSet
@@ -133,9 +135,9 @@ OSStatus AuthorizationRightGet(const char *rightName,
 OSStatus AuthorizationRightSet(AuthorizationRef authRef,
 	const char *rightName,
 	CFTypeRef rightDefinition,
-	CFStringRef descriptionKey,
-	CFBundleRef bundle,
-	CFStringRef localeTableName);
+	CFStringRef __nullable descriptionKey,
+	CFBundleRef __nullable bundle,
+	CFStringRef __nullable localeTableName);
 
 
 
@@ -151,6 +153,7 @@ OSStatus AuthorizationRightSet(AuthorizationRef authRef,
 OSStatus AuthorizationRightRemove(AuthorizationRef authRef,
 	const char *rightName);
 
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

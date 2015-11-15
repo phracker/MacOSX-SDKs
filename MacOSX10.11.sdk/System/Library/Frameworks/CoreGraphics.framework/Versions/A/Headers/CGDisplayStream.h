@@ -295,10 +295,10 @@ CG_EXTERN CGError CGDisplayStreamStop(CGDisplayStreamRef __nullable displayStrea
 CG_EXTERN CFRunLoopSourceRef __nullable CGDisplayStreamGetRunLoopSource(CGDisplayStreamRef __nullable displayStream)
     CG_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_NA);
 
+#endif /* __BLOCKS__ */
+
 CF_ASSUME_NONNULL_END
 
 CF_IMPLICIT_BRIDGING_DISABLED
-
-#endif /* __BLOCKS__ */
 
 #endif /* CGDISPLAYSTREAM_H_ */

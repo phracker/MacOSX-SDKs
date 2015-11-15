@@ -10,6 +10,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
+ * Maximum / minimum values for GKGameModel scoreForPlayer. Values must be within these ranges.
+ */
+#define GKGameModelMaxScore (1 << 24)
+#define GKGameModelMinScore (-(1 << 24))
+
+/**
  * A protocol used to encapsulate the data needed to affect an update to a game model. 
  * Typically represents an action or move performed by a player.
  */
@@ -34,7 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSInteger playerId;
 
 @end
-
 
 /**
  * A protocol for abstracting a game model for use with the GKMinmaxStrategist class. The minmax
@@ -80,13 +85,27 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)applyGameModelUpdate:(id<GKGameModelUpdate>)gameModelUpdate;
 
+@optional
+
 /**
- * Returns the score for the specified player. A higher value indicates a better position for 
- * the player than a lower value. These scores are used by GKMinmaxStrategist to determine which 
- * GKGameModelUpdate is the most advantageous for a given player. If the player is invalid, or 
+ * Returns the score for the specified player. A higher value indicates a better position for
+ * the player than a lower value. Required by GKMinmaxStrategist to determine which
+ * GKGameModelUpdate is the most advantageous for a given player. If the player is invalid, or
  * not a part of the game model, returns NSIntegerMin.
  */
 - (NSInteger)scoreForPlayer:(id<GKGameModelPlayer>)player;
+
+/**
+ * Returns YES if the specified player has reached a win state, NO if otherwise. Note that NO does not
+ * necessarily mean that the player has lost. Optionally used by GKMinmaxStrategist to improve move selection.
+ */
+- (BOOL)isWinForPlayer:(id<GKGameModelPlayer>)player;
+
+/**
+ * Returns YES if the specified player has reached a loss state, NO if otherwise. Note that NO does not
+ * necessarily mean that the player has won. Optionally used by GKMinmaxStrategist to improve move selection.
+ */
+- (BOOL)isLossForPlayer:(id<GKGameModelPlayer>)player;
 
 @end
 

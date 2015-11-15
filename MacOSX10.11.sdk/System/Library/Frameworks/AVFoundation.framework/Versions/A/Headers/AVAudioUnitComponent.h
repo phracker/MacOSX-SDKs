@@ -82,18 +82,18 @@ NS_CLASS_AVAILABLE(10_10, 9_0)
 @property (nonatomic, readonly) NSArray<NSNumber *>		*availableArchitectures NS_AVAILABLE(10_10, NA);
 
 /*! @property sandboxSafe
-	@abstract On OSX, TRUE if the AudioComponent can be loaded into a sandboxed process otherwise FALSE.
-			  On iOS, this is always TRUE.
+	@abstract On OSX, YES if the AudioComponent can be loaded into a sandboxed process otherwise NO.
+			  On iOS, this is always YES.
  */
 @property (nonatomic, readonly, getter=isSandboxSafe) BOOL		sandboxSafe;
 
 /*! @property hasMIDIInput
-	@abstract TRUE if AudioComponent has midi input, otherwise FALSE
+	@abstract YES if AudioComponent has midi input, otherwise NO
  */
 @property (nonatomic, readonly) BOOL		hasMIDIInput;
 
 /*! @property hasMIDIOutput
-	@abstract TRUE if AudioComponent has midi output, otherwise FALSE
+	@abstract YES if AudioComponent has midi output, otherwise NO
  */
 @property (nonatomic, readonly) BOOL		hasMIDIOutput;
 
@@ -123,13 +123,25 @@ NS_CLASS_AVAILABLE(10_10, 9_0)
  */
 @property (nonatomic, readonly, nullable) NSURL		*iconURL NS_AVAILABLE(10_10, NA);
 
+#if !TARGET_OS_IPHONE
+/*! @property icon
+	@abstract An icon representing the component.
+    @discussion
+        For a component originating in an app extension, the returned icon will be that of the
+        application containing the extension.
+        
+        For components loaded from bundles, the icon will be that of the bundle.
+ */
+@property (nonatomic, readonly, nullable) NSImage *icon NS_AVAILABLE(10_11, NA);
+#endif
+
 /*! @property passesAUVal
-	@abstract TRUE if the AudioComponent has passed the AU validation tests, otherwise FALSE
+	@abstract YES if the AudioComponent has passed the AU validation tests, otherwise NO
  */
 @property (nonatomic, readonly) BOOL		passesAUVal NS_AVAILABLE(10_10, NA);
 
 /*! @property hasCustomView
-	@abstract TRUE if the AudioComponent provides custom view, otherwise FALSE
+	@abstract YES if the AudioComponent provides custom view, otherwise NO
  */
 @property (nonatomic, readonly) BOOL		hasCustomView NS_AVAILABLE(10_10, NA);
 
@@ -140,10 +152,9 @@ NS_CLASS_AVAILABLE(10_10, 9_0)
 @property (nonatomic, readonly) NSDictionary<NSString *, id>		*configurationDictionary NS_AVAILABLE(10_10, NA);
 
 /*! @property supportsNumberInputChannels: outputChannels:
-	@abstract returns TRUE if the AudioComponent supports the input/output channel configuration
+	@abstract returns YES if the AudioComponent supports the input/output channel configuration
  */
 - (BOOL)supportsNumberInputChannels:(NSInteger)numInputChannels outputChannels:(NSInteger)numOutputChannels NS_AVAILABLE(10_10, NA);
-
 
 @end
 

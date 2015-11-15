@@ -40,19 +40,21 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*
  * Opaque reference to a CMS decoder object. 
  * This is a CF object, with standard CF semantics; dispose of it
  * with CFRelease().
  */
-typedef struct _CMSDecoder *CMSDecoderRef;
+typedef struct CF_BRIDGED_TYPE(id) _CMSDecoder *CMSDecoderRef;
 
 CFTypeID CMSDecoderGetTypeID(void);
 
 /*
  * Status of signature and signer information in a signed message.
  */
-enum {
+typedef CF_ENUM(uint32_t, CMSSignerStatus) {
 	kCMSSignerUnsigned = 0,				/* message was not signed */
 	kCMSSignerValid,					/* message was signed and signature verify OK */
 	kCMSSignerNeedsDetachedContent,		/* message was signed but needs detached content 
@@ -62,13 +64,12 @@ enum {
 										 *   the signer's certificate */
 	kCMSSignerInvalidIndex				/* specified signer index out of range */
 };
-typedef uint32_t CMSSignerStatus;
 
 /*
  * Create a CMSDecoder. Result must eventually be freed via CFRelease().
  */
 OSStatus CMSDecoderCreate(
-	CMSDecoderRef		*cmsDecoderOut)	/* RETURNED */
+	CMSDecoderRef * __nonnull CF_RETURNS_RETAINED cmsDecoderOut)	/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /* 
@@ -116,7 +117,7 @@ OSStatus CMSDecoderSetDetachedContent(
  */
 OSStatus CMSDecoderCopyDetachedContent(
 	CMSDecoderRef		cmsDecoder,
-	CFDataRef			*detachedContentOut)	/* RETURNED */
+	CFDataRef * __nonnull CF_RETURNS_RETAINED detachedContentOut)	/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -217,13 +218,13 @@ OSStatus CMSDecoderGetNumSigners(
  *		the time of	verification.
  */
 OSStatus CMSDecoderCopySignerStatus(
-	CMSDecoderRef		cmsDecoder,
-	size_t				signerIndex,
-	CFTypeRef			policyOrArray,
-	Boolean				evaluateSecTrust,
-	CMSSignerStatus		*signerStatusOut,			/* optional; RETURNED */
-	SecTrustRef			*secTrustOut,				/* optional; RETURNED */
-	OSStatus			*certVerifyResultCodeOut)	/* optional; RETURNED */
+	CMSDecoderRef               cmsDecoder,
+	size_t                      signerIndex,
+	CFTypeRef                   policyOrArray,
+	Boolean                     evaluateSecTrust,
+	CMSSignerStatus * __nullable signerStatusOut,               /* optional; RETURNED */
+	SecTrustRef * __nullable CF_RETURNS_RETAINED secTrustOut,   /* optional; RETURNED */
+    OSStatus * __nullable certVerifyResultCodeOut)              /* optional; RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -238,7 +239,7 @@ OSStatus CMSDecoderCopySignerStatus(
 OSStatus CMSDecoderCopySignerEmailAddress(
 	CMSDecoderRef		cmsDecoder,
 	size_t				signerIndex,
-	CFStringRef			*signerEmailAddressOut)	/* RETURNED */
+	CFStringRef	* __nonnull CF_RETURNS_RETAINED signerEmailAddressOut)	/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -253,7 +254,7 @@ OSStatus CMSDecoderCopySignerEmailAddress(
 OSStatus CMSDecoderCopySignerCert(
 	CMSDecoderRef		cmsDecoder,
 	size_t				signerIndex,
-	SecCertificateRef	*signerCertOut)			/* RETURNED */
+	SecCertificateRef * __nonnull CF_RETURNS_RETAINED signerCertOut)    /* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /* 
@@ -277,7 +278,7 @@ OSStatus CMSDecoderIsContentEncrypted(
  */
 OSStatus CMSDecoderCopyEncapsulatedContentType(
 	CMSDecoderRef		cmsDecoder,
-	CFDataRef			*eContentTypeOut)		/* RETURNED */
+	CFDataRef * __nonnull CF_RETURNS_RETAINED eContentTypeOut)  /* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -290,7 +291,7 @@ OSStatus CMSDecoderCopyEncapsulatedContentType(
  */
 OSStatus CMSDecoderCopyAllCerts(
 	CMSDecoderRef		cmsDecoder,
-	CFArrayRef			*certsOut)				/* RETURNED */
+	CFArrayRef * __nonnull CF_RETURNS_RETAINED certsOut)    /* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -301,7 +302,7 @@ OSStatus CMSDecoderCopyAllCerts(
  */
 OSStatus CMSDecoderCopyContent(
 	CMSDecoderRef		cmsDecoder,
-	CFDataRef			*contentOut)			/* RETURNED */
+	CFDataRef * __nonnull CF_RETURNS_RETAINED contentOut)	/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*
@@ -348,7 +349,7 @@ OSStatus CMSDecoderCopySignerTimestamp(
      */
 OSStatus CMSDecoderCopySignerTimestampWithPolicy(
                                                     CMSDecoderRef		cmsDecoder,
-                                                    CFTypeRef           timeStampPolicy,
+                                                    CFTypeRef __nullable timeStampPolicy,
                                                     size_t				signerIndex,        /* usually 0 */
                                                     CFAbsoluteTime      *timestamp)			/* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_NA);
@@ -367,9 +368,11 @@ OSStatus CMSDecoderCopySignerTimestampWithPolicy(
  */
 OSStatus CMSDecoderCopySignerTimestampCertificates(
 	CMSDecoderRef		cmsDecoder,
-	size_t				signerIndex,            /* usually 0 */
-	CFArrayRef          *certificateRefs)       /* RETURNED */
+	size_t				signerIndex,                            /* usually 0 */
+	CFArrayRef * __nonnull CF_RETURNS_RETAINED certificateRefs) /* RETURNED */
     __OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_NA);
+
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

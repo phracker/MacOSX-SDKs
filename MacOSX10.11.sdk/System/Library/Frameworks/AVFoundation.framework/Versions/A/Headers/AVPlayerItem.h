@@ -31,11 +31,7 @@
 #import <CoreMedia/CMTime.h>
 #import <CoreMedia/CMTimeRange.h>
 #import <CoreMedia/CMSync.h>
-#if TARGET_OS_IPHONE
 #import <CoreGraphics/CGGeometry.h>
-#else // ! TARGET_OS_IPHONE
-#import <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGGeometry.h>
-#endif  // ! TARGET_OS_IPHONE
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -396,7 +392,7 @@ AV_INIT_UNAVAILABLE
 	@abstract	If currentTime is mapped to a particular (real-time) date, return that date.
 	@result		Returns the date of current playback, or nil if playback is not mapped to any date.
 */
-- (NSDate*)currentDate;
+- (nullable NSDate *)currentDate;
 
 /*!
  @method		seekToDate
@@ -551,6 +547,16 @@ AV_INIT_UNAVAILABLE
 
 /* indicates that playback has consumed all buffered media and that playback will stall or end */
 @property (nonatomic, readonly, getter=isPlaybackBufferEmpty) BOOL playbackBufferEmpty;
+
+/*!
+ @property canUseNetworkResourcesForLiveStreamingWhilePaused
+ @abstract Indicates whether the player item can use network resources to keep playback state up to date while paused
+ @discussion
+	For live streaming content, the player item may need to use extra networking and power resources to keep playback state up to date when paused.  For example, when this property is set to YES, the seekableTimeRanges property will be periodically updated to reflect the current state of the live stream.
+ 
+	For clients linked on or after OS X 10.11 or iOS 9.0, the default value is NO.  To minimize power usage, avoid setting this property to YES when you do not need playback state to stay up to date while paused.
+ */
+@property (nonatomic, assign) BOOL canUseNetworkResourcesForLiveStreamingWhilePaused NS_AVAILABLE(10_11, 9_0);
 
 @end
 

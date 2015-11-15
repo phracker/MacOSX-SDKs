@@ -30,6 +30,9 @@ extern "C" {
 
 #include <Security/SecTransform.h>
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
 	@header
 
@@ -57,6 +60,9 @@ extern "C" {
 
 SecTransformRef SecTransformCreateReadTransformWithReadStream(CFReadStreamRef inputStream)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 };

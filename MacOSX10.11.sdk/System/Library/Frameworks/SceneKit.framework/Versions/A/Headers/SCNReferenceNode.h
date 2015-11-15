@@ -12,8 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
  When the load policy is set to SCNReferenceLoadingPolicyOnDemand the reference is never loaded until "load" is explicitly invoked.
  */
 typedef NS_ENUM(NSInteger, SCNReferenceLoadingPolicy) {
-    SCNReferenceLoadingPolicyImmediate   = 0,
-    SCNReferenceLoadingPolicyOnDemand    = 1,
+    SCNReferenceLoadingPolicyImmediate = 0,
+    SCNReferenceLoadingPolicyOnDemand  = 1
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
 /*!
@@ -27,19 +27,19 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  @method initWithURL:
  @abstract Creates a reference node with a url.
  */
-- (instancetype)initWithURL:(NSURL *)referenceURL NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithURL:(NSURL *)referenceURL NS_DESIGNATED_INITIALIZER;
 
 /*!
  @method initWithCoder:
  @abstract Support coding and decoding via NSKeyedArchiver.
  */
-- (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
 
 /*!
  @method referenceNodeWithURL:
  @abstract Creates a reference node with a url.
  */
-+ (instancetype)referenceNodeWithURL:(NSURL *)referenceURL;
++ (nullable instancetype)referenceNodeWithURL:(NSURL *)referenceURL;
 
 /*!
  @property referenceURL

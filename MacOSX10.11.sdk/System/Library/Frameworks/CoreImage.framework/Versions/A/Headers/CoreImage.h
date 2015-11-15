@@ -22,10 +22,10 @@
 #import <CoreImage/CIImageAccumulator.h>
 #import <CoreImage/CIFilterConstructor.h>
 #import <CoreImage/CIFilterShape.h>
+#import <CoreImage/CISampler.h>
 #if !TARGET_OS_IPHONE
 #import <CoreImage/CIFilterGenerator.h>
 #import <CoreImage/CIPlugIn.h>
-#import <CoreImage/CISampler.h>
 #import <CoreImage/CIRAWFilter.h>
 #endif
 

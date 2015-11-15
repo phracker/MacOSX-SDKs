@@ -172,7 +172,7 @@ typedef struct __CFlags {
 - (instancetype)initTextCell:(NSString *)aString;
 - (instancetype)initImageCell:(nullable NSImage *)image;
 
-@property (nullable, assign) NSView *controlView;
+@property (nullable, assign) NSView *controlView; // Must be an NSControl subclass, non-control view subclasses not allowed!
 @property NSCellType type;
 @property NSInteger state;
 @property (nullable, weak) id target; // Target is weak for zeroing-weak compatible objects in apps linked on 10.10 or later. Otherwise the behavior of this property is 'assign'.

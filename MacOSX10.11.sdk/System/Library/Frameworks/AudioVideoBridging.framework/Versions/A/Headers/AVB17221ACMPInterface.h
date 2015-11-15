@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class AVB17221ACMPMessage;
 @class AVB17221ACMPInterface;
 
@@ -14,7 +16,7 @@
 	@typedef	AVB17221ACMPInterfaceCompletion:
 	@abstract	The prototype for the completion handler block for command messages.
  */
-typedef void (^AVB17221ACMPInterfaceCompletion)(NSError *error, AVB17221ACMPMessage *);
+typedef void (^AVB17221ACMPInterfaceCompletion)(NSError * __nullable error, AVB17221ACMPMessage *message);
 
 @class AVBInterface;
 @class AVBMACAddress;
@@ -59,17 +61,10 @@ typedef void (^AVB17221ACMPInterfaceCompletion)(NSError *error, AVB17221ACMPMess
 NS_CLASS_AVAILABLE(10_8, NA)
 @interface AVB17221ACMPInterface : AVB1722ControlInterface
 {
-	@private
-	NSMutableDictionary *commandHandlers;
-	
-	uint16_t nextSequenceID;
-	
-	AVBMACAddress *multicastDestinationAddress;
-	
-	BOOL _monitorMode;
-	id<AVB17221ACMPClient> _monitorModeDelegate;
-	
-	NSMutableArray *pendingResponses;
+#if AVB_LEGACY_OBJC_RUNTIME
+@private
+	void *_implACMPInterface;
+#endif
 }
 
 /*!
@@ -77,7 +72,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@abstract	An AVBMACAddress of the multicast destination MAC address being used for all ACMP messages on the interface.
 	@discussion	The MAC Address pointed to by the property is pre-initialized with the IEEE Std 1722.1™-2013 standard value, 91:e0:f0:01:00:00
  */
-@property (copy) AVBMACAddress *multicastDestinationAddress;
+@property (readonly, copy) AVBMACAddress *multicastDestinationAddress;
 
 /*!
 	@method		AVB17221ACMPInterfaceWithInterface:
@@ -145,3 +140,5 @@ NS_CLASS_AVAILABLE(10_8, NA)
 - (BOOL)sendACMPCommandMessage:(AVB17221ACMPMessage *)message completionHandler:(AVB17221ACMPInterfaceCompletion)completionHandler;
 
 @end
+
+NS_ASSUME_NONNULL_END

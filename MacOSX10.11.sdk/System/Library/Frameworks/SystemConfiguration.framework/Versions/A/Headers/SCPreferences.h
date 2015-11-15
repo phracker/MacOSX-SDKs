@@ -108,7 +108,7 @@ typedef CF_OPTIONS(uint32_t, SCPreferencesNotification) {
  */
 typedef struct {
 	CFIndex		version;
-	void *		info;
+	void *		__nullable info;
 	const void	* __nonnull (* __nullable retain)(const void *info);
 	void		(* __nullable release)(const void *info);
 	CFStringRef	__nonnull (* __nullable copyDescription)(const void *info);
@@ -124,9 +124,9 @@ typedef struct {
 	@param info A C pointer to a user-specified block of data.
  */
 typedef void (*SCPreferencesCallBack)   (
-					SCPreferencesRef		prefs,
-					SCPreferencesNotification	notificationType,
-					void				*info
+					SCPreferencesRef				prefs,
+					SCPreferencesNotification			notificationType,
+					void			     *	__nullable	info
 					);
 
 

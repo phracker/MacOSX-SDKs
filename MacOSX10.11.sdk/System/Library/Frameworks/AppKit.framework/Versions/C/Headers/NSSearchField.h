@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, assign) id<NSSearchFieldDelegate> delegate NS_AVAILABLE_MAC(10_11);
 
-/* Defaults to YES. When set, the search field's components are centered within the control if the field is empty and does not have focus. When receiving focus, given the field is empty, the centered objects will animate to the edges of the control. When this property is set to NO, the components are always at the edge. When YES, the configuration requires wantsLayer to also be YES. When NO, wantsLayer should be NO for standard appearance but can be YES for custom drawing.
+/* Defaults to YES. When set, the search field's components are centered within the control if the field is empty and does not have focus. When receiving focus, given the field is empty, the centered objects will animate to the edges of the control. When this property is set to NO, the components are always at the edge. When set ot YES, wantsLayer is also set to YES.
 */
 @property BOOL centersPlaceholder NS_AVAILABLE_MAC(10_11);
 

@@ -116,6 +116,23 @@ extern CFStringRef kAXAutocorrectedTextAttribute	AVAILABLE_MAC_OS_X_VERSION_10_7
 
 
 
+/*! @constant kAXListItemPrefixTextAttribute
+      @abstract A <code>CFAttributedStringRef</code> value that indicates the prepended string of the list item. If the string is a common unicode character (e.g. a bullet ¥), return that unicode character. For lists with images before the text, return a reasonable label of the image.
+ */
+extern CFStringRef kAXListItemPrefixTextAttribute	AVAILABLE_MAC_OS_X_VERSION_10_11_AND_LATER;
+
+/*! @constant kAXListItemIndexTextAttribute
+      @abstract A <code>CFNumberRef</code> value that indicates the line index. Each list item increments the index, even for unordered lists. The first item should have index 0.
+ */
+extern CFStringRef kAXListItemIndexTextAttribute	AVAILABLE_MAC_OS_X_VERSION_10_11_AND_LATER;
+
+/*! @constant kAXListItemLevelTextAttribute
+      @abstract A <code>CFNumberRef</code> value that indicates the indent level. Each sublist increments the level. The first item should have level 0.
+ */
+extern CFStringRef kAXListItemLevelTextAttribute	AVAILABLE_MAC_OS_X_VERSION_10_11_AND_LATER;
+
+
+
 /*! @group Font Text Attribute Keys
     @discussion
         Used with {@link kAXFontTextAttribute}.

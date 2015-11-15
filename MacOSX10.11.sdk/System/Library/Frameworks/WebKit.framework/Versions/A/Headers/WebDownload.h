@@ -26,17 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// We explicitly use __has_include() instead of the macro define USE_APPLE_INTERNAL_SDK as
-// the condition for including the header Foundation/NSURLDownload.h to support internal Apple
-// clients that build without header wtf/Platform.h. See <rdar://problem/19034131>.
-#if __has_include(<Foundation/NSURLDownload.h>)
 #import <Foundation/NSURLDownload.h>
-#else
-@interface NSURLDownload : NSObject
-@end
-
-@protocol NSURLDownloadDelegate;
-#endif
 
 @class WebDownloadInternal;
 
@@ -67,12 +57,6 @@
 @protocol WebDownloadDelegate <NSURLDownloadDelegate>
 
 @optional
-
-#ifndef WK_ENABLE_FORMAL_DELEGATE_PROTOCOLS
-@end
-
-@interface NSObject (WebDownloadDelegate)
-#endif
 
 /*!
     @method downloadWindowForAuthenticationSheet:

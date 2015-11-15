@@ -1,7 +1,7 @@
 /*
     NSCollectionViewTransitionLayout.h
     Application Kit
-    Copyright (c) 2012-2015, Apple Inc.
+    Copyright (c) 2015, Apple Inc.
     All rights reserved.
 */
 

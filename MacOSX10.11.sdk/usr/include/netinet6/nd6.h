@@ -99,7 +99,6 @@ struct nd_ifinfo {
 	u_int8_t randomid[8];	/* current random ID */
 };
 
-
 #define	ND6_IFF_PERFORMNUD		0x1
 #define	ND6_IFF_PROXY_PREFIXES		0x20
 #define	ND6_IFF_IGNORE_NA		0x40

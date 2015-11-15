@@ -7,7 +7,7 @@
 #import <stdarg.h>
 #import <setjmp.h>
 
-@class NSString, NSDictionary, NSArray<ObjectType>, NSNUmber;
+@class NSString, NSDictionary, NSArray<ObjectType>, NSNumber;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -119,8 +119,10 @@ FOUNDATION_EXPORT void NSSetUncaughtExceptionHandler(NSUncaughtExceptionHandler 
 	if (!(condition)) {		\
             NSString *__assert_fn__ = [NSString stringWithUTF8String:__PRETTY_FUNCTION__]; \
             __assert_fn__ = __assert_fn__ ? __assert_fn__ : @"<Unknown Function>"; \
+            NSString *__assert_file__ = [NSString stringWithUTF8String:__FILE__]; \
+            __assert_file__ = __assert_file__ ? __assert_file__ : @"<Unknown File>"; \
 	    [[NSAssertionHandler currentHandler] handleFailureInFunction:__assert_fn__ \
-		file:[NSString stringWithUTF8String:__FILE__] \
+		file:__assert_file__ \
 	    	lineNumber:__LINE__ description:(desc), ##__VA_ARGS__]; \
 	}				\
         __PRAGMA_POP_NO_EXTRA_ARG_WARNINGS \
@@ -167,7 +169,9 @@ FOUNDATION_EXPORT void NSSetUncaughtExceptionHandler(NSUncaughtExceptionHandler 
     do {						\
 	__PRAGMA_PUSH_NO_EXTRA_ARG_WARNINGS \
 	if (!(condition)) {				\
-	    [[NSAssertionHandler currentHandler] handleFailureInMethod:_cmd object:self file:[NSString stringWithUTF8String:__FILE__] \
+            NSString *__assert_file__ = [NSString stringWithUTF8String:__FILE__]; \
+            __assert_file__ = __assert_file__ ? __assert_file__ : @"<Unknown File>"; \
+	    [[NSAssertionHandler currentHandler] handleFailureInMethod:_cmd object:self file:__assert_file__ \
 	    	lineNumber:__LINE__ description:(desc), (arg1), (arg2), (arg3), (arg4), (arg5)];	\
 	}						\
         __PRAGMA_POP_NO_EXTRA_ARG_WARNINGS \
@@ -178,7 +182,11 @@ FOUNDATION_EXPORT void NSSetUncaughtExceptionHandler(NSUncaughtExceptionHandler 
     do {						\
 	__PRAGMA_PUSH_NO_EXTRA_ARG_WARNINGS \
 	if (!(condition)) {				\
-	    [[NSAssertionHandler currentHandler] handleFailureInFunction:[NSString stringWithUTF8String:__PRETTY_FUNCTION__] file:[NSString stringWithUTF8String:__FILE__] \
+            NSString *__assert_fn__ = [NSString stringWithUTF8String:__PRETTY_FUNCTION__]; \
+            __assert_fn__ = __assert_fn__ ? __assert_fn__ : @"<Unknown Function>"; \
+            NSString *__assert_file__ = [NSString stringWithUTF8String:__FILE__]; \
+            __assert_file__ = __assert_file__ ? __assert_file__ : @"<Unknown File>"; \
+	    [[NSAssertionHandler currentHandler] handleFailureInFunction:__assert_fn__ file:__assert_file__ \
 	    	lineNumber:__LINE__ description:(desc), (arg1), (arg2), (arg3), (arg4), (arg5)];	\
 	}						\
         __PRAGMA_POP_NO_EXTRA_ARG_WARNINGS \

@@ -47,7 +47,6 @@
 .Op Fl b Ar bcc-addr
 .Op Fl F
 .Ar to-addr ...
-.Op Fl Ar sendmail-option ...
 .Nm
 .Op Fl EHiInNv
 .Op Fl F
@@ -133,12 +132,14 @@ list of users.
 The
 .Ar bcc-addr
 argument should be a comma-separated list of names.
-.It Fl f Op Ar mbox
-Read in the contents of your
-.Pa mbox
-(or the specified file)
-for processing; when you
-.Ic quit ,
+.It Fl f
+Use an alternate mailbox.
+Defaults to the user's
+.Ar mbox
+if no
+.Ar file
+is specified.
+When quit,
 .Nm
 writes undeleted messages back to this file.
 .It Fl F
@@ -325,6 +326,47 @@ are not expanded when the mail is sent,
 but any reply returned to the machine will have the system wide
 alias expanded as all mail goes through
 .Xr sendmail 8 .
+.Ss Recipient address specifications
+Recipient addresses (any of the
+.Dq To ,
+.Dq Cc
+or
+.Dq Bcc
+header fields) are subject to expansion when the
+.Ic expandaddr
+option is set.
+.Pp
+An address may be expanded as follows:
+.Bl -bullet -width Ds
+.It
+An address that starts with a pipe
+.Pq Ql |
+character is treated as a command to run.
+The command immediately following the
+.Ql |
+is executed with the message as its standard input.
+.It
+An address that starts with a
+.Ql +
+character is treated as a folder.
+.It
+An address that contains a
+.Ql /
+character but no
+.Ql \&! ,
+.Ql % ,
+or
+.Ql @
+characters is also treated as a folder.
+.It
+If none of the above apply, the recipient is treated as
+a local or network mail address.
+.El
+.Pp
+If the
+.Ic expandaddr
+option is not set (the default), no expansion is performed and
+the recipient is treated as a local or network mail address.
 .Ss "Network Mail (ARPA, UUCP, Berknet)"
 See
 .Xr mailaddr 7
@@ -993,6 +1035,11 @@ If defined, the first character of this option gives the character to
 use in place of
 .Ql ~
 to denote escapes.
+.It Va expandaddr
+Causes
+.Nm mail
+to expand message recipient addresses, as explained in the section
+.Sx Recipient address specifications .
 .It Va flipr
 Reverses the sense of
 .Ic reply
@@ -1253,10 +1300,6 @@ This man page is derived from
 originally written by
 .An Kurt Shoens .
 .Sh BUGS
-There are some flags that are not documented here.
-Most are
-not useful to the general user.
-.Pp
 Usually,
 .Nm
 is just a link to

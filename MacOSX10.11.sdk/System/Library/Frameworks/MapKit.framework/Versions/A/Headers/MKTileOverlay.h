@@ -42,7 +42,7 @@ typedef struct {
 
 - (NSURL *)URLForTilePath:(MKTileOverlayPath)path; // default implementation fills out the URLTemplate
 
-// Load the requested tile and call the callback block with the tile data or with an error if the tile could not be loaded. The default implementation first uses -URLForTilePath to get a URL and then it loads it asynchronously via NSURLConnection.
+// Load the requested tile and call the callback block with the tile data or with an error if the tile could not be loaded. The default implementation first uses -URLForTilePath to get a URL and then it loads it asynchronously.
 - (void)loadTileAtPath:(MKTileOverlayPath)path result:(void (^)(NSData * __nullable tileData, NSError * __nullable error))result;
 
 @end

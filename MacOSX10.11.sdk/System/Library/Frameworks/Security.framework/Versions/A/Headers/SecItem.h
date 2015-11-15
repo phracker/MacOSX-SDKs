@@ -39,6 +39,9 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
 	 @enum Class Key Constant
 	 @discussion Predefined key constant used to get or set item class values in
@@ -1063,7 +1066,7 @@ extern const CFStringRef kSecUseAuthenticationUISkip
 	 whose value is kCFBooleanTrue. The objects in the provided array must be
 	 of the same type.
 */
-OSStatus SecItemCopyMatching(CFDictionaryRef query, CFTypeRef *result)
+OSStatus SecItemCopyMatching(CFDictionaryRef query, CFTypeRef * __nullable CF_RETURNS_RETAINED result)
 	__OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_2_0);
 
 /*!
@@ -1102,7 +1105,7 @@ OSStatus SecItemCopyMatching(CFDictionaryRef query, CFTypeRef *result)
 	 * If more than one of these result types is specified, the result is
 	 returned as a CFDictionaryRef containing all the requested data.
 */
-OSStatus SecItemAdd(CFDictionaryRef attributes, CFTypeRef *result)
+OSStatus SecItemAdd(CFDictionaryRef attributes, CFTypeRef * __nullable CF_RETURNS_RETAINED result)
 	__OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_2_0);
 
 /*!
@@ -1149,6 +1152,9 @@ OSStatus SecItemUpdate(CFDictionaryRef query, CFDictionaryRef attributesToUpdate
 */
 OSStatus SecItemDelete(CFDictionaryRef query)
 	__OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_2_0);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

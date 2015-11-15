@@ -436,11 +436,11 @@ struct BluetoothL2CAPQualityOfServiceOptions
 {
 	uint8_t		flags;
 	uint8_t		serviceType;
-	uint32_t		tokenRate;
-	uint32_t		tokenBucketSize;
-	uint32_t		peakBandwidth;
-	uint32_t		latency;
-	uint32_t		delayVariation;
+	uint32_t	tokenRate;
+	uint32_t	tokenBucketSize;
+	uint32_t	peakBandwidth;
+	uint32_t	latency;
+	uint32_t	delayVariation;
 };
 
 typedef struct BluetoothL2CAPRetransmissionAndFlowControlOptions BluetoothL2CAPRetransmissionAndFlowControlOptions;
@@ -449,9 +449,9 @@ struct BluetoothL2CAPRetransmissionAndFlowControlOptions
 	uint8_t		flags;
 	uint8_t		txWindowSize;
 	uint8_t		maxTransmit;
-	uint16_t		retransmissionTimeout;
-	uint16_t		monitorTimeout;
-	uint16_t		maxPDUPayloadSize;
+	uint16_t	retransmissionTimeout;
+	uint16_t	monitorTimeout;
+	uint16_t	maxPDUPayloadSize;
 };
 
 enum
@@ -466,9 +466,9 @@ enum
 	kBluetoothL2CAPPacketHeaderSize = 4
 };
 
-typedef uint16_t		BluetoothL2CAPByteCount;
+typedef uint16_t	BluetoothL2CAPByteCount;
 typedef uint8_t		BluetoothL2CAPCommandID;
-typedef uint16_t		BluetoothL2CAPCommandByteCount;
+typedef uint16_t	BluetoothL2CAPCommandByteCount;
 
 typedef enum
 {
@@ -588,6 +588,7 @@ enum BluetoothLESecurityManagerKeyDistributionFormat
 	kBluetoothLESecurityManagerEncryptionKey			= (1 << 0L), // LTK, EDIV, RAND
 	kBluetoothLESecurityManagerIDKey					= (1 << 1L), // IRK 
 	kBluetoothLESecurityManagerSignKey					= (1 << 2L), // CSRK
+    kBluetoothLESecurityManagerLinkKey					= (1 << 3L), // LinkKey
 };				
 		
 typedef enum
@@ -1018,8 +1019,9 @@ enum
 		kBluetoothHCICommandAMPTestEnd									= 0x0008,
 		kBluetoothHCICommandAMPTest										= 0x0009,
 
+	// Command Group: Low Energy
 	
-	kBluetoothHCICommandGroupLowEnergy									= 0x08,
+	kBluetoothHCICommandGroupLowEnergy										= 0x08,
 		kBluetoothHCICommandLESetEventMask									= 0x0001,
 		kBluetoothHCICommandLEReadBufferSize								= 0x0002,
 		kBluetoothHCICommandLEReadLocalSupportedFeatures					= 0x0003,
@@ -1472,6 +1474,18 @@ struct BluetoothHCICurrentInquiryAccessCodes
 	BluetoothHCIInquiryAccessCode *		codes;	// Ptr to array of codes.
 };
 
+enum
+{
+	kMaximumNumberOfInquiryAccessCodes	= 0x40
+};
+		
+typedef struct	BluetoothHCICurrentInquiryAccessCodesForWrite	BluetoothHCICurrentInquiryAccessCodesForWrite;
+struct BluetoothHCICurrentInquiryAccessCodesForWrite
+{
+	BluetoothHCIInquiryAccessCodeCount	count;			// Number of codes in array (Range 0x01 to 0x40)
+	uint8_t 							codes [kMaximumNumberOfInquiryAccessCodes * sizeof (BluetoothHCIInquiryAccessCode)];	// Array of bytes (maximum 192 bytes -- 64 * 3).
+};
+		
 typedef	struct BluetoothHCILinkSupervisionTimeout	BluetoothHCILinkSupervisionTimeout;
 struct BluetoothHCILinkSupervisionTimeout
 {

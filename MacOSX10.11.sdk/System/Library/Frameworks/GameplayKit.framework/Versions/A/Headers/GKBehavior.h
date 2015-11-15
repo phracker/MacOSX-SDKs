@@ -71,7 +71,6 @@ GK_BASE_AVAILABILITY @interface GKBehavior : NSObject<NSFastEnumeration>
  * Supports getting goals via a [int] subscript.
  */
 - (GKGoal *)objectAtIndexedSubscript:(NSUInteger)idx;
-
 /**
  * Supports setting a weight via a [goal] subscript.
  */

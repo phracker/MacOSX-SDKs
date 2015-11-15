@@ -79,7 +79,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 @property (readonly, copy, nullable, NS_NONATOMIC_IOSONLY) NSData *imageData;
 @property (readonly, copy, nullable, NS_NONATOMIC_IOSONLY) NSData *thumbnailImageData;
-@property (readonly, assign, NS_NONATOMIC_IOSONLY) BOOL imageDataAvailable NS_AVAILABLE(NA, 9_0);
+@property (readonly, NS_NONATOMIC_IOSONLY) BOOL imageDataAvailable NS_AVAILABLE(NA, 9_0);
 
 @property (readonly, copy, NS_NONATOMIC_IOSONLY) NSArray<CNLabeledValue<CNPhoneNumber*>*>             *phoneNumbers;
 @property (readonly, copy, NS_NONATOMIC_IOSONLY) NSArray<CNLabeledValue<NSString*>*>                  *emailAddresses;
@@ -122,6 +122,10 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 /*! Use to fetch all contact keys required for the contact sort comparator. */
 + (id<CNKeyDescriptor>)descriptorForAllComparatorKeys;
 
+
+// Unification
+/*! Returns YES if the receiver was fetched as a unified contact and includes the contact having contactIdentifier in its unification */
+- (BOOL)isUnifiedWithContactWithIdentifier:(NSString*)contactIdentifier;
 
 @end
 

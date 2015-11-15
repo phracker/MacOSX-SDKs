@@ -54,7 +54,9 @@ MDL_EXPORT
            the indicated URL
  @discussion Vertex layout (i.e. vertexDescriptor) will be specified by ModelIO 
              depending on attributes of the resource.  Buffers will be allocated 
-             with a default NSData based allocator
+             using a default NSData based allocator
+
+             Submeshes will be converted to triangle topology.
  */
 - (instancetype)initWithURL:(NSURL *)URL;
 
@@ -63,10 +65,43 @@ MDL_EXPORT
  @abstract Initialize an MDLAsset using the contents of the resource located at 
            URL, ensuring that the asset conforms to the supplied vertexDescriptor, 
            and buffers are allocated in the supplied allocator
- */
+ 
+ @discussion The default behavior is to triangulate any discovered meshes and to
+             conform the mesh to the supplied vertexDescriptor.
+ 
+             If nil is passed as the vertexDescriptor, then a vertexDescriptor
+             will be created according to the attributes of the resource.
+ 
+             If nil is passed as the bufferAllocator, buffers will be allocated
+             using a default NSData based allocator.
+ 
+             Submeshes will be converted to triangle topology.
+  */
 - (instancetype)initWithURL:(NSURL *)URL
            vertexDescriptor:(nullable MDLVertexDescriptor*)vertexDescriptor
             bufferAllocator:(nullable id<MDLMeshBufferAllocator>)bufferAllocator;
+
+/*! 
+ @method initWithURL:vertexDescriptor:bufferAllocator:preserveTopology
+ @abstract Same as initWithURL:vertexDescriptor:bufferAllocator: except that
+           if preserveTopology is YES, a topology buffer might be created on the
+           submeshes.
+ 
+ @discussion If all faces in a submesh have the same vertex count, then the 
+             submesh will a geometry type corresponding to that vertex count.
+             For example, if all faces have four vertices, then the geometry
+             type will be MDLGeometryTypeQuads. If faces have a varying number
+             of vertices, then the the submesh type will be 
+             MDLGeometryTypeVariableTopology, and a faceTopologyBuffer will be
+             created.
+ */
+
+- (instancetype)initWithURL:(NSURL *)URL
+           vertexDescriptor:(nullable MDLVertexDescriptor*)vertexDescriptor
+            bufferAllocator:(nullable id<MDLMeshBufferAllocator>)bufferAllocator
+           preserveTopology:(BOOL)preserveTopology
+                      error:(NSError * __nullable * __nullable)error;
+
 
 /*!
  @method exportAssetToURL:
@@ -74,6 +109,7 @@ MDL_EXPORT
  @return YES is returned if exporting proceeded successfully,
  */
 - (BOOL)exportAssetToURL:(NSURL *)URL;
+- (BOOL)exportAssetToURL:(NSURL *)URL error:(NSError * __nullable * __nullable)error;
 
 /*!
  @method canImportFileExtension:
@@ -95,7 +131,7 @@ MDL_EXPORT
 
 /*!
  @method boundingBoxAtTime:
- @abstract he bounds of the MDLAsset at the specified time
+ @abstract The bounds of the MDLAsset at the specified time
  */
 - (MDLAxisAlignedBoundingBox)boundingBoxAtTime:(NSTimeInterval)time;
 

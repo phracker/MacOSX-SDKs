@@ -434,9 +434,9 @@ NS_CLASS_AVAILABLE(10_7, NA)
  @method		isHandsFreeAudioGateway
  @abstract		Return the devices support for hands free gateway
  @discussion	Returns the devices support for hands free gateway (obtained from the devices SDP record).
- @result		YES if the device supports hands free gateway NS_AVAILABLE_MAC(10_7); otherwise, NO.
+ @result		YES if the device supports hands free gateway; otherwise, NO.
  */
-- (BOOL)isHandsFreeAudioGateway NS_AVAILABLE_MAC(10_7);
+@property (readonly, getter = isHandsFreeAudioGateway) BOOL handsFreeAudioGateway NS_AVAILABLE_MAC(10_7);
 
 /*!
  @method		handsFreeDeviceDriverID
@@ -460,7 +460,7 @@ NS_CLASS_AVAILABLE(10_7, NA)
  @discussion	Returns the devices support for hands free device (obtained from the devices SDP record).
  @result		YES if the device supports hands free device; otherwise, NO.
  */
-- (BOOL)isHandsFreeDevice NS_AVAILABLE_MAC(10_7);
+@property (readonly, getter = isHandsFreeDevice) BOOL handsFreeDevice NS_AVAILABLE_MAC(10_7);
 
 @end
 

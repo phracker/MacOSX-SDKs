@@ -22,7 +22,7 @@ typedef NS_ENUM(NSUInteger, NSXMLNodeKind) {
 	NSXMLProcessingInstructionKind,
 	NSXMLCommentKind,
 	NSXMLTextKind,
-	NSXMLDTDKind,
+	NSXMLDTDKind NS_SWIFT_NAME(DTDKind),
 	NSXMLEntityDeclarationKind,
 	NSXMLAttributeDeclarationKind,
 	NSXMLElementDeclarationKind,

@@ -89,6 +89,7 @@ struct ifnet;
 struct ifreq;
 struct image_params;
 struct inpcb;
+struct ipc_port;
 struct ipq;
 struct knote;
 struct m_tag;
@@ -119,6 +120,9 @@ struct vfs_context;
 struct vnode;
 struct vnode_attr;
 struct vop_setlabel_args;
+
+#include <sys/kauth.h>
+#include <sys/kernel_types.h>
 
 #if CONFIG_MACF
 
@@ -224,6 +228,9 @@ int	mac_iokit_check_set_properties(kauth_cred_t cred, io_object_t registry_entry
 int	mac_iokit_check_filter_properties(kauth_cred_t cred, io_object_t registry_entry);
 int	mac_iokit_check_get_property(kauth_cred_t cred, io_object_t registry_entry, const char *name);
 int	mac_iokit_check_hid_control(kauth_cred_t cred);
+int	mac_iokit_check_nvram_delete(kauth_cred_t cred, const char *name);
+int	mac_iokit_check_nvram_get(kauth_cred_t cred, const char *name);
+int	mac_iokit_check_nvram_set(kauth_cred_t cred, const char *name, io_object_t value);
 void	mac_ipq_label_associate(struct mbuf *fragment, struct ipq *ipq);
 int	mac_ipq_label_compare(struct mbuf *fragment, struct ipq *ipq);
 void	mac_ipq_label_destroy(struct ipq *ipq);
@@ -324,6 +331,7 @@ int	mac_proc_check_fork(proc_t proc);
 int	mac_proc_check_suspend_resume(proc_t proc, int sr);
 int	mac_proc_check_get_task_name(kauth_cred_t cred, struct proc *p);
 int	mac_proc_check_get_task(kauth_cred_t cred, struct proc *p);
+int	mac_proc_check_expose_task(kauth_cred_t cred, struct proc *p);
 int	mac_proc_check_inherit_ipc_ports(struct proc *p, struct vnode *cur_vp, off_t cur_offset, struct vnode *img_vp, off_t img_offset, struct vnode *scriptvp);
 int	mac_proc_check_getaudit(proc_t proc);
 int	mac_proc_check_getauid(proc_t proc);
@@ -443,10 +451,6 @@ void	mac_sysvshm_label_associate(kauth_cred_t cred,
 void	mac_sysvshm_label_destroy(struct shmid_kernel *shmsegptr);
 void	mac_sysvshm_label_init(struct shmid_kernel* shmsegptr);
 void	mac_sysvshm_label_recycle(struct shmid_kernel *shmsegptr);
-struct label * mac_thread_label_alloc(void);
-void	mac_thread_label_destroy(struct uthread *uthread);
-void	mac_thread_label_free(struct label *label);
-void	mac_thread_label_init(struct uthread *uthread);
 int	mac_vnode_check_access(vfs_context_t ctx, struct vnode *vp,
 	    int acc_mode);
 int	mac_vnode_check_chdir(vfs_context_t ctx, struct vnode *dvp);

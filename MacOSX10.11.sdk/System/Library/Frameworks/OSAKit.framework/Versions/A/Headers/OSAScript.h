@@ -1,6 +1,6 @@
 /*	
     OSAScript.h
-    Copyright (C) 2005-2014 Apple Inc. All rights reserved.    
+    Copyright (C) 2005-2015 Apple Inc. All rights reserved.    
     
     Public header file.
 */
@@ -10,6 +10,8 @@
 #import <OSAKit/OSALanguage.h>
 
 @class OSAScriptPrivate;
+
+NS_ASSUME_NONNULL_BEGIN
 
 // Error Info Keys
 // ===============
@@ -80,39 +82,41 @@ typedef NS_OPTIONS(NSUInteger, OSAStorageOptions)
 // Class methods
 
 // Given a URL that locates a compiled script, script application, or script source, create and return an autoreleased script data descriptor with its contents. You may use the descriptor to create a script with -[OSAScript initWithScriptDataDescriptor:...]. This enables you to create a script with a specific OSALanguageInstance. You may use +[OSALanguage languageForScriptDataDescriptor:] to get the language for the script data, which may then be used to create or select an appropriate language instance for an OSAScript. Script source data may be compiled by -[OSAScript initWithScriptDataDescriptor:...], or you can coerce the descriptor to a string (using NSAppleEventDescriptor methods) and explicitly create an OSAScript with the source.
-+ (NSAppleEventDescriptor *)scriptDataDescriptorWithContentsOfURL:(NSURL *)url AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
++ (nullable NSAppleEventDescriptor *)scriptDataDescriptorWithContentsOfURL:(NSURL *)url AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 
 // Construction
 
 // fromURL: arguments are optional and may be nil. URL arguments may be used to indicate the origin of scripts. In AppleScript, for example, this URL may be used for the value of "path to me", unless you use the OSADontSetScriptLocation storage option.
 // languageInstance: parameters are optional and may be nil, in which case the shared instance of the current default language will be used.
 - (instancetype)initWithSource:(NSString *)source;
-- (instancetype)initWithSource:(NSString *)source language:(OSALanguage *)language;
-- (instancetype)initWithSource:(NSString *)source fromURL:(NSURL *)url languageInstance:(OSALanguageInstance *)instance usingStorageOptions:(OSAStorageOptions)storageOptions AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
-- (instancetype)initWithContentsOfURL:(NSURL *)url error:(NSDictionary **)errorInfo;
-- (id)initWithContentsOfURL:(NSURL *)url language:(OSALanguage *)language error:(NSDictionary **)errorInfo DEPRECATED_IN_MAC_OS_X_VERSION_10_6_AND_LATER;
-- (instancetype)initWithContentsOfURL:(NSURL *)url languageInstance:(OSALanguageInstance *)instance usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSError **)errorInfo AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
-- (id)initWithCompiledData:(NSData *)data error:(NSDictionary **)errorInfo DEPRECATED_IN_MAC_OS_X_VERSION_10_6_AND_LATER;
-- (instancetype)initWithCompiledData:(NSData *)data fromURL:(NSURL *)url usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSError **)errorInfo AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
-- (instancetype)initWithScriptDataDescriptor:(NSAppleEventDescriptor *)data fromURL:(NSURL *)url languageInstance:(OSALanguageInstance *)instance usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSError **)errorInfo AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+- (instancetype)initWithSource:(NSString *)source language:(nullable OSALanguage *)language;
+- (instancetype)initWithSource:(NSString *)source fromURL:(nullable NSURL *)url languageInstance:(nullable OSALanguageInstance *)instance usingStorageOptions:(OSAStorageOptions)storageOptions AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+- (nullable instancetype)initWithContentsOfURL:(NSURL *)url error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
+- (id)initWithContentsOfURL:(NSURL *)url language:(OSALanguage *)language error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo DEPRECATED_IN_MAC_OS_X_VERSION_10_6_AND_LATER;
+- (nullable instancetype)initWithContentsOfURL:(NSURL *)url languageInstance:(nullable OSALanguageInstance *)instance usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSError **)errorInfo AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+- (id)initWithCompiledData:(NSData *)data error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo DEPRECATED_IN_MAC_OS_X_VERSION_10_6_AND_LATER;
+- (nullable instancetype)initWithCompiledData:(NSData *)data fromURL:(nullable NSURL *)url usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSError **)errorInfo AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+- (nullable instancetype)initWithScriptDataDescriptor:(NSAppleEventDescriptor *)data fromURL:(nullable NSURL *)url languageInstance:(nullable OSALanguageInstance *)instance usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSError **)errorInfo AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 
 // Accessors
 @property (readonly, copy) NSString *source;
-@property (readonly, copy) NSURL *url;
+@property (nullable, readonly, copy) NSURL *url;
 @property (strong) OSALanguage *language;
 @property (strong) OSALanguageInstance *languageInstance AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 @property (getter=isCompiled, readonly) BOOL compiled;
 
 // Operations
-- (BOOL)compileAndReturnError:(NSDictionary **)errorInfo;
-- (NSAppleEventDescriptor *)executeAndReturnError:(NSDictionary **)errorInfo;
-- (NSAppleEventDescriptor *)executeAppleEvent:(NSAppleEventDescriptor *)event error:(NSDictionary **)errorInfo;
-- (NSAppleEventDescriptor *)executeAndReturnDisplayValue:(NSAttributedString **)displayValue error:(NSDictionary **)errorInfo;
-- (NSAppleEventDescriptor *)executeHandlerWithName:(NSString *)name arguments:(NSArray *)arguments error:(NSDictionary **)errorInfo;
-@property (readonly, copy) NSAttributedString *richTextSource;
-- (NSAttributedString *)richTextFromDescriptor:(NSAppleEventDescriptor *)descriptor;
-- (BOOL)writeToURL:(NSURL *)url ofType:(NSString *)type error:(NSDictionary **)errorInfo;
-- (BOOL)writeToURL:(NSURL *)url ofType:(NSString *)type usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSDictionary **)errorInfo;
-- (NSData *)compiledDataForType:(NSString *)type usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSDictionary **)errorInfo;
+- (BOOL)compileAndReturnError:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
+- (nullable NSAppleEventDescriptor *)executeAndReturnError:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
+- (nullable NSAppleEventDescriptor *)executeAppleEvent:(NSAppleEventDescriptor *)event error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
+- (nullable NSAppleEventDescriptor *)executeAndReturnDisplayValue:(NSAttributedString * __nullable * __nonnull)displayValue error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
+- (nullable NSAppleEventDescriptor *)executeHandlerWithName:(NSString *)name arguments:(NSArray *)arguments error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
+@property (nullable, readonly, copy) NSAttributedString *richTextSource;
+- (nullable NSAttributedString *)richTextFromDescriptor:(NSAppleEventDescriptor *)descriptor;
+- (BOOL)writeToURL:(NSURL *)url ofType:(NSString *)type error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
+- (BOOL)writeToURL:(NSURL *)url ofType:(NSString *)type usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
+- (nullable NSData *)compiledDataForType:(NSString *)type usingStorageOptions:(OSAStorageOptions)storageOptions error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -1760,6 +1760,60 @@ XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT XPC_NONNULL1
 xpc_connection_t
 xpc_array_create_connection(xpc_object_t xarray, size_t index);
 
+/*!
+ * @function xpc_array_get_dictionary
+ *
+ * @abstract
+ * Returns the dictionary at the specified index in the array.
+ *
+ * @param xarray
+ * The array object which is to be examined.
+ *
+ * @param index
+ * The index of the value to obtain. This value must lie within the range of
+ * indexes as specified in xpc_array_set_value().
+ * 
+ * @result
+ * The object at the specified index within the array or NULL if the given
+ * object was not an XPC array or if the the value at the specified index was
+ * not a dictionary.
+ *
+ * @discussion
+ * This method does not grant the caller a reference to the underlying object,
+ * and thus the caller is not responsible for releasing the object.
+ */
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0)
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL
+xpc_object_t
+xpc_array_get_dictionary(xpc_object_t self, size_t index);
+
+/*!
+ * @function xpc_array_get_array
+ *
+ * @abstract
+ * Returns the array at the specified index in the array.
+ *
+ * @param xarray
+ * The array object which is to be examined.
+ *
+ * @param index
+ * The index of the value to obtain. This value must lie within the range of
+ * indexes as specified in xpc_array_set_value().
+ * 
+ * @result
+ * The object at the specified index within the array or NULL if the given
+ * object was not an XPC array or if the the value at the specified index was
+ * not an array.
+ *
+ * @discussion
+ * This method does not grant the caller a reference to the underlying object,
+ * and thus the caller is not responsible for releasing the object.
+ */
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0)
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL
+xpc_object_t
+xpc_array_get_array(xpc_object_t self, size_t index);
+
 #pragma mark Dictionary
 /*!
  * @typedef xpc_dictionary_applier_t
@@ -2414,6 +2468,58 @@ __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_5_0)
 XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT XPC_NONNULL_ALL
 xpc_connection_t
 xpc_dictionary_create_connection(xpc_object_t xdict, const char *key);
+
+/*!
+ * @function xpc_dictionary_get_dictionary
+ *
+ * @abstract
+ * Returns the dictionary value for the specified key.
+ *
+ * @param xdict
+ * The dictionary object which is to be examined.
+ *
+ * @param key
+ * The key whose value is to be obtained.
+ * 
+ * @result
+ * The object for the specified key within the dictionary. NULL if there is no
+ * value associated with the specified key, if the given object was not an
+ * XPC dictionary, or if the object for the specified key is not a dictionary.
+ *
+ * @discussion
+ * This method does not grant the caller a reference to the underlying object,
+ * and thus the caller is not responsible for releasing the object.
+ */
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0)
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL
+xpc_object_t
+xpc_dictionary_get_dictionary(xpc_object_t self, const char *key);
+
+/*!
+ * @function xpc_dictionary_get_array
+ *
+ * @abstract
+ * Returns the array value for the specified key.
+ *
+ * @param xdict
+ * The dictionary object which is to be examined.
+ *
+ * @param key
+ * The key whose value is to be obtained.
+ * 
+ * @result
+ * The object for the specified key within the dictionary. NULL if there is no
+ * value associated with the specified key, if the given object was not an
+ * XPC dictionary, or if the object for the specified key is not an array.
+ *
+ * @discussion
+ * This method does not grant the caller a reference to the underlying object,
+ * and thus the caller is not responsible for releasing the object.
+ */
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0)
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL
+xpc_object_t
+xpc_dictionary_get_array(xpc_object_t self, const char *key);
 
 #pragma mark Runtime
 /*!

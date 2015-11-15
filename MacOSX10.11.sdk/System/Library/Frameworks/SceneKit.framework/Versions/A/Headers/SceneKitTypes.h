@@ -145,8 +145,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, readonly) SCNVector3 SCNVector3Value;
 @property(nonatomic, readonly) SCNVector4 SCNVector4Value;
-@property(nonatomic, readonly) SCNMatrix4 SCNMatrix4Value NS_AVAILABLE (10_10, 8_0);
-    
+@property(nonatomic, readonly) SCNMatrix4 SCNMatrix4Value NS_AVAILABLE(10_10, 8_0);
+
 @end
 
 //domain for errors from SceneKit API.

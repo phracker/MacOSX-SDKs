@@ -93,5 +93,8 @@ typedef NS_ENUM(NSInteger, AVError) {
     AVErrorAirPlayControllerRequiresInternet NS_AVAILABLE(10_10, 8_3) = -11856,
     AVErrorAirPlayReceiverRequiresInternet NS_AVAILABLE(10_10, 8_3) = -11857,
     AVErrorVideoCompositorFailed NS_AVAILABLE(10_11, 9_0) = -11858,
+#if TARGET_OS_IPHONE
+    AVErrorRecordingAlreadyInProgress NS_AVAILABLE_IOS(9_0) = -11859, // on iOS, AVCaptureMovieFileOutput only supports one recording at a time
+#endif
 	
 };

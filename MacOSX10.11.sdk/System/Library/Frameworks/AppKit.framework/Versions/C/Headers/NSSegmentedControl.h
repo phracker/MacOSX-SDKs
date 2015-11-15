@@ -77,7 +77,7 @@ typedef NS_ENUM(NSInteger, NSSegmentStyle) {
 
 /*  This message is valid only for trackingMode=NSSegmentSwitchTrackingMomentaryAccelerator and provides the double value for the selected segment.
  */
-- (double)doubleValueForSelectedSegment NS_AVAILABLE_MAC(10_10_3);
+@property (readonly) double doubleValueForSelectedSegment NS_AVAILABLE_MAC(10_10_3);
 
 @end
 

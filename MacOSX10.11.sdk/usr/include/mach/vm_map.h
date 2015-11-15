@@ -278,6 +278,7 @@ mig_external
 #else
 extern
 #endif	/* mig_external */
+__WATCHOS_PROHIBITED
 kern_return_t task_wire
 (
 	vm_map_t target_task,

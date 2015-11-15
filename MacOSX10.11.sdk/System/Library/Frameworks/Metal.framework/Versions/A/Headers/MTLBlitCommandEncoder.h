@@ -26,6 +26,7 @@ typedef NS_OPTIONS(NSUInteger, MTLBlitOption)
     MTLBlitOptionNone                       = 0,
     MTLBlitOptionDepthFromDepthStencil      = 1 << 0,
     MTLBlitOptionStencilFromDepthStencil    = 1 << 1,
+    MTLBlitOptionRowLinearPVRTC NS_AVAILABLE_IOS(9_0) = 1 << 2,
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
 /*!
@@ -43,7 +44,7 @@ NS_AVAILABLE(10_11, 8_0)
  making any CPU access (either MTLBuffer.contents or -[MTLTexture getBytes:...] and -[MTLTexture replaceRegion:]) produce undefined results.  To allow the CPU to see what the device
  has written, a CommandBuffer containing this synchronization must be executed.  After completion of the CommandBuffer, the CPU can access the contents of the resource safely.
  */
-- (void)synchronizeResource:(id<MTLResource>)resource;
+- (void)synchronizeResource:(id<MTLResource>)resource NS_AVAILABLE_MAC(10_11);
 
 /*!
  @method synchronizeTexture:slice:mipmapLevel:
@@ -54,7 +55,7 @@ NS_AVAILABLE(10_11, 8_0)
  @discussion
  See the discussion of -synchronizeResource.   -synchronizeTexture:slice:mipmapLevel performs the same role, except it may flush only a subset of the texture storage, rather than the entire texture.
  */
-- (void)synchronizeTexture:(id<MTLTexture>)texture slice:(NSUInteger)slice level:(NSUInteger)level;
+- (void)synchronizeTexture:(id<MTLTexture>)texture slice:(NSUInteger)slice level:(NSUInteger)level NS_AVAILABLE_MAC(10_11);
 
 /*!
  @method copyFromTexture:sourceSlice:sourceLevel:sourceOrigin:sourceSize:toTexture:destinationSlice:destinationLevel:destinationOrigin:

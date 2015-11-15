@@ -24,6 +24,7 @@
 #define _BSD_SETJMP_H
 
 #include <sys/cdefs.h>
+#include <Availability.h>
 
 #if defined(__x86_64__)
 /*

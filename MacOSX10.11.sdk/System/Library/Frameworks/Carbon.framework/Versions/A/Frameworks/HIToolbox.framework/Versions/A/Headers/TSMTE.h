@@ -33,9 +33,7 @@
 #include <HIToolbox/TextServices.h>
 #endif
 
-
-
-
+#include <ApplicationServices/ApplicationServices.h>
 #include <AvailabilityMacros.h>
 
 #if PRAGMA_ONCE

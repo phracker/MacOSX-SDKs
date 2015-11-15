@@ -99,6 +99,16 @@ IMAGEIO_EXTERN const CFStringRef kCGImageSourceThumbnailMaxPixelSize  IMAGEIO_AV
 
 IMAGEIO_EXTERN const CFStringRef kCGImageSourceCreateThumbnailWithTransform  IMAGEIO_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_4_0);
 
+/* Specifies that, if possible, an image should be returned as scaled down (in height and width) by a specified factor.
+ * The resulting image will be smaller and have reduced spacial quality but will otherwise have the same characteristics
+ * as the full size normal image.
+ * If the specified scaling factor is not supported, a larger or full size normal image will be returned.
+ * Supported file formats are JPEG, TIFF, and PNG.
+ * The value of this key must be an integer CFNumberRef (allowed values: 2, 4, and 8).
+ */
+
+IMAGEIO_EXTERN const CFStringRef kCGImageSourceSubsampleFactor  IMAGEIO_AVAILABLE_STARTING(__MAC_10_11,__IPHONE_9_0);
+
 CF_ASSUME_NONNULL_END
 
 

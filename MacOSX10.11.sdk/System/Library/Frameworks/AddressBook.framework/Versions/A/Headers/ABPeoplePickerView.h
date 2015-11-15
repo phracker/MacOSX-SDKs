@@ -5,6 +5,8 @@
 //  Copyright (c) 2003-2007 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABPEOPLEPICKERVIEW__
+#define __ABPEOPLEPICKERVIEW__
 
 #import <Cocoa/Cocoa.h>
 
@@ -143,3 +145,5 @@ extern NSString * const ABPeoplePickerDisplayedPropertyDidChangeNotification AVA
 @end
 
 #endif
+
+#endif // __ABPEOPLEPICKERVIEW__

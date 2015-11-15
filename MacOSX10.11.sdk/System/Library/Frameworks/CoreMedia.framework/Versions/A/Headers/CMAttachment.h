@@ -19,6 +19,8 @@ extern "C" {
 #endif
     
 #pragma pack(push, 4)
+	
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /* A CMAttachmentBearer is a CF-based object that supports the suite of key/value/mode attachment APIs defined in this header file.  Since plain C has no type subclassing, we use CFType as the basis for the CMAttachmentBearer type.  (Not all CFTypes support CMAttachmentBearer methods; if a CMAttachmentBearer method is called on a CF object that does not support it, it will fail.) */
 typedef CM_BRIDGED_TYPE(id) CFTypeRef CMAttachmentBearerRef;
@@ -104,6 +106,8 @@ CM_EXPORT void CMSetAttachments(CMAttachmentBearerRef CM_NONNULL target, CFDicti
     @param      destination  CMAttachmentBearer to copy attachments to.
 */
 CM_EXPORT void  CMPropagateAttachments(CMAttachmentBearerRef CM_NONNULL source, CMAttachmentBearerRef CM_NONNULL destination) __OSX_AVAILABLE_STARTING( __MAC_10_7, __IPHONE_4_0 );
+	
+CF_IMPLICIT_BRIDGING_DISABLED
 
 #pragma pack(pop)
     

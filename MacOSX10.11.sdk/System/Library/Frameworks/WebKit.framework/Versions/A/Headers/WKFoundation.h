@@ -24,7 +24,6 @@
  */
 
 #import <Availability.h>
-#import <CoreFoundation/CoreFoundation.h>
 #import <TargetConditionals.h>
 
 #if !defined(WK_API_ENABLED)
@@ -39,12 +38,5 @@
 #define WK_EXTERN extern "C" __attribute__((visibility ("default")))
 #else
 #define WK_EXTERN extern __attribute__((visibility ("default")))
-#endif
-
-#ifndef __NSi_10_11
-#define __NSi_10_11 introduced=10.11
-#endif
-#ifndef __NSd_10_11
-#define __NSd_10_11 ,deprecated=10.11
 #endif
 

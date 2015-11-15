@@ -166,7 +166,7 @@ CM_EXPORT OSStatus	CMBlockBufferCreateEmpty(
 		CFAllocatorRef CM_NULLABLE structureAllocator,
 		uint32_t subBlockCapacity, 
 		CMBlockBufferFlags flags, 
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL newBBufOut)
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL newBBufOut)
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 /*!
@@ -211,7 +211,7 @@ CM_EXPORT OSStatus	CMBlockBufferCreateWithMemoryBlock(
 		size_t offsetToData, 
 		size_t dataLength,
 		CMBlockBufferFlags flags, 
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL newBBufOut)
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL newBBufOut)
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 /*!
@@ -239,7 +239,7 @@ CM_EXPORT OSStatus	CMBlockBufferCreateWithBufferReference(
 		size_t offsetToData,
 		size_t dataLength, 
 		CMBlockBufferFlags flags, 
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL newBBufOut)
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL newBBufOut)
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 /*!
@@ -277,7 +277,7 @@ CM_EXPORT OSStatus	CMBlockBufferCreateContiguous(
 		size_t offsetToData, 
 		size_t dataLength, 
 		CMBlockBufferFlags flags, 
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL newBBufOut)
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL newBBufOut)
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
 
 

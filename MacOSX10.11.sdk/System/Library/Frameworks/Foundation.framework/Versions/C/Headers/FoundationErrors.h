@@ -93,5 +93,12 @@ NS_ENUM(NSInteger) {
     NSCoderValueNotFoundError NS_ENUM_AVAILABLE(10_11, 9_0) = 4865, // Data requested was not found
     NSCoderErrorMinimum NS_ENUM_AVAILABLE(10_11, 9_0) = 4864,
     NSCoderErrorMaximum NS_ENUM_AVAILABLE(10_11, 9_0) = 4991,
+    
+    NSBundleErrorMinimum NS_ENUM_AVAILABLE(10_11, 9_0) = 4992,
+    NSBundleErrorMaximum NS_ENUM_AVAILABLE(10_11, 9_0) = 5119,
+    
+    NSBundleOnDemandResourceOutOfSpaceError NS_ENUM_AVAILABLE(NA, 9_0) = 4992, // There was not enough space available to download the requested On Demand Resources.
+    NSBundleOnDemandResourceExceededMaximumSizeError NS_ENUM_AVAILABLE(NA, 9_0) = 4993, // The application exceeded the amount of On Demand Resources content in use at one time
+    NSBundleOnDemandResourceInvalidTagError NS_ENUM_AVAILABLE(NA, 9_0) = 4994, // The application specified a tag which the system could not find in the application tag manifest
 };
 

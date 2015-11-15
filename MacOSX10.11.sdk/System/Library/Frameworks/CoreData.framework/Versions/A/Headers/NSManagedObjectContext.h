@@ -125,6 +125,7 @@ NS_CLASS_AVAILABLE(10_4,3_0)
   id* _additionalPrivateIvars;
 }
 
++ (instancetype)new NS_DEPRECATED(10_4,10_11,3_0,9_0, "Use -initWithConcurrencyType: instead");
 - (instancetype)init NS_DEPRECATED(10_4,10_11,3_0,9_0, "Use -initWithConcurrencyType: instead");
 - (instancetype)initWithConcurrencyType:(NSManagedObjectContextConcurrencyType)ct NS_DESIGNATED_INITIALIZER  NS_AVAILABLE(10_7,  5_0);
 
@@ -169,7 +170,7 @@ NS_CLASS_AVAILABLE(10_4,3_0)
 // A request may succeed in some stores and fail in others. In this case, the error will contain information
 // about each individual store failure.
 // Will always reject NSSaveChangesRequests.
-- (nullable NSPersistentStoreResult *)executeRequest:(NSPersistentStoreRequest*)request error:(NSError **)error NS_AVAILABLE(10_10, 8_0);
+- (nullable __kindof NSPersistentStoreResult *)executeRequest:(NSPersistentStoreRequest*)request error:(NSError **)error NS_AVAILABLE(10_10, 8_0);
 
 - (void)insertObject:(NSManagedObject *)object;
 - (void)deleteObject:(NSManagedObject *)object;

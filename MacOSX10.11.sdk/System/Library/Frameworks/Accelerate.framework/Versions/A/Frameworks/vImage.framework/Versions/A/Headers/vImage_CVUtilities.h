@@ -6,7 +6,7 @@
  *
  *  See vImage/vImage.h for more on how to view the headerdoc documentation for functions declared herein.
  *
- *  @copyright Copyright (c) 2013-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2013-2015 by Apple Inc. All rights reserved.
  *
  *  @discussion vImage_CVUtilities.h provides a suite of high level APIs to facilitate conversion between CVPixelBufferRef
  *  formats and the set of formats describable by CoreGraphics types, including the core formats used by vImage for most

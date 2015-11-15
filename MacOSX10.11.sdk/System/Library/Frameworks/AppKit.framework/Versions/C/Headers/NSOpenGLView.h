@@ -49,4 +49,13 @@ For testing purposes only, the effect of this property can be overridden globall
 
 @end
 
+@interface NSView (NSExtendedDynamicRange)
+
+/* If any view on the screen has this enabled, the NSScreen which the OpenGL surface is on may have its maximumExtendedDynamicRangeColorComponentValue increased.  When composited by the Window Server, color values rendered by this OpenGL surface will be clamped to the NSScreen’s maximumExtendedDynamicRangeColorComponentValue rather than 1.0.
+ */
+@property BOOL wantsExtendedDynamicRangeOpenGLSurface NS_AVAILABLE_MAC(10_11);
+
+@end
+
+
 NS_ASSUME_NONNULL_END

@@ -192,6 +192,18 @@ protected:
     
     virtual void      zlpWriteComplete (void *parameter, IOReturn status, uint32_t bytesTransferred);
     
+    // Protected pad slots for future expansion
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 0);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 1);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 2);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 3);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 4);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 5);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 6);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 7);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 8);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 9);
+
 public:
     // IOService Methods
     virtual bool start (IOService *provider);
@@ -237,6 +249,18 @@ public:
     virtual UInt32    getMaxReportSize (void) const;
     
     virtual OSString* newIndexedString (UInt8 index) const;
+    
+    // Public pad slots for future expansion
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 10);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 11);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 12);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 13);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 14);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 15);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 16);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 17);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 18);
+    OSMetaClassDeclareReservedUnused(IOUSBHostHIDDevice, 19);
 };
 
 #endif	// IOUSBHOSTHIDDEVICE_H

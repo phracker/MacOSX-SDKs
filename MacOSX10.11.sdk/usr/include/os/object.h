@@ -74,12 +74,14 @@
 #if OS_OBJECT_USE_OBJC
 #import <objc/NSObject.h>
 #define OS_OBJECT_CLASS(name) OS_##name
-#define OS_OBJECT_DECL(name, ...) \
+#define OS_OBJECT_DECL_IMPL(name, ...) \
 		@protocol OS_OBJECT_CLASS(name) __VA_ARGS__ \
 		@end \
 		typedef NSObject<OS_OBJECT_CLASS(name)> *name##_t
+#define OS_OBJECT_DECL(name, ...) \
+		OS_OBJECT_DECL_IMPL(name, <NSObject> __VA_ARGS__)
 #define OS_OBJECT_DECL_SUBCLASS(name, super) \
-		OS_OBJECT_DECL(name, <OS_OBJECT_CLASS(super)>)
+		OS_OBJECT_DECL_IMPL(name, <OS_OBJECT_CLASS(super)>)
 #if defined(__has_attribute)
 #if __has_attribute(ns_returns_retained)
 #define OS_OBJECT_RETURNS_RETAINED __attribute__((__ns_returns_retained__))

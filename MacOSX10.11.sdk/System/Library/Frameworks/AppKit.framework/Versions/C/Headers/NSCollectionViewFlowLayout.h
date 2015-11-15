@@ -1,7 +1,7 @@
 /*
     NSCollectionViewFlowLayout.h
     Application Kit
-    Copyright (c) 2011-2015, Apple Inc.
+    Copyright (c) 2015, Apple Inc.
     All rights reserved.
 */
 

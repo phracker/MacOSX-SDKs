@@ -56,8 +56,7 @@ typedef NS_OPTIONS(NSUInteger, SCNBillboardAxis) {
     SCNBillboardAxisX = 0x1 << 0,
     SCNBillboardAxisY = 0x1 << 1,
     SCNBillboardAxisZ = 0x1 << 2,
-    
-    SCNBillboardAxisAll = (SCNBillboardAxisX | SCNBillboardAxisY | SCNBillboardAxisZ),
+    SCNBillboardAxisAll = SCNBillboardAxisX | SCNBillboardAxisY | SCNBillboardAxisZ
 };
 
 NS_CLASS_AVAILABLE(10_11, 9_0)

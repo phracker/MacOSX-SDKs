@@ -16,6 +16,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+	
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
 	@header		CMMemoryPool.h
@@ -92,6 +94,8 @@ CM_EXPORT void CMMemoryPoolFlush( CMMemoryPoolRef CM_NONNULL pool )
 */
 CM_EXPORT void CMMemoryPoolInvalidate( CMMemoryPoolRef CM_NONNULL pool )
 					__OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_6_0);
+	
+CF_IMPLICIT_BRIDGING_DISABLED
 
 #ifdef __cplusplus
 }

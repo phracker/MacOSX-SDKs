@@ -730,8 +730,8 @@ __attribute__((visibility("default"))) extern const CFStringRef  kICANotificatio
 
 // Possible keys in the notification dictionary:
 
-extern const CFStringRef  kICAErrorKey                                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_7;
-extern const CFStringRef  kICARefconKey                                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_7;
+__attribute__((visibility("default"))) extern const CFStringRef  kICAErrorKey                                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_7;
+__attribute__((visibility("default"))) extern const CFStringRef  kICARefconKey                                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_7;
 
 __attribute__((visibility("default"))) extern const CFStringRef  kICANotificationICAObjectKey                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_7;
 __attribute__((visibility("default"))) extern const CFStringRef  kICANotificationDeviceICAObjectKey                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_7;

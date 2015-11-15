@@ -42,6 +42,9 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 #ifndef __SEC_TYPES__
 #define __SEC_TYPES__
 
@@ -49,19 +52,19 @@ extern "C" {
     @typedef SecKeychainRef
     @abstract Contains information about a keychain.
 */
-typedef struct OpaqueSecKeychainRef *SecKeychainRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecKeychainRef *SecKeychainRef;
 
 /*!
     @typedef SecKeychainItemRef
     @abstract Contains information about a keychain item.
 */
-typedef struct OpaqueSecKeychainItemRef *SecKeychainItemRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecKeychainItemRef *SecKeychainItemRef;
 
 /*!
     @typedef SecKeychainSearchRef
     @abstract Contains information about a keychain search.
 */
-typedef struct OpaqueSecKeychainSearchRef *SecKeychainSearchRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecKeychainSearchRef *SecKeychainSearchRef;
 
 /*!
     @typedef SecKeychainAttrType
@@ -114,55 +117,55 @@ typedef UInt32 SecKeychainStatus;
     @typedef SecTrustedApplicationRef
     @abstract Contains information about a trusted application.
 */
-typedef struct OpaqueSecTrustedApplicationRef *SecTrustedApplicationRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecTrustedApplicationRef *SecTrustedApplicationRef;
 
 /*!
     @typedef SecPolicyRef
     @abstract Contains information about a policy.
 */
-typedef struct OpaqueSecPolicyRef *SecPolicyRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecPolicyRef *SecPolicyRef;
 
 /*!
     @typedef SecCertificateRef
     @abstract Contains information about a certificate.
 */
-typedef struct OpaqueSecCertificateRef *SecCertificateRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecCertificateRef *SecCertificateRef;
 
 /*!
     @typedef SecAccessRef
     @abstract Contains information about an access.
 */
-typedef struct OpaqueSecAccessRef *SecAccessRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecAccessRef *SecAccessRef;
 
 /*!
     @typedef SecIdentityRef
     @abstract Contains information about an identity.
 */
-typedef struct OpaqueSecIdentityRef *SecIdentityRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecIdentityRef *SecIdentityRef;
 
 /*!
     @typedef SecKeyRef
     @abstract Contains information about a key.
 */
-typedef struct OpaqueSecKeyRef *SecKeyRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecKeyRef *SecKeyRef;
 
 /*!
     @typedef SecACLRef
     @abstract Contains information about an access control list (ACL) entry.
 */
-typedef struct OpaqueSecTrustRef *SecACLRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecTrustRef *SecACLRef;
 
 /*!
     @typedef SecAccessControlRef
     @abstract CFType representing access control for an item.
 */
-typedef struct OpaqueSecAccessControl *SecAccessControlRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecAccessControl *SecAccessControlRef;
 
 /*!
     @typedef SecPasswordRef
     @abstract Contains information about a password.
 */
-typedef struct OpaqueSecPasswordRef *SecPasswordRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaqueSecPasswordRef *SecPasswordRef;
 
 /*!
     @typedef SecKeychainAttributeInfo
@@ -187,7 +190,8 @@ typedef struct SecKeychainAttributeInfo  SecKeychainAttributeInfo;
     @reserved Reserved for future use. Your code should pass NULL in this parameter.
     @result A reference to an error string, or NULL if no error string is available for the specified result code. Your code must release this reference by calling the CFRelease function.
 */
-CFStringRef SecCopyErrorMessageString(OSStatus status, void *reserved)
+__nullable
+CFStringRef SecCopyErrorMessageString(OSStatus status, void * __nullable reserved)
     __OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_NA);
 /*!
 @enum Security Error Codes
@@ -258,7 +262,7 @@ CFStringRef SecCopyErrorMessageString(OSStatus status, void *reserved)
     line that does not start with errZZZ.
 */
 
-enum
+CF_ENUM(OSStatus)
 {
     errSecSuccess                = 0,       /* No error. */
     errSecUnimplemented          = -4,      /* Function or operation not implemented. */
@@ -640,6 +644,9 @@ enum
 	errSecTimestampRevocationWarning            = -67897,	/* A timestamp authority revocation warning was issued. */
 	errSecTimestampRevocationNotification       = -67898,	/* A timestamp authority revocation notification was issued. */
 };
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

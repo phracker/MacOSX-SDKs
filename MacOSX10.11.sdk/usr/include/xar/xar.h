@@ -38,7 +38,7 @@
 #ifndef _XAR_H_
 #define _XAR_H_
 
-#define XAR_VERSION "1.7dev"
+#define XAR_VERSION "1.8dev"
 
 #include <sys/types.h>
 #include <stdint.h>
@@ -62,6 +62,7 @@ typedef struct xar_header xar_header_t;
 
 #define XAR_CKSUM_NONE   0
 #define XAR_CKSUM_SHA1   1
+/* MD5 is not recommended for security reasons, and may not be supported by all implementations */
 #define XAR_CKSUM_MD5    2
 #define XAR_CKSUM_SHA256 3
 #define XAR_CKSUM_SHA512 4
@@ -106,6 +107,7 @@ typedef int32_t (*xar_signer_callback)(xar_signature_t sig, void *context, uint8
 #define XAR_OPT_VAL_SHA1   "sha1"
 #define XAR_OPT_VAL_SHA256 "sha256"
 #define XAR_OPT_VAL_SHA512 "sha512"
+/* MD5 is not recommended for security reasons, and may not be supported by all implementations */
 #define XAR_OPT_VAL_MD5    "md5"
 
 #define XAR_OPT_COMPRESSION    "compression" /* set the file compression type */

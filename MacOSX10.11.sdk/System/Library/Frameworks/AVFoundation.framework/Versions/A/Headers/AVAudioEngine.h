@@ -124,6 +124,13 @@ _player = [[AVAudioPlayerNode alloc] init];
 		Note that any pre-existing connection involving the destination's input bus will be 
 		broken. And, any pre-existing connection on source node which is not a part of the
 		specified destination connection array will also be broken.
+
+		Also note that when the output of a node is split into multiple paths, all the paths
+		must render at the same rate until they reach a common mixer.
+		In other words, starting from the split node until the common mixer node where all split 
+		paths terminate, you cannot have:
+			- any AVAudioUnitTimeEffect
+			- any sample rate conversion
 */
 - (void)connect:(AVAudioNode *)sourceNode toConnectionPoints:(NSArray<AVAudioConnectionPoint *> *)destNodes fromBus:(AVAudioNodeBus)sourceBus format:(AVAudioFormat * __nullable)format NS_AVAILABLE(10_11, 9_0);
 

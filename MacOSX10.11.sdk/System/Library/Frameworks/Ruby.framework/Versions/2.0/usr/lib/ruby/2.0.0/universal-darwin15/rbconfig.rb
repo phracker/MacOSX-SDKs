@@ -9,7 +9,7 @@ module RbConfig
   TOPDIR = File.dirname(__FILE__).chomp!("/lib/ruby/2.0.0/universal-darwin15")
   DESTDIR = '' unless defined? DESTDIR
   arch_flag = ENV['ARCHFLAGS'] || ((e = ENV['RC_ARCHS']) && e.split.uniq.map {|a| "-arch #{a}"}.join(' '))
-  universal = " x86_64=x86_64 i386=i386"
+  universal = " i386=i386 x86_64=x86_64"
   CONFIG = {}
   CONFIG["DESTDIR"] = DESTDIR
   CONFIG["MAJOR"] = "2"
@@ -37,7 +37,7 @@ module RbConfig
   CONFIG["rubyhdrdir"] = "$(includedir)/$(RUBY_VERSION_NAME)"
   CONFIG["UNIVERSAL_INTS"] = "'long long' long int short"
   CONFIG["UNIVERSAL_ARCHNAMES"] = universal
-  CONFIG["configure_args"] = " '--prefix=/usr' '--mandir=/usr/share/man' '--infodir=/usr/share/info' '--disable-dependency-tracking' '--prefix=/System/Library/Frameworks/Ruby.framework/Versions/2.0/usr' '--sysconfdir=/Library/Ruby/Site' '--with-sitedir=/Library/Ruby/Site' '--enable-shared' '--with-arch=x86_64,i386' '--without-ext=tk' 'ac_cv_func_getcontext=no' 'ac_cv_func_setcontext=no' 'ac_cv_c_compiler_gnu=no' 'ac_cv_header_net_if_h=yes' 'av_cv_header_ifaddrs_h=yes' 'rb_cv_pri_prefix_long_long=ll' 'ac_cv_sizeof_struct_stat_st_size=SIZEOF_OFF_T' 'ac_cv_sizeof_struct_stat_st_blocks=SIZEOF_INT64_T' 'ac_cv_sizeof_struct_stat_st_ino=SIZEOF_UINT64_T' 'CC=xcrun clang' 'CFLAGS=-arch x86_64 -arch i386 -g -Os -pipe -DHAVE_GCC_SYNC_BUILTINS' 'LDFLAGS=-arch x86_64 -arch i386            ' 'CXX=xcrun clang++' 'CXXFLAGS=-arch x86_64 -arch i386 -g -Os -pipe '"
+  CONFIG["configure_args"] = " '--prefix=/usr' '--mandir=/usr/share/man' '--infodir=/usr/share/info' '--disable-dependency-tracking' '--prefix=/System/Library/Frameworks/Ruby.framework/Versions/2.0/usr' '--sysconfdir=/Library/Ruby/Site' '--with-sitedir=/Library/Ruby/Site' '--enable-shared' '--with-arch=i386,x86_64' '--without-ext=tk' 'ac_cv_func_getcontext=no' 'ac_cv_func_setcontext=no' 'ac_cv_c_compiler_gnu=no' 'ac_cv_header_net_if_h=yes' 'av_cv_header_ifaddrs_h=yes' 'rb_cv_pri_prefix_long_long=ll' 'ac_cv_sizeof_struct_stat_st_size=SIZEOF_OFF_T' 'ac_cv_sizeof_struct_stat_st_blocks=SIZEOF_INT64_T' 'ac_cv_sizeof_struct_stat_st_ino=SIZEOF_UINT64_T' 'CC=xcrun clang' 'CFLAGS=-arch i386 -arch x86_64 -g -Os -pipe -DHAVE_GCC_SYNC_BUILTINS' 'LDFLAGS=-arch i386 -arch x86_64            ' 'CXX=xcrun clang++' 'CXXFLAGS=-arch i386 -arch x86_64 -g -Os -pipe '"
   CONFIG["vendorarchdir"] = "$(vendorlibdir)/$(sitearch)"
   CONFIG["vendorlibdir"] = "$(vendordir)/$(ruby_version)"
   CONFIG["vendordir"] = "$(rubylibprefix)/vendor_ruby"
@@ -122,7 +122,7 @@ module RbConfig
   CONFIG["LDSHARED"] = "$(CC) -dynamic -bundle"
   CONFIG["CCDLFLAGS"] = ""
   CONFIG["STATIC"] = ""
-  CONFIG["ARCH_FLAG"] = arch_flag || " -arch x86_64 -arch i386"
+  CONFIG["ARCH_FLAG"] = arch_flag || " -arch i386 -arch x86_64"
   CONFIG["DLDFLAGS"] = "-Wl,-undefined,dynamic_lookup -Wl,-multiply_defined,suppress"
   CONFIG["ALLOCA"] = ""
   CONFIG["codesign"] = "codesign"

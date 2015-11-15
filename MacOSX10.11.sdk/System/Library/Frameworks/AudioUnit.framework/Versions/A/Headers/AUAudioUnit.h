@@ -323,6 +323,9 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 		Certain types of AUAudioUnits must be instantiated asynchronously -- see 
 		the discussion of kAudioComponentFlag_RequiresAsyncInstantiation in
 		AudioUnit/AudioComponent.h.
+
+		Note: Do not block the main thread while waiting for the completion handler to be called;
+		this can deadlock.
 */
 + (void)instantiateWithComponentDescription:(AudioComponentDescription)componentDescription options:(AudioComponentInstantiationOptions)options completionHandler:(void (^)(AUAudioUnit * __nullable audioUnit, NSError * __nullable error))completionHandler;
 
@@ -500,7 +503,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 		This is similar to the v2 properties kAudioUnitProperty_ParameterList and
 		kAudioUnitProperty_ParameterInfo.
 */
-@property (NS_NONATOMIC_IOSONLY, readonly) AUParameterTree *parameterTree;
+@property (NS_NONATOMIC_IOSONLY, readonly, nullable) AUParameterTree *parameterTree;
 
 /*!	@method		parametersForOverviewWithCount:
 	@brief		Returns the audio unit's `count` most important parameters.
@@ -563,6 +566,11 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 		user preset or document. The audio unit should not persist transitory properties such as
 		stream formats, but should save and restore all parameters and custom properties.
 		
+		The base class implementation of this property saves the values of all parameters 
+		currently in the parameter tree. A subclass which dynamically produces multiple variants
+		of the parameter tree needs to be aware that the serialization method does a depth-first
+		preorder traversal of the tree.
+		
 		Bridged to the v2 property kAudioUnitProperty_ClassInfo.
 */
 @property (NS_NONATOMIC_IOSONLY, copy, nullable) NSDictionary<NSString *, id> *fullState;
@@ -573,7 +581,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 	@discussion
 		This property is distinct from fullState in that some state is suitable for saving in user
 		presets, while other state is not. For example, a synthesizer's master tuning setting could
-		be considered global state, inappropriate to be stored in reusable presets, but desirable
+		be considered global state, inappropriate for storing in reusable presets, but desirable
 		for storing in a document for a specific live performance.
 		
 		Hosts saving documents should use this property. If the audio unit does not implement it,
@@ -884,12 +892,12 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 /*!	@method		addObserverToAllBusses:forKeyPath:options:context:
 	@brief		Add a KVO observer for a property on all busses in the array.
 */
-- (void)addObserverToAllBusses:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context;
+- (void)addObserverToAllBusses:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void * __nullable)context;
 
 /*!	@method		removeObserverFromAllBusses:forKeyPath:context:
 	@brief		Remove a KVO observer for a property on all busses in the array.
 */
-- (void)removeObserverFromAllBusses:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(void *)context;
+- (void)removeObserverFromAllBusses:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(void * __nullable)context;
 
 /// The audio unit that owns the bus.
 @property (NS_NONATOMIC_IOSONLY, readonly, assign) AUAudioUnit *ownerAudioUnit;

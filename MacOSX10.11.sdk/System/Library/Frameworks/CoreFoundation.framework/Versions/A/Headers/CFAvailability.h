@@ -26,8 +26,7 @@
 
 // The arguments to these availability macros is a version number, e.g. 10_6, 3_0 or 'NA'
 // To use a deprecation message with the macro, add a string as the last argument.
-#if __has_feature(attribute_availability_with_message) && __clang__ && __clang_major__ >= 7
-
+#if __has_feature(attribute_availability_with_version_underscores) || (__has_feature(attribute_availability_with_message) && __clang__ && __clang_major__ >= 7)
 #if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
 // This section is for compilers targeting OS X which support attribute_availability_with_message
 

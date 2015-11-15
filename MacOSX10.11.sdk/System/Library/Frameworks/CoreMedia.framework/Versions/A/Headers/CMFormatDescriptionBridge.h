@@ -96,7 +96,7 @@ CM_EXPORT OSStatus CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionDa
 		size_t imageDescriptionSize,
 		CFStringEncoding imageDescriptionStringEncoding,
 		CFStringRef CM_NULLABLE imageDescriptionFlavor,
-		CMVideoFormatDescriptionRef CM_NULLABLE * CM_NONNULL videoFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMVideoFormatDescriptionRef CM_NULLABLE * CM_NONNULL videoFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -114,7 +114,7 @@ CM_EXPORT OSStatus CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionBl
 		CMBlockBufferRef CM_NONNULL imageDescriptionBlockBuffer,
 		CFStringEncoding imageDescriptionStringEncoding,
 		CFStringRef CM_NULLABLE imageDescriptionFlavor,
-		CMVideoFormatDescriptionRef CM_NULLABLE * CM_NONNULL videoFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMVideoFormatDescriptionRef CM_NULLABLE * CM_NONNULL videoFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -136,7 +136,7 @@ CM_EXPORT OSStatus CMVideoFormatDescriptionCopyAsBigEndianImageDescriptionBlockB
 		CMVideoFormatDescriptionRef CM_NONNULL videoFormatDescription,
 		CFStringEncoding imageDescriptionStringEncoding,
 		CFStringRef CM_NULLABLE imageDescriptionFlavor,
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL imageDescriptionBlockBufferOut )
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL imageDescriptionBlockBufferOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -223,7 +223,7 @@ CM_EXPORT OSStatus CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionDa
 		const uint8_t * CM_NONNULL soundDescriptionData,
 		size_t soundDescriptionSize,
 		CFStringRef CM_NULLABLE soundDescriptionFlavor,
-		CMAudioFormatDescriptionRef CM_NULLABLE * CM_NONNULL  audioFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMAudioFormatDescriptionRef CM_NULLABLE * CM_NONNULL  audioFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -239,7 +239,7 @@ CM_EXPORT OSStatus CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionBl
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMBlockBufferRef CM_NONNULL soundDescriptionBlockBuffer,
 		CFStringRef CM_NULLABLE soundDescriptionFlavor,
-		CMAudioFormatDescriptionRef CM_NULLABLE * CM_NONNULL audioFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMAudioFormatDescriptionRef CM_NULLABLE * CM_NONNULL audioFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -259,7 +259,7 @@ CM_EXPORT OSStatus CMAudioFormatDescriptionCopyAsBigEndianSoundDescriptionBlockB
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMAudioFormatDescriptionRef CM_NONNULL audioFormatDescription,
 		CFStringRef CM_NULLABLE soundDescriptionFlavor,
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL soundDescriptionBlockBufferOut )
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL soundDescriptionBlockBufferOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -332,7 +332,7 @@ CM_EXPORT OSStatus CMTextFormatDescriptionCreateFromBigEndianTextDescriptionData
 		size_t textDescriptionSize,
 		CFStringRef CM_NULLABLE textDescriptionFlavor,
 		CMMediaType mediaType,
-		CMTextFormatDescriptionRef CM_NULLABLE * CM_NONNULL textFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMTextFormatDescriptionRef CM_NULLABLE * CM_NONNULL textFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -350,7 +350,7 @@ CM_EXPORT OSStatus CMTextFormatDescriptionCreateFromBigEndianTextDescriptionBloc
 		CMBlockBufferRef CM_NONNULL textDescriptionBlockBuffer,
 		CFStringRef CM_NULLABLE textDescriptionFlavor,
 		CMMediaType mediaType,
-		CMTextFormatDescriptionRef CM_NULLABLE * CM_NONNULL textFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMTextFormatDescriptionRef CM_NULLABLE * CM_NONNULL textFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -370,7 +370,7 @@ CM_EXPORT OSStatus CMTextFormatDescriptionCopyAsBigEndianTextDescriptionBlockBuf
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMTextFormatDescriptionRef CM_NONNULL textFormatDescription,
 		CFStringRef CM_NULLABLE textDescriptionFlavor,
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL textDescriptionBlockBufferOut )
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL textDescriptionBlockBufferOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -429,7 +429,7 @@ CM_EXPORT OSStatus CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCapt
 		const uint8_t * CM_NONNULL closedCaptionDescriptionData,
 		size_t closedCaptionDescriptionSize,
 		CFStringRef CM_NULLABLE closedCaptionDescriptionFlavor,
-		CMClosedCaptionFormatDescriptionRef CM_NULLABLE * CM_NONNULL closedCaptionFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMClosedCaptionFormatDescriptionRef CM_NULLABLE * CM_NONNULL closedCaptionFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -445,7 +445,7 @@ CM_EXPORT OSStatus CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCapt
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMBlockBufferRef CM_NONNULL closedCaptionDescriptionBlockBuffer,
 		CFStringRef CM_NULLABLE closedCaptionDescriptionFlavor,
-		CMClosedCaptionFormatDescriptionRef CM_NULLABLE * CM_NONNULL closedCaptionFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMClosedCaptionFormatDescriptionRef CM_NULLABLE * CM_NONNULL closedCaptionFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -465,7 +465,7 @@ CM_EXPORT OSStatus CMClosedCaptionFormatDescriptionCopyAsBigEndianClosedCaptionD
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMClosedCaptionFormatDescriptionRef CM_NONNULL closedCaptionFormatDescription,
 		CFStringRef CM_NULLABLE closedCaptionDescriptionFlavor,
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL closedCaptionDescriptionBlockBufferOut )
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL closedCaptionDescriptionBlockBufferOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -524,7 +524,7 @@ CM_EXPORT OSStatus CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescrip
 		const uint8_t * CM_NONNULL timeCodeDescriptionData,
 		size_t timeCodeDescriptionSize, 
 		CFStringRef CM_NULLABLE timeCodeDescriptionFlavor,
-		CMTimeCodeFormatDescriptionRef CM_NULLABLE * CM_NONNULL timeCodeFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMTimeCodeFormatDescriptionRef CM_NULLABLE * CM_NONNULL timeCodeFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -540,7 +540,7 @@ CM_EXPORT OSStatus CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescrip
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMBlockBufferRef CM_NONNULL timeCodeDescriptionBlockBuffer,
 		CFStringRef CM_NULLABLE timeCodeDescriptionFlavor,
-		CMTimeCodeFormatDescriptionRef CM_NULLABLE * CM_NONNULL timeCodeFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMTimeCodeFormatDescriptionRef CM_NULLABLE * CM_NONNULL timeCodeFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -560,7 +560,7 @@ CM_EXPORT OSStatus CMTimeCodeFormatDescriptionCopyAsBigEndianTimeCodeDescription
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMTimeCodeFormatDescriptionRef CM_NONNULL timeCodeFormatDescription,
 		CFStringRef CM_NULLABLE timeCodeDescriptionFlavor,
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL timeCodeDescriptionBlockBufferOut )
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL timeCodeDescriptionBlockBufferOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -619,7 +619,7 @@ CM_EXPORT OSStatus CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescrip
 		const uint8_t * CM_NONNULL metadataDescriptionData,
 		size_t metadataDescriptionSize,
 		CFStringRef CM_NULLABLE metadataDescriptionFlavor,
-		CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL metadataFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL metadataFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -635,7 +635,7 @@ CM_EXPORT OSStatus CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescrip
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMBlockBufferRef CM_NONNULL metadataDescriptionBlockBuffer,
 		CFStringRef CM_NULLABLE metadataDescriptionFlavor,
-		CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL metadataFormatDescriptionOut )
+		CM_RETURNS_RETAINED_PARAMETER CMMetadataFormatDescriptionRef CM_NULLABLE * CM_NONNULL metadataFormatDescriptionOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 /*!
@@ -655,7 +655,7 @@ CM_EXPORT OSStatus CMMetadataFormatDescriptionCopyAsBigEndianMetadataDescription
 		CFAllocatorRef CM_NULLABLE allocator,
 		CMMetadataFormatDescriptionRef CM_NONNULL metadataFormatDescription,
 		CFStringRef CM_NULLABLE metadataDescriptionFlavor,
-		CMBlockBufferRef CM_NULLABLE * CM_NONNULL metadataDescriptionBlockBufferOut )
+		CM_RETURNS_RETAINED_PARAMETER CMBlockBufferRef CM_NULLABLE * CM_NONNULL metadataDescriptionBlockBufferOut )
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
 CF_IMPLICIT_BRIDGING_ENABLED

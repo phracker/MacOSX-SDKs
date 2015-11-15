@@ -9,6 +9,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AVAudioNode, AVAudioConnectionPoint, AVAudioMixingDestination;
+@protocol AVAudioStereoMixing;
+@protocol AVAudio3DMixing;
+
 /*! @protocol   AVAudioMixing
     @abstract   Protocol that defines properties applicable to the input bus of a mixer
                 node
@@ -17,21 +21,27 @@ NS_ASSUME_NONNULL_BEGIN
         specifically of type AVAudioMixerNode or AVAudioEnvironmentNode. The properties defined 
         by this protocol apply to the respective input bus of the mixer node that the source node is 
         connected to. Note that effect nodes cannot talk to their downstream mixer.
- 
-		The state of properties that are set via this protocol before the source node is connected
-		to mixer node(s) are cached and then applied on the mixer(s) once the physical connection is
-		made. Similarly, on disconnection, the state of the properties of last mixer to be
-		disconnected are cached.
- 
-		Source nodes that are connected to a single mixer downstream can be disconnected from
-		one mixer and connected to another mixer with their mixing settings intact. 
+
+		Properties can be set either on the source node, or directly on individual mixer connections.
+		Source node properties are:
+		- applied to all existing mixer connections when set
+		- applied to new mixer connections
+		- preserved upon disconnection from mixers
+		- not affected by connections/disconnections to/from mixers
+		- not affected by any direct changes to properties on individual mixer connections
+
+		Individual mixer connection properties, when set, will override any values previously derived 
+		from the corresponding source node properties. However, if a source node property is 
+		subsequently set, it will override the corresponding property value of all individual mixer 
+		connections.
+		Unlike source node properties, individual mixer connection properties are not preserved upon
+		disconnection (see `AVAudioMixing(destinationForMixer:bus:)` and `AVAudioMixingDestination`).
+
+		Source nodes that are connected to a mixer downstream can be disconnected from
+		one mixer and connected to another mixer with source node's mixing settings intact.
 		For example, an AVAudioPlayerNode that is being used in a gaming scenario can set up its 
 		3D mixing settings and then move from one environment to another.
 */
-@class AVAudioNode, AVAudioConnectionPoint, AVAudioMixingDestination;
-@protocol AVAudioStereoMixing;
-@protocol AVAudio3DMixing;
-
 NS_CLASS_AVAILABLE(10_10, 8_0)
 @protocol AVAudioMixing <AVAudioStereoMixing, AVAudio3DMixing>
 
@@ -46,8 +56,7 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
  
 		Note:
 		- Properties set on individual AVAudioMixingDestination instances will not reflect at the
-			source node level, except when the node is disconnected from all its downstream mixers, 
-			at which point the state of the last disconnected mixer is cached at the node level.
+			source node level.
 
 		- AVAudioMixingDestination reference returned by this method could become invalid when
 			there is any disconnection between the source and the mixer node. Hence this reference

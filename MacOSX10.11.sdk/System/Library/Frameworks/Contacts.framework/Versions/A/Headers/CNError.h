@@ -35,7 +35,7 @@ typedef NS_ENUM(NSInteger, CNErrorCode)
 /*! When available an array of one or more CNContact, CNGroup or CNContainer objects for which the error code applies. */
 CONTACTS_EXTERN NSString * const CNErrorUserInfoAffectedRecordsKey NS_AVAILABLE(10_11, 9_0);
 
-/*! When available an array of one or more NSString, NSString or NSString objects for which the error code applies. */
+/*! When available an array of one or more NSString objects for which the error code applies. */
 CONTACTS_EXTERN NSString * const CNErrorUserInfoAffectedRecordIdentifiersKey NS_AVAILABLE(10_11, 9_0);
 
 /*! An array of NSErrors for CNErrorCodeValidationMultipleErrors. */

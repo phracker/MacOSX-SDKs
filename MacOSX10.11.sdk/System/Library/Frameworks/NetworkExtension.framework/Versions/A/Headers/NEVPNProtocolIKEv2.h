@@ -25,9 +25,9 @@ typedef NS_ENUM(NSInteger, NEVPNIKEv2EncryptionAlgorithm) {
 	/*! @const NEVPNIKEv2EncryptionAlgorithmAES256 Advanced Encryption Standard 256 bit (AES256) */
 	NEVPNIKEv2EncryptionAlgorithmAES256 = 4,
 	/*! @const NEVPNIKEv2EncryptionAlgorithmAES128GCM Advanced Encryption Standard 128 bit (AES128GCM) */
-	NEVPNIKEv2EncryptionAlgorithmAES128GCM = 5,
+	NEVPNIKEv2EncryptionAlgorithmAES128GCM NS_ENUM_AVAILABLE(10_11, 8_3) = 5,
 	/*! @const NEVPNIKEv2EncryptionAlgorithmAES256GCM Advanced Encryption Standard 256 bit (AES256GCM) */
-	NEVPNIKEv2EncryptionAlgorithmAES256GCM = 6,
+	NEVPNIKEv2EncryptionAlgorithmAES256GCM NS_ENUM_AVAILABLE(10_11, 8_3) = 6,
 } NS_ENUM_AVAILABLE(10_10, 8_0);
 
 /*!
@@ -107,7 +107,7 @@ typedef NS_ENUM(NSInteger, NEVPNIKEv2CertificateType) {
     NEVPNIKEv2CertificateTypeECDSA384 = 3,
     /*! @const NEVPNIKEv2CertificateTypeECDSA521 ECDSA with p-521 curve */
     NEVPNIKEv2CertificateTypeECDSA521 = 4,
-} NS_ENUM_AVAILABLE(10_10, 8_0);
+} NS_ENUM_AVAILABLE(10_11, 8_3);
 
 /*!
  * @class NEVPNIKEv2SecurityAssociationParameters
@@ -156,7 +156,7 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 
 /*!
  * @property deadPeerDetectionRate
- * @discussion How frequently the IKEv2 client will run the dead peer detection algorithm.
+ * @discussion How frequently the IKEv2 client will run the dead peer detection algorithm.  Default is NEVPNIKEv2DeadPeerDetectionRateMedium.
  */
 @property NEVPNIKEv2DeadPeerDetectionRate deadPeerDetectionRate NS_AVAILABLE(10_10, 8_0);
 
@@ -176,13 +176,13 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
  * @property certificateType
  * @discussion contains the type of certificate if an certificate is configured.  Default is RSA.
  */
-@property NEVPNIKEv2CertificateType certificateType NS_AVAILABLE(10_10, 8_0);
+@property NEVPNIKEv2CertificateType certificateType NS_AVAILABLE(10_11, 8_3);
 
 /*!
  * @property useConfigurationAttributeInternalIPSubnet
  * @discussion Boolean indicating if client should use INTERNAL_IP4_SUBNET / INTERNAL_IP6_SUBNET attributes.  Default is False.
  */
-@property BOOL useConfigurationAttributeInternalIPSubnet NS_AVAILABLE(10_10, 8_0);
+@property BOOL useConfigurationAttributeInternalIPSubnet NS_AVAILABLE(10_11, 9_0);
 
 /*!
  * @property IKESecurityAssociationParameters
@@ -213,6 +213,18 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
  * @discussion Enable Perfect Forward Secrecy. Default is NO.
  */
 @property BOOL enablePFS NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ * @property enableRevocationCheck
+ * @discussion Enable certificate revocation check. Default is NO.
+ */
+@property BOOL enableRevocationCheck NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ * @property strictRevocationCheck
+ * @discussion Require positive certificate revocation check response for peer certificate validation to pass. Default is NO.
+ */
+@property BOOL strictRevocationCheck NS_AVAILABLE(10_11, 9_0);
 
 @end
 

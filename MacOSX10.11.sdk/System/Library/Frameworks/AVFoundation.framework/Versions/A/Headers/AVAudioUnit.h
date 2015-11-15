@@ -41,7 +41,7 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 		AVAudioUnitGenerator, AVAudioUnitMIDIInstrument, or AVAudioUnitTimeEffect), selected
 		according to the component's type.
 */
-+ (void)instantiateWithComponentDescription:(AudioComponentDescription)audioComponentDescription options:(AudioComponentInstantiationOptions)options completionHandler:(void (^)(__nullable __kindof AVAudioUnit *audioUnit, __nullable NSError *error))completionHandler NS_AVAILABLE(10_11, 9_0);
++ (void)instantiateWithComponentDescription:(AudioComponentDescription)audioComponentDescription options:(AudioComponentInstantiationOptions)options completionHandler:(void (^)(__kindof AVAudioUnit * __nullable audioUnit, NSError * __nullable error))completionHandler NS_AVAILABLE(10_11, 9_0);
 
 /*! @method loadAudioUnitPresetAtURL:error:
     @abstract Load an audio unit preset.

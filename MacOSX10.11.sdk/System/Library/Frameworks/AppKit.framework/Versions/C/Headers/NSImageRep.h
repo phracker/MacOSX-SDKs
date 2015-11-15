@@ -122,7 +122,7 @@ enum {
  
  The CGImageRef returned is guaranteed to live as long as the current autorelease pool.  The caller should not release the CGImage.  This is the standard Cocoa convention, but people may not realize that it applies to CFTypes.
  */
-- (nullable CGImageRef)CGImageForProposedRect:(nullable NSRect *)proposedDestRect context:(nullable NSGraphicsContext *)context hints:(nullable NSDictionary<NSString *, id> *)hints NS_AVAILABLE_MAC(10_6);
+- (nullable CGImageRef)CGImageForProposedRect:(nullable NSRect *)proposedDestRect context:(nullable NSGraphicsContext *)context hints:(nullable NSDictionary<NSString *, id> *)hints NS_AVAILABLE_MAC(10_6) CF_RETURNS_NOT_RETAINED;
 
 @end
 

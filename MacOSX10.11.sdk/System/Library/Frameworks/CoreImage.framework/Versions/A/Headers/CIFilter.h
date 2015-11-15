@@ -182,6 +182,7 @@ CORE_IMAGE_EXPORT NSString * const kCIInputColorKey NS_AVAILABLE(10_5, 7_0);
 CORE_IMAGE_EXPORT NSString * const kCIInputBrightnessKey NS_AVAILABLE(10_5, 7_0);
 CORE_IMAGE_EXPORT NSString * const kCIInputContrastKey NS_AVAILABLE(10_5, 7_0);
 CORE_IMAGE_EXPORT NSString * const kCIInputBiasKey NS_AVAILABLE(10_5, 9_0);
+CORE_IMAGE_EXPORT NSString * const kCIInputWeightsKey NS_AVAILABLE(10_11, 9_0);
 CORE_IMAGE_EXPORT NSString * const kCIInputGradientImageKey NS_AVAILABLE(10_5, 9_0);
 CORE_IMAGE_EXPORT NSString * const kCIInputMaskImageKey NS_AVAILABLE(10_5, 7_0);
 CORE_IMAGE_EXPORT NSString * const kCIInputShadingImageKey NS_AVAILABLE(10_5, 9_0);
@@ -203,7 +204,7 @@ NS_CLASS_AVAILABLE(10_4, 5_0)
     void *_priv[8];
 }
 
-@property (readonly, nonatomic) CIImage *outputImage NS_AVAILABLE(10_10, 5_0);
+@property (readonly, nonatomic, nullable) CIImage *outputImage NS_AVAILABLE(10_10, 5_0);
 
 /* name of the filter */
 #if TARGET_OS_IPHONE

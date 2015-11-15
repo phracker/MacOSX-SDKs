@@ -601,8 +601,8 @@ extern double __exp10(double) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
     function call, storing the sine in the memory pointed to by sinp, and
     the cosine in the memory pointed to by cosp. Edge cases match those of
     separate calls to sin( ) and cos( ).                                      */
-__header_always_inline void __sincosf(float __x, float *__sinp, float *__cosp) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-__header_always_inline void __sincos(double __x, double *__sinp, double *__cosp) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
+__header_always_inline void __sincosf(float __x, float *__sinp, float *__cosp);
+__header_always_inline void __sincos(double __x, double *__sinp, double *__cosp);
 
 /*  __sinpi(x) returns the sine of pi times x; __cospi(x) and __tanpi(x) return
     the cosine and tangent, respectively.  These functions can produce a more
@@ -618,13 +618,32 @@ extern double __sinpi(double) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 extern float __tanpif(float) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
 extern double __tanpi(double) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
 
+#if (defined __MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < 1090) || \
+    (defined __IPHONE_OS_VERSION_MIN_REQUIRED && __IPHONE_OS_VERSION_MIN_REQUIRED < 70000)
+/*  __sincos and __sincosf were introduced in OSX 10.9 and iOS 7.0.  When
+    targeting an older system, we simply split them up into discrete calls
+    to sin( ) and cos( ).                                                     */
+__header_always_inline void __sincosf(float __x, float *__sinp, float *__cosp) {
+  *__sinp = sinf(__x);
+  *__cosp = cosf(__x);
+}
+
+__header_always_inline void __sincos(double __x, double *__sinp, double *__cosp) {
+  *__sinp = sin(__x);
+  *__cosp = cos(__x);
+}
+#else
 /*  __sincospi(x,sinp,cosp) computes the sine and cosine of pi times x with a
     single function call, storing the sine in the memory pointed to by sinp,
     and the cosine in the memory pointed to by cosp.  Edge cases match those
     of separate calls to __sinpi( ) and __cospi( ), and are documented in the
-    man pages.                                                                */
-__header_always_inline void __sincospif(float __x, float *__sinp, float *__cosp) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-__header_always_inline void __sincospi(double __x, double *__sinp, double *__cosp) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
+    man pages.
+ 
+    These functions were introduced in OSX 10.9 and iOS 7.0.  Because they are
+    implemented as header inlines, weak-linking does not function as normal,
+    and they are simply hidden when targeting earlier OS versions.            */
+__header_always_inline void __sincospif(float __x, float *__sinp, float *__cosp);
+__header_always_inline void __sincospi(double __x, double *__sinp, double *__cosp);
 
 /*  Implementation details of __sincos and __sincospi allowing them to return
     two results while allowing the compiler to optimize away unnecessary load-
@@ -658,6 +677,7 @@ __header_always_inline void __sincospi(double __x, double *__sinp, double *__cos
     const struct __double2 __stret = __sincospi_stret(__x);
     *__sinp = __stret.__sinval; *__cosp = __stret.__cosval;
 }
+#endif
 
 /******************************************************************************
  *  POSIX/UNIX extensions to the C standard                                   *

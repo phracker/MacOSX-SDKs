@@ -102,7 +102,7 @@ NS_AVAILABLE(10_11, 8_0)
  @method setVertexBytes:length:atIndex:
  @brief Set the data (by copy) for a given vertex buffer binding point.  This will remove any existing MTLBuffer from the binding point.
  */
-- (void)setVertexBytes:(const void * __nullable)bytes length:(NSUInteger)length atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 8_3);
+- (void)setVertexBytes:(const void *)bytes length:(NSUInteger)length atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 8_3);
 
 /*!
  @method setVertexBuffer:offset:atIndex:
@@ -133,12 +133,6 @@ NS_AVAILABLE(10_11, 8_0)
  @brief Set an array of global textures for all vertex shaders with the given bind point range.
  */
 - (void)setVertexTextures:(const id <MTLTexture> __nullable [__nullable])textures withRange:(NSRange)range;
-
-/*!
- @method setVertexTexture:baseLevel:atIndex:
- @brief Set a global texture for all vertex shaders with the specified base level at the given bind point index.
- */
-- (void)setVertexTexture:(nullable id <MTLTexture>)texture baseLevel:(NSUInteger)baseLevel atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 9_0);
 
 /*!
  @method setVertexSamplerState:atIndex:
@@ -214,7 +208,7 @@ NS_AVAILABLE(10_11, 8_0)
  @method setFragmentBytes:length:atIndex:
  @brief Set the data (by copy) for a given fragment buffer binding point.  This will remove any existing MTLBuffer from the binding point.
  */
-- (void)setFragmentBytes:(const void * __nullable)bytes length:(NSUInteger)length atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 8_3);
+- (void)setFragmentBytes:(const void *)bytes length:(NSUInteger)length atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 8_3);
 
 /*!
  @method setFragmentBuffer:offset:atIndex:
@@ -245,12 +239,6 @@ NS_AVAILABLE(10_11, 8_0)
  @brief Set an array of global textures for all fragment shaders with the given bind point range.
  */
 - (void)setFragmentTextures:(const id <MTLTexture> __nullable [__nullable])textures withRange:(NSRange)range;
-
-/*!
- @method setFragmentTexture:baseLevel:atIndex:
- @brief Set a global texture for all fragment shaders with the specified base level at the given bind point index.
- */
-- (void)setFragmentTexture:(nullable id <MTLTexture>)texture baseLevel:(NSUInteger)baseLevel atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 9_0);
 
 /*!
  @method setFragmentSamplerState:atIndex:
@@ -399,6 +387,12 @@ NS_AVAILABLE(10_11, 8_0)
  @param indirectBufferOffset Byte offset within @a indirectBuffer to start reading indexes from.  @a indirectBufferOffset must be a multiple of 4.
  */
 - (void)drawIndexedPrimitives:(MTLPrimitiveType)primitiveType indexType:(MTLIndexType)indexType indexBuffer:(id <MTLBuffer>)indexBuffer indexBufferOffset:(NSUInteger)indexBufferOffset indirectBuffer:(id <MTLBuffer>)indirectBuffer indirectBufferOffset:(NSUInteger)indirectBufferOffset NS_AVAILABLE(10_11, NA);
+
+/*!
+ @method textureBarrier:
+ @brief Ensure that following fragment shaders can read textures written by previous draw calls (in particular the framebuffer)
+ */
+- (void)textureBarrier NS_AVAILABLE_MAC(10_11);
 
 @end
 NS_ASSUME_NONNULL_END

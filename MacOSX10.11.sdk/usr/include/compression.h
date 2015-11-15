@@ -93,22 +93,27 @@ extern "C" {
    a good balance between compression speed and compression ratio.  The zlib
    decoder supports decoding data compressed with any compression level.
 
-   The encoded format is the raw DEFLATE format as described in IETF RFC 1951
+   The encoded format is the raw DEFLATE format as described in IETF RFC 1951.
    Using the ZLIB library, the equivalent configuration of the encoder would be
    obtained with a call to:
 
         deflateInit2(zstream,5,Z_DEFLATED,-15,8,Z_DEFAULT_STRATEGY)
 
+ - LZ4_RAW is supported by the buffer APIs only, and encodes/decodes payloads
+   compatible with the LZ4 library, without the frame headers described above.
+ 
 */
 typedef enum {
 
     /* Commonly-available encoders */
-    COMPRESSION_LZ4   __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x100,
-    COMPRESSION_ZLIB  __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x205,
-    COMPRESSION_LZMA  __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x306,
+    COMPRESSION_LZ4     __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x100,
+    COMPRESSION_ZLIB    __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x205,
+    COMPRESSION_LZMA    __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x306,
+
+    COMPRESSION_LZ4_RAW __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x101,
 
     /* Apple-specific encoders */
-    COMPRESSION_LZFSE __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x801,
+    COMPRESSION_LZFSE   __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0) = 0x801,
 
 } compression_algorithm;
 

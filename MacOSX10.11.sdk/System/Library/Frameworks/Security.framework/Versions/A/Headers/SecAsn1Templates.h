@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /************************************************************************/
 
 /*
@@ -123,6 +125,8 @@ extern const SecAsn1Template kSecAsn1SetOfTeletexStringTemplate[];
  * Template for skipping a subitem; only used when decoding.
  */
 extern const SecAsn1Template kSecAsn1SkipTemplate[];
+
+CF_ASSUME_NONNULL_END
 
 #ifdef  __cplusplus
 }

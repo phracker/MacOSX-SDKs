@@ -45,6 +45,7 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
 
 /*!
 	@function SecRequirementGetTypeID
@@ -68,7 +69,7 @@ CFTypeID SecRequirementGetTypeID(void);
 	CSCommon.h or certain other Security framework headers.
 */
 OSStatus SecRequirementCreateWithData(CFDataRef data, SecCSFlags flags,
-	SecRequirementRef *requirement);
+	SecRequirementRef * __nonnull CF_RETURNS_RETAINED requirement);
 
 	
 /*!
@@ -88,10 +89,10 @@ OSStatus SecRequirementCreateWithData(CFDataRef data, SecCSFlags flags,
 	CSCommon.h or certain other Security framework headers.
 */
 OSStatus SecRequirementCreateWithString(CFStringRef text, SecCSFlags flags,
-	SecRequirementRef *requirement);
+	SecRequirementRef * __nonnull CF_RETURNS_RETAINED requirement);
 	
 OSStatus SecRequirementCreateWithStringAndErrors(CFStringRef text, SecCSFlags flags,
-	CFErrorRef *errors, SecRequirementRef *requirement);
+	CFErrorRef *errors, SecRequirementRef * __nonnull CF_RETURNS_RETAINED requirement);
 
 
 /*!
@@ -108,7 +109,7 @@ OSStatus SecRequirementCreateWithStringAndErrors(CFStringRef text, SecCSFlags fl
 	CSCommon.h or certain other Security framework headers.
 */
 OSStatus SecRequirementCopyData(SecRequirementRef requirement, SecCSFlags flags,
-	CFDataRef *data);
+	CFDataRef * __nonnull CF_RETURNS_RETAINED data);
 
 
 /*!
@@ -130,8 +131,9 @@ OSStatus SecRequirementCopyData(SecRequirementRef requirement, SecCSFlags flags,
 	CSCommon.h or certain other Security framework headers.
 */
 OSStatus SecRequirementCopyString(SecRequirementRef requirement, SecCSFlags flags,
-	CFStringRef *text);
+	CFStringRef * __nonnull CF_RETURNS_RETAINED text);
 
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

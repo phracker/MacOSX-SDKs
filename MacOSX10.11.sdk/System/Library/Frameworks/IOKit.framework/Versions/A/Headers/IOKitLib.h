@@ -931,6 +931,23 @@ IORegistryEntryFromPath(
 	mach_port_t		masterPort,
 	const io_string_t	path );
 
+
+/*! @function IORegistryEntryFromPathCFString
+    @abstract Looks up a registry entry by path.
+    @discussion This function parses paths to lookup registry entries. The path should begin with '<plane name>:' If there are characters remaining unparsed after an entry has been looked up, this is considered an invalid lookup. Paths are further documented in IORegistryEntry.h
+    @param masterPort The master port obtained from IOMasterPort(). Pass kIOMasterPortDefault to look up the default master port.
+    @param path A CFString path.
+    @result A handle to the IORegistryEntry witch was found with the path, to be released with IOObjectRelease by the caller, or MACH_PORT_NULL on failure. */
+
+io_registry_entry_t
+IORegistryEntryCopyFromPath(
+	mach_port_t	masterPort,
+	CFStringRef	path )
+#if defined(__MAC_10_11)
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0)
+#endif
+;
+
 // options for IORegistryCreateIterator(), IORegistryEntryCreateIterator, IORegistryEntrySearchCFProperty()
 enum {
     kIORegistryIterateRecursively	= 0x00000001,
@@ -1052,6 +1069,22 @@ IORegistryEntryGetPath(
 	io_registry_entry_t	entry,
 	const io_name_t         plane,
 	io_string_t		path );
+
+/*! @function IORegistryEntryCopyPath
+    @abstract Create a path for a registry entry.
+    @discussion The path for a registry entry is returned as a CFString The path describes the entry's attachment in a particular plane, which must be specified. The path begins with the plane name followed by a colon, and then followed by '/' separated path components for each of the entries between the root and the registry entry. An alias may also exist for the entry, and will be returned if available.
+    @param entry The registry entry handle whose path to look up.
+    @param plane The name of an existing registry plane. Plane names are defined in IOKitKeys.h, eg. kIOServicePlane.
+    @result An instance of CFString on success, to be released by the caller. IORegistryEntryCopyPath will fail if the entry is not attached in the plane. */
+
+CFStringRef
+IORegistryEntryCopyPath(
+	io_registry_entry_t	entry,
+	const io_name_t         plane)
+#if defined(__MAC_10_11)
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0)
+#endif
+;
 
 /*! @function IORegistryEntryGetRegistryEntryID
     @abstract Returns an ID for the registry entry that is global to all tasks.

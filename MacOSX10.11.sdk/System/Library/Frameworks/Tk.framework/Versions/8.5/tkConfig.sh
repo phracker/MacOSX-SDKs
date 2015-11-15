@@ -55,7 +55,7 @@ TK_LIB_FLAG='-framework Tk'
 
 # String to pass to linker to pick up the Tk library from its
 # build directory.
-TK_BUILD_LIB_SPEC='-F/Library/Caches/com.apple.xbs/Binaries/tcl/tcl-106~319/Objects/OBJROOT2/tk/Deployment -framework Tk'
+TK_BUILD_LIB_SPEC='-F/Library/Caches/com.apple.xbs/Binaries/tcl/tcl-107~132/Objects/OBJROOT2/tk/Deployment -framework Tk'
 
 # String to pass to linker to pick up the Tk library from its
 # installed directory.
@@ -71,7 +71,7 @@ TK_INCLUDE_SPEC='-I/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers'
 # different place than the directory containing the source files, this
 # points to the location of the sources, not the location where Tk was
 # compiled.
-TK_SRC_DIR='/Library/Caches/com.apple.xbs/Sources/tcl/tcl-106/tk/tk'
+TK_SRC_DIR='/Library/Caches/com.apple.xbs/Sources/tcl/tcl-107/tk/tk'
 
 # Needed if you want to make a 'fat' shared library library
 # containing tk objects or link a different wish.
@@ -86,14 +86,14 @@ TK_STUB_LIB_FLAG='-ltkstub8.5'
 
 # String to pass to linker to pick up the Tk stub library from its
 # build directory.
-TK_BUILD_STUB_LIB_SPEC='-L/Library/Caches/com.apple.xbs/Binaries/tcl/tcl-106~319/Objects/OBJROOT2/tk/Deployment -ltkstub8.5'
+TK_BUILD_STUB_LIB_SPEC='-L/Library/Caches/com.apple.xbs/Binaries/tcl/tcl-107~132/Objects/OBJROOT2/tk/Deployment -ltkstub8.5'
 
 # String to pass to linker to pick up the Tk stub library from its
 # installed directory.
 TK_STUB_LIB_SPEC='-L/System/Library/Frameworks/Tk.framework/Versions/8.5 -ltkstub8.5'
 
 # Path to the Tk stub library in the build directory.
-TK_BUILD_STUB_LIB_PATH='/Library/Caches/com.apple.xbs/Binaries/tcl/tcl-106~319/Objects/OBJROOT2/tk/Deployment/libtkstub8.5.a'
+TK_BUILD_STUB_LIB_PATH='/Library/Caches/com.apple.xbs/Binaries/tcl/tcl-107~132/Objects/OBJROOT2/tk/Deployment/libtkstub8.5.a'
 
 # Path to the Tk stub library in the install directory.
 TK_STUB_LIB_PATH='/System/Library/Frameworks/Tk.framework/Versions/8.5/libtkstub8.5.a'

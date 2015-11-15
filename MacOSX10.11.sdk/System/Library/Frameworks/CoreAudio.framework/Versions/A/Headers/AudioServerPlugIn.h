@@ -482,9 +482,9 @@ struct  AudioServerPlugInHostInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (*CopyFromStorage)( AudioServerPlugInHostRef        inHost,
-                        CFStringRef                     inKey,
-                        CFPropertyListRef __nullable *  outData);
+    (*CopyFromStorage)( AudioServerPlugInHostRef                    inHost,
+                        CFStringRef                                 inKey,
+                        CFPropertyListRef __nullable * __nonnull    outData);
 
     /*!
         @method         WriteToStorage
@@ -637,8 +637,8 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *Initialize)(    AudioServerPlugInDriverRef  inDriver,
-                                        AudioServerPlugInHostRef    inHost);
+    (STDMETHODCALLTYPE *Initialize)(    AudioServerPlugInDriverRef __nonnull    inDriver,
+                                        AudioServerPlugInHostRef                inHost);
 
     /*!
         @method         CreateDevice
@@ -659,10 +659,10 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *CreateDevice)(   AudioServerPlugInDriverRef                     inDriver,
-                                                    CFDictionaryRef                     inDescription,
-                                                    const AudioServerPlugInClientInfo*  inClientInfo,
-                                                    AudioObjectID*                      outDeviceObjectID);
+    (STDMETHODCALLTYPE *CreateDevice)(  AudioServerPlugInDriverRef __nonnull    inDriver,
+                                        CFDictionaryRef                         inDescription,
+                                        const AudioServerPlugInClientInfo*      inClientInfo,
+                                        AudioObjectID*                          outDeviceObjectID);
 
     /*!
         @method         DestroyDevice
@@ -674,8 +674,8 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *DestroyDevice)( AudioServerPlugInDriverRef  inDriver,
-                                        AudioObjectID               inDeviceObjectID);
+    (STDMETHODCALLTYPE *DestroyDevice)( AudioServerPlugInDriverRef __nonnull    inDriver,
+                                        AudioObjectID                           inDeviceObjectID);
 
     /*!
         @method         AddDeviceClient
@@ -693,9 +693,9 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *AddDeviceClient)(   AudioServerPlugInDriverRef          inDriver,
-                                            AudioObjectID                       inDeviceObjectID,
-                                            const AudioServerPlugInClientInfo*  inClientInfo);
+    (STDMETHODCALLTYPE *AddDeviceClient)(   AudioServerPlugInDriverRef __nonnull    inDriver,
+                                            AudioObjectID                           inDeviceObjectID,
+                                            const AudioServerPlugInClientInfo*      inClientInfo);
 
     /*!
         @method         RemoveDeviceClient
@@ -710,9 +710,9 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *RemoveDeviceClient)(    AudioServerPlugInDriverRef          inDriver,
-                                                AudioObjectID                       inDeviceObjectID,
-                                                const AudioServerPlugInClientInfo*  inClientInfo);
+    (STDMETHODCALLTYPE *RemoveDeviceClient)(    AudioServerPlugInDriverRef __nonnull    inDriver,
+                                                AudioObjectID                           inDeviceObjectID,
+                                                const AudioServerPlugInClientInfo*      inClientInfo);
 
     /*!
         @method         PerformDeviceConfigurationChange
@@ -736,10 +736,10 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *PerformDeviceConfigurationChange)(  AudioServerPlugInDriverRef  inDriver,
-                                                            AudioObjectID               inDeviceObjectID,
-                                                            UInt64                      inChangeAction,
-                                                            void* __nullable            inChangeInfo);
+    (STDMETHODCALLTYPE *PerformDeviceConfigurationChange)(  AudioServerPlugInDriverRef __nonnull    inDriver,
+                                                            AudioObjectID                           inDeviceObjectID,
+                                                            UInt64                                  inChangeAction,
+                                                            void* __nullable                        inChangeInfo);
 
     /*!
         @method         AbortDeviceConfigurationChange
@@ -763,10 +763,10 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *AbortDeviceConfigurationChange)(    AudioServerPlugInDriverRef  inDriver,
-                                                            AudioObjectID               inDeviceObjectID,
-                                                            UInt64                      inChangeAction,
-                                                            void* __nullable            inChangeInfo);
+    (STDMETHODCALLTYPE *AbortDeviceConfigurationChange)(    AudioServerPlugInDriverRef __nonnull    inDriver,
+                                                            AudioObjectID                           inDeviceObjectID,
+                                                            UInt64                                  inChangeAction,
+                                                            void* __nullable                        inChangeInfo);
 
 #pragma mark Property Operations
 
@@ -785,10 +785,10 @@ struct  AudioServerPlugInDriverInterface
         @result         A Boolean indicating whether or not the object has the given property.
     */
     Boolean
-    (STDMETHODCALLTYPE *HasProperty)(   AudioServerPlugInDriverRef          inDriver,
-                                        AudioObjectID                       inObjectID,
-                                        pid_t                               inClientProcessID,
-                                        const AudioObjectPropertyAddress*   inAddress);
+    (STDMETHODCALLTYPE *HasProperty)(   AudioServerPlugInDriverRef __nonnull    inDriver,
+                                        AudioObjectID                           inObjectID,
+                                        pid_t                                   inClientProcessID,
+                                        const AudioObjectPropertyAddress*       inAddress);
 
     /*!
         @method         IsPropertySettable
@@ -807,11 +807,11 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *IsPropertySettable)(    AudioServerPlugInDriverRef          inDriver,
-                                                AudioObjectID                       inObjectID,
-                                                pid_t                               inClientProcessID,
-                                                const AudioObjectPropertyAddress*   inAddress,
-                                                Boolean*                            outIsSettable);
+    (STDMETHODCALLTYPE *IsPropertySettable)(    AudioServerPlugInDriverRef __nonnull    inDriver,
+                                                AudioObjectID                           inObjectID,
+                                                pid_t                                   inClientProcessID,
+                                                const AudioObjectPropertyAddress*       inAddress,
+                                                Boolean*                                outIsSettable);
 
     /*!
         @method         GetPropertyDataSize
@@ -839,13 +839,13 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *GetPropertyDataSize)(   AudioServerPlugInDriverRef          inDriver,
-                                                AudioObjectID                       inObjectID,
-                                                pid_t                               inClientProcessID,
-                                                const AudioObjectPropertyAddress*   inAddress,
-                                                UInt32                              inQualifierDataSize,
-                                                const void* __nullable              inQualifierData,
-                                                UInt32*                             outDataSize);
+    (STDMETHODCALLTYPE *GetPropertyDataSize)(   AudioServerPlugInDriverRef __nonnull    inDriver,
+                                                AudioObjectID                           inObjectID,
+                                                pid_t                                   inClientProcessID,
+                                                const AudioObjectPropertyAddress*       inAddress,
+                                                UInt32                                  inQualifierDataSize,
+                                                const void* __nullable                  inQualifierData,
+                                                UInt32*                                 outDataSize);
 
     /*!
         @method         GetPropertyData
@@ -877,15 +877,15 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *GetPropertyData)(   AudioServerPlugInDriverRef          inDriver,
-                                            AudioObjectID                       inObjectID,
-                                            pid_t                               inClientProcessID,
-                                            const AudioObjectPropertyAddress*   inAddress,
-                                            UInt32                              inQualifierDataSize,
-                                            const void* __nullable              inQualifierData,
-                                            UInt32                              inDataSize,
-                                            UInt32*                             outDataSize,
-                                            void*                               outData);
+    (STDMETHODCALLTYPE *GetPropertyData)(   AudioServerPlugInDriverRef __nonnull    inDriver,
+                                            AudioObjectID                           inObjectID,
+                                            pid_t                                   inClientProcessID,
+                                            const AudioObjectPropertyAddress*       inAddress,
+                                            UInt32                                  inQualifierDataSize,
+                                            const void* __nullable                  inQualifierData,
+                                            UInt32                                  inDataSize,
+                                            UInt32*                                 outDataSize,
+                                            void*                                   outData);
 
     /*!
         @method         SetPropertyData
@@ -916,14 +916,14 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *SetPropertyData)(   AudioServerPlugInDriverRef          inDriver,
-                                            AudioObjectID                       inObjectID,
-                                            pid_t                               inClientProcessID,
-                                            const AudioObjectPropertyAddress*   inAddress,
-                                            UInt32                              inQualifierDataSize,
-                                            const void* __nullable              inQualifierData,
-                                            UInt32                              inDataSize,
-                                            const void*                         inData);
+    (STDMETHODCALLTYPE *SetPropertyData)(   AudioServerPlugInDriverRef __nonnull    inDriver,
+                                            AudioObjectID                           inObjectID,
+                                            pid_t                                   inClientProcessID,
+                                            const AudioObjectPropertyAddress*       inAddress,
+                                            UInt32                                  inQualifierDataSize,
+                                            const void* __nullable                  inQualifierData,
+                                            UInt32                                  inDataSize,
+                                            const void*                             inData);
 
 #pragma mark IO Operations
 
@@ -945,9 +945,9 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *StartIO)(   AudioServerPlugInDriverRef  inDriver,
-                                    AudioObjectID               inDeviceObjectID,
-                                    UInt32                      inClientID);
+    (STDMETHODCALLTYPE *StartIO)(   AudioServerPlugInDriverRef __nonnull    inDriver,
+                                    AudioObjectID                           inDeviceObjectID,
+                                    UInt32                                  inClientID);
 
     /*!
         @method         StopIO
@@ -962,9 +962,9 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *StopIO)(    AudioServerPlugInDriverRef  inDriver,
-                                    AudioObjectID               inDeviceObjectID,
-                                    UInt32                      inClientID);
+    (STDMETHODCALLTYPE *StopIO)(    AudioServerPlugInDriverRef __nonnull    inDriver,
+                                    AudioObjectID                           inDeviceObjectID,
+                                    UInt32                                  inClientID);
 
     /*!
         @method         GetZeroTimeStamp
@@ -989,12 +989,12 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *GetZeroTimeStamp)(  AudioServerPlugInDriverRef  inDriver,
-                                            AudioObjectID               inDeviceObjectID,
-                                            UInt32                      inClientID,
-                                            Float64*                    outSampleTime,
-                                            UInt64*                     outHostTime,
-                                            UInt64*                     outSeed);
+    (STDMETHODCALLTYPE *GetZeroTimeStamp)(  AudioServerPlugInDriverRef __nonnull    inDriver,
+                                            AudioObjectID                           inDeviceObjectID,
+                                            UInt32                                  inClientID,
+                                            Float64*                                outSampleTime,
+                                            UInt64*                                 outHostTime,
+                                            UInt64*                                 outSeed);
 
     /*!
         @method         WillDoIOOperation
@@ -1025,12 +1025,12 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *WillDoIOOperation)( AudioServerPlugInDriverRef  inDriver,
-                                            AudioObjectID               inDeviceObjectID,
-                                            UInt32                      inClientID,
-                                            UInt32                      inOperationID,
-                                            Boolean*                    outWillDo,
-                                            Boolean*                    outWillDoInPlace);
+    (STDMETHODCALLTYPE *WillDoIOOperation)( AudioServerPlugInDriverRef __nonnull    inDriver,
+                                            AudioObjectID                           inDeviceObjectID,
+                                            UInt32                                  inClientID,
+                                            UInt32                                  inOperationID,
+                                            Boolean*                                outWillDo,
+                                            Boolean*                                outWillDoInPlace);
 
     /*!
         @method         BeginIOOperation
@@ -1055,12 +1055,12 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *BeginIOOperation)(  AudioServerPlugInDriverRef          inDriver,
-                                            AudioObjectID                       inDeviceObjectID,
-                                            UInt32                              inClientID,
-                                            UInt32                              inOperationID,
-                                            UInt32                              inIOBufferFrameSize,
-                                            const AudioServerPlugInIOCycleInfo* inIOCycleInfo);
+    (STDMETHODCALLTYPE *BeginIOOperation)(  AudioServerPlugInDriverRef __nonnull    inDriver,
+                                            AudioObjectID                           inDeviceObjectID,
+                                            UInt32                                  inClientID,
+                                            UInt32                                  inOperationID,
+                                            UInt32                                  inIOBufferFrameSize,
+                                            const AudioServerPlugInIOCycleInfo*     inIOCycleInfo);
 
     /*!
         @method         DoIOOperation
@@ -1095,15 +1095,15 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *DoIOOperation)( AudioServerPlugInDriverRef          inDriver,
-                                        AudioObjectID                       inDeviceObjectID,
-                                        AudioObjectID                       inStreamObjectID,
-                                        UInt32                              inClientID,
-                                        UInt32                              inOperationID,
-                                        UInt32                              inIOBufferFrameSize,
-                                        const AudioServerPlugInIOCycleInfo* inIOCycleInfo,
-                                        void* __nullable                    ioMainBuffer,
-                                        void* __nullable                    ioSecondaryBuffer);
+    (STDMETHODCALLTYPE *DoIOOperation)( AudioServerPlugInDriverRef __nonnull    inDriver,
+                                        AudioObjectID                           inDeviceObjectID,
+                                        AudioObjectID                           inStreamObjectID,
+                                        UInt32                                  inClientID,
+                                        UInt32                                  inOperationID,
+                                        UInt32                                  inIOBufferFrameSize,
+                                        const AudioServerPlugInIOCycleInfo*     inIOCycleInfo,
+                                        void* __nullable                        ioMainBuffer,
+                                        void* __nullable                        ioSecondaryBuffer);
 
     /*!
         @method         EndIOOperation
@@ -1128,12 +1128,12 @@ struct  AudioServerPlugInDriverInterface
         @result         An OSStatus indicating success or failure.
     */
     OSStatus
-    (STDMETHODCALLTYPE *EndIOOperation)(    AudioServerPlugInDriverRef          inDriver,
-                                            AudioObjectID                       inDeviceObjectID,
-                                            UInt32                              inClientID,
-                                            UInt32                              inOperationID,
-                                            UInt32                              inIOBufferFrameSize,
-                                            const AudioServerPlugInIOCycleInfo* inIOCycleInfo);
+    (STDMETHODCALLTYPE *EndIOOperation)(    AudioServerPlugInDriverRef __nonnull    inDriver,
+                                            AudioObjectID                           inDeviceObjectID,
+                                            UInt32                                  inClientID,
+                                            UInt32                                  inOperationID,
+                                            UInt32                                  inIOBufferFrameSize,
+                                            const AudioServerPlugInIOCycleInfo*     inIOCycleInfo);
 
 };
 

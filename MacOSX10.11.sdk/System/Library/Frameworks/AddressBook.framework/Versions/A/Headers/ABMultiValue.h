@@ -5,6 +5,9 @@
 //  Copyright (c) 2003-2007 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABMULTIVALUE__
+#define __ABMULTIVALUE__
+
 #import <Foundation/Foundation.h>
 #import <AddressBook/ABTypedefs.h>
 #import <Foundation/NSEnumerator.h>
@@ -107,3 +110,5 @@
     // Returns YES if successful
 
 @end
+
+#endif // __ABMULTIVALUE__

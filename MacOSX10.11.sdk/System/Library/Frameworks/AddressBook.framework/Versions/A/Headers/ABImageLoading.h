@@ -5,6 +5,9 @@
 //  Copyright (c) 2003-2007 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABIMAGELOADING__
+#define __ABIMAGELOADING__
+
 #import <AddressBook/AddressBook.h>
 
 @protocol ABImageClient <NSObject>
@@ -34,3 +37,5 @@
     // Use the tag returned by the -beginLoadingImageDataForClient: method
 
 @end
+
+#endif // __ABIMAGELOADING__

@@ -59,7 +59,7 @@ typedef float (^SCNActionTimingFunction)(float time);
  @method hasActions
  @abstract Returns a Boolean value that indicates whether the node is executing actions.
  */
-- (BOOL)hasActions NS_AVAILABLE(10_10, 8_0);
+@property(nonatomic, readonly) BOOL hasActions NS_AVAILABLE(10_10, 8_0);
 
 /*!
  @method actionForKey:
@@ -83,7 +83,7 @@ typedef float (^SCNActionTimingFunction)(float time);
  @method actionKeys
  @abstract Returns an array containing the keys of all actions currently attached to the receiver.
  */
-- (NSArray *)actionKeys NS_AVAILABLE(10_10, 8_0);
+@property(nonatomic, readonly) NSArray<NSString *> *actionKeys NS_AVAILABLE(10_10, 8_0);
 
 @end
 

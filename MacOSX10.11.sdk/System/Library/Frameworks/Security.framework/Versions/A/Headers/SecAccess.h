@@ -42,7 +42,8 @@
 extern "C" {
 #endif
 
-
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
 
 typedef UInt32	SecAccessOwnerType;
 enum
@@ -101,7 +102,6 @@ extern const CFStringRef kSecACLAuthorizationChangeACL
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 extern const CFStringRef kSecACLAuthorizationChangeOwner
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-		
 
 /*!
 	@function SecAccessGetTypeID
@@ -123,7 +123,7 @@ CFTypeID SecAccessGetTypeID(void);
 	@param accessRef On return, a pointer to the new access reference.
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecAccessCreate(CFStringRef descriptor, CFArrayRef trustedlist, SecAccessRef *accessRef);
+OSStatus SecAccessCreate(CFStringRef descriptor, CFArrayRef __nullable trustedlist, SecAccessRef * __nonnull CF_RETURNS_RETAINED accessRef);
 
 /*!
 	@function SecAccessCreateFromOwnerAndACL
@@ -135,7 +135,7 @@ OSStatus SecAccessCreate(CFStringRef descriptor, CFArrayRef trustedlist, SecAcce
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion For 10.7 and later please use the SecAccessCreateWithOwnerAndACL API
 */
-OSStatus SecAccessCreateFromOwnerAndACL(const CSSM_ACL_OWNER_PROTOTYPE *owner, uint32 aclCount, const CSSM_ACL_ENTRY_INFO *acls, SecAccessRef *accessRef)
+OSStatus SecAccessCreateFromOwnerAndACL(const CSSM_ACL_OWNER_PROTOTYPE *owner, uint32 aclCount, const CSSM_ACL_ENTRY_INFO *acls, SecAccessRef * __nonnull CF_RETURNS_RETAINED accessRef)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 	
 /*!
@@ -147,8 +147,9 @@ OSStatus SecAccessCreateFromOwnerAndACL(const CSSM_ACL_OWNER_PROTOTYPE *owner, u
 	@param acls A CFArrayRef of the ACLs to associate with this SecAccessRef
 	@param error Optionally a pointer to a CFErrorRef to return any errors with may have occured
 	@result  A pointer to the new access reference.
-*/	
-SecAccessRef SecAccessCreateWithOwnerAndACL(uid_t userId, gid_t groupId, SecAccessOwnerType ownerType, CFArrayRef acls, CFErrorRef *error)
+*/
+__nullable
+SecAccessRef SecAccessCreateWithOwnerAndACL(uid_t userId, gid_t groupId, SecAccessOwnerType ownerType, CFArrayRef __nullable acls, CFErrorRef *error)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
@@ -161,7 +162,7 @@ SecAccessRef SecAccessCreateWithOwnerAndACL(uid_t userId, gid_t groupId, SecAcce
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion For 10.7 and later please use the SecAccessCopyOwnerAndACL API
  */
-OSStatus SecAccessGetOwnerAndACL(SecAccessRef accessRef, CSSM_ACL_OWNER_PROTOTYPE_PTR *owner, uint32 *aclCount, CSSM_ACL_ENTRY_INFO_PTR *acls)
+OSStatus SecAccessGetOwnerAndACL(SecAccessRef accessRef, CSSM_ACL_OWNER_PROTOTYPE_PTR __nullable * __nonnull owner, uint32 *aclCount, CSSM_ACL_ENTRY_INFO_PTR __nullable * __nonnull acls)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 	
 /*!
@@ -171,11 +172,10 @@ OSStatus SecAccessGetOwnerAndACL(SecAccessRef accessRef, CSSM_ACL_OWNER_PROTOTYP
 	@param userId On return, the user id of the owner
 	@param groupId On return, the group id of the owner
 	@param ownerType On return, the type of owner for this AccessRef
-	@param aclCount On return, a Boolean that if true specifies that the ownerId is a uid_t else it is a gid_t.
 	@param aclList On return, a pointer to a new created CFArray of SecACL instances.  The caller is responsible for calling CFRelease on this array.
 	@result A result code.  See "Security Error Codes" (SecBase.h).
  */	
-OSStatus SecAccessCopyOwnerAndACL(SecAccessRef accessRef, uid_t* userId, gid_t* groupId, SecAccessOwnerType* ownerType, CFArrayRef* aclList)
+OSStatus SecAccessCopyOwnerAndACL(SecAccessRef accessRef, uid_t * __nullable userId, gid_t * __nullable groupId, SecAccessOwnerType * __nullable ownerType, CFArrayRef * __nullable CF_RETURNS_RETAINED aclList)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
@@ -185,7 +185,7 @@ OSStatus SecAccessCopyOwnerAndACL(SecAccessRef accessRef, uid_t* userId, gid_t* 
 	@param aclList On return, a pointer to a new created CFArray of SecACL instances.  The caller is responsible for calling CFRelease on this array.
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecAccessCopyACLList(SecAccessRef accessRef, CFArrayRef *aclList);
+OSStatus SecAccessCopyACLList(SecAccessRef accessRef, CFArrayRef * __nonnull CF_RETURNS_RETAINED aclList);
 
 /*!
 	@function SecAccessCopySelectedACLList
@@ -196,7 +196,7 @@ OSStatus SecAccessCopyACLList(SecAccessRef accessRef, CFArrayRef *aclList);
 	@result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion For 10.7 and later please use the SecAccessCopyMatchingACLList API
 */
-OSStatus SecAccessCopySelectedACLList(SecAccessRef accessRef, CSSM_ACL_AUTHORIZATION_TAG action, CFArrayRef *aclList)
+OSStatus SecAccessCopySelectedACLList(SecAccessRef accessRef, CSSM_ACL_AUTHORIZATION_TAG action, CFArrayRef * __nonnull CF_RETURNS_RETAINED aclList)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 
@@ -207,8 +207,12 @@ OSStatus SecAccessCopySelectedACLList(SecAccessRef accessRef, CSSM_ACL_AUTHORIZA
 	@param authorizationTag An authorization tag specifying what action with which to select the action control lists.
 	@result A pointer to the selected access control lists.
 */
+__nullable
 CFArrayRef SecAccessCopyMatchingACLList(SecAccessRef accessRef, CFTypeRef authorizationTag)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }
