@@ -45,6 +45,11 @@ To provide the ideal user experience, you should set this property to NO and dow
 */
 @property BOOL canDownloadUbiquitousContents NS_AVAILABLE_MAC(10_10);
 
+
+/* Gets and sets the disclosure state of an accessory view in an NSOpenPanel. If hiding / disclosing an accessory view is not applicable this property will behave like a read only property. */
+
+@property (getter=isAccessoryViewDisclosed) BOOL accessoryViewDisclosed NS_AVAILABLE_MAC(10_11);
+
 @end
 
 @interface NSOpenPanel (NSDeprecated)

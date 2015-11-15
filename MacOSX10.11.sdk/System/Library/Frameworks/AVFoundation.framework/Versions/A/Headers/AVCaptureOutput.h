@@ -984,7 +984,7 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
     This method is called whenever the file output receives a single sample buffer (a single video frame or audio buffer,
     for example) from the given connection. This gives delegates an opportunity to start and stop recording or change
     output files at an exact sample boundary if -captureOutputShouldProvideSampleAccurateRecordingStart: returns YES. 
-    If called from within this method, the file output’s startRecordingToOutputFileURL:recordingDelegate: and 
+    If called from within this method, the file output's startRecordingToOutputFileURL:recordingDelegate: and 
     resumeRecording methods are guaranteed to include the received sample buffer in the new file, whereas calls to 
     stopRecording and pauseRecording are guaranteed to include all samples leading up to those in the current sample 
     buffer in the existing file.
@@ -1160,10 +1160,10 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
 	initial sample written to the timed metadata track represents video track's display matrix. During recording additional
 	samples will be written to the timed metadata track whenever the client application changes the video connection's
 	videoOrienation or videoMirrored properties. Using the above example, when the client application detects the user
-	changing the device from portrait to landscape orientation, it updates the video connection’s videoOrientation property,
+	changing the device from portrait to landscape orientation, it updates the video connection's videoOrientation property,
 	thus causing the movie file output to add a new sample to the timed metadata track.
 	
-	After capture, playback and editing applications can use the timed metadata track to enhance their user’s experience.
+	After capture, playback and editing applications can use the timed metadata track to enhance their user's experience.
 	For example, when playing back the captured movie, a playback engine can use the samples to adjust the display of the
 	video samples to keep the video properly oriented.  Another example is an editing application that uses the sample
 	the sample times to suggest cut points for breaking the captured movie into separate clips, where each clip is properly

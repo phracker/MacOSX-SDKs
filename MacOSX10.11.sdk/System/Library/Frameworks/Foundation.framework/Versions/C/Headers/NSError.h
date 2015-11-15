@@ -88,9 +88,11 @@ The specified block will be called synchronously at the time when the above prop
 This provider is optional. It enables localization and formatting of error messages to be done lazily; rather than populating the userInfo at NSError creation time, these keys will be fetched on-demand when asked for.
  
 It is expected that only the “owner” of an NSError domain specifies the provider for the domain, and this is done once. This facility is not meant for consumers of errors to customize the userInfo entries.  This facility should not be used to customize the behaviors of error domains provided by the system.
+ 
+If an appropriate result for the requested key cannot be provided, return nil rather than choosing to manufacture a generic fallback response such as "Operation could not be completed, error 42." NSError will take care of the fallback cases.
 */
-+ (void)setUserInfoValueProviderForDomain:(NSString *)errorDomain provider:(nullable id (^)(NSError *err, NSString *userInfoKey))provider NS_AVAILABLE(10_11, 9_0);
-+ (nullable id (^)(NSError *err, NSString *userInfoKey))userInfoValueProviderForDomain:(NSString *)errorDomain NS_AVAILABLE(10_11, 9_0);
++ (void)setUserInfoValueProviderForDomain:(NSString *)errorDomain provider:(id __nullable (^ __nullable)(NSError *err, NSString *userInfoKey))provider NS_AVAILABLE(10_11, 9_0);
++ (id __nullable (^ __nullable)(NSError *err, NSString *userInfoKey))userInfoValueProviderForDomain:(NSString *)errorDomain NS_AVAILABLE(10_11, 9_0);
 
 @end
 

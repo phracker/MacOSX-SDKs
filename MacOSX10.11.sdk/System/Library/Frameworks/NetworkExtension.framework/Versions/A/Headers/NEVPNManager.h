@@ -127,7 +127,13 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
  * @property protocol
  * @discussion An NEVPNProtocol object containing the protocol-specific portion of the VPN configuration.
  */
-@property (strong, nullable) NEVPNProtocol *protocol NS_AVAILABLE(10_10, 8_0);
+@property (strong, nullable) NEVPNProtocol *protocol NS_DEPRECATED(10_10, 10_11, 8_0, 9_0, "Use protocolConfiguration instead");
+
+/*!
+ * @property protocolConfiguration
+ * @discussion An NEVPNProtocol object containing the protocol-specific portion of the VPN configuration.
+ */
+@property (strong, nullable) NEVPNProtocol *protocolConfiguration NS_AVAILABLE(10_11, 9_0);
 
 /*!
  * @property connection

@@ -10,12 +10,13 @@
 #import <StoreKit/StoreKitDefines.h>
 
 NS_CLASS_AVAILABLE(10_9, NA)
+NS_ASSUME_NONNULL_BEGIN
 @interface SKReceiptRefreshRequest : SKRequest
 {
     NSDictionary *_properties;
 }
-- (id)initWithReceiptProperties:(NSDictionary *)properties;
-@property (nonatomic, readonly) NSDictionary *receiptProperties;
+- (nullable id)initWithReceiptProperties:(NSDictionary<NSString *, id> *)properties;
+@property (nullable, nonatomic, readonly) NSDictionary<NSString *, id> *receiptProperties;
 
 @end
 
@@ -24,3 +25,4 @@ NS_CLASS_AVAILABLE(10_9, NA)
 SK_EXTERN NSString * const SKReceiptPropertyIsExpired;  // NSNumber BOOL, defaults to NO
 SK_EXTERN NSString * const SKReceiptPropertyIsRevoked;  // NSNumber BOOL, defaults to NO
 SK_EXTERN NSString * const SKReceiptPropertyIsVolumePurchase;  // NSNumber BOOL, defaults to NO
+NS_ASSUME_NONNULL_END

@@ -37,12 +37,16 @@
 #include <Security/SecBase.h>
 #include <Security/SecAccess.h>
 #include <Security/cssmtype.h>
+#include <CoreFoundation/CFBase.h>
 #include <CoreFoundation/CFDictionary.h>
 #include <sys/types.h>
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
 	@enum KeyItemAttributeConstants
@@ -115,7 +119,7 @@ extern "C" {
 	use the equivalent items defined in SecItem.h
 	@@@.
 */
-enum
+CF_ENUM(int)
 {
     kSecKeyKeyClass =          0,
     kSecKeyPrintName =         1,
@@ -146,20 +150,14 @@ enum
     kSecKeyUnwrap =           26
 };
 
-/*!
-    @typedef SecCredentialType
-    @abstract Determines the type of credential returned by SecKeyGetCredentials.
-*/
-typedef uint32 SecCredentialType;
-
-/*!
+    /*!
     @enum SecCredentialType
     @abstract Determines the type of credential returned by SecKeyGetCredentials.
     @constant kSecCredentialTypeWithUI Operations with this key are allowed to present UI if required.
     @constant kSecCredentialTypeNoUI Operations with this key are not allowed to present UI, and will fail if UI is required.
     @constant kSecCredentialTypeDefault The default setting for determining whether to present UI is used. This setting can be changed with a call to SecKeychainSetUserInteractionAllowed.
 */
-enum
+typedef CF_ENUM(uint32, SecCredentialType)
 {
 	kSecCredentialTypeDefault = 0,
 	kSecCredentialTypeWithUI,
@@ -170,8 +168,7 @@ enum
     @typedef SecPadding
     @abstract Supported padding types.
 */
-typedef uint32_t SecPadding;
-enum
+typedef CF_ENUM(uint32_t, SecPadding)
 {
     kSecPaddingNone      = 0,
     kSecPaddingPKCS1     = 1,
@@ -201,8 +198,7 @@ enum
     @typedef SecKeySizes
     @abstract Supported key lengths.
 */
-typedef uint32_t SecKeySizes;
-enum
+typedef CF_ENUM(uint32_t, SecKeySizes)
 {
     kSecDefaultKeySize  = 0,
 
@@ -268,7 +264,7 @@ CFTypeID SecKeyGetTypeID(void)
 	@discussion This API is deprecated for 10.7. Please use the SecKeyGeneratePair API instead.
 */
 OSStatus SecKeyCreatePair(
-        SecKeychainRef keychainRef,
+        SecKeychainRef __nullable keychainRef,
         CSSM_ALGORITHMS algorithm,
         uint32 keySizeInBits,
         CSSM_CC_HANDLE contextHandle,
@@ -276,9 +272,9 @@ OSStatus SecKeyCreatePair(
         uint32 publicKeyAttr,
         CSSM_KEYUSE privateKeyUsage,
         uint32 privateKeyAttr,
-        SecAccessRef initialAccess,
-        SecKeyRef* publicKey,
-        SecKeyRef* privateKey)
+        SecAccessRef __nullable initialAccess,
+        SecKeyRef* __nullable CF_RETURNS_RETAINED publicKey,
+        SecKeyRef* __nullable CF_RETURNS_RETAINED privateKey)
 		DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -296,14 +292,14 @@ OSStatus SecKeyCreatePair(
 	@discussion This API is deprecated for 10.7.  Please use the SecKeyGenerateSymmetric API instead.
 */
 OSStatus SecKeyGenerate(
-        SecKeychainRef keychainRef,
+        SecKeychainRef __nullable keychainRef,
         CSSM_ALGORITHMS algorithm,
         uint32 keySizeInBits,
         CSSM_CC_HANDLE contextHandle,
         CSSM_KEYUSE keyUsage,
         uint32 keyAttr,
-        SecAccessRef initialAccess,
-        SecKeyRef* keyRef)
+        SecAccessRef __nullable initialAccess,
+        SecKeyRef* __nullable CF_RETURNS_RETAINED keyRef)
 		DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -314,7 +310,7 @@ OSStatus SecKeyGenerate(
     @result A result code. See "Security Error Codes" (SecBase.h).
     @discussion  The CSSM_KEY is valid until the key item reference is released. This API is deprecated in 10.7. Its use should no longer be needed.
 */
-OSStatus SecKeyGetCSSMKey(SecKeyRef key, const CSSM_KEY **cssmKey)
+OSStatus SecKeyGetCSSMKey(SecKeyRef key, const CSSM_KEY * __nullable * __nonnull cssmKey)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;;
 
 /*!
@@ -341,7 +337,7 @@ OSStatus SecKeyGetCredentials(
         SecKeyRef keyRef,
         CSSM_ACL_AUTHORIZATION_TAG operation,
         SecCredentialType credentialType,
-        const CSSM_ACCESS_CREDENTIALS **outCredentials)
+        const CSSM_ACCESS_CREDENTIALS * __nullable * __nonnull outCredentials)
 		DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -397,6 +393,7 @@ size_t SecKeyGetBlockSize(SecKeyRef key)
  * kSecAttrCanUnwrap (defaults to true if not explicitly specified)
 
 */
+__nullable
 SecKeyRef SecKeyGenerateSymmetric(CFDictionaryRef parameters, CFErrorRef *error)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
@@ -425,6 +422,7 @@ SecKeyRef SecKeyGenerateSymmetric(CFDictionaryRef parameters, CFErrorRef *error)
  * kSecAttrCanUnwrap (defaults to true if not explicitly specified)
 
 */
+__nullable
 SecKeyRef SecKeyCreateFromData(CFDictionaryRef parameters,
 	CFDataRef keyData, CFErrorRef *error)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
@@ -469,7 +467,7 @@ SecKeyRef SecKeyCreateFromData(CFDictionaryRef parameters,
 
 */
 OSStatus SecKeyGeneratePair(CFDictionaryRef parameters,
-	SecKeyRef *publicKey, SecKeyRef *privateKey)
+	SecKeyRef * __nullable CF_RETURNS_RETAINED publicKey, SecKeyRef * __nullable CF_RETURNS_RETAINED privateKey)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_2_0);
 
 /*!
@@ -557,6 +555,7 @@ void SecKeyGeneratePairAsync(CFDictionaryRef parameters,
  error parameter contains the reason.
 
 */
+__nullable
 SecKeyRef SecKeyDeriveFromPassword(CFStringRef password,
 	CFDictionaryRef parameters, CFErrorRef *error)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
@@ -567,7 +566,7 @@ SecKeyRef SecKeyDeriveFromPassword(CFStringRef password,
 
  @param keyToWrap The key which is to be wrapped.
  @param wrappingKey The key wrapping key.
- #param parameters The parameter list to use for wrapping the key.
+ @param parameters The parameter list to use for wrapping the key.
  @param error If the call fails this will contain the error code.
 
  @result On success a CFDataRef is returned.  On failure this result is NULL and the
@@ -577,6 +576,7 @@ SecKeyRef SecKeyDeriveFromPassword(CFStringRef password,
  * kSecSalt	- a CFData for the salt value for the encrypt.
 
 */
+__nullable
 CFDataRef SecKeyWrapSymmetric(SecKeyRef keyToWrap,
 	SecKeyRef wrappingKey, CFDictionaryRef parameters, CFErrorRef *error)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
@@ -587,7 +587,7 @@ CFDataRef SecKeyWrapSymmetric(SecKeyRef keyToWrap,
 
  @param keyToUnwrap The wrapped key to unwrap.
  @param unwrappingKey The key unwrapping key.
- #param parameters The parameter list to use for unwrapping the key.
+ @param parameters The parameter list to use for unwrapping the key.
  @param error If the call fails this will contain the error code.
 
  @result On success a SecKeyRef is returned.  On failure this result is NULL and the
@@ -597,10 +597,13 @@ CFDataRef SecKeyWrapSymmetric(SecKeyRef keyToWrap,
  * kSecSalt	- a CFData for the salt value for the decrypt.
 
 */
-SecKeyRef SecKeyUnwrapSymmetric(CFDataRef *keyToUnwrap,
+__nullable
+SecKeyRef SecKeyUnwrapSymmetric(CFDataRef __nullable * __nonnull keyToUnwrap,
 	SecKeyRef unwrappingKey, CFDictionaryRef parameters, CFErrorRef *error)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

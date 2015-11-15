@@ -126,6 +126,8 @@ extern int proc_ppid(proc_t);
 extern int proc_noremotehang(proc_t);
 /* returns 1 if the process is marked for force quota */
 extern int proc_forcequota(proc_t);
+/* returns 1 if the process is chrooted */
+extern int proc_chrooted(proc_t);
 
 /* this routine returns 1 if the process is running with 64bit address space, else 0 */
 extern int proc_is64bit(proc_t);

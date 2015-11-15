@@ -24,15 +24,15 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 @interface NWBonjourServiceEndpoint : NWEndpoint
 
 /*!
- * @method initWithName:type:domain:
+ * @method endpointWithName:type:domain:
  * @param name The Bonjour service name.
  * @param type The Bonjour service type.
  * @param domain The Bonjour service domain.
  * @return An initialized NWBonjourServiceEndpoint object.
  */
-- (instancetype)initWithName:(NSString *)name
-						type:(NSString *)type
-					  domain:(NSString *)domain NS_AVAILABLE(10_11, 9_0);
++ (instancetype)endpointWithName:(NSString *)name
+							type:(NSString *)type
+						  domain:(NSString *)domain NS_AVAILABLE(10_11, 9_0);
 
 /*!
  * @property name

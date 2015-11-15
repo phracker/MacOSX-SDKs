@@ -1,4 +1,4 @@
-.TH "ZSHPARAM" "1" "October 7, 2014" "zsh 5\&.0\&.7"
+.TH "ZSHPARAM" "1" "May 31, 2015" "zsh 5\&.0\&.8"
 .SH "NAME"
 zshparam \- zsh parameters
 .\" Yodl file: Zsh/params.yo
@@ -7,47 +7,67 @@ A parameter has a name, a value, and a number of attributes\&.
 A name may be any sequence of alphanumeric
 characters and underscores, or the single characters
 `\fB*\fP\&', `\fB@\fP', `\fB#\fP', `\fB?\fP', `\fB\-\fP', `\fB$\fP', or `\fB!\fP'\&.
-The value may be a \fIscalar\fP (a string),
-an integer, an array (indexed numerically), or an \fIassociative\fP
-array (an unordered set of name\-value pairs, indexed by name)\&.  To declare
-the type of a parameter, or to assign a scalar or integer value to a
-parameter, use the \fBtypeset\fP builtin\&.
+A parameter whose name begins with an alphanumeric or underscore is also
+referred to as a \fIvariable\fP\&.
 .PP
-The value of a scalar or integer parameter may also be assigned by
-writing:
+The attributes of a parameter determine the \fItype\fP of its value, often
+referred to as the parameter type or variable type, and also control
+other processing that may be applied to the value when it is referenced\&.
+The value type may be a \fIscalar\fP (a string, an integer, or a floating
+point number), an array (indexed numerically), or an \fIassociative\fP
+array (an unordered set of name\-value pairs, indexed by name, also
+referred to as a \fIhash\fP)\&.
 .PP
+Named scalar parameters may have the \fIexported\fP, \fB\-x\fP, attribute, to
+copy them into the process environment, which is then passed from the
+shell to any new processes that it starts\&.  Exported parameters are called
+\fIenvironment variables\fP\&. The shell also \fIimports\fP environment variables
+at startup time and automatically marks the corresponding parameters as
+exported\&.  Some environment variables are not imported for reasons of
+security or because they would interfere with the correct operation of
+other shell features\&.
+.PP
+Parameters may also be \fIspecial\fP, that is, they have a predetermined
+meaning to the shell\&.  Special parameters cannot have their type changed
+or their readonly attribute turned off, and if a special parameter is
+unset, then later recreated, the special properties will be retained\&.
+.PP
+To declare the type of a parameter, or to assign a string or numeric value
+to a scalar parameter, use the \fBtypeset\fP builtin\&.
+.PP
+The value of a scalar parameter may also be assigned by writing:
+
 .RS
 .nf
 \fIname\fP\fB=\fP\fIvalue\fP
 .fi
 .RE
 .PP
-If the integer attribute, \fB\-i\fP, is set for \fIname\fP, the \fIvalue\fP
-is subject to arithmetic evaluation\&.  Furthermore, by replacing `\fB=\fP\&'
-with `\fB+=\fP\&', a parameter can be added or appended to\&.
-.PP
 In scalar assignment, \fIvalue\fP is expanded as a single string, in
 which the elements of arrays are joined together; filename expansion is
-not performed unless the option \fBGLOB_ASSIGN\fP is set\&.  See
-the section `Array Parameters\&' for additional forms of assignment\&.
+not performed unless the option \fBGLOB_ASSIGN\fP is set\&.
 .PP
-To refer to the value of a parameter, write `\fB$\fP\fIname\fP\&' or
+When the integer attribute, \fB\-i\fP, or a floating point attribute, \fB\-E\fP
+or \fB\-F\fP, is set for \fIname\fP, the \fIvalue\fP is subject to arithmetic
+evaluation\&.  Furthermore, by replacing `\fB=\fP\&' with `\fB+=\fP', a parameter
+can be incremented or appended to\&.  See the section `Array Parameters\&' and
+\fIArithmetic Evaluation\fP (in \fIzshexpn\fP(1))
+for additional forms of assignment\&.
+.PP
+Note that assignment may implicitly change the attributes of a parameter\&.
+For example, assigning a number to a variable in arithmetic evaluation may
+change its type to integer or float, and with \fBGLOB_ASSIGN\fP assigning a
+pattern to a variable may change its type to an array\&.
+.PP
+To reference the value of a parameter, write `\fB$\fP\fIname\fP\&' or
 `\fB${\fP\fIname\fP\fB}\fP\&'\&.  See
 \fIParameter Expansion\fP in \fIzshexpn\fP(1)
-for complete details\&.  This section also explains the effect
+for complete details\&.  That section also explains the effect
 of the difference between scalar and array assignment on parameter
 expansion\&.
-.PP
-In the parameter lists that follow, the mark `<S>\&' indicates that the
-parameter is special\&.
-Special parameters cannot have their type changed or their
-readonly attribute turned off, and if a special parameter is unset, then
-later recreated, the special properties will be retained\&.  `<Z>\&' indicates
-that the parameter does not exist when the shell initializes in \fBsh\fP or
-\fBksh\fP emulation mode\&.
 .SH "ARRAY PARAMETERS"
 To assign an array value, write one of:
-.PP
+
 .RS
 .nf
 \fBset \-A\fP \fIname\fP \fIvalue\fP \&.\&.\&.
@@ -61,8 +81,17 @@ To assign an array value, write one of:
 .PP
 If no parameter \fIname\fP exists, an ordinary array parameter is created\&.
 If the parameter \fIname\fP exists and is a scalar, it is replaced by a new
-array\&.  Ordinary array parameters may also be explicitly declared with:
+array\&.  To append to an array without changing the existing values, use
+the syntax:
+
+.RS
+.nf
+\fIname\fP\fB+=(\fP\fIvalue\fP \&.\&.\&.\fB)\fP
+.fi
+.RE
 .PP
+Ordinary array parameters may also be explicitly declared with:
+
 .RS
 .nf
 \fBtypeset \-a\fP \fIname\fP
@@ -70,7 +99,7 @@ array\&.  Ordinary array parameters may also be explicitly declared with:
 .RE
 .PP
 Associative arrays \fImust\fP be declared before assignment, by using:
-.PP
+
 .RS
 .nf
 \fBtypeset \-A\fP \fIname\fP
@@ -79,10 +108,10 @@ Associative arrays \fImust\fP be declared before assignment, by using:
 .PP
 When \fIname\fP refers to an associative array, the list in an assignment
 is interpreted as alternating keys and values:
-.PP
+
 .RS
 .nf
-set \-A \fIname\fP \fIkey\fP \fIvalue\fP \&.\&.\&.
+\fBset \-A\fP \fIname\fP \fIkey\fP \fIvalue\fP \&.\&.\&.
 .fi
 .RE
 .RS
@@ -92,11 +121,20 @@ set \-A \fIname\fP \fIkey\fP \fIvalue\fP \&.\&.\&.
 .RE
 .PP
 Every \fIkey\fP must have a \fIvalue\fP in this case\&.  Note that this
-assigns to the entire array, deleting any elements that do not appear
-in the list\&.
+assigns to the entire array, deleting any elements that do not appear in
+the list\&.  The append syntax may also be used with an associative array:
+
+.RS
+.nf
+\fIname\fP\fB+=(\fP\fIkey\fP \fIvalue\fP \&.\&.\&.\fB)\fP
+.fi
+.RE
+.PP
+This adds a new key/value pair if the key is not already present, and
+replaces the value for the existing key if it is\&.
 .PP
 To create an empty array (including associative arrays), use one of:
-.PP
+
 .RS
 .nf
 \fBset \-A\fP \fIname\fP
@@ -109,7 +147,6 @@ To create an empty array (including associative arrays), use one of:
 .RE
 .PP
 .SS "Array Subscripts"
-.PP
 Individual elements of an array may be selected using a subscript\&.  A
 subscript of the form `\fB[\fP\fIexp\fP\fB]\fP\&' selects the single element
 \fIexp\fP, where \fIexp\fP is an arithmetic expression which will be subject
@@ -164,12 +201,36 @@ from the end of the array \fBfoo\fP, and
 Subscripting may also be performed on non\-array values, in which
 case the subscripts specify a substring to be extracted\&.
 For example, if \fBFOO\fP is set to `\fBfoobar\fP\&', then
-`\fBecho $FOO[2,5]\fP\&' prints `\fBooba\fP'\&.
+`\fBecho $FOO[2,5]\fP\&' prints `\fBooba\fP'\&.  Note that
+some forms of subscripting described below perform pattern matching,
+and in that case the substring extends from the start of the match
+of the first subscript to the end of the match of the second
+subscript\&.  For example,
+.PP
+.RS
+.nf
+\fBstring="abcdefghijklm"
+print ${string[(r)d?,(r)h?]}\fP
+.fi
+.RE
+.PP
+prints `\fBdefghi\fP\&'\&.  This is an obvious generalisation of the
+rule for single\-character matches\&.  For a single subscript,
+only a single character is referenced (not the range of characters
+covered by the match)\&.
+.PP
+Note that in substring operations the second subscript is handled
+differently by the \fBr\fP and \fBR\fP subscript flags: the former takes the
+shortest match as the length and the latter the longest match\&.  Hence
+in the former case a \fB*\fP at the end is redundant while in
+the latter case it matches the whole remainder of the string\&.  This
+does not affect the result of the single subscript case as here the
+length of the match is irrelevant\&.
 .PP
 .SS "Array Element Assignment"
 .PP
 A subscript may be used on the left side of an assignment like so:
-.PP
+
 .RS
 .nf
 \fIname\fP\fB[\fP\fIexp\fP\fB]=\fP\fIvalue\fP
@@ -185,7 +246,7 @@ other elements to accommodate the new values\&.  (This is not supported for
 associative arrays\&.)
 .PP
 This syntax also works as an argument to the \fBtypeset\fP command:
-.PP
+
 .RS
 .nf
 \fBtypeset\fP \fB"\fP\fIname\fP\fB[\fP\fIexp\fP\fB]"=\fP\fIvalue\fP
@@ -201,7 +262,7 @@ could be used instead\&.
 To delete an element of an ordinary array, assign `\fB()\fP\&' to
 that element\&.  To delete an element of an associative array, use the
 \fBunset\fP command:
-.PP
+
 .RS
 .nf
 \fBunset\fP \fB"\fP\fIname\fP\fB[\fP\fIexp\fP\fB]"\fP
@@ -209,7 +270,6 @@ that element\&.  To delete an element of an associative array, use the
 .RE
 .PP
 .SS "Subscript Flags"
-.PP
 If the opening bracket, or the comma in a range, in any subscript
 expression is directly followed by an opening parenthesis, the string up
 to the matching closing one is considered to be a list of flags, as in
@@ -253,7 +313,7 @@ pattern and the result is the first matching array element, substring or
 word (if the parameter is an array, if it is a scalar, or if it is a
 scalar and the `\fBw\fP\&' flag is given, respectively)\&.  The subscript used
 is the number of the matching element, so that pairs of subscripts such as
-`\fB$foo[(r)\fP\fI??\fP\fB,3]\fP\&' and `\fB$foo[(r)\fP\fI??\fP\fB,(r)f*]\fP' are
+`\fB$foo[(r)??,3]\fP\&' and `\fB$foo[(r)??,(r)f*]\fP' are
 possible if the parameter is not an associative array\&.  If the
 parameter is an associative array, only the value part of each pair is
 compared to the pattern, and the result is that value\&.
@@ -261,7 +321,7 @@ compared to the pattern, and the result is that value\&.
 .PP
 If a search through an ordinary array failed, the search sets the
 subscript to one past the end of the array, and hence
-\fB${array[(r)pattern]}\fP will substitute the empty string\&.  Thus the
+\fB${array[(r)\fP\fIpattern\fP\fB]}\fP will substitute the empty string\&.  Thus the
 success of a search can be tested by using the \fB(i)\fP flag, for
 example (assuming the option \fBKSH_ARRAYS\fP is not in effect):
 .PP
@@ -360,8 +420,8 @@ patterns used for reverse subscripting (the `\fBr\fP\&', `\fBR\fP', `\fBi\fP',
 etc\&. flags), but it may also affect parameter substitutions that appear
 as part of an arithmetic expression in an ordinary subscript\&.
 .PP
-It is possible to avoid the use of subscripts in assignments to associative
-array elements by using the syntax:
+To avoid subscript parsing limitations in assignments to associative array
+elements, use the append syntax:
 .PP
 .RS
 .nf
@@ -370,9 +430,6 @@ array elements by using the syntax:
 \fP
 .fi
 .RE
-.PP
-This adds a new key/value pair if the key is not already present, and
-replaces the value for the existing key if it is\&.
 .PP
 The basic rule to remember when writing a subscript expression is that all
 text between the opening `\fB[\fP\&' and the closing `\fB]\fP' is interpreted
@@ -538,6 +595,10 @@ Note that the restriction in older versions of zsh that local parameters
 were never exported has been removed\&.
 .PP
 .SH "PARAMETERS SET BY THE SHELL"
+In the parameter lists that follow, the mark `<S>\&' indicates that the
+parameter is special\&.  `<Z>\&' indicates that the parameter does not exist
+when the shell initializes in \fBsh\fP or \fBksh\fP emulation mode\&.
+.PP
 The following parameters are automatically set by the shell:
 .PP
 .PD 0
@@ -612,6 +673,11 @@ privileges, you may change the effective group ID of the shell
 process by assigning to this parameter\&.  Also (assuming sufficient
 privileges), you may start a single command with a different
 effective group ID by `\fB(EGID=\fP\fIgid\fP\fB; command)\fP\&'
+.RS
+.PP
+If this is made local, it is not implicitly set to 0, but may be
+explicitly set locally\&.
+.RE
 .TP
 \fBEUID\fP <S>
 The effective user ID of the shell process\&.  If you have sufficient
@@ -619,6 +685,11 @@ privileges, you may change the effective user ID of the shell process
 by assigning to this parameter\&.  Also (assuming sufficient privileges),
 you may start a single command with a different
 effective user ID by `\fB(EUID=\fP\fIuid\fP\fB; command)\fP\&'
+.RS
+.PP
+If this is made local, it is not implicitly set to 0, but may be
+explicitly set locally\&.
+.RE
 .TP
 \fBERRNO\fP <S>
 The value of errno (see \fIerrno\fP(3))
@@ -633,6 +704,11 @@ you may change the group ID of the shell process by assigning to this
 parameter\&.  Also (assuming sufficient privileges), you may start a single
 command under a different
 group ID by `\fB(GID=\fP\fIgid\fP\fB; command)\fP\&'
+.RS
+.PP
+If this is made local, it is not implicitly set to 0, but may be
+explicitly set locally\&.
+.RE
 .TP
 \fBHISTCMD\fP
 The current history event number in an interactive shell, in other
@@ -727,6 +803,18 @@ caused an error\&.  The value is 1 to indicate an error, 0 otherwise\&.
 It may be reset, clearing the error condition\&.  See
 \fIComplex Commands\fP in \fIzshmisc\fP(1)
 .TP
+\fBTRY_BLOCK_INTERRUPT\fP <S>
+This variable works in a similar way to \fBTRY_BLOCK_ERROR\fP, but
+represents the status of an interrupt from the signal SIGINT, which
+typically comes from the keyboard when the user types \fB^C\fP\&.  If set to
+0, any such interrupt will be reset; otherwise, the interrupt is
+propagated after the \fBalways\fP block\&.
+.RS
+.PP
+Note that it is possible that an interrupt arrives during the execution
+of the \fBalways\fP block; this interrupt is also propagated\&.
+.RE
+.TP
 \fBTTY\fP
 The name of the tty associated with the shell, if any\&.
 .TP
@@ -740,6 +828,11 @@ you may change the user ID of the shell by assigning to this parameter\&.
 Also (assuming sufficient privileges), you may start a single command
 under a different
 user ID by `\fB(UID=\fP\fIuid\fP\fB; command)\fP\&'
+.RS
+.PP
+If this is made local, it is not implicitly set to 0, but may be
+explicitly set locally\&.
+.RE
 .TP
 \fBUSERNAME\fP <S>
 The username corresponding to the real user ID of the shell process\&.  If you
@@ -872,7 +965,9 @@ and `\fBprint $(print $ZSH_SUBSHELL)\fP\&' output 1, while
 \fBZSH_VERSION\fP
 The version number of the release of zsh\&.
 .SH "PARAMETERS USED BY THE SHELL"
-The following parameters are used by the shell\&.
+The following parameters are used by the shell\&.  Again, `<S>\&' indicates
+that the parameter is special and `<Z>\&' indicates that the parameter does
+not exist when the shell initializes in \fBsh\fP or \fBksh\fP emulation mode\&.
 .PP
 In cases where there are two parameters with an upper\- and lowercase
 form of the same name, such as \fBpath\fP and \fBPATH\fP, the lowercase form
@@ -984,16 +1079,42 @@ If unset, the history is not saved\&.
 If set, is treated as a pattern at the time history files are written\&.
 Any potential history entry that matches the pattern is skipped\&.  For
 example, if the value is `\fBfc *\fP\&' then commands that invoke the
-interactive history editor are never written to the history file (compare
-the \fBHIST_NO_STORE\fP option or the \fBzshaddhistory\fP hook, either of
-which would prevent such commands from being added to the interactive
-history at all)\&.
+interactive history editor are never written to the history file\&.
+.RS
+.PP
+Note that \fBHISTORY_IGNORE\fP defines a single pattern: to
+specify alternatives use the
+`\fB(\fP\fIfirst\fP\fB|\fP\fIsecond\fP\fB|\fP\fI\&.\&.\&.\fP\fB)\fP\&' syntax\&.
+.PP
+Compare the \fBHIST_NO_STORE\fP option or the \fBzshaddhistory\fP hook,
+either of which would prevent such commands from being added to the
+interactive history at all\&.  If you wish to use \fBHISTORY_IGNORE\fP to
+stop history being added in the first place, you can define the
+following hook:
+.PP
+.RS
+.nf
+\fBzshaddhistory() {
+  emulate \-L zsh
+  ## uncomment if HISTORY_IGNORE
+  ## should use EXTENDED_GLOB syntax
+  # setopt extendedglob
+  [[ $1 != ${~HISTORY_IGNORE} ]]
+}\fP
+.fi
+.RE
+.RE
 .TP
 \fBHISTSIZE\fP <S>
 The maximum number of events stored in the internal history list\&.
 If you use the \fBHIST_EXPIRE_DUPS_FIRST\fP option, setting this value
 larger than the \fBSAVEHIST\fP size will give you the difference as a
 cushion for saving duplicated history events\&.
+.RS
+.PP
+If this is made local, it is not implicitly set to 0, but may be
+explicitly set locally\&.
+.RE
 .TP
 \fBHOME\fP <S>
 The default argument for the \fBcd\fP command\&.  This is not set automatically
@@ -1264,6 +1385,11 @@ It is expanded in the same way as \fBPS2\fP\&.
 .TP
 \fBSAVEHIST\fP
 The maximum number of history events to save in the history file\&.
+.RS
+.PP
+If this is made local, it is not implicitly set to 0, but may be
+explicitly set locally\&.
+.RE
 .TP
 \fBSPROMPT\fP <S>
 The prompt used for spelling correction\&.  The sequence
@@ -1323,7 +1449,7 @@ Elapsed time in seconds\&.
 .TP
 \fB%P\fP
 The CPU percentage, computed as
-(100*\fB%U\fP+\fB%S\fP)/\fB%E\fP\&.
+100*(\fB%U\fP+\fB%S\fP)/\fB%E\fP\&.
 .TP
 \fB%W\fP
 Number of times the process was swapped\&.
@@ -1336,7 +1462,7 @@ The average amount in (unshared) data/stack space used in
 kilobytes\&.
 .TP
 \fB%K\fP
-The total space used (%X+%D) in kilobytes\&.
+The total space used (\fB%X\fP+\fB%D\fP) in kilobytes\&.
 .TP
 \fB%M\fP
 The  maximum memory the process had in use at any time in
@@ -1397,15 +1523,33 @@ well as any directory names\&.  The default is `\fB/tmp/zsh\fP\&'\&.
 .TP
 \fBwatch\fP <S> <Z> (\fBWATCH\fP <S>)
 An array (colon\-separated list) of login/logout events to report\&.
+.RS
+.PP
 If it contains the single word `\fBall\fP\&', then all login/logout events
 are reported\&.  If it contains the single word `\fBnotme\fP\&', then all
 events are reported as with `\fBall\fP\&' except \fB$USERNAME\fP\&.
+.PP
 An entry in this list may consist of a username,
 an `\fB@\fP\&' followed by a remote hostname,
-and a `\fB%\fP\&' followed by a line (tty)\&.
+and a `\fB%\fP\&' followed by a line (tty)\&.  Any of these may
+be a pattern (be sure to quote this during the assignment to
+\fBwatch\fP so that it does not immediately perform file generation);
+the setting of the \fBEXTENDED_GLOB\fP option is respected\&.
 Any or all of these components may be present in an entry;
 if a login/logout event matches all of them,
 it is reported\&.
+.PP
+For example, with the \fBEXTENDED_GLOB\fP option set, the following:
+.PP
+.RS
+.nf
+\fBwatch=(\&'^(pws|barts)')\fP
+.fi
+.RE
+.PP
+causes reports for activity assoicated with any user other than \fBpws\fP
+or \fBbarts\fP\&.
+.RE
 .TP
 \fBWATCHFMT\fP
 The format of login/logout reports if the \fBwatch\fP parameter is set\&.
@@ -1467,6 +1611,11 @@ The date in `\fImm\fP\fB/\fP\fIdd\fP\fB/\fP\fIyy\fP\&' format\&.
 .TP
 \fB%D\fP
 The date in `\fIyy\fP\fB\-\fP\fImm\fP\fB\-\fP\fIdd\fP\&' format\&.
+.TP
+\fB%D{\fP\fIstring\fP\fB}\fP
+The date formatted as \fIstring\fP using the \fBstrftime\fP function, with
+zsh extensions as described by
+EXPANSION OF PROMPT SEQUENCES in \fIzshmisc\fP(1)\&.
 .TP
 \fB%(\fP\fIx\fP\fB:\fP\fItrue\-text\fP\fB:\fP\fIfalse\-text\fP\fB)\fP
 Specifies a ternary expression\&.
@@ -1573,7 +1722,7 @@ See the completion system documentation in
 \fIzshcompsys\fP(1)\&.
 .RE
 .TP
-\fBZLE_RPROMPT_INDENT <S>\fP
+\fBZLE_RPROMPT_INDENT\fP <S>
 If set, used to give the indentation between the right hand side of
 the right prompt in the line editor as given by \fBRPS1\fP or \fBRPROMPT\fP
 and the right hand side of the screen\&.  If not set, the value 1 is used\&.

@@ -681,6 +681,47 @@ namespace StandardUSB30
         kBusCurrentMinimum = 150,
         kBusCurrentDefault = 900
     };
+
+    // USB 3.0 Table 6-21
+    enum tResetTimeout
+    {
+        kResetMinimumTimeout                    = 80,
+        kResetTypicalTimeout                    = 100,
+        kResetMaximumTimeout                    = 120,
+        kResetMaximumWithMarginTimeout          = 150
+    };
+
+    // USB 3.0 Table 7-12
+    enum tLinkStateTimeout
+    {
+        kLinkStateSSInactiveQuietTimeout        = 12,
+        kLinkStateRxDetectQuietTimeout          = 12,
+        kLinkStatePollingLFPSTimeout            = 360,
+        kLinkStatePollingActiveTimeout          = 12,
+        kLinkStatePollingConfigurationTimeout   = 12,
+        kLinkStatePollingIdleTimeout            = 2,
+        kLinkStateU0RecoveryTimeout             = 1,
+        kLinkStateU0LTimeout                    = 0,        // 10 microseconds
+        kLinkStateU1NoLFPSResponseTimeout       = 2,
+        kLinkStateU1PingTimeout                 = 300,
+        kLinkStateU2NoLFPSResponseTimeout       = 2,
+        kLinKStateU2RxDetectDelay               = 100,
+        kLinkStateU3NoLFPSResponseTimeout       = 10,
+        kLinkStateU3WakeupRetryDelay            = 100,
+        kLinkStateU3RxDetectDelay               = 100,
+        kLinkStateRecoveryActiveTimeout         = 12,
+        kLinkStateRecoveryConfigurationTimeout  = 6,
+        kLinkStateRecoveryIdleTimeout           = 2,
+        kLinkStateLoopbackExitTimeout           = 2,
+        kLinkStateHotResetActiveTimeout         = 12,
+        kLinkStateHotResetExistTimeout          = 2,
+
+        // USB 3.0 7.5.4
+        kLinkStatePollingDeadline               = (kLinkStatePollingLFPSTimeout + 1 + kLinkStatePollingActiveTimeout + kLinkStatePollingConfigurationTimeout + kLinkStatePollingIdleTimeout),
+
+        // USB 3.0 7.5.9 and 7.5.10
+        kLinkStateSSResumeDeadline              = (kLinkStateU3NoLFPSResponseTimeout + kLinkStateRecoveryActiveTimeout + kLinkStateRecoveryConfigurationTimeout + kLinkStateRecoveryIdleTimeout),
+    };
 }
 #endif // __cplusplus
 

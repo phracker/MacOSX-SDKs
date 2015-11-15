@@ -1,8 +1,8 @@
-.\"Copyright (c) 2007-2011 Apple Inc.  All Rights Reserved.
+.\"Copyright (c) 2007-2015 Apple Inc.  All Rights Reserved.
 .\"
 .\"To check for errors: /usr/bin/groff -I/usr/share/man -S -Wall -mtty-char -mandoc -Tascii tmutil.8
 .\"
-.Dd 10 April 2013
+.Dd 10 June 2015
 .Dt TMUTIL 8
 .Os "Mac OS X"
 .Sh NAME
@@ -59,15 +59,21 @@ A sparsebundle that, when mounted, is the backing store for a volume that is a b
 .\" - - - - - - - - - - - - - - - BACKUP STORE  - - - - - - - - - - - - - - - -
 .It Em backup store
 .br
-The top-level "Backups.backupdb" directory at the root of a backup disk.
+The top-level "Backups.backupdb" directory at the root of a backup disk. E.g.,
+.Pp
+/Volumes/Chronoton/Backups.backupdb
 .\" - - - - - - - - - - - - - - MACHINE DIRECTORY - - - - - - - - - - - - - - -
 .It Em machine directory
 .br
-A directory inside a backup store that contains all the backups for a particular computer. For local destinations, a backup store can contain multiple machine directories, all for separate computers.
+A directory inside a backup store that contains all the backups for a particular computer. For local destinations, a backup store can contain multiple machine directories, all for separate computers. E.g.,
+.Pp
+/Volumes/Chronoton/Backups.backupdb/thermopylae
 .\" - - - - - - - - - - - - - - - - SNAPSHOT  - - - - - - - - - - - - - - - - - 
 .It Em snapshot
 .br
-A directory inside a machine directory that represents a single initial or incremental backup of one computer. The word "snapshot", in most contexts, is a generic term and is not to be confused with a "local Time Machine snapshot", which is simply a snapshot stored locally on the computer.
+A directory inside a machine directory that represents a single initial or incremental backup of one computer. The word "snapshot", in most contexts, is a generic term and is not to be confused with a "local Time Machine snapshot", which is simply a snapshot stored locally on the computer. E.g.,
+.Pp
+/Volumes/Chronoton/Backups.backupdb/thermopylae/2011-07-03-123456
 .\" - - - - - - - - - - - - - - SNAPSHOT VOLUME - - - - - - - - - - - - - - - - 
 .It Em snapshot volume
 .br
@@ -88,164 +94,6 @@ Each verb is listed with its description and individual arguments.
 .\" ----------------------------------------------------------------------------
 .\" ---------------------------- BEGIN VERBS LIST ------------------------------
 .Bl -hang
-.\" - - - - - - - - - - - - - - - - ENABLE  - - - - - - - - - - - - - - - - - -
-.It Sy enable
-.br
-Turn on automatic backups. Requires root privileges.
-.\" - - - - - - - - - - - - - - - - DISABLE - - - - - - - - - - - - - - - - - -
-.It Sy disable
-.br
-Turn off automatic backups. Requires root privileges.
-.\" - - - - - - - - - - - - - - - ENABLELOCAL - - - - - - - - - - - - - - - - -
-.It Sy enablelocal
-.br
-Turn on local Time Machine snapshots. Requires root privileges.
-.\" - - - - - - - - - - - - - - - DISABLELOCAL  - - - - - - - - - - - - - - - -
-.It Sy disablelocal
-.br
-Turn off local Time Machine snapshots and trigger automatic cleanup of accumulated local snapshot data. Requires root privileges.
-.\" - - - - - - - - - - - - - - - - SNAPSHOT  - - - - - - - - - - - - - - - - -
-.It Sy snapshot
-.br
-Create new local Time Machine snapshot.
-.\" - - - - - - - - - - - - - - - STARTBACKUP - - - - - - - - - - - - - - - - -
-.It Sy startbackup
-.Op Fl a | -auto
-.Op Fl b | -block
-.Op Fl r | -rotation
-.Op Fl d | -destination Ar dest_id
-.br
-Begin a backup if one is not already running.
-.Pp
-.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-.\" - - - - - - - - - -  BEGIN STARTBACKUP OPTIONS LIST - - - - - - - - - - - -
-.Sy Options:
-.Bl -hang -offset 4n -width "destination    " -compact
-.It Fl -auto
-Run the backup in a mode similar to system-scheduled backups.
-.It Fl -block
-Wait (block) until the backup is finished before exiting.
-.It Fl -rotation
-Allow automatic destination rotation during the backup.
-.It Fl -destination
-Perform the backup to the destination corresponding to the specified ID.
-.El
-.Pp
-The
-.Fl Sy -auto
-option provides a supported mechanism with which to trigger "automatic-like" backups, similar to automatic backups that are scheduled by the system. While this is not identical to true system-scheduled backups, it provides custom schedulers the ability to achieve some (but not all) behavior normally exhibited when operating in automatic mode.
-.\" - - - - - - - - - - - END STARTBACKUP OPTIONS LIST  - - - - - - - - - - - -
-.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-.\"
-.\" - - - - - - - - - - - - - - - STOPBACKUP  - - - - - - - - - - - - - - - - -
-.It Sy stopbackup
-.br
-Cancel a backup currently in progress.
-.\" - - - - - - - - - - - - - - - - DELETE  - - - - - - - - - - - - - - - - - -
-.It Sy delete Ar path ...
-.br
-Delete one or more snapshots, machine directories, or backup stores. This verb can delete items from backups that were not made by, or are not claimed by, the current machine. Requires root privileges.
-.\" - - - - - - - - - - - - - - - - RESTORE - - - - - - - - - - - - - - - - - -
-.It Sy restore Op Fl v
-.Ar src ... dst
-.br
-Restore the item
-.Ar src Ns
-, which is inside a snapshot, to the location
-.Ar dst Ns
-\&. The
-.Ar dst
-argument mimics the destination path semantics of the
-.Sy cp
-tool. You may provide multiple source paths to restore. The last path argument must be a destination.
-.Pp
-When using the
-.Sy restore
-verb,
-.Nm
-behaves largely like Finder. Custom Time Machine metadata (extended security and other) will be removed from the restored data, and other metadata will be preserved.
-.Pp
-Root privileges are not strictly required to perform restores, but
-.Nm
-does no permissions preflighting to determine your ability to restore
-.Ar src
-or its descendants. Therefore, depending on what you're restoring, you may need root privileges to perform the restore, and you should know this ahead of time. This is the same behavior you would encounter with other copy tools such as
-.Sy cp
-or
-.Sy ditto Ns
-\&. When restoring with
-.Sy tmutil
-as root, ownership of the restored items will match the state of the items in the backup.
-.\" - - - - - - - - - - - - - - - COMPARE - - - - - - - - - - - - - - - - - - -
-.It Sy compare Op Fl @acdeglmnstuEUX
-.Op Fl D Ar depth
-.Op Fl I Ar name
-.Op Ar snapshot_path | path1 path2
-.br
-Perform a backup diff.
-.Pp
-If no arguments are provided,
-.Nm
-will compare the computer to the latest snapshot. If a snapshot path is provided as the sole argument,
-.Nm
-will compare the computer to the specified snapshot. If two path arguments are provided,
-.Nm
-will compare those two items to each other.
-.Nm
-will attempt to inform you when you have asked it to do something that doesn't make sense or isn't supported.
-.Pp
-The
-.Sy compare
-verb allows you to specify what properties to compare. If you specify no property options,
-.Nm
-assumes a default property set of
-.Fl Sy @gmstu.
-Specifying any property option overrides the default set.
-.Pp
-.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-.\" - - - - - - - - - - -  BEGIN COMPARE OPTIONS LIST - - - - - - - - - - - - -
-.Sy Options:
-.Bl -hang -offset 4n -width "xxxx" -compact
-.It Fl a
-Compare all supported metadata.
-.It Fl n
-No metadata comparison.
-.It Fl @
-Compare extended attributes.
-.It Fl c
-Compare creation times.
-.It Fl d
-Compare file data forks.
-.It Fl e
-Compare ACLs.
-.It Fl g
-Compare GIDs.
-.It Fl m
-Compare file modes.
-.It Fl s
-Compare sizes.
-.It Fl t
-Compare modification times.
-.It Fl u
-Compare UIDs.
-.It Fl D
-Limit traversal depth to
-.Ar depth
-levels from the beginning of iteration.
-.It Fl E
-Don't take exclusions into account when comparing items inside volumes.
-.It Fl I
-Ignore paths with a path component equal to
-.Ar name
-during iteration. This may be specified multiple times.
-.It Fl U
-Ignore logical volume identity (volume UUIDs) when directly comparing a local volume or snapshot volume to a snapshot volume.
-.It Fl X
-Print output in XML property list format.
-.El
-.\" - - - - - - - - - - - - END COMPARE OPTIONS LIST  - - - - - - - - - - - - -
-.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-.\"
 .\" - - - - - - - - - - - - - - SETDESTINATION  - - - - - - - - - - - - - - - - 
 .It Sy setdestination Op Fl ap
 .Ar arg
@@ -364,6 +212,198 @@ thermopylae:~ thoth$ tmutil isexcluded /Users/admin/Desktop/foo.txt
 thermopylae:~ thoth$ tmutil isexcluded /Users/admin/Desktop/bar.txt
 .br
 [Included]      /Users/admin/Desktop/bar.txt
+.\" - - - - - - - - - - - - - - - - ENABLE  - - - - - - - - - - - - - - - - - -
+.It Sy enable
+.br
+Turn on automatic backups. Requires root privileges.
+.\" - - - - - - - - - - - - - - - - DISABLE - - - - - - - - - - - - - - - - - -
+.It Sy disable
+.br
+Turn off automatic backups. Requires root privileges.
+.\" - - - - - - - - - - - - - - - STARTBACKUP - - - - - - - - - - - - - - - - -
+.It Sy startbackup
+.Op Fl a | -auto
+.Op Fl b | -block
+.Op Fl r | -rotation
+.Op Fl d | -destination Ar dest_id
+.br
+Begin a backup if one is not already running.
+.Pp
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\" - - - - - - - - - -  BEGIN STARTBACKUP OPTIONS LIST - - - - - - - - - - - -
+.Sy Options:
+.Bl -hang -offset 4n -width "destination    " -compact
+.It Fl -auto
+Run the backup in a mode similar to system-scheduled backups.
+.It Fl -block
+Wait (block) until the backup is finished before exiting.
+.It Fl -rotation
+Allow automatic destination rotation during the backup.
+.It Fl -destination
+Perform the backup to the destination corresponding to the specified ID.
+.El
+.Pp
+The
+.Fl Sy -auto
+option provides a supported mechanism with which to trigger "automatic-like" backups, similar to automatic backups that are scheduled by the system. While this is not identical to true system-scheduled backups, it provides custom schedulers the ability to achieve some (but not all) behavior normally exhibited when operating in automatic mode.
+.\" - - - - - - - - - - - END STARTBACKUP OPTIONS LIST  - - - - - - - - - - - -
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\"
+.\" - - - - - - - - - - - - - - - STOPBACKUP  - - - - - - - - - - - - - - - - -
+.It Sy stopbackup
+.br
+Cancel a backup currently in progress.
+.\" - - - - - - - - - - - - - - - COMPARE - - - - - - - - - - - - - - - - - - -
+.It Sy compare Op Fl @acdefglmnstuEUX
+.Op Fl D Ar depth
+.Op Fl I Ar name
+.Op Ar snapshot_path | path1 path2
+.br
+Perform a backup diff.
+.Pp
+If no arguments are provided,
+.Nm
+will compare the computer to the latest snapshot. If a snapshot path is provided as the sole argument,
+.Nm
+will compare the computer to the specified snapshot. If two path arguments are provided,
+.Nm
+will compare those two items to each other.
+.Nm
+will attempt to inform you when you have asked it to do something that doesn't make sense or isn't supported.
+.Pp
+The
+.Sy compare
+verb allows you to specify what properties to compare. If you specify no property options,
+.Nm
+assumes a default property set of
+.Fl Sy @gmstu.
+Specifying any property option overrides the default set.
+.Pp
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\" - - - - - - - - - - -  BEGIN COMPARE OPTIONS LIST - - - - - - - - - - - - -
+.Sy Options:
+.Bl -hang -offset 4n -width "xxxx" -compact
+.It Fl a
+Compare all supported metadata.
+.It Fl n
+No metadata comparison.
+.It Fl @
+Compare extended attributes.
+.It Fl c
+Compare creation times.
+.It Fl d
+Compare file data forks.
+.It Fl e
+Compare ACLs.
+.It Fl f
+Compare file flags.
+.It Fl g
+Compare GIDs.
+.It Fl m
+Compare file modes.
+.It Fl s
+Compare sizes.
+.It Fl t
+Compare modification times.
+.It Fl u
+Compare UIDs.
+.It Fl D
+Limit traversal depth to
+.Ar depth
+levels from the beginning of iteration.
+.It Fl E
+Don't take exclusions into account when comparing items inside volumes.
+.It Fl I
+Ignore paths with a path component equal to
+.Ar name
+during iteration. This may be specified multiple times.
+.It Fl U
+Ignore logical volume identity (volume UUIDs) when directly comparing a local volume or snapshot volume to a snapshot volume.
+.It Fl X
+Print output in XML property list format.
+.El
+.\" - - - - - - - - - - - - END COMPARE OPTIONS LIST  - - - - - - - - - - - - -
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\"
+.\" - - - - - - - - - - - - - - VERIFYCHECKSUMS - - - - - - - - - - - - - - - - 
+.It Sy verifychecksums
+.Ar path ...
+.br
+Compute a checksum of data contained within a backup and verify the result(s) against checksum information computed at the time of backup.
+.Pp
+No output is generated for matching checksums. Issues are reported using the following legend:
+.Pp
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\" - - - - - - - - BEGIN VERIFYCHECKSUMS LEGEND LIST - - - - - - - - - - - - -
+.Bl -hang -offset 4n -width "xxx" -compact
+.It !
+The file's current checksum does not match the expected recorded checksum.
+.It ?
+The file's recorded checksum is invalid.
+.El
+.\" - - - - - - - - - END VERIFYCHECKSUMS LEGEND LIST - - - - - - - - - - - - -
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.Pp
+Beginning in OS X 10.11, Time Machine records checksums of files copied into snapshots. Checksums are not retroactively computed for files that were copied by earlier releases of OS X.
+.\" - - - - - - - - - - - - - - - - RESTORE - - - - - - - - - - - - - - - - - -
+.It Sy restore Op Fl v
+.Ar src ... dst
+.br
+Restore the item
+.Ar src Ns
+, which is inside a snapshot, to the location
+.Ar dst Ns
+\&. The
+.Ar dst
+argument mimics the destination path semantics of the
+.Sy cp
+tool. You may provide multiple source paths to restore. The last path argument must be a destination.
+.Pp
+When using the
+.Sy restore
+verb,
+.Nm
+behaves largely like Finder. Custom Time Machine metadata (extended security and other) will be removed from the restored data, and other metadata will be preserved.
+.Pp
+Root privileges are not strictly required to perform restores, but
+.Nm
+does no permissions preflighting to determine your ability to restore
+.Ar src
+or its descendants. Therefore, depending on what you're restoring, you may need root privileges to perform the restore, and you should know this ahead of time. This is the same behavior you would encounter with other copy tools such as
+.Sy cp
+or
+.Sy ditto Ns
+\&. When restoring with
+.Sy tmutil
+as root, ownership of the restored items will match the state of the items in the backup.
+.\" - - - - - - - - - - - - - - - - DELETE  - - - - - - - - - - - - - - - - - -
+.It Sy delete Ar path ...
+.br
+Delete one or more snapshots, machine directories, or backup stores. This verb can delete items from backups that were not made by, or are not claimed by, the current machine. Requires root privileges.
+.\" - - - - - - - - - - - - - - LATESTBACKUP  - - - - - - - - - - - - - - - - - 
+.It Sy latestbackup
+.br
+Print the path to the most recent snapshot for this computer.
+.\" - - - - - - - - - - - - - - LISTBACKUPS - - - - - - - - - - - - - - - - - - 
+.It Sy listbackups
+.br
+Print paths for all of this computer's completed snapshots.
+.\" - - - - - - - - - - - - - MACHINEDIRECTORY  - - - - - - - - - - - - - - - - 
+.It Sy machinedirectory
+.br
+Print the path to the current machine directory for this computer.
+.\" - - - - - - - - - - - - -  CALCULATEDRIFT - - - - - - - - - - - - - - - - - 
+.It Sy calculatedrift
+.Ar machine_directory
+.br
+Analyze the snapshots in a machine directory and determine the amount of change between each. Averages are printed after all snapshots have been analyzed. This may require root privileges, depending on the contents of the machine directory.
+.\" - - - - - - - - - - - - - -  UNIQUESIZE - - - - - - - - - - - - - - - - - - 
+.It Sy uniquesize
+.Ar path ...
+.br
+Analyze the specified path and determine its unique size. The figure reported by
+.Sy uniquesize
+represents things that only exist in the specified path; things that are hard-linked in other places are not tallied.
 .\" - - - - - - - - - - - - - -  INHERITBACKUP  - - - - - - - - - - - - - - - - 
 .It Sy inheritbackup
 .Ar {machine_directory | sparsebundle}
@@ -412,30 +452,18 @@ option tells
 to find all snapshot volumes in the same machine directory that match the identity of
 .Pa MyStuff Ns
 , and then perform the association on all of them.
-.\" - - - - - - - - - - - - - - LATESTBACKUP  - - - - - - - - - - - - - - - - - 
-.It Sy latestbackup
+.\" - - - - - - - - - - - - - - - ENABLELOCAL - - - - - - - - - - - - - - - - -
+.It Sy enablelocal
 .br
-Print the path to the most recent snapshot for this computer.
-.\" - - - - - - - - - - - - - - LISTBACKUPS - - - - - - - - - - - - - - - - - - 
-.It Sy listbackups
+Turn on local Time Machine snapshots. Requires root privileges.
+.\" - - - - - - - - - - - - - - - DISABLELOCAL  - - - - - - - - - - - - - - - -
+.It Sy disablelocal
 .br
-Print paths for all of this computer's completed snapshots.
-.\" - - - - - - - - - - - - - MACHINEDIRECTORY  - - - - - - - - - - - - - - - - 
-.It Sy machinedirectory
+Turn off local Time Machine snapshots and trigger automatic cleanup of accumulated local snapshot data. Requires root privileges.
+.\" - - - - - - - - - - - - - - - - SNAPSHOT  - - - - - - - - - - - - - - - - -
+.It Sy snapshot
 .br
-Print the path to the current machine directory for this computer.
-.\" - - - - - - - - - - - - -  CALCULATEDRIFT - - - - - - - - - - - - - - - - - 
-.It Sy calculatedrift
-.Ar machine_directory
-.br
-Analyze the snapshots in a machine directory and determine the amount of change between each. Averages are printed after all snapshots have been analyzed. This may require root privileges, depending on the contents of the machine directory.
-.\" - - - - - - - - - - - - - -  UNIQUESIZE - - - - - - - - - - - - - - - - - - 
-.It Sy uniquesize
-.Ar path ...
-.br
-Analyze the specified path and determine its unique size. The figure reported by
-.Sy uniquesize
-represents things that only exist in the specified path; things that are hard-linked in other places are not tallied.
+Create new local Time Machine snapshot.
 .El
 .\" ----------------------------- END VERBS LIST -------------------------------
 .\" ----------------------------------------------------------------------------

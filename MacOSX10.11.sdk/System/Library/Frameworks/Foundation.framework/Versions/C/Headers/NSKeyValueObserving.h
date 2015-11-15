@@ -7,7 +7,7 @@
 #import <Foundation/NSArray.h>
 #import <Foundation/NSOrderedSet.h>
 #import <Foundation/NSSet.h>
-
+#import <Foundation/NSDictionary.h>
 
 @class NSIndexSet, NSString;
 
@@ -77,7 +77,7 @@ If NSKeyValueObservingOptionPrior (introduced in Mac OS 10.5) was specified at o
 
 context is always the same pointer that was passed in at observer registration time.
 */
-- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary *)change context:(nullable void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSString*, id> *)change context:(nullable void *)context;
 
 @end
 

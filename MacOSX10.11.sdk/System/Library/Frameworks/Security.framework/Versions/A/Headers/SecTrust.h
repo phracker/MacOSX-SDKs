@@ -38,6 +38,9 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
     @typedef SecTrustResultType
     @abstract Specifies the trust result type.
@@ -96,7 +99,7 @@ enum {
     @typedef SecTrustRef
     @abstract CFType used for performing X.509 certificate trust evaluations.
  */
-typedef struct __SecTrust *SecTrustRef;
+typedef struct CF_BRIDGED_TYPE(id) __SecTrust *SecTrustRef;
 
 /*!
     @enum Trust Property Constants
@@ -195,7 +198,7 @@ CFTypeID SecTrustGetTypeID(void)
     for the chain to be considered valid.
  */
 OSStatus SecTrustCreateWithCertificates(CFTypeRef certificates,
-    CFTypeRef policies, SecTrustRef *trust)
+    CFTypeRef __nullable policies, SecTrustRef * __nonnull CF_RETURNS_RETAINED trust)
     __OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_2_0);
 
 /*!
@@ -219,7 +222,7 @@ OSStatus SecTrustSetPolicies(SecTrustRef trust, CFTypeRef policies)
     Call the CFRelease function to release this reference.
     @result A result code. See "Security Error Codes" (SecBase.h).
  */
-OSStatus SecTrustCopyPolicies(SecTrustRef trust, CFArrayRef *policies)
+OSStatus SecTrustCopyPolicies(SecTrustRef trust, CFArrayRef * __nonnull CF_RETURNS_RETAINED policies)
     __OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_7_0);
 
 /*!
@@ -294,7 +297,7 @@ OSStatus SecTrustSetAnchorCertificatesOnly(SecTrustRef trust,
     @result A result code. See "Security Error Codes" (SecBase.h).
  */
 OSStatus SecTrustCopyCustomAnchorCertificates(SecTrustRef trust,
-    CFArrayRef *anchors)
+    CFArrayRef * __nonnull CF_RETURNS_RETAINED anchors)
     __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_7_0);
 
 /*!
@@ -315,7 +318,7 @@ OSStatus SecTrustSetVerifyDate(SecTrustRef trust, CFDateRef verifyDate)
 /*!
     @function SecTrustGetVerifyTime
     @abstract Returns the verify time.
-    @param trust A reference to the trust object being verified.
+    4
     @result A CFAbsoluteTime value representing the time at which certificates
     should be checked for validity.
     @discussion This function retrieves the verification time for the given
@@ -339,7 +342,7 @@ CFAbsoluteTime SecTrustGetVerifyTime(SecTrustRef trust)
     dispatch queue, or in a separate thread from your application's main
     run loop. Alternatively, you can use the SecTrustEvaluateAsync function.
  */
-OSStatus SecTrustEvaluate(SecTrustRef trust, SecTrustResultType *result)
+OSStatus SecTrustEvaluate(SecTrustRef trust, SecTrustResultType * __nullable result)
     __OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_2_0);
 
 #ifdef __BLOCKS__
@@ -354,7 +357,7 @@ OSStatus SecTrustEvaluate(SecTrustRef trust, SecTrustResultType *result)
     @result A result code. See "Security Error Codes" (SecBase.h).
  */
 OSStatus SecTrustEvaluateAsync(SecTrustRef trust,
-    dispatch_queue_t queue, SecTrustCallback result)
+    dispatch_queue_t __nullable queue, SecTrustCallback result)
     __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_7_0);
 #endif
 
@@ -382,6 +385,7 @@ OSStatus SecTrustGetTrustResult(SecTrustRef trust,
     parameters in the chain cannot be found).  The caller is responsible
     for calling CFRelease on the returned key when it is no longer needed.
  */
+__nullable
 SecKeyRef SecTrustCopyPublicKey(SecTrustRef trust)
     __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_2_0);
 
@@ -409,6 +413,7 @@ CFIndex SecTrustGetCertificateCount(SecTrustRef trust)
     reference has been evaluated or not.
     @result A SecCertificateRef for the requested certificate.
  */
+__nullable
 SecCertificateRef SecTrustGetCertificateAtIndex(SecTrustRef trust, CFIndex ix)
     __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_2_0);
 
@@ -469,6 +474,7 @@ bool SecTrustSetExceptions(SecTrustRef trust, CFDataRef exceptions)
     the anchor (or last certificate found if no anchor was found.) See the
     "Trust Property Constants" section for a list of currently defined keys.
  */
+__nullable
 CFArrayRef SecTrustCopyProperties(SecTrustRef trust)
     __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_2_0);
 
@@ -484,6 +490,7 @@ CFArrayRef SecTrustCopyProperties(SecTrustRef trust)
     @discussion Returns a dictionary for the overall trust evaluation. See the
     "Trust Result Constants" section for a list of currently defined keys.
  */
+__nullable
 CFDictionaryRef SecTrustCopyResult(SecTrustRef trust)
     __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
 
@@ -499,9 +506,11 @@ CFDictionaryRef SecTrustCopyResult(SecTrustRef trust)
     evaluation. If this data is available, it can obviate the need to contact
     an OCSP server for current revocation information.
  */
-OSStatus SecTrustSetOCSPResponse(SecTrustRef trust, CFTypeRef responseData)
+OSStatus SecTrustSetOCSPResponse(SecTrustRef trust, CFTypeRef __nullable responseData)
     __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
 
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 /*
  *  Legacy functions (OS X only)
@@ -509,6 +518,9 @@ OSStatus SecTrustSetOCSPResponse(SecTrustRef trust, CFTypeRef responseData)
 #if TARGET_OS_MAC && !TARGET_OS_IPHONE
 #include <Security/cssmtype.h>
 #include <Security/cssmapple.h>
+
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
     @typedef SecTrustUserSetting
@@ -536,8 +548,8 @@ typedef SecTrustResultType SecTrustUserSetting
     @constant kSecTrustOptionImplicitAnchors Properly self-signed certs are
     treated as anchors implicitly.
  */
-typedef uint32_t SecTrustOptionFlags;
-enum {
+typedef CF_OPTIONS(uint32_t, SecTrustOptionFlags)
+{
     kSecTrustOptionAllowExpired       = 0x00000001,
     kSecTrustOptionLeafIsCA           = 0x00000002,
     kSecTrustOptionFetchIssuerFromNet = 0x00000004,
@@ -590,7 +602,7 @@ OSStatus SecTrustSetParameters(SecTrustRef trustRef,
     can specify a zero-element array if you do not want any keychains searched.
     Note: this function is not applicable to iOS.
  */
-OSStatus SecTrustSetKeychains(SecTrustRef trust, CFTypeRef keychainOrArray)
+OSStatus SecTrustSetKeychains(SecTrustRef trust, CFTypeRef __nullable keychainOrArray)
     __OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_NA);
 
 /*!
@@ -612,8 +624,8 @@ OSStatus SecTrustSetKeychains(SecTrustRef trust, CFTypeRef keychainOrArray)
     certificate, use SecTrustCopyProperties. To get the overall trust result
     for the evaluation, use SecTrustGetTrustResult.
  */
-OSStatus SecTrustGetResult(SecTrustRef trustRef, SecTrustResultType *result,
-    CFArrayRef *certChain, CSSM_TP_APPLE_EVIDENCE_INFO **statusChain)
+OSStatus SecTrustGetResult(SecTrustRef trustRef, SecTrustResultType * __nullable result,
+    CFArrayRef * __nonnull CF_RETURNS_RETAINED certChain, CSSM_TP_APPLE_EVIDENCE_INFO * __nullable * __nonnull statusChain)
     __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_2, __MAC_10_7, __IPHONE_NA, __IPHONE_NA);
 
 /*!
@@ -629,7 +641,7 @@ OSStatus SecTrustGetResult(SecTrustRef trustRef, SecTrustResultType *result,
     use SecTrustGetTrustResult.
  */
 OSStatus SecTrustGetCssmResult(SecTrustRef trust,
-    CSSM_TP_VERIFY_CONTEXT_RESULT_PTR *result)
+    CSSM_TP_VERIFY_CONTEXT_RESULT_PTR __nullable * __nonnull result)
     __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_2, __MAC_10_7, __IPHONE_NA, __IPHONE_NA);
 
 /*!
@@ -673,11 +685,13 @@ OSStatus SecTrustGetTPHandle(SecTrustRef trust, CSSM_TP_HANDLE *handle)
     @discussion This function is not available on iOS, as certificate data
     for system-trusted roots is currently unavailable on that platform.
  */
-OSStatus SecTrustCopyAnchorCertificates(CFArrayRef *anchors)
+OSStatus SecTrustCopyAnchorCertificates(CFArrayRef * __nonnull CF_RETURNS_RETAINED anchors)
     __OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_NA);
 
-#endif /* TARGET_OS_MAC && !TARGET_OS_IPHONE */
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
+#endif /* TARGET_OS_MAC && !TARGET_OS_IPHONE */
 
 #if defined(__cplusplus)
 }

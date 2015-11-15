@@ -136,6 +136,12 @@ APPKIT_EXTERN NSString *const NSAccessibilityAttachmentTextAttribute;		//id - co
 APPKIT_EXTERN NSString *const NSAccessibilityLinkTextAttribute;			//id - corresponding element
 APPKIT_EXTERN NSString *const NSAccessibilityAutocorrectedTextAttribute NS_AVAILABLE_MAC(10_7);		//(NSNumber *)	    - (boolValue)
 
+/* Textual list attributes and constants. Examples: unordered or ordered lists in a document.
+ */
+APPKIT_EXTERN NSString *const NSAccessibilityListItemPrefixTextAttribute    NS_AVAILABLE_MAC(10_11);    // NSAttributedString, the prepended string of the list item. If the string is a common unicode character (e.g. a bullet •), return that unicode character. For lists with images before the text, return a reasonable label of the image.
+APPKIT_EXTERN NSString *const NSAccessibilityListItemIndexTextAttribute     NS_AVAILABLE_MAC(10_11);    // NSNumber, integerValue of the line index. Each list item increments the index, even for unordered lists. The first item should have index 0.
+APPKIT_EXTERN NSString *const NSAccessibilityListItemLevelTextAttribute     NS_AVAILABLE_MAC(10_11);    // NSNumber, integerValue of the indent level. Each sublist increments the level. The first item should have level 0.
+
 /*
  About MisspelledText attributes for attribute strings:
  

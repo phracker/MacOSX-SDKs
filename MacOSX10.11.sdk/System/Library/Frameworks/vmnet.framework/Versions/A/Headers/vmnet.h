@@ -30,6 +30,7 @@ extern "C" {
 
 #include <dispatch/dispatch.h>
 #include <xpc/xpc.h>
+#include <objc/objc-api.h>
 
 #ifndef EXPORT
 #define EXPORT __attribute__((visibility("default")))
@@ -50,10 +51,10 @@ extern "C" {
  *	address translator. In addition, the shared mode interface, can communicate with
  * 	shared mode interfaces in other guest operating system and also to the native host.
  */
-DISPATCH_ENUM(operating_modes, uint32_t,
+typedef OBJC_ENUM(uint32_t, operating_modes_t) {
 	VMNET_HOST_MODE				= 1000,
 	VMNET_SHARED_MODE			= 1001,
-);
+};
 
 /*
  * @enum interface_event_t
@@ -61,11 +62,11 @@ DISPATCH_ENUM(operating_modes, uint32_t,
  * @const VMNET_PACKET_AVAILABLE
  *	Packets are available to be read. The event dictionary passed in the callback is NULL.
  */
-DISPATCH_ENUM(interface_event, uint32_t,
+typedef OBJC_OPTIONS(uint32_t, interface_event_t) {
 	VMNET_INTERFACE_PACKETS_AVAILABLE	= 1<<0,
-);
+};
 
-DISPATCH_ENUM(vmnet_return, uint32_t,
+typedef OBJC_ENUM(uint32_t, vmnet_return_t) {
 	/* Error */
 	VMNET_SUCCESS				= 1000,	/* success */
 	VMNET_FAILURE				= 1001,	/* generic failure */
@@ -76,7 +77,7 @@ DISPATCH_ENUM(vmnet_return, uint32_t,
 	VMNET_PACKET_TOO_BIG			= 1006,	/* packet size larger than MTU */
 	VMNET_BUFFER_EXHAUSTED			= 1007,	/* buffers exhausted temporarily in kernel */
 	VMNET_TOO_MANY_PACKETS			= 1008, /* packets larger than limit */
-);
+};
 
 struct vmpktdesc {
 	size_t		vm_pkt_size;      	/* the size of the packet */

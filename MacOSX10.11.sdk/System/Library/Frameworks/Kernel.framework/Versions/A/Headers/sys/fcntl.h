@@ -296,6 +296,9 @@
 #define F_BARRIERFSYNC		85	/* fsync + issue barrier to drive */
 
 
+#define F_ADDFILESIGS_RETURN	97	/* Add signature from same file, return end offset in structure on sucess */
+
+
 // FS-specific fcntl()'s numbers begin at 0x00010000 and go up
 #define FCNTL_FS_SPECIFIC_BASE  0x00010000
 

@@ -131,6 +131,9 @@
 /* Define to 1 if you have the <pwd.h> header file. */
 #define HAVE_PWD_H 1
 
+/* Define to 1 if you have the `RAND_egd' function. */
+#define HAVE_RAND_EGD 1
+
 /* Define to 1 if you have the `setsid' function. */
 #define HAVE_SETSID 1
 

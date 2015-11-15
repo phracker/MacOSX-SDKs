@@ -255,6 +255,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
     @abstract A collection of music events which will be sent to a given destination, and which can be 
  				offset, muted, etc. independently of events in other tracks.
  */
+NS_CLASS_AVAILABLE(10_11, 9_0)
 @interface AVMusicTrack : NSObject {
 @protected
 	void *_impl;

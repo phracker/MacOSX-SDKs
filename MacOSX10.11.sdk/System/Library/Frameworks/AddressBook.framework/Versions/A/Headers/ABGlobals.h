@@ -6,6 +6,9 @@
  *
  */
 
+#ifndef __ABGLOBALS__
+#define __ABGLOBALS__
+
 #import <Foundation/Foundation.h>
 
 // ================================================================
@@ -280,4 +283,6 @@ extern NSString * const kABDeletedRecords           AVAILABLE_MAC_OS_X_VERSION_1
     // Returns the localized version of built in properties, labels or keys
     // Returns propertyOrLabel if not found (e.g. if not built in)
 NSString *ABLocalizedPropertyOrLabel(NSString *propertyOrLabel);
+
+#endif // __ABGLOBALS__
 

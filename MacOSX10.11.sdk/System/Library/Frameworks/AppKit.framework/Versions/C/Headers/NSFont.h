@@ -170,7 +170,7 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 /********* Glyph packing *********/
 /* Take a buffer of NSGlyphs, of some given length, and a packing type, and a place to put some packed glyphs.  Pack up the NSGlyphs according to the NSMultibyteGlyphPacking, null-terminate the bytes, and then put them into the output buffer.  Return the count of bytes output, including the null-terminator.  The output buffer (packedGlyphs) provided by the caller is guaranteed to be at least "count*4+1" bytes long. This function only supports NSNativeShortGlyphPacking on Mac OS X.
 */
-APPKIT_EXTERN NSInteger NSConvertGlyphsToPackedGlyphs(NSGlyph * __null_unspecified glBuf, NSInteger count, NSMultibyteGlyphPacking packing, char * __null_unspecified packedGlyphs);
+APPKIT_EXTERN NSInteger NSConvertGlyphsToPackedGlyphs(NSGlyph * __nonnull glBuf, NSInteger count, NSMultibyteGlyphPacking packing, char * __nonnull packedGlyphs);
 
 /********* Notifications *********/
 /* This notification is posted when the antialias threshold is changed by the user.

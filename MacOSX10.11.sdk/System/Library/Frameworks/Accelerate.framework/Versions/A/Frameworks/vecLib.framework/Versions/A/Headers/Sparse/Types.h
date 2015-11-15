@@ -6,7 +6,7 @@
 #pragma mark - Type defines -
 
 /*!
- @header Types.h
+ @header Sparse/Types.h
  @discussion
  Types supporting Sparse BLAS routines.
  

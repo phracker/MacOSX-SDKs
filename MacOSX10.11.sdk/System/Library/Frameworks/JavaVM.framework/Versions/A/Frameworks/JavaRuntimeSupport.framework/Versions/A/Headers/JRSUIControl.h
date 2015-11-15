@@ -1,5 +1,5 @@
 //
-//  JRSUIConstants.h
+//  JRSUIControl.h
 //  Copyright 2011-2015 Apple Inc. All rights reserved.
 //
 

@@ -1,7 +1,7 @@
 .\" Process this file with
 .\" groff -man -Tascii fwkdp.1 | less
 .\"
-.Dd September 18, 2008
+.Dd July 7, 2015
 .Dt "fwkdp" 1
 .Os "Mac OS X"
 .Sh NAME
@@ -11,7 +11,6 @@
 .Nm
 .Op Fl -setargs Ns Op = Ns Ar boot-args
 .Op Fl -proxy
-.Op Fl -gdb
 .Op Fl -core
 .Op Fl -verbose
 .Op Fl -disable
@@ -22,7 +21,7 @@
 .Sh DESCRIPTION
 Use fwkdp to act as a proxy for the kernel debugging KDP protocol over FireWire. It will also accept kernel core dump images transmitted over FireWire. Additionally, fwkdp can be used to set the boot-args necessary for a target machine which is to be debugged.
 .Pp
-As a complete technology, FireWireKDP redirects the kernel debugging KDP protocol over FireWire. It enables live GDB debugging of a trapped kernel over a FireWire cable, just as you would over Ethernet.  It provides the following advantages over remote Ethernet kernel debugging:
+As a complete technology, FireWireKDP redirects the kernel debugging KDP protocol over FireWire. It enables live LLDB debugging of a trapped kernel over a FireWire cable, just as you would over Ethernet.  It provides the following advantages over remote Ethernet kernel debugging:
 .Bl -dash -offset indent -compact
 .It
 Available sooner in the kernel's startup.
@@ -45,8 +44,6 @@ Sets the nvram boot-args on the current machine to
 is not passed, the tool will prompt the user as to which boot-args are to be set.
 .It Fl -proxy Ns , Fl p
 Use proxy mode only.
-.It Fl -gdb Ns , Fl g
-Use proxy mode only and automatically start gdb as a child process.
 .It Fl -core Ns , Fl c
 Use core dump receive mode only.
 .It Fl -verbose Ns , Fl v
@@ -66,6 +63,8 @@ Displays usage info for fwkdp.
 FireWireKDP doesn't interfere with the loading of the normal FireWire stack - it only touches the FireWire hardware when the kernel debugger is invoked, either by a panic, NMI, trap, or similar.
 .Pp
 Furthermore, FireWireKDP is designed to work cooperatively with FireWireKPrintf. To use both you must use a combination of boot-args such as "debug=0x14e kdp_match_name=firewire".
+.Pp
+To use FireWireKDP on a non-built-in FireWire interface (e.g. when using a Thunderbolt to FireWire adapter) add fwkdp=0x8000 to your boot-args.
 .Sh USAGE
 Connect two Macs via FireWire and follow the steps below.
 .Pp
@@ -89,20 +88,17 @@ Run fwkdp:
 .Dl % fwkdp
 The FireWireKDP tool defaults to both proxy and core-dump receive mode. It is a stateless translator that shunts data between the network KDP/UDP port and the FireWire connection.  Once started it can be left running indefinitely.
 .It
-Run GDB with the target operating system's symbol file.
-.Dl % gdb mach_kernel
-See the Apple Development Kits webpage for the proper "Kernel Debug Kit" which will contain the proper "mach_kernel" symbol file. See step 6 for more info.
+Run LLDB with the target operating system's symbol file.
+.Dl % lldb kernel.development
+See the Apple Development Kits webpage for the proper "Kernel Debug Kit" which will contain the proper "kernel.development" or "kernel.debug" "symbol file. See step 6 for more info.
 .It
-Within GDB, load the appropriate "kgmacros" (commonly found along with symbolic mach_kernel).
-.Dl (gdb) source kgmacros
+Within LLDB, allow script loading to import the appropriate kernel macros (commonly found along with symbolic mach_kernel).
+.Dl (lldb) settings set target.load-script-from-symbol-file true
 .It
-Within GDB set the target to remote-kdp.
-.Dl (gdb) target remote-kdp
+Within LLDB, attach using kdp-remote.
+.Dl (lldb) kdp-remote localhost
 .It
-Within GDB, attach using kdp-reattach.
-.Dl (gdb) kdp-reattach localhost
-.It
-The connection should be established. Use gdb as you would over Ethernet.
+The connection should be established. Use lldb as you would over Ethernet.
 .It
 For more info on remote kernel debugging, please see "Two-machine Debugging" of the I/O Kit Device Driver Design Guidelines and Technical Note TN2118: Debugging With Kernel Core Dumps.
 .El

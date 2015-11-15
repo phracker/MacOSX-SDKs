@@ -36,7 +36,7 @@ NS_CLASS_AVAILABLE_MAC(10_10)
     } _splitViewControllerFlags;
 }
 
-/// The split view managed by the SplitViewController. This can be used to customize view properties such as the dividerStyle, vertical, and autosaveName. It is not guaranteed to be the same view as the receivers 'view' property. The default created splitView is vertical with a dividerStyle of \c NSSplitViewDividerStyleThin. To provide a custom NSSplitView, set the splitView property anytime before self.viewLoaded is YES (e.g., before calling super in -viewDidLoad).
+/// The split view managed by the SplitViewController. This can be used to customize view properties such as the dividerStyle, vertical, and autosaveName. It is not guaranteed to be the same view as the receivers 'view' property. The default created splitView is vertical with a dividerStyle of \c NSSplitViewDividerStyleThin. To provide a custom NSSplitView, set the splitView property anytime before self.viewLoaded is YES.
 @property (strong) NSSplitView *splitView;
 
 /// The array of SplitViewItems that correspond to the current child view controllers. After a child view controller is added to the receiving splitViewController, a NSSplitViewItem with the default values will be created for it. Once the child is removed, its corresponding splitViewItem will be removed from the splitViewItems array. Setting this will call through to \c -insertSplitViewItem:atIndex and \c -removeSplitViewItem: for items that are new or need removal.
@@ -99,6 +99,18 @@ typedef NS_ENUM(NSInteger, NSSplitViewItemBehavior) {
     NSSplitViewItemBehaviorSidebar,
     NSSplitViewItemBehaviorContentList
 } NS_AVAILABLE_MAC(10_11);
+
+typedef NS_ENUM(NSInteger, NSSplitViewItemCollapseBehavior) {
+    /// The item uses the default collapsing behavior for its set `behavior`. The default may change over time.
+    NSSplitViewItemCollapseBehaviorDefault,
+    /// The item prefers to keep the other panes at their current size and position on screen, potentially growing or shrinking the window in the direction to best preserve that. But it will break that preference in order to keep the window fully on screen or when in full screen.
+    NSSplitViewItemCollapseBehaviorPreferResizingSplitViewWithFixedSiblings,
+    /// The item prefers to resize the other split panes. This will be broken when uncollapsing if the item can't fully uncollapse before hitting the minimum size of the other panes or the window.
+    NSSplitViewItemCollapseBehaviorPreferResizingSiblingsWithFixedSplitView,
+    /// The item will collapse/uncollapse purely from a constraint animation, with a constraint priority of the item’s `holdingPriority`. This could result in a partial internal content resize and window resize, and has no implications for keeping the window on screen. External constraints can be used to tweak exactly how the animation affects item, sibling, and window size and positions.
+    NSSplitViewItemCollapseBehaviorUseConstraints
+} NS_AVAILABLE_MAC(10_11);
+
 
 /// This constant can be used with any sizing related \c NSSplitViewItem properties to unset their values.
 APPKIT_EXTERN const CGFloat NSSplitViewItemUnspecifiedDimension NS_AVAILABLE_MAC(10_11);
@@ -165,6 +177,9 @@ NS_CLASS_AVAILABLE_MAC(10_10)
 
 /// Whether or not the child view controller is collapsible from user interaction - whether by dragging or double clicking a divider. The default is \c NO.
 @property BOOL canCollapse;
+
+/// The resize behavior when the receiver toggles its `collapsed` state programmatically, both animatedly and not. Defaults to `.Default`.
+@property NSSplitViewItemCollapseBehavior collapseBehavior NS_AVAILABLE_MAC(10_11);
 
 /// A convenience to set the minimum thickness of the split view item -- width for "vertical" split views, height otherwise. If NSSplitViewItemUnspecifiedDimension, no minimum size is enforced by the SplitViewItem, although constraints in the contained view hierarchy might have constraints specify some minimum size on their own. Defaults to NSSplitViewItemUnspecifiedDimension.
 @property CGFloat minimumThickness NS_AVAILABLE_MAC(10_11);

@@ -27,6 +27,7 @@ NS_CLASS_AVAILABLE(10_8, 4_1)
     GKMatch *_match;
     BOOL _hosted;
     BOOL _finished;
+    BOOL _internalFlag;
     NSMutableArray *_hostedPlayers;
 }
 
@@ -65,7 +66,7 @@ NS_CLASS_AVAILABLE(10_8, 4_1)
 - (void)matchmakerViewControllerWasCancelled:(GKMatchmakerViewController *)viewController NS_AVAILABLE(10_8, 4_1);
 
 // Matchmaking has failed with an error
-- (void)matchmakerViewController:(GKMatchmakerViewController *)viewController didFailWithError:(nullable NSError *)error NS_AVAILABLE(10_8, 4_1);
+- (void)matchmakerViewController:(GKMatchmakerViewController *)viewController didFailWithError:(NSError *)error NS_AVAILABLE(10_8, 4_1);
 
 @optional
 // A peer-to-peer match has been found, the game should start

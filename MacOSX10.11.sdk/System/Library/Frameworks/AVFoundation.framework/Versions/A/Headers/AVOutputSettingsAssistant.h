@@ -22,7 +22,7 @@ AVF_EXPORT NSString * const AVOutputSettingsPreset640x480		NS_AVAILABLE(10_9, 7_
 AVF_EXPORT NSString * const AVOutputSettingsPreset960x540   	NS_AVAILABLE(10_9, 7_0);
 AVF_EXPORT NSString * const AVOutputSettingsPreset1280x720  	NS_AVAILABLE(10_9, 7_0);
 AVF_EXPORT NSString * const AVOutputSettingsPreset1920x1080		NS_AVAILABLE(10_9, 7_0);
-AVF_EXPORT NSString * const AVOutputSettingsPreset3840x2160		NS_AVAILABLE(10_10, NA);
+AVF_EXPORT NSString * const AVOutputSettingsPreset3840x2160		NS_AVAILABLE(10_10, 9_0);
 
 @class AVOutputSettingsAssistantInternal;
 

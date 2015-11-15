@@ -4,7 +4,7 @@
  *
  *  See vImage/vImage.h for more on how to view the headerdoc documentation for types declared herein.
  *
- *  @copyright Copyright (c) 2002-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2002-2015 by Apple Inc. All rights reserved.
  *
  *  @discussion     Defines various types and constants common to vImage.
  */

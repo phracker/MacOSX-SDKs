@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 }
 
-+ (null_unspecified instancetype)imageRepWithData:(null_unspecified NSData*)pictData;
++ (nullable instancetype)imageRepWithData:(NSData*)pictData;
 - (nullable instancetype)initWithData:(NSData*)pictData;
 
 @property (readonly, copy) NSData *PICTRepresentation;

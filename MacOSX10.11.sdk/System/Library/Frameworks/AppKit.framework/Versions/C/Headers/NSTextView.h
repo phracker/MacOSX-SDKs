@@ -59,32 +59,34 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 /**************************** Initializing ****************************/
 
+// Designated Initializer. container may be nil.
 - (instancetype)initWithFrame:(NSRect)frameRect textContainer:(nullable NSTextContainer *)container NS_DESIGNATED_INITIALIZER;
-    // Designated Initializer. container may be nil.
 
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_DESIGNATED_INITIALIZER;
 
+// This variant will create the text network (textStorage, layoutManager, and a container).
 - (instancetype)initWithFrame:(NSRect)frameRect;
-    // This variant will create the text network (textStorage, layoutManager, and a container).
 
 /***************** Get/Set the container and other stuff *****************/
 
+// The set method should not be called directly, but you might want to override it.  Gets or sets the text container for this view.  Setting the text container marks the view as needing display.  The text container calls the set method from its setTextView: method.
 @property (nullable, assign) NSTextContainer *textContainer;
-    // The set method should not be called directly, but you might want to override it.  Gets or sets the text container for this view.  Setting the text container marks the view as needing display.  The text container calls the set method from its setTextView: method.
 
+// This method should be used instead of the primitive -setTextContainer: if you need to replace a view's text container with a new one leaving the rest of the web intact.  This method deals with all the work of making sure the view doesn't get deallocated and removing the old container from the layoutManager and replacing it with the new one.
 - (void)replaceTextContainer:(NSTextContainer *)newContainer;
-    // This method should be used instead of the primitive -setTextContainer: if you need to replace a view's text container with a new one leaving the rest of the web intact.  This method deals with all the work of making sure the view doesn't get deallocated and removing the old container from the layoutManager and replacing it with the new one.
 
+// The textContainerInset determines the padding that the view provides around the container.  The container's origin will be inset by this amount from the bounds point {0,0} and padding will be left to the right and below the container of the same amount.  This inset affects the view sizing in response to new layout and is used by the rectangular text containers when they track the view's frame dimensions.
 @property NSSize textContainerInset;
-    // The textContainerInset determines the padding that the view provides around the container.  The container's origin will be inset by this amount from the bounds point {0,0} and padding will be left to the right and below the container of the same amount.  This inset affects the view sizing in response to new layout and is used by the rectangular text containers when they track the view's frame dimensions.
 
+// The container's origin in the view is determined from the current usage of the container, the container inset, and the view size.  textContainerOrigin returns this point.
 @property (readonly) NSPoint textContainerOrigin;
+
+// invalidateTextContainerOrigin is sent automatically whenever something changes that causes the origin to possibly move.  You usually do not need to call invalidate yourself.
 - (void)invalidateTextContainerOrigin;
-    // The container's origin in the view is determined from the current usage of the container, the container inset, and the view size.  textContainerOrigin returns this point.  invalidateTextContainerOrigin is sent automatically whenever something changes that causes the origin to possibly move.  You usually do not need to call invalidate yourself. 
 
 @property (nullable, readonly, assign) NSLayoutManager *layoutManager;
+
 @property (nullable, readonly, assign) NSTextStorage *textStorage;
-    // Convenience methods
 
 /************************* Key binding entry-point *************************/
 
@@ -92,8 +94,8 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 /*************************** Sizing methods ***************************/
 
+// Sets the frame size of the view to desiredSize constrained within min and max size.
 - (void)setConstrainedFrameSize:(NSSize)desiredSize;
-    // Sets the frame size of the view to desiredSize constrained within min and max size.
 
 /***************** New miscellaneous API above and beyond NSText *****************/
 
@@ -117,8 +119,8 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 /*************************** Find menu commands ***************************/
 
+// See NSFindPanelAction for possible tags in sender
 - (void)performFindPanelAction:(nullable id)sender;
-    // See NSFindPanelAction for possible tags in sender
 
 /*************************** New Text commands ***************************/
 
@@ -145,14 +147,14 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 /*************************** Fine display control ***************************/
 
+// If flag is set, then this will attempt to avoid causing layout, if possible, when displaying the rect.  If flag is not set, this is equivalent to setNeedsDisplayInRect:.
 - (void)setNeedsDisplayInRect:(NSRect)rect avoidAdditionalLayout:(BOOL)flag;
-    // If flag is set, then this will attempt to avoid causing layout, if possible, when displaying the rect.  If flag is not set, this is equivalent to setNeedsDisplayInRect:.
 
 @property (readonly) BOOL shouldDrawInsertionPoint;
 - (void)drawInsertionPointInRect:(NSRect)rect color:(NSColor *)color turnedOn:(BOOL)flag;
 
+// This is the override point for view background drawing.
 - (void)drawViewBackgroundInRect:(NSRect)rect;
-    // This is the override point for view background drawing.
 
 /*************************** Especially for subclassers ***************************/
 
@@ -165,8 +167,8 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 /*************************** Especially for subclassers ***************************/
 
+// Cause the text view to act as if someone clicked on a piece of text with link as the value of NSLinkAttributeName.  If, for instance, you have a special attachment cell that can end up following links, you can use this method to ask the text view to follow a link once you decide it should.  This method is invoked by the text view during mouse tracking if the user is clicking a link as well.  This sends the textView:clickedOnLink: delegation if the delegate responds.
 - (void)clickedOnLink:(id)link atIndex:(NSUInteger)charIndex;
-    // Cause the text view to act as if someone clicked on a piece of text with link as the value of NSLinkAttributeName.  If, for instance, you have a special attachment cell that can end up following links, you can use this method to ask the text view to follow a link once you decide it should.  This method is invoked by the text view during mouse tracking if the user is clicking a link as well.  This sends the textView:clickedOnLink: delegation if the delegate responds.
 
 /************************* Speech support *************************/
 
@@ -174,16 +176,17 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 - (void)stopSpeaking:(nullable id)sender;
 
 /************************* Vertical text support *************************/
-- (void)setLayoutOrientation:(NSTextLayoutOrientation)theOrientation NS_AVAILABLE_MAC(10_7);
-    // Changes the receiver's layout orientation and invalidates the contents.  Unlike other NSTextView properties, this is not shared by sibling views.  It also rotates the bounds 90 degrees, swaps horizontal and vertical bits of the autoresizing mask, and reconfigures isHorizontallyResizable and isVerticallyResizable properties accordingly.  Also, if -enclosingScrollView returns non-nil, it reconfigures horizontal and vertical ruler views, horizontal and vertical scrollers, and the frame.
 
+// Changes the receiver's layout orientation and invalidates the contents.  Unlike other NSTextView properties, this is not shared by sibling views.  It also rotates the bounds 90 degrees, swaps horizontal and vertical bits of the autoresizing mask, and reconfigures isHorizontallyResizable and isVerticallyResizable properties accordingly.  Also, if -enclosingScrollView returns non-nil, it reconfigures horizontal and vertical ruler views, horizontal and vertical scrollers, and the frame.
+- (void)setLayoutOrientation:(NSTextLayoutOrientation)theOrientation NS_AVAILABLE_MAC(10_7);
+
+// An action method that calls -setLayoutOrientation: with the sender's tag as the orientation.
 - (void)changeLayoutOrientation:(nullable id)sender NS_AVAILABLE_MAC(10_7);
-    // An action method that calls -setLayoutOrientation: with the sender's tag as the orientation.
 
 /************************* Helper for subclassers *************************/
 
+// Here point is in view coordinates, and the return value is a character index appropriate for placing a zero-length selection for an insertion point associated with the mouse at the given point.  The NSTextInput method characterIndexForPoint: is not suitable for this role.
 - (NSUInteger)characterIndexForInsertionAtPoint:(NSPoint)point NS_AVAILABLE_MAC(10_5);
-    // Here point is in view coordinates, and the return value is a character index appropriate for placing a zero-length selection for an insertion point associated with the mouse at the given point.  The NSTextInput method characterIndexForPoint: is not suitable for this role.
 
 @end
 
@@ -191,17 +194,18 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 /************************* Completion support *********************/
 
+// Responder method for invoking completion.  May be invoked programmatically if autocompletion is desired.
 - (void)complete:(nullable id)sender;
-    // Responder method for invoking completion.  May be invoked programmatically if autocompletion is desired.
-    
-@property (readonly) NSRange rangeForUserCompletion;
-    // Usually returns the partial range from the most recent beginning of a word up to the insertion point.  May be overridden by subclassers to alter the range to be completed.  Returning (NSNotFound, 0) suppresses completion.
-    
-- (nullable NSArray<NSString *> *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(nullable NSInteger *)index;
-    // Returns an array of potential completions, in the order to be presented, representing complete words that the user might be trying to type when starting by typing the partial word at the given range.  May be overridden by subclassers to modify or override this list.  Returning nil or a zero-length array suppresses completion.   The selected item index may optionally be set to indicate which completion should be initially selected; default is 0, and -1 indicates no selection.  This method should call the delegate method textView:completions:forPartialWordRange:indexOfSelectedItem: if implemented.
 
+// Usually returns the partial range from the most recent beginning of a word up to the insertion point.  May be overridden by subclassers to alter the range to be completed.  Returning (NSNotFound, 0) suppresses completion.
+@property (readonly) NSRange rangeForUserCompletion;
+
+// Returns an array of potential completions, in the order to be presented, representing complete words that the user might be trying to type when starting by typing the partial word at the given range.  May be overridden by subclassers to modify or override this list.  Returning nil or a zero-length array suppresses completion.   The selected item index may optionally be set to indicate which completion should be initially selected; default is 0, and -1 indicates no selection.  This method should call the delegate method textView:completions:forPartialWordRange:indexOfSelectedItem: if implemented.
+- (nullable NSArray<NSString *> *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index;
+
+// Called with final == NO as the user moves through the potential completions, then with final == YES when a completion is definitively selected (or completion is cancelled and the original value is reinserted).  The default implementation inserts the completion into the text at the appropriate location.  The movement argument takes its values from the movement codes defined in NSText.h, and allows subclassers to distinguish between canceling completion and selection by arrow keys, by return, by tab, or by other means such as clicking.
 - (void)insertCompletion:(NSString *)word forPartialWordRange:(NSRange)charRange movement:(NSInteger)movement isFinal:(BOOL)flag;
-    // Called with final == NO as the user moves through the potential completions, then with final == YES when a completion is definitively selected (or completion is cancelled and the original value is reinserted).  The default implementation inserts the completion into the text at the appropriate location.  The movement argument takes its values from the movement codes defined in NSText.h, and allows subclassers to distinguish between canceling completion and selection by arrow keys, by return, by tab, or by other means such as clicking.
+
 @end
 
 @interface NSTextView (NSPasteboard)
@@ -216,88 +220,87 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 // To implement new mechanisms that cause data to be read from the pasteboard you can call preferredPasteboardTypeFromArray:restrictedToTypesFromArray: and readSelectionFromPasteboard:type:.
 
+// Returns an array of pasteboard types that can be provided from the current selection.  Overriders should copy the result from super and add their own new types.
 @property (readonly, copy) NSArray<NSString *> *writablePasteboardTypes;
-    // Returns an array of pasteboard types that can be provided from the current selection.  Overriders should copy the result from super and add their own new types.
 
+// Invoked automatically to write a single type to the pasteboard.  The type will already have been declared to the pasteboard so this should merely write the data using the appropriate set method on the pasteboard.
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard *)pboard type:(NSString *)type;
-    // Invoked automatically to write a single type to the pasteboard.  The type will already have been declared to the pasteboard so this should merely write the data using the appropriate set method on the pasteboard.
 
+// Declares all the types to the pasteboard then calls writeSelectionToPasteboard:type: for each type in the array.
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard *)pboard types:(NSArray<NSString *> *)types;
-    // Declares all the types to the pasteboard then calls writeSelectionToPasteboard:type: for each type in the array.
 
-
+// Returns an array of types that could be read currently in order of preference.  Subclassers should take care to consider the "preferred" part of the semantics of this method.  Figure out where your new type should fit into the preferred order.  The preferred order should usually be from the richest types down to the less rich.  The default array will start with RTFD, RTF, strings, files, images, colors and so on.  The ordering list really starts to lose significance after the first few elements.  If the new format you are supporting is richer than RTFD, put it at the head of the list, otherwise try to find the right place for it, but don't count on the actual contents of the list you get from super either.
 @property (readonly, copy) NSArray<NSString *> *readablePasteboardTypes;
-    // Returns an array of types that could be read currently in order of preference.  Subclassers should take care to consider the "preferred" part of the semantics of this method.  Figure out where your new type should fit into the preferred order.  The preferred order should usually be from the richest types down to the less rich.  The default array will start with RTFD, RTF, strings, files, images, colors and so on.  The ordering list really starts to lose significance after the first few elements.  If the new format you are supporting is richer than RTFD, put it at the head of the list, otherwise try to find the right place for it, but don't count on the actual contents of the list you get from super either.
 
+// Returns the most preferred type from the available types array that it is currently possible to read.  If allowedTypes is provided then only those types will be considered regardless of whether others could currently be read.  You should not have to override this to support new types.
 - (nullable NSString *)preferredPasteboardTypeFromArray:(NSArray<NSString *> *)availableTypes restrictedToTypesFromArray:(nullable NSArray<NSString *> *)allowedTypes;
-    // Returns the most preferred type from the available types array that it is currently possible to read.  If allowedTypes is provided then only those types will be considered regardless of whether others could currently be read.  You should not have to override this to support new types.
 
+// Invoked automatically to read a specific type from the pasteboard.  The type will already have been by the preferredPasteboardTypeFromArray:restrictedToTypesFromArray: method so this should merely read the data using the appropriate accessor method on the pasteboard.
 - (BOOL)readSelectionFromPasteboard:(NSPasteboard *)pboard type:(NSString *)type;
-    // Invoked automatically to read a specific type from the pasteboard.  The type will already have been by the preferredPasteboardTypeFromArray:restrictedToTypesFromArray: method so this should merely read the data using the appropriate accessor method on the pasteboard.
 
+// Part of the services mechanism.  This is implemented such that you should not need to override it to support new types.  It should not be necessary to call this.
 - (BOOL)readSelectionFromPasteboard:(NSPasteboard *)pboard;
-    // Part of the services mechanism.  This is implemented such that you should not need to override it to support new types.  It should not be necessary to call this.
 
+// Automatically invoked when the first instance of NSTextView is created.  Subclassing this is necessary to add support for new service types (in addition to actually supporting writing or reading the types, of course).  Override it to call super and then register your own new types.  You should probably never need to call this except to message super in an override.
 + (void)registerForServices;
-    // Automatically invoked when the first instance of NSTextView is created.  Subclassing this is necessary to add support for new service types (in addition to actually supporting writing or reading the types, of course).  Override it to call super and then register your own new types.  You should probably never need to call this except to message super in an override.
 
+// This method is part of the services protocol and is implemented in such a way that if you extend the type support correctly you should not need to override it.  You should never need to call it either.
 - (nullable id)validRequestorForSendType:(NSString *)sendType returnType:(NSString *)returnType;
-    // This method is part of the services protocol and is implemented in such a way that if you extend the type support correctly you should not need to override it.  You should never need to call it either.
 
+// These methods are like paste: (from NSResponder) but they restrict the acceptable type of the pasted data.  They are suitable as menu actions for appropriate "Paste As" submenu commands.
 - (void)pasteAsPlainText:(nullable id)sender;
 - (void)pasteAsRichText:(nullable id)sender;
-    // These methods are like paste: (from NSResponder) but they restrict the acceptable type of the pasted data.  They are suitable as menu actions for appropriate "Paste As" submenu commands.
 
 @end
 
 @interface NSTextView (NSDragging)
 
+// Causes textview to begin dragging current selected range, returning YES if it succeeds in initiating the drag.  Primarily for subclassers, who can override it to intervene at beginning of a drag.
 - (BOOL)dragSelectionWithEvent:(NSEvent *)event offset:(NSSize)mouseOffset slideBack:(BOOL)slideBack;
-    // Causes textview to begin dragging current selected range, returning YES if it succeeds in initiating the drag.  Primarily for subclassers, who can override it to intervene at beginning of a drag.
 
+// Used by dragSelectionWithEvent:offset:slideBack: to get an appropriate image.  Returns the lower-left point of the image in view coordinates as origin.  Can be called by others who need such an image, or can be overridden by subclassers to return a different image (if it returns nil, a default icon will be used).
 - (nullable NSImage *)dragImageForSelectionWithEvent:(NSEvent *)event origin:(nullable NSPointPointer)origin;
-    // Used by dragSelectionWithEvent:offset:slideBack: to get an appropriate image.  Returns the lower-left point of the image in view coordinates as origin.  Can be called by others who need such an image, or can be overridden by subclassers to return a different image (if it returns nil, a default icon will be used).
 
+// Must be overridden to support new drag types in addition to adding support for reading and writing the type.  Override it to call super, then make a copy of the result and add your own new types before returning the copy.  You should probably never need to call this except to message super in an override.
 @property (readonly, copy) NSArray<NSString *> *acceptableDragTypes;
-    // Must be overridden to support new drag types in addition to adding support for reading and writing the type.  Override it to call super, then make a copy of the result and add your own new types before returning the copy.  You should probably never need to call this except to message super in an override.
 
+// This is called by draggingEntered:... and draggingUpdated:...  It should return the drag operation constant appropriate to the current situation or NSDragOperationNone.  It can also do any other auxiliary stuff like drawing a ghost to indicate where the dragged thing will go when it is dropped.  Be aware that this is called over and over so if you're going to draw a ghost or something avoid doing it over and over unless you need to.  Any state you set up in this method that needs to be cleared can be cleared by overriding the next method.  You should probably never need to call this except to message super in an override.  Clients should override this method rather than draggingEntered:... and draggingUpdated:... to control the drag operation.  Clients overriding this method must message super to get the standard drag insertion indicator.
 - (NSDragOperation)dragOperationForDraggingInfo:(id <NSDraggingInfo>)dragInfo type:(NSString *)type;
-        // This is called by draggingEntered:... and draggingUpdated:...  It should return the drag operation constant appropriate to the current situation or NSDragOperationNone.  It can also do any other auxiliary stuff like drawing a ghost to indicate where the dragged thing will go when it is dropped.  Be aware that this is called over and over so if you're going to draw a ghost or something avoid doing it over and over unless you need to.  Any state you set up in this method that needs to be cleared can be cleared by overriding the next method.  You should probably never need to call this except to message super in an override.  Clients should override this method rather than draggingEntered:... and draggingUpdated:... to control the drag operation.  Clients overriding this method must message super to get the standard drag insertion indicator.
 
+// If you set up persistent state that should go away when the drag operation finishes, you can clean it up here.  Such state is usually set up in -dragOperationForDraggingInfo:type:.  You should probably never need to call this except to message super in an override.
 - (void)cleanUpAfterDragOperation;
-    // If you set up persistent state that should go away when the drag operation finishes, you can clean it up here.  Such state is usually set up in -dragOperationForDraggingInfo:type:.  You should probably never need to call this except to message super in an override.
 
 @end
 
-@interface NSTextView (NSSharing)
-
 // The methods in this category deal with settings that need to be shared by all the NSTextViews of a single NSLayoutManager.  Many of these methods are overrides of NSText or NSResponder methods.
+@interface NSTextView (NSSharing)
 
 /*************************** Selected/Marked range ***************************/
 
 @property (copy) NSArray<NSValue *> *selectedRanges;
+
+// These multiple-range methods supersede the corresponding single-range methods.  The ranges argument must be a non-nil, non-empty array of objects responding to rangeValue.  The return value of selectedRanges obeys the same restrictions, and in addition its elements are sorted, non-overlapping, non-contiguous, and (except for the case of a single range) have non-zero-length.
 - (void)setSelectedRanges:(NSArray<NSValue *> *)ranges affinity:(NSSelectionAffinity)affinity stillSelecting:(BOOL)stillSelectingFlag;
-    // These multiple-range methods supersede the corresponding single-range methods.  The ranges argument must be a non-nil, non-empty array of objects responding to rangeValue.  The return value of selectedRanges obeys the same restrictions, and in addition its elements are sorted, non-overlapping, non-contiguous, and (except for the case of a single range) have non-zero-length.
 
 - (void)setSelectedRange:(NSRange)charRange affinity:(NSSelectionAffinity)affinity stillSelecting:(BOOL)stillSelectingFlag;
 @property (readonly) NSSelectionAffinity selectionAffinity;
 @property NSSelectionGranularity selectionGranularity;
 
+// Selected text attributes are applied as temporary attributes to selected text.  Candidates include those attributes that do not affect layout.
 @property (copy) NSDictionary<NSString *, id> *selectedTextAttributes;
-    // Selected text attributes are applied as temporary attributes to selected text.  Candidates include those attributes that do not affect layout.
 
 @property (copy) NSColor *insertionPointColor;
 
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)restartFlag;
 
+// Marked text attributes are applied as temporary attributes to selected text.  Candidates include those attributes that do not affect layout.
 @property (nullable, copy) NSDictionary<NSString *, id> *markedTextAttributes;
-    // Marked text attributes are applied as temporary attributes to selected text.  Candidates include those attributes that do not affect layout.
 
+// Link text attributes are applied as temporary attributes to any text with a link attribute.  Candidates include those attributes that do not affect layout.  Default attributes are blue color, single underline, and the pointing hand cursor.
 @property (nullable, copy) NSDictionary<NSString *, id> *linkTextAttributes;
-    // Link text attributes are applied as temporary attributes to any text with a link attribute.  Candidates include those attributes that do not affect layout.  Default attributes are blue color, single underline, and the pointing hand cursor.
 
+// If set, then text with a link attribute will automatically be treated as if it had an implicit tooltip attribute with the same value as the link attribute.  An explicit tooltip attribute will take precedence over this implicit one.  The textView:willDisplayToolTip:forCharacterAtIndex: delegate method affects these tooltips as it does any other.
 @property BOOL displaysLinkToolTips NS_AVAILABLE_MAC(10_5);
-    // If set, then text with a link attribute will automatically be treated as if it had an implicit tooltip attribute with the same value as the link attribute.  An explicit tooltip attribute will take precedence over this implicit one.  The textView:willDisplayToolTip:forCharacterAtIndex: delegate method affects these tooltips as it does any other.
 
 /************************* Glyph info support *************************/
 
@@ -314,16 +317,16 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 @property (readonly) NSInteger spellCheckerDocumentTag;
 
+// If grammar checking is enabled, then it is performed whenever spellchecking is performed, whether continuously or manually.
 @property (getter=isGrammarCheckingEnabled) BOOL grammarCheckingEnabled NS_AVAILABLE_MAC(10_5);
 - (void)toggleGrammarChecking:(nullable id)sender NS_AVAILABLE_MAC(10_5);
-    // If grammar checking is enabled, then it is performed whenever spellchecking is performed, whether continuously or manually.  
 
+// May be called or overridden to control setting of spelling and grammar indicators.  Values are those listed for NSSpellingStateAttributeName.  Calls the delegate method textView:shouldSetSpellingState:range:.
 - (void)setSpellingState:(NSInteger)value range:(NSRange)charRange NS_AVAILABLE_MAC(10_5);
-    // May be called or overridden to control setting of spelling and grammar indicators.  Values are those listed for NSSpellingStateAttributeName.  Calls the delegate method textView:shouldSetSpellingState:range:.
 
 @property (copy) NSDictionary<NSString *, id> *typingAttributes;
 
-    // These multiple-range methods supersede the corresponding single-range methods.  For the first method, the affectedRanges argument obeys the same restrictions as the argument to setSelectedRanges:, and the replacementStrings array should either be nil (for attribute-only changes) or have the same number of elements as affectedRanges.  For the remaining three methods, the return values obey the same restrictions as that for selectedRanges, except that they will be nil if the corresponding change is not permitted, where the corresponding single-range methods return (NSNotFound, 0).
+// These multiple-range methods supersede the corresponding single-range methods.  For the first method, the affectedRanges argument obeys the same restrictions as the argument to setSelectedRanges:, and the replacementStrings array should either be nil (for attribute-only changes) or have the same number of elements as affectedRanges.  For the remaining three methods, the return values obey the same restrictions as that for selectedRanges, except that they will be nil if the corresponding change is not permitted, where the corresponding single-range methods return (NSNotFound, 0).
 - (BOOL)shouldChangeTextInRanges:(NSArray<NSValue *> *)affectedRanges replacementStrings:(nullable NSArray<NSString *> *)replacementStrings;
 @property (nullable, readonly, copy) NSArray<NSValue *> *rangesForUserTextChange;
 @property (nullable, readonly, copy) NSArray<NSValue *> *rangesForUserCharacterAttributeChange;
@@ -342,18 +345,19 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 @property BOOL allowsUndo;
 
+// May be called to introduce a break in the coalescing of undo actions for user typing, for example at a save point.
 - (void)breakUndoCoalescing;
-    // May be called to introduce a break in the coalescing of undo actions for user typing, for example at a save point.
+
 @property (getter=isCoalescingUndo, readonly) BOOL coalescingUndo NS_AVAILABLE_MAC(10_6);
 
+// Specifies whether image attachments should permit editing of their images, if the text view is editable and the text attachment cell supports image editing.
 @property BOOL allowsImageEditing NS_AVAILABLE_MAC(10_5);
-    // Specifies whether image attachments should permit editing of their images, if the text view is editable and the text attachment cell supports image editing.
-    
-- (void)showFindIndicatorForRange:(NSRange)charRange NS_AVAILABLE_MAC(10_5);
-    // Applies a temporary highlighting effect, intended to indicate the result of a find operation.  Clients should perform any necessary scrolling before calling this method.  The effect will be removed after a certain time, or when other actions (such as scrolling) take place, but it can be removed immediately by calling this method again with a zero-length range.
 
+// Applies a temporary highlighting effect, intended to indicate the result of a find operation.  Clients should perform any necessary scrolling before calling this method.  The effect will be removed after a certain time, or when other actions (such as scrolling) take place, but it can be removed immediately by calling this method again with a zero-length range.
+- (void)showFindIndicatorForRange:(NSRange)charRange NS_AVAILABLE_MAC(10_5);
+
+// Controls whether to show rollover button for extension service items inside text selection.  It's enabled by default.
 @property BOOL usesRolloverButtonForSelection NS_AVAILABLE_MAC(10_10);
-    // Controls whether to show rollover button for extension service items inside text selection.  It's enabled by default.
 
 
 /*************************** NSText methods ***************************/
@@ -403,17 +407,18 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 @property (getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled NS_AVAILABLE_MAC(10_6);
 - (void)toggleAutomaticSpellingCorrection:(nullable id)sender NS_AVAILABLE_MAC(10_6);
 
+// These two are bulk methods for setting and getting many checking type settings at once.  They will call the individual methods as necessary.
 @property NSTextCheckingTypes enabledTextCheckingTypes NS_AVAILABLE_MAC(10_6);
-    // These two are bulk methods for setting and getting many checking type settings at once.  They will call the individual methods as necessary.
 
+// These two methods usually would not be called directly, since NSTextView itself will call them as needed, but they can be overridden.
 - (void)checkTextInRange:(NSRange)range types:(NSTextCheckingTypes)checkingTypes options:(NSDictionary<NSString *, id> *)options NS_AVAILABLE_MAC(10_6);
-- (void)handleTextCheckingResults:(NSArray<NSString *> *)results forRange:(NSRange)range types:(NSTextCheckingTypes)checkingTypes options:(NSDictionary<NSString *, id> *)options orthography:(NSOrthography *)orthography wordCount:(NSInteger)wordCount NS_AVAILABLE_MAC(10_6);
-    // These two methods usually would not be called directly, since NSTextView itself will call them as needed, but they can be overridden.
+- (void)handleTextCheckingResults:(NSArray<NSTextCheckingResult *> *)results forRange:(NSRange)range types:(NSTextCheckingTypes)checkingTypes options:(NSDictionary<NSString *, id> *)options orthography:(NSOrthography *)orthography wordCount:(NSInteger)wordCount NS_AVAILABLE_MAC(10_6);
 
 - (void)orderFrontSubstitutionsPanel:(nullable id)sender NS_AVAILABLE_MAC(10_6);
+
+// Ordinarily text checking will occur in the background, and results that replace text will be applied only for text that has been typed in by the user, but these last two methods cause the currently enabled text checking types to be applied immediately to the selection or the document, respectively, with results that replace text applied to all text whatever its origin.
 - (void)checkTextInSelection:(nullable id)sender NS_AVAILABLE_MAC(10_6);
 - (void)checkTextInDocument:(nullable id)sender NS_AVAILABLE_MAC(10_6);
-    // Ordinarily text checking will occur in the background, and results that replace text will be applied only for text that has been typed in by the user, but these last two methods cause the currently enabled text checking types to be applied immediately to the selection or the document, respectively, with results that replace text applied to all text whatever its origin.
 
 @property BOOL usesFindPanel;
 
@@ -424,27 +429,31 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 @end
 
 @interface NSTextView (NSQuickLookPreview)
+
 /*************************** Quick Look support ***************************/
-- (IBAction)toggleQuickLookPreviewPanel:(nullable id)sender NS_AVAILABLE_MAC(10_7);
 // This action message toggles the visibility state of the Quick Look preview panel if the receiver is the current Quick Look controller.
+- (IBAction)toggleQuickLookPreviewPanel:(nullable id)sender NS_AVAILABLE_MAC(10_7);
 
-
-- (nullable NSArray<id<QLPreviewItem>> *)quickLookPreviewableItemsInRanges:(NSArray<NSValue *> *)ranges NS_AVAILABLE_MAC(10_7);
 // Returns an array of preview items within the specified character ranges.  Each preview item conforms to the QLPreviewItem protocol.  The NSTextView implementation returns an array of NSURL objects, each url referring to the document URL of a text attachment content if available.
+- (nullable NSArray<id<QLPreviewItem>> *)quickLookPreviewableItemsInRanges:(NSArray<NSValue *> *)ranges NS_AVAILABLE_MAC(10_7);
 
+// Notifies QLPreviewPanel for possible status changes with the data source or controller.  Typically invoked from selection changes.
 - (void)updateQuickLookPreviewPanel NS_AVAILABLE_MAC(10_7);
-// Notifies QLPreviewPanel for possible status changes with the data source or controller.  Typically invoked from selection changes. 
+
 @end
 
 @interface NSTextView (NSTextView_SharingService)
 /*************************** NSSharingService support ***************************/
-- (IBAction)orderFrontSharingServicePicker:(nullable id)sender NS_AVAILABLE_MAC(10_8);
+
 // Creates a new instance of NSSharingServicePicker based on the current selection & shows to the screen. The items passed to the NSSharingServicePicker initializer are determined using -itemsForSharingServiceInRanges:. When the current selection is 0 length, the whole document is passed to the method.
+- (IBAction)orderFrontSharingServicePicker:(nullable id)sender NS_AVAILABLE_MAC(10_8);
+
 @end
 
 @interface NSTextView (NSDeprecated)
+
+// toggleBaseWritingDirection: will be deprecated in favor of the new NSResponder methods makeBaseWritingDirectionNatural:, makeBaseWritingDirectionLeftToRight:, and makeBaseWritingDirectionRightToLeft:, which NSTextView now implements.
 - (void)toggleBaseWritingDirection:(nullable id)sender NS_DEPRECATED_MAC(10_3, 10_6, "Use NSResponder's makeBaseWritingDirectionNatural:, makeBaseWritingDirectionLeftToRight:, and makeBaseWritingDirectionRightToLeft: instead");
-    // toggleBaseWritingDirection: will be deprecated in favor of the new NSResponder methods makeBaseWritingDirectionNatural:, makeBaseWritingDirectionLeftToRight:, and makeBaseWritingDirectionRightToLeft:, which NSTextView now implements.
 
 @end
 
@@ -453,68 +462,68 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 @protocol NSTextViewDelegate <NSTextDelegate>
 @optional
 
+// Delegate only.
 - (BOOL)textView:(NSTextView *)textView clickedOnLink:(id)link atIndex:(NSUInteger)charIndex;
-    // Delegate only.
 
+// Delegate only.
 - (void)textView:(NSTextView *)textView clickedOnCell:(id <NSTextAttachmentCell>)cell inRect:(NSRect)cellFrame atIndex:(NSUInteger)charIndex;
-    // Delegate only.
 
+// Delegate only.
 - (void)textView:(NSTextView *)textView doubleClickedOnCell:(id <NSTextAttachmentCell>)cell inRect:(NSRect)cellFrame atIndex:(NSUInteger)charIndex;
-    // Delegate only.
 
+// Delegate only.  Allows the delegate to take over attachment dragging altogether.
 - (void)textView:(NSTextView *)view draggedCell:(id <NSTextAttachmentCell>)cell inRect:(NSRect)rect event:(NSEvent *)event atIndex:(NSUInteger)charIndex;
-    // Delegate only.  Allows the delegate to take over attachment dragging altogether.
 
+// Delegate only.  If the previous method is not used, this method and the next allow the textview to take care of attachment dragging and pasting, with the delegate responsible only for writing the attachment to the pasteboard.  In this method, the delegate should return an array of types that it can write to the pasteboard for the given attachment.
 - (NSArray<NSString *> *)textView:(NSTextView *)view writablePasteboardTypesForCell:(id<NSTextAttachmentCell>)cell atIndex:(NSUInteger)charIndex;
-    // Delegate only.  If the previous method is not used, this method and the next allow the textview to take care of attachment dragging and pasting, with the delegate responsible only for writing the attachment to the pasteboard.  In this method, the delegate should return an array of types that it can write to the pasteboard for the given attachment.
 
+// Delegate only.  In this method, the delegate should attempt to write the given attachment to the pasteboard with the given type, and return success or failure.
 - (BOOL)textView:(NSTextView *)view writeCell:(id <NSTextAttachmentCell>)cell atIndex:(NSUInteger)charIndex toPasteboard:(NSPasteboard *)pboard type:(NSString *)type ;
-    // Delegate only.  In this method, the delegate should attempt to write the given attachment to the pasteboard with the given type, and return success or failure.
 
+// Delegate only.  Will not be called if textView:willChangeSelectionFromCharacterRanges:toCharacterRanges: is implemented.  Effectively prevents multiple selection.
 - (NSRange)textView:(NSTextView *)textView willChangeSelectionFromCharacterRange:(NSRange)oldSelectedCharRange toCharacterRange:(NSRange)newSelectedCharRange;
-    // Delegate only.  Will not be called if textView:willChangeSelectionFromCharacterRanges:toCharacterRanges: is implemented.  Effectively prevents multiple selection.
 
+// Delegate only.  Supersedes textView:willChangeSelectionFromCharacterRange:toCharacterRange:.  Return value must be a non-nil, non-empty array of objects responding to rangeValue.
 - (NSArray<NSValue *> *)textView:(NSTextView *)textView willChangeSelectionFromCharacterRanges:(NSArray<NSValue *> *)oldSelectedCharRanges toCharacterRanges:(NSArray<NSValue *> *)newSelectedCharRanges;
-    // Delegate only.  Supersedes textView:willChangeSelectionFromCharacterRange:toCharacterRange:.  Return value must be a non-nil, non-empty array of objects responding to rangeValue.
 
+// Delegate only.  Supersedes textView:shouldChangeTextInRange:replacementString:.  The affectedRanges argument obeys the same restrictions as selectedRanges, and the replacementStrings argument will either be nil (for attribute-only changes) or have the same number of elements as affectedRanges.
 - (BOOL)textView:(NSTextView *)textView shouldChangeTextInRanges:(NSArray<NSValue *> *)affectedRanges replacementStrings:(nullable NSArray<NSString *> *)replacementStrings;
-    // Delegate only.  Supersedes textView:shouldChangeTextInRange:replacementString:.  The affectedRanges argument obeys the same restrictions as selectedRanges, and the replacementStrings argument will either be nil (for attribute-only changes) or have the same number of elements as affectedRanges.
 
+// Delegate only.  The delegate should return newTypingAttributes to allow the change, oldTypingAttributes to prevent it, or some other dictionary to modify it.
 - (NSDictionary<NSString *, id> *)textView:(NSTextView *)textView shouldChangeTypingAttributes:(NSDictionary<NSString *, id> *)oldTypingAttributes toAttributes:(NSDictionary<NSString *, id> *)newTypingAttributes;
-    // Delegate only.  The delegate should return newTypingAttributes to allow the change, oldTypingAttributes to prevent it, or some other dictionary to modify it.
 
 - (void)textViewDidChangeSelection:(NSNotification *)notification;
 
 - (void)textViewDidChangeTypingAttributes:(NSNotification *)notification;
 
+// Delegate only.  Allows delegate to modify the tooltip that will be displayed from that specified by the NSToolTipAttributeName, or to suppress display of the tooltip (by returning nil).
 - (nullable NSString *)textView:(NSTextView *)textView willDisplayToolTip:(NSString *)tooltip forCharacterAtIndex:(NSUInteger)characterIndex;
-    // Delegate only.  Allows delegate to modify the tooltip that will be displayed from that specified by the NSToolTipAttributeName, or to suppress display of the tooltip (by returning nil).
 
+// Delegate only.  Allows delegate to modify the list of completions that will be presented for the partial word at the given range.  Returning nil or a zero-length array suppresses completion.  Optionally may specify the index of the initially selected completion; default is 0, and -1 indicates no selection.
 - (NSArray<NSString *> *)textView:(NSTextView *)textView completions:(NSArray<NSString *> *)words forPartialWordRange:(NSRange)charRange indexOfSelectedItem:(nullable NSInteger *)index;
-    // Delegate only.  Allows delegate to modify the list of completions that will be presented for the partial word at the given range.  Returning nil or a zero-length array suppresses completion.  Optionally may specify the index of the initially selected completion; default is 0, and -1 indicates no selection.
 
+// Delegate only.  If characters are changing, replacementString is what will replace the affectedCharRange.  If attributes only are changing, replacementString will be nil.  Will not be called if textView:shouldChangeTextInRanges:replacementStrings: is implemented.
 - (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(nullable NSString *)replacementString;
-    // Delegate only.  If characters are changing, replacementString is what will replace the affectedCharRange.  If attributes only are changing, replacementString will be nil.  Will not be called if textView:shouldChangeTextInRanges:replacementStrings: is implemented.
 
-- (BOOL)textView:(NSTextView *)textView doCommandBySelector:(null_unspecified SEL)commandSelector;
+- (BOOL)textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector;
 
+// Delegate only.  Allows delegate to control the setting of spelling and grammar indicators.  Values are those listed for NSSpellingStateAttributeName.
 - (NSInteger)textView:(NSTextView *)textView shouldSetSpellingState:(NSInteger)value range:(NSRange)affectedCharRange NS_AVAILABLE_MAC(10_5);
-    // Delegate only.  Allows delegate to control the setting of spelling and grammar indicators.  Values are those listed for NSSpellingStateAttributeName. 
 
+// Delegate only.  Allows delegate to control the context menu returned by menuForEvent:.  The menu parameter is the context menu NSTextView would otherwise return; charIndex is the index of the character that was right-clicked.
 - (nullable NSMenu *)textView:(NSTextView *)view menu:(NSMenu *)menu forEvent:(NSEvent *)event atIndex:(NSUInteger)charIndex NS_AVAILABLE_MAC(10_5);
-    // Delegate only.  Allows delegate to control the context menu returned by menuForEvent:.  The menu parameter is the context menu NSTextView would otherwise return; charIndex is the index of the character that was right-clicked. 
 
+// Delegate only.  Called by checkTextInRange:types:options:, this method allows control over text checking options (via the return value) or types (by modifying the flags pointed to by the inout parameter checkingTypes).
 - (NSDictionary<NSString *, id> *)textView:(NSTextView *)view willCheckTextInRange:(NSRange)range options:(NSDictionary<NSString *, id> *)options types:(NSTextCheckingTypes *)checkingTypes NS_AVAILABLE_MAC(10_6);
-    // Delegate only.  Called by checkTextInRange:types:options:, this method allows control over text checking options (via the return value) or types (by modifying the flags pointed to by the inout parameter checkingTypes).
 
+// Delegate only.  Called by handleTextCheckingResults:forRange:orthography:wordCount:, this method allows observation of text checking, or modification of the results (via the return value).
 - (NSArray<NSTextCheckingResult *> *)textView:(NSTextView *)view didCheckTextInRange:(NSRange)range types:(NSTextCheckingTypes)checkingTypes options:(NSDictionary<NSString *, id> *)options results:(NSArray<NSTextCheckingResult *> *)results orthography:(NSOrthography *)orthography wordCount:(NSInteger)wordCount NS_AVAILABLE_MAC(10_6);
-    // Delegate only.  Called by handleTextCheckingResults:forRange:orthography:wordCount:, this method allows observation of text checking, or modification of the results (via the return value).
 
-- (nullable NSURL *)textView:(NSTextView *)textView URLForContentsOfTextAttachment:(NSTextAttachment *)textAttachment atIndex:(NSUInteger)charIndex NS_AVAILABLE_MAC(10_7);
 // Returns an URL representing the document contents for textAttachment.  The returned NSURL object is utilized by NSTextView for providing default behaviors involving text attachments such as Quick Look and double-clicking.  -[NSTextView quickLookPreviewableItemsInRanges:] uses this method for mapping text attachments to their corresponding document URLs.  NSTextView invokes -[NSWorkspace openURL:] with the URL returned from this method when the delegate has no -textView:doubleClickedOnCell:inRect:atPoint: implementation.
+- (nullable NSURL *)textView:(NSTextView *)textView URLForContentsOfTextAttachment:(NSTextAttachment *)textAttachment atIndex:(NSUInteger)charIndex NS_AVAILABLE_MAC(10_7);
 
-- (nullable NSSharingServicePicker *)textView:(NSTextView *)textView willShowSharingServicePicker:(NSSharingServicePicker *)servicePicker forItems:(NSArray *)items NS_AVAILABLE_MAC(10_8);
 // Delegate only. Returns a sharing service picker created for items right before shown to the screen inside -orderFrontSharingServicePicker: method. The delegate specify a delegate for the NSSharingServicePicker instance. Also, it is allowed to return its own NSSharingServicePicker instance instead.
+- (nullable NSSharingServicePicker *)textView:(NSTextView *)textView willShowSharingServicePicker:(NSSharingServicePicker *)servicePicker forItems:(NSArray *)items NS_AVAILABLE_MAC(10_8);
 
 - (nullable NSUndoManager *)undoManagerForTextView:(NSTextView *)view;
 
@@ -526,11 +535,11 @@ NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE
 
 @end
 
+// NSOldNotifyingTextView -> the old view, NSNewNotifyingTextView -> the new view.  The text view delegate is not automatically registered to receive this notification because the text machinery will automatically switch over the delegate to observe the new first text view as the first text view changes.
 APPKIT_EXTERN NSString * NSTextViewWillChangeNotifyingTextViewNotification;
-    // NSOldNotifyingTextView -> the old view, NSNewNotifyingTextView -> the new view.  The text view delegate is not automatically registered to receive this notification because the text machinery will automatically switch over the delegate to observe the new first text view as the first text view changes.
 
+// NSOldSelectedCharacterRange -> NSValue with old range.
 APPKIT_EXTERN NSString * NSTextViewDidChangeSelectionNotification;
-    // NSOldSelectedCharacterRange -> NSValue with old range.
 
 APPKIT_EXTERN NSString * NSTextViewDidChangeTypingAttributesNotification;
 

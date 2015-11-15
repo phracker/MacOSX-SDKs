@@ -70,6 +70,12 @@ CG_EXTERN CGColorRef __nullable CGColorCreateCopy(CGColorRef __nullable color)
 CG_EXTERN CGColorRef __nullable CGColorCreateCopyWithAlpha(CGColorRef __nullable color,
   CGFloat alpha) CG_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_2_0);
 
+/* Create a copy of `color' by matching existing color to destination color space. */
+
+CG_EXTERN CGColorRef __nullable CGColorCreateCopyByMatchingToColorSpace(__nullable CGColorSpaceRef,
+  CGColorRenderingIntent intent, CGColorRef __nullable color, __nullable CFDictionaryRef options)
+  CG_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+
 /* Equivalent to `CFRetain(color)', except it doesn't crash (as CFRetain
    does) if `color' is NULL. */
 

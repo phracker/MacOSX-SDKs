@@ -15,6 +15,7 @@
 .Op Fl activity Ar binary:activity_name
 .Op Fl buffered
 .Op Fl debug
+.Op Fl filter Ar query
 .Op Fl payload
 .Op Fl process Ar pid | Fl parent Ar pid
 .Op Fl source
@@ -45,6 +46,8 @@ Watch for software errors triggered by processes.
 .It Fl faults
 Watch for software faults triggered by processes.
 Allows watching for a specific activity based on name.  The binary must be listed first, e.g., "AppKit:sendAction:".
+.It Fl filter Ar query
+Stream will filter messages based on the provided (required) query argument. See section \fB"Filtering"\fR below.
 .It Fl list Ar file
 Will list all available trace related strings for a binary.
 .It Fl payload
@@ -94,6 +97,77 @@ nor
 is provided.
 .El
 .Pp
+.Sh FILTERING
+Filtering via the
+.Fl filter Ar query
+option allows users to focus on messages based on the provided query criteria. The
+.Ar query
+argument defines one or more key/pattern clauses with the form \fB'type:"pattern"[,type:"pattern"...]'\fR (additional clauses separated by commas) where \fBpattern\fR is an extended regular expression (see
+.Xr regex 3)
+and \fBtype\fR is one of the following:
+.Pp
+.Bl -tag -width -indent
+.It \fBmessage\fR
+Matches \fBpattern\fR with the message text, activity name, or breadcrumb name of a trace entry.
+.It \fBprocess\fR
+Matches \fBpattern\fR with the name of the process that originated the trace entry.
+.El
+.Pp
+In addition to multiple clauses per
+.Fl filter Ar query
+argument, more than one
+.Fl filter Ar query
+argument may be provided. Clauses within an individual
+.Fl filter Ar query
+argument will be joined using a logical \fBAND\fR, while multiple
+.Fl filter Ar query
+arguments will be joined using a logical \fBOR\fR. Thus, the following example
+.nf
+
+    \fBostraceutil -stream -filter 'process:"my_process",message:"unexpected"'\fR
+
+.fi
+would result in ostraceutil only streaming messages from the process named "my_process" \fBAND\fR whose message text contained "unexpected", while the following example
+.nf
+
+    \fBostraceutil -stream -filter 'process:"my_process"' -filter 'message:"unexpected"'\fR
+
+.fi
+would result in ostraceutil only streaming messages from the process named "my_process" \fBOR\fR those whose message text contained "unexpected".
+.Pp
+\fB\fUNOTE:\fR To avoid shell expansion of special characters in the
+.Xr regex 3
+pattern,
+.Ar query
+arguments must be enclosed in single quotes.
+.Sh ADDITIONAL FILTERING EXAMPLES
+To filter messages from a single process:
+.nf
+
+    \fBostraceutil -stream -filter 'process:"process_name"'\fR
+
+.fi
+To filter messages from a single process OR messages containing the keyword ALERT:
+.nf
+
+    \fBostraceutil -stream -filter 'process:"process_name"' -filter 'message:"ALERT"'\fR
+
+.fi
+To filter messages pertaining to the creation of an activity (see
+.Xr os_activity_initiate 3) :
+.nf
+
+    \fBostraceutil -stream -filter 'message:"activity_description"'\fR
+
+.fi
+Likewise to filter messages pertaining to the creation of a breadcrumb (see
+.Xr os_activity_set_breadcrumb 3) :
+.nf
+
+    \fBostraceutil -stream -filter 'message:"breadcrumb_name"'\fR
+
+.fi
 .Sh SEE ALSO
 .Xr os_trace 3 ,
 .Xr os_activity_initiate 3 ,
+.Xr regex 3

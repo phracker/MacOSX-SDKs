@@ -1,6 +1,6 @@
 /*	
     OSALanguage.h
-    Copyright (C) 2005-2014 Apple Inc. All rights reserved.    
+    Copyright (C) 2005-2015 Apple Inc. All rights reserved.    
     
     Public header file.
 */
@@ -11,6 +11,8 @@
 @class OSAScript;
 @class OSALanguageInstance;
 @class OSALanguagePrivate;
+
+NS_ASSUME_NONNULL_BEGIN
 
 // Language Options
 // ================
@@ -38,10 +40,10 @@ typedef NS_OPTIONS(NSUInteger, OSALanguageFeatures)
 }
 
 // Class Methods
-+ (NSArray *)availableLanguages;
-+ (OSALanguage *)languageForName:(NSString *)name;
-+ (OSALanguage *)languageForScriptDataDescriptor:(NSAppleEventDescriptor *)descriptor AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
-+ (OSALanguage *)defaultLanguage;
++ (NSArray<OSALanguage *> *)availableLanguages;
++ (nullable OSALanguage *)languageForName:(NSString *)name;
++ (nullable OSALanguage *)languageForScriptDataDescriptor:(NSAppleEventDescriptor *)descriptor AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
++ (nullable OSALanguage *)defaultLanguage;
 + (void)setDefaultLanguage:(OSALanguage *)defaultLanguage;
 
 // Construction
@@ -50,9 +52,9 @@ typedef NS_OPTIONS(NSUInteger, OSALanguageFeatures)
 // Accessors
 - (OSALanguageInstance *)sharedLanguageInstance AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 @property (readonly) ComponentInstance componentInstance;
-@property (readonly, copy) NSString *name;
-@property (readonly, copy) NSString *info;
-@property (readonly, copy) NSString *version;
+@property (nullable, readonly, copy) NSString *name;
+@property (nullable, readonly, copy) NSString *info;
+@property (nullable, readonly, copy) NSString *version;
 @property (readonly) OSType type;
 @property (readonly) OSType subType;
 @property (readonly) OSType manufacturer;
@@ -60,3 +62,5 @@ typedef NS_OPTIONS(NSUInteger, OSALanguageFeatures)
 @property (getter=isThreadSafe, readonly) BOOL threadSafe AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 
 @end
+
+NS_ASSUME_NONNULL_END

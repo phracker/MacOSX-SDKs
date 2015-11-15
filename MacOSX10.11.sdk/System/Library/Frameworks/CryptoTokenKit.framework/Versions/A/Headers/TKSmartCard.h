@@ -133,10 +133,12 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 /// Offset in bits within the PIN block to mark a location for filling in the formatted PIN (justified with respect to PINJustification).
 /// @note Default value: 0
+/// @discussion Note that the value of PINBitOffset indirectly controls the internal system units indicator. If PINBitOffset is byte aligned (PINBitOffset mod 8 is equal to 0), the internal representation of PINBitOffset gets converted from bits to bytes.
 @property NSInteger PINBitOffset;
 
 /// Offset in bits within the PIN block to mark a location for filling in the PIN length (always left justified).
 /// @note Default value: 0
+/// @discussion Note that the value of PINLengthBitOffset indirectly controls the internal system units indicator. If PINLengthBitOffset is byte aligned (PINLengthBitOffset mod 8 is equal to 0), the internal representation of PINLengthBitOffset gets converted from bits to bytes.
 @property NSInteger PINLengthBitOffset;
 
 /// Size in bits of the PIN length field. If set to 0, PIN length is not written.
@@ -242,54 +244,6 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 @end
 
-/// User interaction for the user confirmation action on the smart card reader.
-/// @note Result is available after the interaction has been successfully completed.
-NS_CLASS_AVAILABLE(10_11, 9_0)
-@interface TKSmartCardUserInteractionForConfirmation : TKSmartCardUserInteraction
-
-@property BOOL result;
-
-@end
-
-/// User interaction for the string entry action on the smart card reader.
-/// @note Result is available after the interaction has been successfully completed.
-NS_CLASS_AVAILABLE(10_11, 9_0)
-@interface TKSmartCardUserInteractionForStringEntry : TKSmartCardUserInteraction
-
-@property (nullable) NSString *result;
-
-@end
-
-/// Smart card reader screen interface.
-/// @discussion For devices with scrolling capabilities, virtual dimensions are greater than physical ones; otherwise they should be equal.
-NS_CLASS_AVAILABLE(10_11, 9_0)
-@interface TKSmartCardSlotScreen : NSObject
-
-/// Number of columns of the physical screen.
-@property NSInteger physicalColumnCount;
-
-/// Number of rows of the physical screen.
-@property NSInteger physicalRowCount;
-
-/// Number of columns of the virtual screen.
-@property NSInteger virtualColumnCount;
-
-/// Number of rows of the virtual screen.
-@property NSInteger virtualRowCount;
-
-/// Displays a message on the screen.
-/// @discussion Positioning [x, y] is done in a virtual screen, which does no need to have the same dimensions as the physical one. Automatic wrapping is not performed, scrolling if supported should be handled directly by the device (automatically or manually). The origin [0, 0] is at the upper left corner.
-/// @note This functionality is not available during user interactions (e.g. Secure PIN Entry).
-/// @param message Text of the message to display.
-/// @param x X-coordinate (horizontal number of characters) in the virtual screen.
-/// @param y Y-coordinate (vertical number of characters) in the virtual screen.
-/// @param duration Minimum time for the message to stay displayed. If set to 0, message is displayed forever or until a new message is written. If greater than 0, message is displayed as long as specified. After the time has elapsed, a terminal specific message is displayed again (idle message).
-/// @param clearScreen Flag indicating whether to clear screen before displaying the message.
-/// @return Flag indicating whether this feature is supported.
-- (BOOL)displayMessage:(NSString *)message x:(NSInteger)x y:(NSInteger)y duration:(NSTimeInterval)duration clearScreen:(BOOL)clearScreen;
-
-@end
-
 /// Represents single slot which can contain smartcard.
 NS_CLASS_AVAILABLE(10_10, 9_0)
 @interface TKSmartCardSlot : NSObject
@@ -309,21 +263,10 @@ NS_CLASS_AVAILABLE(10_10, 9_0)
 /// Maximal length of output APDU that the slot is able to transfer from the card.
 @property (nonatomic, readonly) NSInteger maxOutputLength;
 
-/// Smart card reader screen interface, or nil if the reader has no screen.
-@property (readonly, nullable) TKSmartCardSlotScreen *screen NS_AVAILABLE(10_11, 9_0);
-
 /// Creates new object representing currently inserted and valid card.
 /// @discussion It is possible to instantiate multiple objects for single card, exclusivity is handled by sessions on the level of created smart card objects.
 /// @return Newly created smart card object, or nil if slot does not contain valid card.
 - (nullable TKSmartCard *)makeSmartCard;
-
-/// Creates a new user interaction object for a user confirmation action on the smart card reader (typically via a validation or cancel key).
-/// @return A new user interaction object, or nil if this feature is not supported by the smart card reader. After the interaction has been successfully completed the operation result is available in the result property.
-- (nullable TKSmartCardUserInteractionForConfirmation *)userInteractionForConfirmation NS_AVAILABLE(10_11, 9_0);
-
-/// Creates a new user interaction object for a string entry action on the smart card reader (typically via a HW keypad).
-/// @return A new user interaction object, or nil if this feature is not supported by the smart card reader. After the interaction has been successfully completed the operation result is available in the result property.
-- (nullable TKSmartCardUserInteractionForStringEntry *)userInteractionForStringEntry NS_AVAILABLE(10_11, 9_0);
 
 @end
 

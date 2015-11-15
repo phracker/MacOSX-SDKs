@@ -50,7 +50,7 @@
 
 typedef struct {
     size_t Length;
-    uint8_t *Data;
+    uint8_t * __nullable Data;
 } SecAsn1Item, SecAsn1Oid;
 
 typedef struct {
@@ -73,6 +73,8 @@ typedef CSSM_X509_ALGORITHM_IDENTIFIER SecAsn1AlgId;
 typedef CSSM_X509_SUBJECT_PUBLIC_KEY_INFO SecAsn1PubKeyInfo;
 
 #endif          
+
+CF_ASSUME_NONNULL_BEGIN
 
 /*
  * An array of these structures defines a BER/DER encoding for an object.
@@ -237,5 +239,6 @@ typedef const SecAsn1Template * SecAsn1TemplateChooser(
 
 typedef SecAsn1TemplateChooser * SecAsn1TemplateChooserPtr;
 
+CF_ASSUME_NONNULL_END
 
 #endif /* _SEC_ASN1_TYPES_H_ */

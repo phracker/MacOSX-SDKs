@@ -99,6 +99,14 @@ typedef struct mac	*mac_t;
 
 #warning "MAC policy is not KPI, see Technical Q&A QA1574"
 
+#if DEBUG
+#define SECURITY_MAC_CTLFLAGS (CTLFLAG_RW | CTLFLAG_LOCKED)
+#define SECURITY_MAC_CHECK_ENFORCE 1
+#else
+#define SECURITY_MAC_CTLFLAGS (CTLFLAG_RD | CTLFLAG_LOCKED)
+#define SECURITY_MAC_CHECK_ENFORCE 0
+#endif
+
 struct user_mac {
 	user_size_t	m_buflen;
 	user_addr_t	m_string;

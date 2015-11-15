@@ -5,6 +5,9 @@
 //  Copyright (c) 2003-2007 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABACTIONS__
+#define __ABACTIONS__
+
 #if MAC_OS_X_VERSION_10_3 <= MAC_OS_X_VERSION_MAX_ALLOWED
 
 #import <Foundation/Foundation.h>
@@ -50,3 +53,4 @@
 @end
 
 #endif
+#endif // __ABACTIONS__

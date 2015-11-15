@@ -1,7 +1,7 @@
 /*
     NSCollectionViewLayout.h
     Application Kit
-    Copyright (c) 2011-2015, Apple Inc.
+    Copyright (c) 2015, Apple Inc.
     All rights reserved.
 */
 
@@ -131,9 +131,9 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 - (void)invalidateItemsAtIndexPaths:(NSSet<NSIndexPath *> *)indexPaths;
 - (void)invalidateSupplementaryElementsOfKind:(NSString *)elementKind atIndexPaths:(NSSet<NSIndexPath *> *)indexPaths;
 - (void)invalidateDecorationElementsOfKind:(NSString *)elementKind atIndexPaths:(NSSet<NSIndexPath *> *)indexPaths;
-@property (readonly) NSSet<NSIndexPath *> *invalidatedItemIndexPaths;
-@property (readonly) NSDictionary<NSString *, NSSet<NSIndexPath *> *> *invalidatedSupplementaryIndexPaths; // keys are element kind strings - values are NSSet<NSIndexPath *>
-@property (readonly) NSDictionary<NSString *, NSSet<NSIndexPath *> *> *invalidatedDecorationIndexPaths; // keys are element kind strings - values are NSSet<NSIndexPath *>
+@property (nullable, readonly) NSSet<NSIndexPath *> *invalidatedItemIndexPaths;
+@property (nullable, readonly) NSDictionary<NSString *, NSSet<NSIndexPath *> *> *invalidatedSupplementaryIndexPaths; // keys are element kind strings - values are NSSet<NSIndexPath *>
+@property (nullable, readonly) NSDictionary<NSString *, NSSet<NSIndexPath *> *> *invalidatedDecorationIndexPaths; // keys are element kind strings - values are NSSet<NSIndexPath *>
 
 @property NSPoint contentOffsetAdjustment; // delta to be applied to the collection view's current contentOffset - default is NSZeroPoint
 @property NSSize contentSizeAdjustment; // delta to be applied to the current content size - default is NSZeroSize
@@ -211,7 +211,7 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 
 /* NSCollectionView calls these four methods to determine the layout information.  Implement -layoutAttributesForElementsInRect: to return layout attributes for for supplementary or decoration views, or to perform layout in an as-needed-on-screen fashion. Additionally, all layout subclasses should implement -layoutAttributesForItemAtIndexPath: to return layout attributes instances on demand for specific index paths.  If the layout supports any supplementary or decoration view types, it should also implement the respective atIndexPath: methods for those types.
 */
-- (NSArray<NSCollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(NSRect)rect; // return an array layout attributes instances for all the views in the given rect
+- (NSArray<__kindof NSCollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(NSRect)rect; // return an array layout attributes instances for all the views in the given rect
 - (nullable NSCollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath;
 - (nullable NSCollectionViewLayoutAttributes *)layoutAttributesForSupplementaryViewOfKind:(NSString *)elementKind atIndexPath:(NSIndexPath *)indexPath;
 - (nullable NSCollectionViewLayoutAttributes *)layoutAttributesForDecorationViewOfKind:(NSString *)elementKind atIndexPath:(NSIndexPath *)indexPath;
@@ -233,7 +233,7 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 - (NSPoint)targetContentOffsetForProposedContentOffset:(NSPoint)proposedContentOffset withScrollingVelocity:(NSPoint)velocity; // return a point at which to rest after scrolling - for layouts that want snap-to-point scrolling behavior
 - (NSPoint)targetContentOffsetForProposedContentOffset:(NSPoint)proposedContentOffset; // a layout can return the content offset to be applied during transition or update animations
 
-- (NSSize)collectionViewContentSize; // Subclasses must override this method and use it to return the width and height of the collection view’s content. These values represent the width and height of all the content, not just the content that is currently visible. The collection view uses this information to configure its own content size to facilitate scrolling.
+@property(readonly) NSSize collectionViewContentSize; // Subclasses must implement a collectionViewContentSize getter that returns the width and height of the collection view’s content. These values represent the width and height of all the content, not just the content that is currently visible. The collection view uses this information to configure its own content size to facilitate scrolling.
 
 @end
 

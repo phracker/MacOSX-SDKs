@@ -142,9 +142,9 @@ CG_EXTERN CGImageRef __nullable CGImageCreateWithImageInRect(
    The parameter `image' may not be an image mask and may not have an image
    mask or masking color associated with it.
   
-   If `mask' is an image, then it must be in the DeviceGray color space, may
-   not have alpha, and may not itself be masked by an image mask or a
-   masking color. */
+   If `mask' is an image, then it must be in a monochrome color space
+   (e.g. DeviceGray, GenericGray, etc...), may not have alpha, and may not
+   itself be masked by an image mask or a masking color. */
 
 CG_EXTERN CGImageRef __nullable CGImageCreateWithMask(
     CGImageRef __nullable image, CGImageRef __nullable mask)
@@ -222,26 +222,22 @@ CG_EXTERN size_t CGImageGetBytesPerRow(CGImageRef __nullable image)
 /* Return the color space of `image', or NULL if `image' is an image
    mask. */
 
-CG_EXTERN CGColorSpaceRef __nullable CGImageGetColorSpace(
-    CGImageRef __nullable image)
+CG_EXTERN CGColorSpaceRef __nullable CGImageGetColorSpace(CGImageRef __nullable image)
     CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0);
 
 /* Return the alpha info of `image'. */
 
-CG_EXTERN CGImageAlphaInfo CGImageGetAlphaInfo(
-    CGImageRef __nullable image)
+CG_EXTERN CGImageAlphaInfo CGImageGetAlphaInfo(CGImageRef __nullable image)
     CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0);
 
 /* Return the data provider of `image'. */
 
-CG_EXTERN CGDataProviderRef __nullable CGImageGetDataProvider(
-    CGImageRef __nullable image)
+CG_EXTERN CGDataProviderRef __nullable CGImageGetDataProvider(CGImageRef __nullable image)
     CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0);
 
 /* Return the decode array of `image'. */
 
-CG_EXTERN const CGFloat * __nullable CGImageGetDecode(
-    CGImageRef __nullable image)
+CG_EXTERN const CGFloat * __nullable CGImageGetDecode(CGImageRef __nullable image)
     CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0);
 
 /* Return the interpolation parameter of `image'. */
@@ -251,14 +247,18 @@ CG_EXTERN bool CGImageGetShouldInterpolate(CGImageRef __nullable image)
 
 /* Return the rendering intent of `image'. */
 
-CG_EXTERN CGColorRenderingIntent CGImageGetRenderingIntent(
-    __nullable CGImageRef image)
+CG_EXTERN CGColorRenderingIntent CGImageGetRenderingIntent(__nullable CGImageRef image)
     CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0);
 
 /* Return the bitmap info of `image'. */
 
 CG_EXTERN CGBitmapInfo CGImageGetBitmapInfo(CGImageRef __nullable image)
     CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_2_0);
+
+/* Return the UTType of `image'. */
+
+CG_EXTERN CFStringRef  __nullable CGImageGetUTType(__nullable CGImageRef image)
+    CG_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
 
 CF_ASSUME_NONNULL_END
 

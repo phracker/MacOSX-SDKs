@@ -20,7 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
  to data found in those files.
  */
 
-/*! The degree of shading anisotropy encoded at a vertex */
+/*! The attribute data describes the degree to which a surface’s appearance 
+    changes in appearance when rotated about its normal vector. */
 MDL_EXPORT NSString * const MDLVertexAttributeAnisotropy;
 
 /*! The normal to a curve at a vertex position */
@@ -32,7 +33,8 @@ MDL_EXPORT NSString * const MDLVertexAttributeBitangent;
 /*! Color of a vertex */
 MDL_EXPORT NSString * const MDLVertexAttributeColor;
 
-/*! A crease value along an edge to be applied during subdivision */
+/*! A crease value along an edge to be applied during subdivision.
+    A zero value indicates an edge is smooth, one is sharply creased. */
 MDL_EXPORT NSString * const MDLVertexAttributeEdgeCrease;
 
 /*! Indices of joints in an animation rig corresponding to weighting information */
@@ -65,8 +67,6 @@ MDL_EXPORT NSString * const MDLVertexAttributeTangent;
 /*! Texture coordinate mapping at a vertex */
 MDL_EXPORT NSString * const MDLVertexAttributeTextureCoordinate;
 
-/*! A create value at a vertex to be applied during subdivision */
-MDL_EXPORT NSString * const MDLVertexAttributeVertexCrease;
 
 /*!
  @enum MDLVertexFormat
@@ -81,69 +81,83 @@ typedef NS_ENUM(NSUInteger, MDLVertexFormat)
 {
     MDLVertexFormatInvalid = 0,
     
-    MDLVertexFormatUChar  = 0x10001,
-    MDLVertexFormatUChar2 = 0x10002,
-    MDLVertexFormatUChar3 = 0x10003,
-    MDLVertexFormatUChar4 = 0x10004,
+    MDLVertexFormatPackedBit = 0x1000,
 
-    MDLVertexFormatChar =  0x20001,
-    MDLVertexFormatChar2 = 0x20002,
-    MDLVertexFormatChar3 = 0x20003,
-    MDLVertexFormatChar4 = 0x20004,
+    MDLVertexFormatUCharBits = 0x10000,
+    MDLVertexFormatCharBits = 0x20000,
+    MDLVertexFormatUCharNormalizedBits = 0x30000,
+    MDLVertexFormatCharNormalizedBits = 0x40000,
+    MDLVertexFormatUShortBits = 0x50000,
+    MDLVertexFormatShortBits = 0x60000,
+    MDLVertexFormatUShortNormalizedBits = 0x70000,
+    MDLVertexFormatShortNormalizedBits = 0x80000,
+    MDLVertexFormatUIntBits = 0x90000,
+    MDLVertexFormatIntBits = 0xA0000,
+    MDLVertexFormatHalfBits = 0xB0000,
+    MDLVertexFormatFloatBits = 0xC0000,
+    
+    MDLVertexFormatUChar =  MDLVertexFormatUCharBits | 1,
+    MDLVertexFormatUChar2 = MDLVertexFormatUCharBits | 2,
+    MDLVertexFormatUChar3 = MDLVertexFormatUCharBits | 3,
+    MDLVertexFormatUChar4 = MDLVertexFormatUCharBits | 4,
 
-    MDLVertexFormatUCharNormalized  = 0x30001,
-    MDLVertexFormatUChar2Normalized = 0x30002,
-    MDLVertexFormatUChar3Normalized = 0x30003,
-    MDLVertexFormatUChar4Normalized = 0x30004,
+    MDLVertexFormatChar =  MDLVertexFormatCharBits | 1,
+    MDLVertexFormatChar2 = MDLVertexFormatCharBits | 2,
+    MDLVertexFormatChar3 = MDLVertexFormatCharBits | 3,
+    MDLVertexFormatChar4 = MDLVertexFormatCharBits | 4,
 
-    MDLVertexFormatCharNormalized = 0x40001,
-    MDLVertexFormatChar2Normalized = 0x40002,
-    MDLVertexFormatChar3Normalized = 0x40003,
-    MDLVertexFormatChar4Normalized = 0x40004,
+    MDLVertexFormatUCharNormalized =  MDLVertexFormatUCharNormalizedBits | 1,
+    MDLVertexFormatUChar2Normalized = MDLVertexFormatUCharNormalizedBits | 2,
+    MDLVertexFormatUChar3Normalized = MDLVertexFormatUCharNormalizedBits | 3,
+    MDLVertexFormatUChar4Normalized = MDLVertexFormatUCharNormalizedBits | 4,
 
-    MDLVertexFormatUShort = 0x50001,
-    MDLVertexFormatUShort2 = 0x50002,
-    MDLVertexFormatUShort3 = 0x50003,
-    MDLVertexFormatUShort4 = 0x50004,
+    MDLVertexFormatCharNormalized =  MDLVertexFormatCharNormalizedBits | 1,
+    MDLVertexFormatChar2Normalized = MDLVertexFormatCharNormalizedBits | 2,
+    MDLVertexFormatChar3Normalized = MDLVertexFormatCharNormalizedBits | 3,
+    MDLVertexFormatChar4Normalized = MDLVertexFormatCharNormalizedBits | 4,
 
-    MDLVertexFormatShort = 0x60001,
-    MDLVertexFormatShort2 = 0x60002,
-    MDLVertexFormatShort3 = 0x60003,
-    MDLVertexFormatShort4 = 0x60004,
+    MDLVertexFormatUShort =  MDLVertexFormatUShortBits | 1,
+    MDLVertexFormatUShort2 = MDLVertexFormatUShortBits | 2,
+    MDLVertexFormatUShort3 = MDLVertexFormatUShortBits | 3,
+    MDLVertexFormatUShort4 = MDLVertexFormatUShortBits | 4,
 
-    MDLVertexFormatUShortNormalized = 0x70001,
-    MDLVertexFormatUShort2Normalized = 0x70002,
-    MDLVertexFormatUShort3Normalized = 0x70003,
-    MDLVertexFormatUShort4Normalized = 0x70004,
+    MDLVertexFormatShort =  MDLVertexFormatShortBits | 1,
+    MDLVertexFormatShort2 = MDLVertexFormatShortBits | 2,
+    MDLVertexFormatShort3 = MDLVertexFormatShortBits | 3,
+    MDLVertexFormatShort4 = MDLVertexFormatShortBits | 4,
 
-    MDLVertexFormatShortNormalized = 0x80001,
-    MDLVertexFormatShort2Normalized = 0x80002,
-    MDLVertexFormatShort3Normalized = 0x80003,
-    MDLVertexFormatShort4Normalized = 0x80004,
+    MDLVertexFormatUShortNormalized =  MDLVertexFormatUShortNormalizedBits | 1,
+    MDLVertexFormatUShort2Normalized = MDLVertexFormatUShortNormalizedBits | 2,
+    MDLVertexFormatUShort3Normalized = MDLVertexFormatUShortNormalizedBits | 3,
+    MDLVertexFormatUShort4Normalized = MDLVertexFormatUShortNormalizedBits | 4,
 
-    MDLVertexFormatUInt = 0x90001,
-    MDLVertexFormatUInt2 = 0x90002,
-    MDLVertexFormatUInt3 = 0x90003,
-    MDLVertexFormatUInt4 = 0x90004,
+    MDLVertexFormatShortNormalized =  MDLVertexFormatShortNormalizedBits | 1,
+    MDLVertexFormatShort2Normalized = MDLVertexFormatShortNormalizedBits | 2,
+    MDLVertexFormatShort3Normalized = MDLVertexFormatShortNormalizedBits | 3,
+    MDLVertexFormatShort4Normalized = MDLVertexFormatShortNormalizedBits | 4,
 
-    MDLVertexFormatInt = 0xA0001,
-    MDLVertexFormatInt2 = 0xA0002,
-    MDLVertexFormatInt3 = 0xA0003,
-    MDLVertexFormatInt4 = 0xA0004,
+    MDLVertexFormatUInt =  MDLVertexFormatUIntBits | 1,
+    MDLVertexFormatUInt2 = MDLVertexFormatUIntBits | 2,
+    MDLVertexFormatUInt3 = MDLVertexFormatUIntBits | 3,
+    MDLVertexFormatUInt4 = MDLVertexFormatUIntBits | 4,
 
-    MDLVertexFormatHalf = 0xB0001,
-    MDLVertexFormatHalf2 = 0xB0002,
-    MDLVertexFormatHalf3 = 0xB0003,
-    MDLVertexFormatHalf4 = 0xB0004,
+    MDLVertexFormatInt =  MDLVertexFormatIntBits | 1,
+    MDLVertexFormatInt2 = MDLVertexFormatIntBits | 2,
+    MDLVertexFormatInt3 = MDLVertexFormatIntBits | 3,
+    MDLVertexFormatInt4 = MDLVertexFormatIntBits | 4,
 
-    MDLVertexFormatFloat = 0xC0001,
-    MDLVertexFormatFloat2 = 0xC0002,
-    MDLVertexFormatFloat3 = 0xC0003,
-    MDLVertexFormatFloat4 = 0xC0004,
+    MDLVertexFormatHalf =  MDLVertexFormatHalfBits | 1,
+    MDLVertexFormatHalf2 = MDLVertexFormatHalfBits | 2,
+    MDLVertexFormatHalf3 = MDLVertexFormatHalfBits | 3,
+    MDLVertexFormatHalf4 = MDLVertexFormatHalfBits | 4,
 
-    // Packed type should all have values < 0x10000
-    MDLVertexFormatInt1010102Normalized = 0x1004,
-    MDLVertexFormatUInt1010102Normalized = 0x2004,
+    MDLVertexFormatFloat =  MDLVertexFormatFloatBits | 1,
+    MDLVertexFormatFloat2 = MDLVertexFormatFloatBits | 2,
+    MDLVertexFormatFloat3 = MDLVertexFormatFloatBits | 3,
+    MDLVertexFormatFloat4 = MDLVertexFormatFloatBits | 4,
+
+    MDLVertexFormatInt1010102Normalized =  MDLVertexFormatIntBits  | MDLVertexFormatPackedBit | 4,
+    MDLVertexFormatUInt1010102Normalized = MDLVertexFormatUIntBits | MDLVertexFormatPackedBit | 4
 };
 
 

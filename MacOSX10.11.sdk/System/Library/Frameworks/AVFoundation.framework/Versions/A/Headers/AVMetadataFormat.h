@@ -320,14 +320,14 @@ AVF_EXPORT NSString *const AVMetadataFormatHLSMetadata                          
 /*!
  @constant		AVMetadataExtraAttributeValueURIKey
  @abstract
-	When present in an item’s extraAttributes dictionary, identifies the resource to be used as the item's value. Values for this key are of type NSString.
+	When present in an item's extraAttributes dictionary, identifies the resource to be used as the item's value. Values for this key are of type NSString.
 */
 AVF_EXPORT NSString *const AVMetadataExtraAttributeValueURIKey							 NS_AVAILABLE(10_10, 8_0);
 
 /*!
  @constant		AVMetadataExtraAttributeBaseURIKey
  @abstract
-	When present in an item’s extraAttributes dictionary, identifies the base URI against which other URIs related to the item are to be resolved, e.g. AVMetadataExtraAttributeValueURIKey. Values for this key are of type NSString.
+	When present in an item's extraAttributes dictionary, identifies the base URI against which other URIs related to the item are to be resolved, e.g. AVMetadataExtraAttributeValueURIKey. Values for this key are of type NSString.
 */
 AVF_EXPORT NSString *const AVMetadataExtraAttributeBaseURIKey							 NS_AVAILABLE(10_10, 8_0);
 

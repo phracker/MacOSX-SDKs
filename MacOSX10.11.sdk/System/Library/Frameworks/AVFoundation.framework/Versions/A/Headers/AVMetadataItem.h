@@ -13,11 +13,7 @@
 #import <AVFoundation/AVMetadataFormat.h>
 #import <AVFoundation/AVAsynchronousKeyValueLoading.h>
 
-#if TARGET_OS_IPHONE
 #import <CoreGraphics/CoreGraphics.h>
-#else // ! TARGET_OS_IPHONE
-#import <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CoreGraphics.h>
-#endif // ! TARGET_OS_IPHONE
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -72,6 +68,14 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
 
 /* provides a dictionary of the additional attributes */
 @property (nonatomic, readonly, copy, nullable) NSDictionary<NSString *, id> *extraAttributes;
+
+@end
+
+
+@interface AVMetadataItem (AVMetadataItemDateRepresentation)
+
+/* indicates the start date of the timed metadata; nil if no date is indicated */
+@property (nonatomic, readonly, copy, nullable) NSDate *startDate NS_AVAILABLE(10_11, 9_0);
 
 @end
 
@@ -145,7 +149,7 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
 
 /*!
 	@method			identifierForKey:keySpace:
-	@abstract		Provides the metadata identifier that’s equivalent to a key and keySpace.
+	@abstract		Provides the metadata identifier that's equivalent to a key and keySpace.
 	@param			key
 					The metadata key.
 	@param			keySpace
@@ -223,6 +227,13 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
 	@abstract		Returns an instance of AVMutableMetadataItem.
 */
 + (AVMutableMetadataItem *)metadataItem;
+
+@end
+
+@interface AVMutableMetadataItem (AVMutableMetadataItemDateRepresentation)
+
+/* indicates the start date of the timed metadata; nil if no date is indicated */
+@property (nonatomic, readwrite, copy, nullable) NSDate *startDate NS_AVAILABLE(10_11, 9_0);
 
 @end
 

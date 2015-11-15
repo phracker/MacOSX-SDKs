@@ -38,6 +38,9 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
 	@enum Policy Constants
 	@discussion Predefined constants used to specify a policy.
@@ -55,6 +58,7 @@ extern "C" {
 	@constant kSecPolicyAppleTimeStamping
 	@constant kSecPolicyAppleRevocation
 	@constant kSecPolicyApplePassbookSigning
+    @constant kSecPolicyApplePayIssuerEncryption
 */
 extern const CFStringRef kSecPolicyAppleX509Basic
     __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_7_0);
@@ -75,7 +79,7 @@ extern const CFStringRef kSecPolicyApplePKINITServer
 extern const CFStringRef kSecPolicyAppleCodeSigning
     __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_7_0);
 extern const CFStringRef kSecPolicyMacAppStoreReceipt
-    __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
+    __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_9_0);
 extern const CFStringRef kSecPolicyAppleIDValidation
     __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_7_0);
 extern const CFStringRef kSecPolicyAppleTimeStamping
@@ -84,6 +88,9 @@ extern const CFStringRef kSecPolicyAppleRevocation
     __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
 extern const CFStringRef kSecPolicyApplePassbookSigning
     __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
+extern const CFStringRef kSecPolicyApplePayIssuerEncryption
+    __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+
 
 /*!
     @enum Policy Value Constants
@@ -169,7 +176,7 @@ SecPolicyRef SecPolicyCreateBasicX509(void)
     @result A policy object. The caller is responsible for calling CFRelease
     on this when it is no longer needed.
 */
-SecPolicyRef SecPolicyCreateSSL(Boolean server, CFStringRef hostname)
+SecPolicyRef SecPolicyCreateSSL(Boolean server, CFStringRef __nullable hostname)
 	__OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_2_0);
 
 /*!
@@ -230,16 +237,22 @@ SecPolicyRef SecPolicyCreateRevocation(CFOptionFlags revocationFlags)
 	@result The returned policy reference, or NULL if the policy could not be
 	created.
 */
+__nullable
 SecPolicyRef SecPolicyCreateWithProperties(CFTypeRef policyIdentifier,
-	CFDictionaryRef properties)
+	CFDictionaryRef __nullable properties)
 	__OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
 
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 /*
  *  Legacy functions (OS X only)
  */
 #if TARGET_OS_MAC && !TARGET_OS_IPHONE
 #include <Security/cssmtype.h>
+
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
     @enum Policy Value Constants (OS X)
@@ -327,6 +340,7 @@ extern const CFStringRef kSecPolicyKU_DecipherOnly
 	use SecPolicyCreateWithProperties (or a more specific policy creation
 	function) instead.
 */
+__nullable
 SecPolicyRef SecPolicyCreateWithOID(CFTypeRef policyOID)
 	__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_7, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
 
@@ -398,8 +412,10 @@ OSStatus SecPolicySetProperties(SecPolicyRef policyRef,
 OSStatus SecPolicyGetTPHandle(SecPolicyRef policyRef, CSSM_TP_HANDLE *tpHandle)
 	__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_2, __MAC_10_7, __IPHONE_NA, __IPHONE_NA);
 
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
+    
 #endif /* TARGET_OS_MAC && !TARGET_OS_IPHONE */
-
 
 #if defined(__cplusplus)
 }

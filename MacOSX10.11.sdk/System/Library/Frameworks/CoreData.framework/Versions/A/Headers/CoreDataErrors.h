@@ -69,6 +69,7 @@ enum : NSInteger {
     
     NSPersistentStoreIncompatibleVersionHashError    = 134100, // entity version hashes incompatible with data model
     NSMigrationError                                 = 134110, // general migration error
+    NSMigrationConstraintViolationError              = 134111, // migration failed due to a violated uniqueness constraint
     NSMigrationCancelledError                        = 134120, // migration failed due to manual cancellation
     NSMigrationMissingSourceModelError               = 134130, // migration failed due to missing source data model
     NSMigrationMissingMappingModelError              = 134140, // migration failed due to missing mapping model

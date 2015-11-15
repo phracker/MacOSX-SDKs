@@ -49,6 +49,13 @@ typedef NS_OPTIONS(NSUInteger, MTLColorWriteMask) {
     MTLColorWriteMaskAll   = 0xf
 } NS_ENUM_AVAILABLE(10_11, 8_0);
 
+typedef NS_ENUM(NSUInteger, MTLPrimitiveTopologyClass) {
+    MTLPrimitiveTopologyClassUnspecified = 0,
+    MTLPrimitiveTopologyClassPoint = 1,
+    MTLPrimitiveTopologyClassLine = 2,
+    MTLPrimitiveTopologyClassTriangle = 3,
+} NS_ENUM_AVAILABLE_MAC(10_11);
+
 @class MTLRenderPipelineColorAttachmentDescriptorArray;
 
 NS_CLASS_AVAILABLE(10_11, 8_0)
@@ -99,7 +106,7 @@ NS_CLASS_AVAILABLE(10_11, 8_0)
 
 @property (nullable, copy, nonatomic) NSString *label;
 
-@property (readwrite, nonatomic, strong) id <MTLFunction> vertexFunction;
+@property (nullable, readwrite, nonatomic, strong) id <MTLFunction> vertexFunction;
 @property (nullable, readwrite, nonatomic, strong) id <MTLFunction> fragmentFunction;
 
 @property (nullable, copy, nonatomic) MTLVertexDescriptor *vertexDescriptor;
@@ -114,6 +121,8 @@ NS_CLASS_AVAILABLE(10_11, 8_0)
 
 @property (nonatomic) MTLPixelFormat depthAttachmentPixelFormat;
 @property (nonatomic) MTLPixelFormat stencilAttachmentPixelFormat;
+
+@property (readwrite, nonatomic) MTLPrimitiveTopologyClass inputPrimitiveTopology NS_AVAILABLE_MAC(10_11);
 
 /*!
  @method reset

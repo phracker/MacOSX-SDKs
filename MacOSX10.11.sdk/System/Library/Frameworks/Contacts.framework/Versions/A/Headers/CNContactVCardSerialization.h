@@ -20,7 +20,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 @interface CNContactVCardSerialization : NSObject
 
 /*!
- *  @abstract Descriptor for all contact keys required by VCard serialization
+ *  @abstract Descriptor for all contact keys required by vCard serialization
  *
  *  @discussion This descriptor must be passed to the fetch request if the returned
  *              contacts are to be serialized with dataWithContacts:error:.

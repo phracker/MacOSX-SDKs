@@ -57,6 +57,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (nullable WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures;
 
+/*! @abstract Notifies your app that the DOM window object's close() method completed successfully.
+  @param webView The web view invoking the delegate method.
+  @discussion Your app should remove the web view from the view hierarchy and update
+  the UI as needed, such as by closing the containing browser tab or window.
+  */
+- (void)webViewDidClose:(WKWebView *)webView NS_AVAILABLE(10_11, 9_0);
+
 /*! @abstract Displays a JavaScript alert panel.
  @param webView The web view invoking the delegate method.
  @param message The message to display.

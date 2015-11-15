@@ -38,10 +38,13 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*
  * Supported import/export Formats
  */
-enum
+typedef CF_ENUM(uint32_t, SecExternalFormat)
 {
 	/*
 	 * When importing: unknown format
@@ -81,12 +84,11 @@ enum
 									 * are in format kSecFormatOpenSSL or
 									 * kSecFormatWrappedOpenSSL. */
 };
-typedef uint32_t SecExternalFormat;
 
 /*
  * Indication of basic item type when importing.
  */
-enum {
+typedef CF_ENUM(uint32_t, SecExternalItemType) {
 	kSecItemTypeUnknown,			/* caller doesn't know what this is */
 	kSecItemTypePrivateKey,
 	kSecItemTypePublicKey,
@@ -94,21 +96,19 @@ enum {
 	kSecItemTypeCertificate,
 	kSecItemTypeAggregate			/* PKCS7, PKCS12, kSecFormatPEMSequence, etc. */
 };
-typedef uint32_t SecExternalItemType;
 
 /*
  * Flags passed to SecKeychainItemExport() and SecKeychainItemImport().
  */
-enum
+typedef CF_OPTIONS(uint32_t, SecItemImportExportFlags)
 {
 	kSecItemPemArmour			= 0x00000001,   /* exported blob is PEM formatted */
 };
-typedef uint32_t SecItemImportExportFlags;
 
 /*
  * SecKeyRef-specific flags, specified in SecKeyImportExportParameters.flags
  */
-enum
+typedef CF_OPTIONS(uint32_t, SecKeyImportExportFlags)
 {
 	/*
 	 * When true, prevents the importing of more than one private key
@@ -133,7 +133,6 @@ enum
 	 */
 	kSecKeyNoAccessControl		= 0x00000004
 };
-typedef uint32_t SecKeyImportExportFlags;
 
 /*
  * Version of a SecKeyImportExportParameters.
@@ -155,7 +154,7 @@ typedef struct
 	CFStringRef				alertPrompt;	/* prompt in secure passphrase alert panel */
 
 	/* for import only */
-	SecAccessRef			accessRef;		/* specifies the initial ACL of imported
+	SecAccessRef __nullable accessRef;		/* specifies the initial ACL of imported
 											 *    key(s) */
 	CSSM_KEYUSE				keyUsage;		/* CSSM_KEYUSE_DECRYPT, CSSM_KEYUSE_SIGN,
 											 *    etc. */
@@ -175,13 +174,13 @@ typedef struct
 	CFStringRef				alertPrompt;	/* prompt in secure passphrase alert panel */
 
 	/* for import only */
-	SecAccessRef			accessRef;		/* specifies the initial ACL of imported
+	SecAccessRef __nullable	accessRef;		/* specifies the initial ACL of imported
 											 *    key(s) */
-	CFArrayRef				keyUsage;		/* An Array containing usage attributes from SecItem.h, e.g.
+	CFArrayRef __nullable   keyUsage;		/* An Array containing usage attributes from SecItem.h, e.g.
 											   kSecAttrCanEncrypt;, kSecAttrCanDecrypt, kSecAttrCanDerive, etc.
 											 */
 
-	CFArrayRef				keyAttributes;	/* An array containing zero or more key attributes
+	CFArrayRef __nullable   keyAttributes;	/* An array containing zero or more key attributes
 											   for an imported key. Possible values (from SecItem.h):
 											   kSecAttrIsPermanent, kSecAttrIsSensitive, kSecAttrIsExtractable
 											   Pass NULL in this field to use default attributes:
@@ -246,9 +245,9 @@ typedef struct
 OSStatus SecKeychainItemExport(
 	CFTypeRef							keychainItemOrArray,
 	SecExternalFormat					outputFormat,
-	SecItemImportExportFlags			flags,				/* kSecItemPemArmor, etc. */
-	const SecKeyImportExportParameters  *keyParams,			/* optional */
-	CFDataRef							*exportedData)		/* external representation returned here */
+	SecItemImportExportFlags			flags,                  /* kSecItemPemArmor, etc. */
+	const SecKeyImportExportParameters * __nullable keyParams,	/* optional */
+	CFDataRef * __nonnull CF_RETURNS_RETAINED exportedData)		/* external representation returned here */
 		DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*
@@ -306,9 +305,9 @@ OSStatus SecKeychainItemExport(
 OSStatus SecItemExport(
 	CFTypeRef							secItemOrArray,
 	SecExternalFormat					outputFormat,
-	SecItemImportExportFlags			flags,				/* kSecItemPemArmor, etc. */
-	const SecItemImportExportKeyParameters  *keyParams,			/* optional */
-	CFDataRef							*exportedData)		/* external representation returned here */
+	SecItemImportExportFlags			flags,                      /* kSecItemPemArmor, etc. */
+	const SecItemImportExportKeyParameters * __nullable keyParams,	/* optional */
+	CFDataRef * __nonnull CF_RETURNS_RETAINED exportedData)         /* external representation returned here */
 		__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 /*
  * SecKeychainItemImport()
@@ -460,13 +459,13 @@ OSStatus SecItemExport(
  */
 OSStatus SecKeychainItemImport(
 	CFDataRef							importedData,
-	CFStringRef							fileNameOrExtension,	/* optional */
-	SecExternalFormat					*inputFormat,			/* optional, IN/OUT */
-	SecExternalItemType					*itemType,				/* optional, IN/OUT */
+	CFStringRef	__nullable				fileNameOrExtension,	/* optional */
+	SecExternalFormat * __nullable      inputFormat,			/* optional, IN/OUT */
+	SecExternalItemType	* __nullable    itemType,				/* optional, IN/OUT */
 	SecItemImportExportFlags			flags,
-	const SecKeyImportExportParameters  *keyParams,				/* optional */
-	SecKeychainRef						importKeychain,			/* optional */
-	CFArrayRef							*outItems)							/* optional */
+	const SecKeyImportExportParameters * __nullable keyParams,	/* optional */
+	SecKeychainRef __nullable			importKeychain,			/* optional */
+	CFArrayRef * __nullable CF_RETURNS_RETAINED outItems)       /* optional */
 		DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*
@@ -629,13 +628,13 @@ OSStatus SecKeychainItemImport(
 
 OSStatus SecItemImport(
 	CFDataRef							importedData,
-	CFStringRef							fileNameOrExtension,	/* optional */
-	SecExternalFormat					*inputFormat,			/* optional, IN/OUT */
-	SecExternalItemType					*itemType,				/* optional, IN/OUT */
+	CFStringRef __nullable				fileNameOrExtension,	/* optional */
+	SecExternalFormat * __nullable      inputFormat,			/* optional, IN/OUT */
+	SecExternalItemType	* __nullable    itemType,				/* optional, IN/OUT */
 	SecItemImportExportFlags			flags,
-	const SecItemImportExportKeyParameters  *keyParams,				/* optional */
-	SecKeychainRef						importKeychain,			/* optional */
-	CFArrayRef							*outItems)				/* optional */
+	const SecItemImportExportKeyParameters * __nullable keyParams,	/* optional */
+	SecKeychainRef __nullable			importKeychain,			/* optional */
+	CFArrayRef * __nullable CF_RETURNS_RETAINED outItems)		/* optional */
 		__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 /*!
     @enum Import/Export options
@@ -644,9 +643,9 @@ OSStatus SecItemImport(
 	@constant kSecImportExportKeychain Specifies a keychain represented by a SecKeychainRef to be used as the target when importing from PKCS#12 format.
 	@constant kSecImportExportAccess Specifies an access represented by a SecAccessRef for the initial access (ACL) of a key imported from PKCS#12 format.
 */
-extern CFStringRef kSecImportExportPassphrase;
-extern CFStringRef kSecImportExportKeychain;
-extern CFStringRef kSecImportExportAccess;
+extern const CFStringRef kSecImportExportPassphrase;
+extern const CFStringRef kSecImportExportKeychain;
+extern const CFStringRef kSecImportExportAccess;
 
 /*!
     @enum Import/Export item description
@@ -657,11 +656,11 @@ extern CFStringRef kSecImportExportAccess;
     @constant kSecImportItemTrust A SecTrustRef set up with all relevant certificates. Not guaranteed to succesfully evaluate.
     @constant kSecImportItemCertChain A CFArrayRef holding all relevant certificates for this item's identity.
 */
-extern CFStringRef kSecImportItemLabel;
-extern CFStringRef kSecImportItemKeyID;
-extern CFStringRef kSecImportItemTrust;
-extern CFStringRef kSecImportItemCertChain;
-extern CFStringRef kSecImportItemIdentity;
+extern const CFStringRef kSecImportItemLabel;
+extern const CFStringRef kSecImportItemKeyID;
+extern const CFStringRef kSecImportItemTrust;
+extern const CFStringRef kSecImportItemCertChain;
+extern const CFStringRef kSecImportItemIdentity;
 
 /*!
 	@function SecPKCS12Import
@@ -672,7 +671,10 @@ extern CFStringRef kSecImportItemIdentity;
 	@result errSecSuccess in case of success. errSecDecode means either the blob can't be read or it is malformed.
 		errSecAuthFailed means an incorrect password was supplied, or data in the container is damaged.
 */
-OSStatus SecPKCS12Import(CFDataRef pkcs12_data, CFDictionaryRef options, CFArrayRef *items);
+OSStatus SecPKCS12Import(CFDataRef pkcs12_data, CFDictionaryRef options, CFArrayRef * __nonnull CF_RETURNS_RETAINED items);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #ifdef	__cplusplus
 }

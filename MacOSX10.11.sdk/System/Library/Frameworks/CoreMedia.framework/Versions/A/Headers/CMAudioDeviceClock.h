@@ -36,7 +36,7 @@ CM_EXPORT OSStatus
 CMAudioDeviceClockCreate(
 		CFAllocatorRef CM_NULLABLE allocator,
 		CFStringRef	CM_NULLABLE deviceUID,
-		CMClockRef CM_NULLABLE * CM_NONNULL clockOut)
+		CM_RETURNS_RETAINED_PARAMETER CMClockRef CM_NULLABLE * CM_NONNULL clockOut)
 			__OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_NA);
 
 #if ! TARGET_OS_IPHONE
@@ -48,7 +48,7 @@ CM_EXPORT OSStatus
 CMAudioDeviceClockCreateFromAudioDeviceID(
 		CFAllocatorRef CM_NULLABLE allocator,
 		AudioDeviceID deviceID,
-		CMClockRef CM_NULLABLE * CM_NONNULL clockOut)
+		CM_RETURNS_RETAINED_PARAMETER CMClockRef CM_NULLABLE * CM_NONNULL clockOut)
 			__OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_NA);
 
 CF_IMPLICIT_BRIDGING_ENABLED
@@ -88,7 +88,7 @@ CMAudioDeviceClockSetAudioDeviceID(
 */
 CM_EXPORT OSStatus CMAudioDeviceClockGetAudioDevice(
 		CMClockRef CM_NONNULL clock,
-		CFStringRef CM_NULLABLE * CM_NULLABLE deviceUIDOut,	// may be NULL
+		CM_RETURNS_NOT_RETAINED_PARAMETER CFStringRef CM_NULLABLE * CM_NULLABLE deviceUIDOut,	// may be NULL
 		AudioDeviceID * CM_NULLABLE deviceIDOut,			// may be NULL
 		Boolean * CM_NULLABLE trackingDefaultDeviceOut)	// may be NULL
 			__OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_NA);

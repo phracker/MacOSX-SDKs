@@ -39,9 +39,8 @@ SCN_EXTERN NSString * const SCNHitTestIgnoreHiddenNodesKey NS_AVAILABLE(10_9, 8_
 /*!
  @enum SCNRenderingAPI
  @abstract rendering API used by SCNView and SCNRenderer.
- @discussion Default preferred API is SCNRenderingAPIMetal on iOS and SCNRenderingAPIOpenGLLegacy on OS X.
+ @discussion Default preferred API is SCNRenderingAPIMetal on iOS and it depends on the configuration on OS X.
  If Metal is requested but not available then it fallbacks to SCNRenderingAPIOpenGLES2 on iOS and to SCNRenderingAPIOpenGLLegacy on OS X.
- Metal is not supported on OS X.
  */
 typedef NS_ENUM(NSUInteger, SCNRenderingAPI) {
     SCNRenderingAPIMetal,
@@ -56,12 +55,12 @@ typedef NS_ENUM(NSUInteger, SCNRenderingAPI) {
  */
 typedef NS_OPTIONS(NSUInteger, SCNDebugOptions) {
     SCNDebugOptionNone = 0,
-    SCNDebugOptionShowPhysicsShapes     = 1 << 0,
-    SCNDebugOptionShowBoundingBoxes     = 1 << 1,
-    SCNDebugOptionShowLightInfluences   = 1 << 2,
-    SCNDebugOptionShowLightExtents      = 1 << 3,
-    SCNDebugOptionShowPhysicsFields     = 1 << 4,
-    SCNDebugOptionShowWireframe         = 1 << 5,
+    SCNDebugOptionShowPhysicsShapes   = 1 << 0,
+    SCNDebugOptionShowBoundingBoxes   = 1 << 1,
+    SCNDebugOptionShowLightInfluences = 1 << 2,
+    SCNDebugOptionShowLightExtents    = 1 << 3,
+    SCNDebugOptionShowPhysicsFields   = 1 << 4,
+    SCNDebugOptionShowWireframe       = 1 << 5
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
 
@@ -271,9 +270,9 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
 
 /*!
  @property currentRenderCommandEncoder
- @abstract The current render command encoder if any. This property is only valid within the SCNSceneRendererDelegate methods and when the renderering with Metal. Otherwise it is set to nil.
+ @abstract The current render command encoder if any. This property is only valid within the SCNSceneRendererDelegate methods and when renderering with Metal. Otherwise it is set to nil.
  */
-@property(nonatomic, readonly) id <MTLRenderCommandEncoder> currentRenderCommandEncoder NS_AVAILABLE(10_11, 9_0);
+@property(nonatomic, readonly, nullable) id <MTLRenderCommandEncoder> currentRenderCommandEncoder NS_AVAILABLE(10_11, 9_0);
 
 /*!
  @property device

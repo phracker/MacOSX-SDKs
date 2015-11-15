@@ -18,7 +18,7 @@ enum {
 };
 
 @protocol NSGlyphStorage
-- (void)insertGlyphs:(null_unspecified const NSGlyph *)glyphs length:(NSUInteger)length forStartingGlyphAtIndex:(NSUInteger)glyphIndex characterIndex:(NSUInteger)charIndex;
+- (void)insertGlyphs:(const NSGlyph *)glyphs length:(NSUInteger)length forStartingGlyphAtIndex:(NSUInteger)glyphIndex characterIndex:(NSUInteger)charIndex;
 
 // sets glyph attribute defined in NSLayoutManager.h
 - (void)setIntAttribute:(NSInteger)attributeTag value:(NSInteger)val forGlyphAtIndex:(NSUInteger)glyphIndex;
@@ -28,7 +28,7 @@ enum {
 @end
 
 @interface NSGlyphGenerator : NSObject
-- (void)generateGlyphsForGlyphStorage:(id <NSGlyphStorage>)glyphStorage desiredNumberOfCharacters:(NSUInteger)nChars glyphIndex:(null_unspecified NSUInteger *)glyphIndex characterIndex:(null_unspecified NSUInteger *)charIndex;
+- (void)generateGlyphsForGlyphStorage:(id <NSGlyphStorage>)glyphStorage desiredNumberOfCharacters:(NSUInteger)nChars glyphIndex:(nullable NSUInteger *)glyphIndex characterIndex:(nullable NSUInteger *)charIndex;
 
 + (NSGlyphGenerator *)sharedGlyphGenerator;
 @end

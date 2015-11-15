@@ -29,7 +29,7 @@ typedef NS_OPTIONS (NSUInteger, NSPersonNameComponentsFormatterOptions) {
      The developer must have populated these manually. e.g.: Developer creates components object with the following properties:
      <family:"Family", given:"Given", phoneticRepresentation:<family:"FamilyPhonetic", given:"GivenPhonetic">>.
      If this option is specified, we perform formatting operations on <family "FamilyPhonetic", given "GivenPhonetic"> instead. */
-    NSPersonNameComponentsFormatterOptionPhonetic = (1UL << 1)
+    NSPersonNameComponentsFormatterPhonetic = (1UL << 1)
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
 
@@ -42,10 +42,6 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 /* Specify the formatting style for the formatted string on an instance. ShortStyle will fall back to user preferences and language-specific defaults
  */
 @property NSPersonNameComponentsFormatterStyle style;
-
-/* Specify the formatting context for the formatted string. Default is NSFormattingContextUnknown.
- */
-@property NSFormattingContext formattingContext;
 
 /* Specify that the formatter should only format the components object's phoneticRepresentation
  */

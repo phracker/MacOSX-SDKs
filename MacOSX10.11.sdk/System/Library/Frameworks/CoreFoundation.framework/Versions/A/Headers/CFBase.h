@@ -284,9 +284,9 @@ CF_EXTERN_C_BEGIN
 
 
 #if __has_attribute(swift_private)
-# define CF_REVISED_FOR_SWIFT __attribute__((swift_private))
+# define CF_REFINED_FOR_SWIFT __attribute__((swift_private))
 #else
-# define CF_REVISED_FOR_SWIFT
+# define CF_REFINED_FOR_SWIFT
 #endif
 
 
@@ -297,8 +297,7 @@ CF_EXTERN_C_BEGIN
 #endif
 
 
-#if __has_feature(objc_generics_variance)
-#else
+#if !__has_feature(objc_generics_variance)
 #ifndef __covariant
 #define __covariant
 #endif
@@ -385,6 +384,10 @@ CF_EXPORT double kCFCoreFoundationVersionNumber;
 #define kCFCoreFoundationVersionNumber10_9      855.11
 #define kCFCoreFoundationVersionNumber10_9_1    855.11
 #define kCFCoreFoundationVersionNumber10_9_2    855.14
+#define kCFCoreFoundationVersionNumber10_10     1151.16
+#define kCFCoreFoundationVersionNumber10_10_1   1151.16
+#define kCFCoreFoundationVersionNumber10_10_2   1152
+#define kCFCoreFoundationVersionNumber10_10_3   1153.18
 #endif
 
 #if TARGET_OS_IPHONE

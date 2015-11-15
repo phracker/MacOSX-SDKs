@@ -1,6 +1,6 @@
 /*	
     OSAScriptController.h
-    Copyright (C) 2005-2014 Apple Inc. All rights reserved.    
+    Copyright (C) 2005-2015 Apple Inc. All rights reserved.    
     
     Public header file.
 */
@@ -12,6 +12,8 @@
 @class OSAScript;
 @class OSALanguage;
 @class OSAScriptControllerPrivate;
+
+NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, OSAScriptState)
 {
@@ -34,17 +36,19 @@ typedef NS_ENUM(NSInteger, OSAScriptState)
 }
 
 // Accessors
-@property (strong) OSAScriptView *scriptView;
-@property (strong) NSTextView *resultView;
-@property (copy) OSAScript *script;
-@property (strong) OSALanguage *language;
+@property (nullable, strong) OSAScriptView *scriptView;
+@property (nullable, strong) NSTextView *resultView;
+@property (nullable, copy) OSAScript *script;
+@property (nullable, strong) OSALanguage *language;
 @property (readonly) OSAScriptState scriptState;
 @property (getter=isCompiling, readonly) BOOL compiling;
 
 // Actions
-- (IBAction)compileScript:(id)sender;
-- (IBAction)recordScript:(id)sender;
-- (IBAction)runScript:(id)sender;
-- (IBAction)stopScript:(id)sender;
+- (IBAction)compileScript:(nullable id)sender;
+- (IBAction)recordScript:(nullable id)sender;
+- (IBAction)runScript:(nullable id)sender;
+- (IBAction)stopScript:(nullable id)sender;
 
 @end
+
+NS_ASSUME_NONNULL_END

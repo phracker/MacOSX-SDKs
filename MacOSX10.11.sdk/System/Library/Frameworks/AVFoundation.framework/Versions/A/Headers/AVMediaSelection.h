@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_CLASS_AVAILABLE(10_11, 9_0)
 @interface AVMediaSelection : NSObject <NSCopying, NSMutableCopying>
 {
+@private
 	AVMediaSelectionInternal *_mediaSelection;
 }
 

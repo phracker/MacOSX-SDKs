@@ -97,7 +97,7 @@ NS_CLASS_AVAILABLE(10_10, 7_0)
 - (BOOL)sendData:(NSData *)data
          toPeers:(NSArray<MCPeerID *> *)peerIDs
         withMode:(MCSessionSendDataMode)mode
-           error:(NSError **)error;
+           error:(NSError * __nullable * __nullable)error;
 
 // Disconnect from the session.
 - (void)disconnect;
@@ -122,10 +122,12 @@ NS_CLASS_AVAILABLE(10_10, 7_0)
 - (nullable NSProgress *)sendResourceAtURL:(NSURL *)resourceURL
                                   withName:(NSString *)resourceName
                                     toPeer:(MCPeerID *)peerID
-                     withCompletionHandler:(nullable void (^)(NSError *error))completionHandler;
+                     withCompletionHandler:(nullable void (^)(NSError * __nullable error))completionHandler;
 
 // Start a named byte stream with the remote peer.
-- (nullable NSOutputStream *)startStreamWithName:(NSString *)streamName toPeer:(MCPeerID *)peerID error:(NSError **)error;
+- (nullable NSOutputStream *)startStreamWithName:(NSString *)streamName
+                                          toPeer:(MCPeerID *)peerID
+                                           error:(NSError * __nullable * __nullable)error;
 
 @property (weak, NS_NONATOMIC_IOSONLY, nullable) id<MCSessionDelegate> delegate;
 
@@ -167,7 +169,7 @@ NS_CLASS_AVAILABLE(10_10, 7_0)
  didFinishReceivingResourceWithName:(NSString *)resourceName
                            fromPeer:(MCPeerID *)peerID
                               atURL:(NSURL *)localURL
-                          withError:(NSError *)error;
+                          withError:(nullable NSError *)error;
 
 @optional
 
@@ -203,7 +205,7 @@ NS_CLASS_AVAILABLE(10_10, 7_0)
 
 // Gets the connection data for a remote peer.
 - (void)nearbyConnectionDataForPeer:(MCPeerID *)peerID
-              withCompletionHandler:(void (^)(NSData *connectionData, NSError *error))completionHandler;
+              withCompletionHandler:(void (^)(NSData *connectionData, NSError * __nullable error))completionHandler;
 
 // Connect a peer to the session once connection data is received.
 - (void)connectPeer:(MCPeerID *)peerID withNearbyConnectionData:(NSData *)data;

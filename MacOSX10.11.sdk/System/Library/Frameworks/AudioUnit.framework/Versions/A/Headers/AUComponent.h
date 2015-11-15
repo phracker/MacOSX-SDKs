@@ -318,9 +318,15 @@ CF_ENUM(UInt32) {
 					delay introduced between the input and output
 					
 	@constant		kAudioUnitSubType_Splitter
-					An audio unit that provides 2 output buses and 1 input bus. The audio unit
-					splits (duplicates) the input signal to the two output buses
-					
+                    An audio unit that provides 2 output buses and 1 input bus. The audio unit
+                    splits (duplicates) the input signal to the two output buses
+ 
+	@constant		kAudioUnitSubType_MultiSplitter
+                    An audio unit that sends its input bus to any number of output buses.
+                    Every output bus gets all channels of the input bus.
+                    This unit's implementation is lighter weight than kAudioUnitSubType_Splitter 
+                    even for two output buses, and is recommended over kAudioUnitSubType_Splitter.
+ 
 	@constant		kAudioUnitSubType_Merger
 					An audio unit that provides 2 input buses and 2 output bus. The audio unit
 					merges the two inputs to the single output
@@ -996,8 +1002,8 @@ extern const CFStringRef kAudioComponentInstanceInvalidationNotification
 					render at any given time. Once initialized, it is in a state where it can be 
 					asked to render.
 					
-					In common practice major state of an audio unit (such as its I/O formats, 
-					memory allocations) cannot be changed while an audio unit is inialized.
+					In common practice, major state of an audio unit (such as its I/O formats,
+					memory allocations) cannot be changed while an audio unit is initialized.
 	
 	@param			inUnit
 					The audio unit to initialize

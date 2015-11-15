@@ -103,7 +103,7 @@ typedef NS_ENUM(NSInteger, SCNBlendMode) {
     SCNBlendModeSubtract     = 2, // Blends the source and destination colors by subtracting the source from the destination.
     SCNBlendModeMultiply     = 3, // Blends the source and destination colors by multiplying them.
     SCNBlendModeScreen       = 4, // Blends the source and destination colors by multiplying one minus the source with the destination and adding the source.
-    SCNBlendModeReplace      = 5, // Replaces the destination with the source (ignores alpha).
+    SCNBlendModeReplace      = 5  // Replaces the destination with the source (ignores alpha).
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
 @class SCNMaterialProperty;

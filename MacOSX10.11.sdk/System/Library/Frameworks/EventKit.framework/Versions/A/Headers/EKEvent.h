@@ -162,13 +162,22 @@ NS_CLASS_AVAILABLE(10_8, 4_0)
 - (BOOL)refresh;
 
 /*!
+    @method     birthdayContactIdentifier
+    @abstract   Specifies the contact identifier of the person this event was created for.
+    @discussion This property is only valid for events in the built-in Birthdays calendar. It specifies
+                the contact identifier (for use with the Contacts framework) of the person this event was
+                created for. For any other type of event, this property returns nil.
+ */
+@property(nonatomic, readonly, nullable) NSString *birthdayContactIdentifier NS_AVAILABLE(10_11, 9_0);
+
+/*!
     @property   birthdayPersonID
     @abstract   Specifies the address book ID of the person this event was created for.
     @discussion  This property is only valid for events in the built-in Birthdays calendar. It specifies
                 the Address Book ID of the person this event was created for. For any other type of event,
                 this property returns -1.
 */
-@property(nonatomic, readonly) NSInteger    birthdayPersonID NS_AVAILABLE(NA, 5_0);
+@property(nonatomic, readonly) NSInteger birthdayPersonID NS_DEPRECATED_IOS(5_0, 9_0, "Use birthdayContactIdentifier instead");
 
 /*!
     @property   birthdayPersonUniqueID
@@ -177,7 +186,7 @@ NS_CLASS_AVAILABLE(10_8, 4_0)
                 the Address Book unique ID of the person this event was created for. For any other type of event,
                 this property returns nil.
  */
-@property(nonatomic, readonly, nullable) NSString *birthdayPersonUniqueID NS_AVAILABLE(10_8, NA);
+@property(nonatomic, readonly, nullable) NSString *birthdayPersonUniqueID NS_DEPRECATED_MAC(10_8, 10_11, "Use birthdayContactIdentifier instead");
 
 @end
 

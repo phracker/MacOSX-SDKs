@@ -711,8 +711,8 @@ PMSessionSetCurrentPMPrinter(
  */
 extern OSStatus 
 PMSessionGetDataFromSession(
-  PMPrintSession			printSession,
-  CFStringRef				key,
+  PMPrintSession					printSession,
+  CFStringRef						key,
   CFTypeRef __nullable * __nonnull	data)						AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
 
 /*
@@ -964,10 +964,10 @@ PMGetOrientation(
  */
 extern OSStatus 
 PMGetPageFormatExtendedData(
-  PMPageFormat   pageFormat,
-  OSType         dataID,
-  UInt32 *       size,
-  void *         extendedData)									AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
+  PMPageFormat				pageFormat,
+  OSType					dataID,
+  UInt32 *  __nullable		size,
+  void *  __nullable		extendedData)						AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
 
 /*
  *  PMPageFormatGetPrinterID()
@@ -1405,9 +1405,9 @@ PMGetLastPage(
  */
 extern OSStatus 
 PMGetPageRange(
-  PMPrintSettings   printSettings,
-  UInt32 *          minPage,
-  UInt32 *          maxPage)									AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
+  PMPrintSettings	printSettings,
+  UInt32 *			minPage,
+  UInt32 *			maxPage)									AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
 
 /*
  *  PMPrintSettingsGetJobName()
@@ -1994,9 +1994,9 @@ PMPrinterCopyPresets(
  */
 extern OSStatus 
 PMPrinterGetCommInfo(
-  PMPrinter   printer,
-  Boolean *   supportsControlCharRangeP,
-  Boolean *   supportsEightBitP)								AVAILABLE_MAC_OS_X_VERSION_10_3_AND_LATER;
+  PMPrinter				printer,
+  Boolean * __nullable	supportsControlCharRangeP,
+  Boolean * __nullable	supportsEightBitP)						AVAILABLE_MAC_OS_X_VERSION_10_3_AND_LATER;
 
 
 /*

@@ -125,7 +125,7 @@ extern CFTypeID	AXUIElementGetTypeID (void);
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError 	AXUIElementCopyAttributeNames (AXUIElementRef element, CFArrayRef __nullable * __nonnull names);
+extern AXError 	AXUIElementCopyAttributeNames (AXUIElementRef element, CFArrayRef __nullable * __nonnull CF_RETURNS_RETAINED names);
 
 /*!
  @function AXUIElementCopyAttributeValue
@@ -143,7 +143,7 @@ extern AXError 	AXUIElementCopyAttributeNames (AXUIElementRef element, CFArrayRe
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError	AXUIElementCopyAttributeValue (AXUIElementRef element, CFStringRef attribute, CFTypeRef __nullable * __nonnull value);
+extern AXError	AXUIElementCopyAttributeValue (AXUIElementRef element, CFStringRef attribute, CFTypeRef __nullable * __nonnull CF_RETURNS_RETAINED value);
 
 /*!
  @function AXUIElementGetAttributeValueCount
@@ -180,7 +180,7 @@ extern AXError  AXUIElementGetAttributeValueCount (AXUIElementRef element, CFStr
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError  AXUIElementCopyAttributeValues (AXUIElementRef element, CFStringRef attribute, CFIndex index, CFIndex maxValues, CFArrayRef __nullable * __nonnull values);
+extern AXError  AXUIElementCopyAttributeValues (AXUIElementRef element, CFStringRef attribute, CFIndex index, CFIndex maxValues, CFArrayRef __nullable * __nonnull CF_RETURNS_RETAINED values);
 
 /*!
  @function AXUIElementIsAttributeSettable
@@ -239,7 +239,7 @@ extern AXError 	AXUIElementSetAttributeValue (AXUIElementRef element, CFStringRe
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError  AXUIElementCopyMultipleAttributeValues (AXUIElementRef element, CFArrayRef attributes, AXCopyMultipleAttributeOptions options, CFArrayRef __nullable * __nonnull values) CF_AVAILABLE_MAC(10_4);
+extern AXError  AXUIElementCopyMultipleAttributeValues (AXUIElementRef element, CFArrayRef attributes, AXCopyMultipleAttributeOptions options, CFArrayRef __nullable * __nonnull CF_RETURNS_RETAINED values) CF_AVAILABLE_MAC(10_4);
 
 /*!
  @function AXUIElementCopyParameterizedAttributeNames
@@ -256,7 +256,7 @@ extern AXError  AXUIElementCopyMultipleAttributeValues (AXUIElementRef element, 
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError	AXUIElementCopyParameterizedAttributeNames (AXUIElementRef element, CFArrayRef __nullable * __nonnull names) CF_AVAILABLE_MAC(10_3);
+extern AXError	AXUIElementCopyParameterizedAttributeNames (AXUIElementRef element, CFArrayRef __nullable * __nonnull CF_RETURNS_RETAINED names) CF_AVAILABLE_MAC(10_3);
 
 /*!
  @function AXUIElementCopyParameterizedAttributeValue
@@ -275,7 +275,7 @@ extern AXError	AXUIElementCopyParameterizedAttributeNames (AXUIElementRef elemen
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError	AXUIElementCopyParameterizedAttributeValue (AXUIElementRef element, CFStringRef parameterizedAttribute, CFTypeRef parameter, CFTypeRef __nullable * __nonnull result) CF_AVAILABLE_MAC(10_3);
+extern AXError	AXUIElementCopyParameterizedAttributeValue (AXUIElementRef element, CFStringRef parameterizedAttribute, CFTypeRef parameter, CFTypeRef __nullable * __nonnull CF_RETURNS_RETAINED result) CF_AVAILABLE_MAC(10_3);
 
 /*!
  @function AXUIElementCopyActionNames
@@ -290,7 +290,7 @@ extern AXError	AXUIElementCopyParameterizedAttributeValue (AXUIElementRef elemen
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError 	AXUIElementCopyActionNames (AXUIElementRef element, CFArrayRef __nullable * __nonnull names);
+extern AXError 	AXUIElementCopyActionNames (AXUIElementRef element, CFArrayRef __nullable * __nonnull CF_RETURNS_RETAINED names);
 
 /*!
  @function AXUIElementCopyActionDescription
@@ -307,7 +307,7 @@ extern AXError 	AXUIElementCopyActionNames (AXUIElementRef element, CFArrayRef _
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError	AXUIElementCopyActionDescription (AXUIElementRef element, CFStringRef action, CFStringRef __nullable * __nonnull description);
+extern AXError	AXUIElementCopyActionDescription (AXUIElementRef element, CFStringRef action, CFStringRef __nullable * __nonnull CF_RETURNS_RETAINED description);
 
 /*!
  @function AXUIElementPerformAction
@@ -348,7 +348,7 @@ extern AXError 	AXUIElementPerformAction (AXUIElementRef element, CFStringRef ac
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorNotImplemented</code></dt><dd>The process does not fully support the accessibility API.</dd></dl>
  */
-extern AXError	AXUIElementCopyElementAtPosition (AXUIElementRef application, float x,float y, AXUIElementRef __nullable * __nonnull element);
+extern AXError	AXUIElementCopyElementAtPosition (AXUIElementRef application, float x,float y, AXUIElementRef __nullable * __nonnull CF_RETURNS_RETAINED element);
 
 /*!
  @function AXUIElementCreateApplication
@@ -442,7 +442,7 @@ typedef struct CF_BRIDGED_TYPE(id) __AXObserver *AXObserverRef;
  @param notification The name of the notification to observe.
  @param refcon Application-defined data specified when registering the observer for notification
  */
-typedef void (*AXObserverCallback)(AXObserverRef observer, AXUIElementRef element, CFStringRef notification, void *refcon);
+typedef void (*AXObserverCallback)(AXObserverRef observer, AXUIElementRef element, CFStringRef notification, void * __nullable refcon);
 
 /*!
  @typedef AXObserverCallbackWithInfo
@@ -454,7 +454,7 @@ typedef void (*AXObserverCallback)(AXObserverRef observer, AXUIElementRef elemen
  @param info The coresponding notification information.
  @param refcon Application-defined data specified when registering the observer for notification
  */
-typedef void (*AXObserverCallbackWithInfo)(AXObserverRef observer, AXUIElementRef element, CFStringRef notification, CFDictionaryRef info, void *refcon);
+typedef void (*AXObserverCallbackWithInfo)(AXObserverRef observer, AXUIElementRef element, CFStringRef notification, CFDictionaryRef info, void * __nullable refcon);
 
 /*!
  @function AXObserverGetTypeID
@@ -477,7 +477,7 @@ CFTypeID AXObserverGetTypeID (void);
  <dl><dt><code>kAXErrorIllegalArgument</code></dt><dd>One or more of the arguments is an illegal value.</dd>
  <dt><code>kAXErrorFailure</code></dt><dd>There is some sort of system memory failure.</dd></dl>
  */
-extern AXError AXObserverCreate (pid_t application, AXObserverCallback callback, AXObserverRef __nullable * __nonnull outObserver);
+extern AXError AXObserverCreate (pid_t application, AXObserverCallback callback, AXObserverRef __nullable * __nonnull CF_RETURNS_RETAINED outObserver);
 
 /*!
  @function AXObserverCreateWithInfoCallback
@@ -492,7 +492,7 @@ extern AXError AXObserverCreate (pid_t application, AXObserverCallback callback,
      <dl><dt><code>kAXErrorIllegalArgument</code></dt><dd>One or more of the arguments is an illegal value.</dd>
      <dt><code>kAXErrorFailure</code></dt><dd>There is some sort of system memory failure.</dd></dl>
 */
-extern AXError AXObserverCreateWithInfoCallback (pid_t application, AXObserverCallbackWithInfo callback, AXObserverRef __nullable * __nonnull outObserver);
+extern AXError AXObserverCreateWithInfoCallback (pid_t application, AXObserverCallbackWithInfo callback, AXObserverRef __nullable * __nonnull CF_RETURNS_RETAINED outObserver);
     
 /*!
  @function AXObserverAddNotification
@@ -511,7 +511,7 @@ extern AXError AXObserverCreateWithInfoCallback (pid_t application, AXObserverCa
  <dt><code>kAXErrorCannotComplete</code></dt><dd>The function cannot complete because messaging has failed in some way.</dd>
  <dt><code>kAXErrorFailure</code></dt><dd>There is some sort of system memory failure.</dd></dl>
  */
-extern AXError AXObserverAddNotification (AXObserverRef observer, AXUIElementRef element, CFStringRef notification, void *refcon);
+extern AXError AXObserverAddNotification (AXObserverRef observer, AXUIElementRef element, CFStringRef notification, void * __nullable refcon);
 
 /*!
  @function AXObserverRemoveNotification

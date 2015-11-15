@@ -8,6 +8,8 @@
 #import <Foundation/NSGeometry.h> 
 #import <AppKit/AppKitDefines.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSColor, NSView;
 
 /*=== CONSTANTS ===*/
@@ -124,9 +126,9 @@ enum {
 
 typedef int NSWindowDepth;
 
-APPKIT_EXTERN NSWindowDepth NSBestDepth (NSString *colorSpace, NSInteger bps, NSInteger bpp, BOOL planar, BOOL *exactMatch);
+APPKIT_EXTERN NSWindowDepth NSBestDepth (NSString *colorSpace, NSInteger bps, NSInteger bpp, BOOL planar, BOOL * __nullable exactMatch);
 APPKIT_EXTERN BOOL NSPlanarFromDepth (NSWindowDepth depth);
-APPKIT_EXTERN NSString *NSColorSpaceFromDepth (NSWindowDepth depth);
+APPKIT_EXTERN NSString * __nullable NSColorSpaceFromDepth (NSWindowDepth depth);
 APPKIT_EXTERN NSInteger NSBitsPerSampleFromDepth(NSWindowDepth depth);
 APPKIT_EXTERN NSInteger NSBitsPerPixelFromDepth(NSWindowDepth depth);
 APPKIT_EXTERN NSInteger NSNumberOfColorComponents(NSString *colorSpaceName);
@@ -156,10 +158,10 @@ APPKIT_EXTERN NSString *NSDeviceSize;			/* NSValue containing NSSize */
 APPKIT_EXTERN void NSRectFill(NSRect aRect);
 APPKIT_EXTERN void NSRectFillList(const NSRect *rects, NSInteger count);
 APPKIT_EXTERN void NSRectFillListWithGrays(const NSRect *rects, const CGFloat *grays, NSInteger num);
-APPKIT_EXTERN void NSRectFillListWithColors(const NSRect *rects, NSColor * const *colors, NSInteger num);
+APPKIT_EXTERN void NSRectFillListWithColors(const NSRect *rects,  NSColor * const __nonnull * __nonnull colors, NSInteger num);
 APPKIT_EXTERN void NSRectFillUsingOperation(NSRect aRect, NSCompositingOperation op);
 APPKIT_EXTERN void NSRectFillListUsingOperation(const NSRect *rects, NSInteger count, NSCompositingOperation op);
-APPKIT_EXTERN void NSRectFillListWithColorsUsingOperation(const NSRect *rects, NSColor * const *colors, NSInteger num, NSCompositingOperation op);
+APPKIT_EXTERN void NSRectFillListWithColorsUsingOperation(const NSRect *rects, NSColor * const __nonnull * __nonnull colors, NSInteger num, NSCompositingOperation op);
 APPKIT_EXTERN void NSFrameRect(NSRect aRect);
 APPKIT_EXTERN void NSFrameRectWithWidth(NSRect aRect, CGFloat frameWidth);
 APPKIT_EXTERN void NSFrameRectWithWidthUsingOperation(NSRect aRect, CGFloat frameWidth, NSCompositingOperation op);
@@ -171,16 +173,16 @@ APPKIT_EXTERN void NSDrawGroove(NSRect aRect, NSRect clipRect);
 APPKIT_EXTERN void NSDrawWhiteBezel(NSRect aRect, NSRect clipRect);
 APPKIT_EXTERN void NSDrawButton(NSRect aRect, NSRect clipRect);
 APPKIT_EXTERN void NSEraseRect(NSRect aRect);
-APPKIT_EXTERN NSColor *NSReadPixel(NSPoint passedPoint);
-APPKIT_EXTERN void NSDrawBitmap(NSRect rect, NSInteger width, NSInteger height, NSInteger bps, NSInteger spp, NSInteger bpp, NSInteger bpr, BOOL isPlanar, BOOL hasAlpha, NSString *colorSpaceName, const unsigned char *const data[5]);
+APPKIT_EXTERN NSColor * __nullable NSReadPixel(NSPoint passedPoint);
+APPKIT_EXTERN void NSDrawBitmap(NSRect rect, NSInteger width, NSInteger height, NSInteger bps, NSInteger spp, NSInteger bpp, NSInteger bpr, BOOL isPlanar, BOOL hasAlpha, NSString *colorSpaceName, const unsigned char *const __nullable data[5]);
 
 APPKIT_EXTERN void NSHighlightRect(NSRect aRect) NS_DEPRECATED_MAC(10_0, 10_0);
 APPKIT_EXTERN void NSBeep(void);
 
 /* gets performance stats about window server memory usage */
-APPKIT_EXTERN NSInteger NSGetWindowServerMemory(NSInteger context, NSInteger *virtualMemory, NSInteger *windowBackingMemory, NSString **windowDumpString); // Deprecated; doesn't return anything useful (as of 10.0)
+APPKIT_EXTERN NSInteger NSGetWindowServerMemory(NSInteger context, NSInteger *virtualMemory, NSInteger *windowBackingMemory,   NSString * __nonnull * __nonnull windowDumpString); // Deprecated; doesn't return anything useful (as of 10.0)
 
-APPKIT_EXTERN NSRect NSDrawColorTiledRects(NSRect boundsRect, NSRect clipRect, const NSRectEdge *sides, NSColor **colors, NSInteger count);
+APPKIT_EXTERN NSRect NSDrawColorTiledRects(NSRect boundsRect, NSRect clipRect, const NSRectEdge *sides, NSColor * __nonnull * __nonnull colors, NSInteger count);
 APPKIT_EXTERN void NSDrawDarkBezel(NSRect aRect, NSRect clipRect);
 APPKIT_EXTERN void NSDrawLightBezel(NSRect aRect, NSRect clipRect);
 APPKIT_EXTERN void NSDottedFrameRect(NSRect aRect);
@@ -221,7 +223,7 @@ typedef NS_ENUM(NSUInteger, NSAnimationEffect) {
 	NSAnimationEffectPoof = 10
 };
 
-APPKIT_EXTERN void NSShowAnimationEffect(NSAnimationEffect animationEffect, NSPoint centerLocation, NSSize size, id animationDelegate, SEL didEndSelector, void *contextInfo);
+APPKIT_EXTERN void NSShowAnimationEffect(NSAnimationEffect animationEffect, NSPoint centerLocation, NSSize size, __nullable id animationDelegate, __nullable SEL didEndSelector, void * __nullable contextInfo);
 
 /* NSCountWindows, NSWindowList, NSCountWindowsForContext, and NSWindowListForContext are deprecated on Mac OS 10.6 and later.  Use +[NSWindow windowNumbersWithOptions:] instead */
 APPKIT_EXTERN void NSCountWindows(NSInteger *count) NS_DEPRECATED_MAC(10_0, 10_6, "Use +[Window windowNumbersWithOptions:] instead");
@@ -231,4 +233,4 @@ APPKIT_EXTERN void NSWindowListForContext(NSInteger context, NSInteger size, NSI
 /* This method does nothing, and is deprecated */
 APPKIT_EXTERN void NSCopyBits(NSInteger srcGState, NSRect srcRect, NSPoint destPoint) NS_DEPRECATED_MAC(10_0, 10_10);
 
-
+NS_ASSUME_NONNULL_END

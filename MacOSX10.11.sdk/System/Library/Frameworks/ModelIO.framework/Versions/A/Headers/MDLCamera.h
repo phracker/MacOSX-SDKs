@@ -45,6 +45,13 @@ NS_ASSUME_NONNULL_BEGIN
     are considered to be visible. All lights are considered, irrespective of 
     nearVisibilityDistance and farVisibilityDistance, to compute scene luminance.
  
+    @property worldToMetersConversionScale
+ 
+    Some calculations, such as the calculation of stereo view matrices, require
+    calculations to occur in world space. Significant quantities measured in mm
+    therefore use this conversion scale to perform the calculation. The default
+    value is 1.0.
+ 
  3. Scene Luminance through the lens
  
     @property barrelDistorion
@@ -96,9 +103,13 @@ NS_ASSUME_NONNULL_BEGIN
     degrees, and vertical sensor aperture of 24mm. Changing focalLength will 
     update the field of view property.
  
+    @property focusDistance
+ 
+    The distance, in meters, at which the lens is focused. The default is 2.5m.
+ 
     @property fieldOfView
  
-    The field of view is calcualted from the focal length of sensor aperture. 
+    The field of view is calcualted from the focal length and sensor aperture.
     Changing the field of view will update the focalLength property with respect 
     to the sensor aperture. The default is 54 degrees, corresponding to a focal 
     length of 50mm, and a vertical sensor aperture of 24mm.
@@ -108,6 +119,8 @@ NS_ASSUME_NONNULL_BEGIN
     The f-stop is the ratio of the lens' focal length to the diameter of the 
     entrance pupil. The default is 5.6. It controls the amount of light that 
     reaches the sensor, as well as the size of out of focus parts of the image.
+    The diameter of the entrance pupil, is therefore obtained
+    by dividing the fStop by the focalLength.
  
  5. Lens exit aperture
  
@@ -129,7 +142,7 @@ NS_ASSUME_NONNULL_BEGIN
  
     @property maximumCircleOfConfusion
 
-    Although the size of an out of focus bokeh highlight can be computed from the 
+    Although the size of an out of focus bokeh highlight can be computed from
     other camera properties, it is often necessary to limit the size of the 
     circle of confusion for aesthetic reasons. The circle of confusion is 
     specified in mm, and the default is 0.05mm. The units are mm on the sensor 
@@ -150,7 +163,7 @@ NS_ASSUME_NONNULL_BEGIN
  
     @property sensorVerticalAperture
  
-    The default aperture is 24mm
+    The default aperture is 24mm, corresponding to a 35mm stills camera.
     _____________________
     [][][][][][][][][][][              ^
      \     |         |  \      ^       |
@@ -199,13 +212,14 @@ NS_ASSUME_NONNULL_BEGIN
     @property exposure
  
     Finally, exposure should be applied to the compressed value. Red,
-    green, and blue exposure can be specified separately.
+    green, and blue exposure can be specified separately. The default is 1.0.
 
     @property exposureCompression
  
     Gamma curve compression where values below the x value are to be passed through,
     about the y value, values are to be clamped at maximum display brightness,
-    and a function such as a logarithmic ramp is to be applied in between.
+    and a function such as a logarithmic ramp is to be applied in between. The
+    default is (1,0, 1.0).
 
     A displayable value is therefore obtained via
        pow(exposureCompression((sensor value + flash) * exposure), displayGamma)
@@ -224,6 +238,25 @@ MDL_EXPORT
 @property (nonatomic, readonly) matrix_float4x4 projectionMatrix;
 
 /**
+ Move the camera back and orient the camera so that a bounding box is framed 
+ within the current field of view. Uses the Y axis as up.
+ If setNearAndFar is YES, the near and far visibility distances will be set.
+ */
+- (void)frameBoundingBox:(MDLAxisAlignedBoundingBox)boundingBox setNearAndFar:(BOOL)setNearAndFar;
+
+/**
+ Orient the camera so that the camera points at focusPosition. Assumes that the 
+ Y axis is up.
+ */
+- (void)lookAt:(vector_float3)focusPosition;
+
+/**
+ Set the position of the camera and orient it so that it points at focusPosition. 
+ Assumes that the Y axis is up.
+ */
+- (void)lookAt:(vector_float3)focusPosition from:(vector_float3)cameraPosition;
+
+/**
  A convenience function to calculate a ray from the camera to a pixel in a 
  viewport of a given size
  */
@@ -234,6 +267,11 @@ MDL_EXPORT
  */
 @property (nonatomic, assign) float nearVisibilityDistance;
 @property (nonatomic, assign) float farVisibilityDistance;
+
+/**
+ World to meters conversion scale. Required for certain calculations.
+ */
+@property (nonatomic, assign) float worldToMetersConversionScale;
 
 /**
  Radial distortion of the lens, second order term
@@ -262,6 +300,11 @@ MDL_EXPORT
 @property (nonatomic, assign) float focalLength;
 
 /**
+ Focus distance
+ */
+@property (nonatomic, assign) float focusDistance;
+
+/**
  The field of view, in degrees.
  @see focalLength
  */
@@ -283,18 +326,9 @@ MDL_EXPORT
 @property (nonatomic, assign) float maximumCircleOfConfusion;
 
 /**
- Circle of confusion calculated from focallength and aperture, in mm, clamped to 
- the maximumCircleOfConfusion size.
- The size of the circle of confusion can be used as bokeh size, or a measure of
- depth of field blur. Distance is in meters.
- */
-- (float)circleOfConfusionForDistance:(float)distance;
-
-/**
  Create a bokeh kernel corresponding to the apertureBladeCount
  */
 - (MDLTexture *)bokehKernelWithSize:(vector_int2)size;
-
 
 /**
  Shutter open interval, in seconds
@@ -330,7 +364,7 @@ MDL_EXPORT
 
 /**
  exposure curve compression where values below the x value are to be passed through,
- about the y value, values are to be clamped at maximum display brightness, and a
+ above the y value, values are to be clamped at maximum display brightness, and a
  function such as a logarithmic ramp is to be applied in between.
  */
 @property (nonatomic, assign) vector_float2 exposureCompression;
@@ -349,9 +383,10 @@ MDL_EXPORT
 @interface MDLStereoscopicCamera : MDLCamera
 
 /**
- Inter-ocular distance in mm
+ Inter-pupillary distance in mm.
+ Default is 63mm.
  */
-@property (nonatomic, assign) float interOcularDistance;
+@property (nonatomic, assign) float interPupillaryDistance;
 
 /**
  Vergence in a stereoscopic camera can be controlled in two ways. A toed-in 
@@ -378,12 +413,17 @@ MDL_EXPORT
 @property (nonatomic, assign) float overlap;
 
 /**
- Convenience utilities to create view and projection matrices
+ Convenience utilities to create view and projection matrices. The view matrix
+ calculations requires that the world to meters conversion scale be set.
+ 
+ @see worldToMetersConversionScale
  */
 @property (nonatomic, readonly) matrix_float4x4 leftViewMatrix;
 @property (nonatomic, readonly) matrix_float4x4 rightViewMatrix;
 @property (nonatomic, readonly) matrix_float4x4 leftProjectionMatrix;
 @property (nonatomic, readonly) matrix_float4x4 rightProjectionMatrix;
+
+
 
 @end
 

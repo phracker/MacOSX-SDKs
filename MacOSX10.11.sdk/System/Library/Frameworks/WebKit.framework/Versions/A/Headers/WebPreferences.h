@@ -263,4 +263,9 @@ extern NSString *WebPreferencesChangedNotification;
 */
 @property (nonatomic) BOOL suppressesIncrementalRendering;
 
+/*!
+    @property allowsAirPlayForMediaPlayback
+ */
+@property (nonatomic) BOOL allowsAirPlayForMediaPlayback;
+
 @end

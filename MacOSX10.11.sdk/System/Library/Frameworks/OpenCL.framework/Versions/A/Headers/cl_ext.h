@@ -275,7 +275,7 @@ cl_kernel clCreateKernelFromDAGAPPLE(cl_dag d, cl_uint n,
 #define CL_QUEUE_PRIORITY_APPLE                           0x10000013
 #define CL_QUEUE_NUM_COMPUTE_UNITS_APPLE                  0x10000014
 #define CL_QUEUE_PRIORITY_BACKGROUND_APPLE                0x10000015
-#define CL_QUEUE_PRIORITY_DEFAULT_APPLE                   0x10000017
+#define CL_QUEUE_PRIORITY_DEFAULT_APPLE                   0x10000016
 
 /* Application can pass context name in the property list when calling clCreateContext.
  * This will let us do application specific "stuff" in framework. As an example

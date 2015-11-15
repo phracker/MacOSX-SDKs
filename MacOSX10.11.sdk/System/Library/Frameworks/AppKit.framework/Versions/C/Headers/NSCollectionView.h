@@ -193,7 +193,7 @@ To get the new capabilities and behaviors, and use the new NSCollectionView APIs
 */
 @property (nullable, weak) id<NSCollectionViewDataSource> dataSource NS_AVAILABLE_MAC(10_11);
 
-/* The array of model objects that will be shown as "items" in this CollectionView.  The objects may be of any type(s).  If you prefer not to give the CollectionView a "dataSource", you can set its "content" property explicitly, or bind the CollectionView's NSContentBinding to an NSTreeController's or NSArrayController's arrangedObjects property, to provide the CollectionView with its model objects.  A CollectionView whose content is provided in this way cannot have more than one section.
+/* The array of model objects that will be shown as "items" in this CollectionView.  The objects may be of any type(s).  If you prefer not to give the CollectionView a "dataSource", you can set its "content" property explicitly, or bind the CollectionView's NSContentBinding to an NSArrayController's arrangedObjects property, to provide the CollectionView with its model objects.  A CollectionView whose content is provided in this way cannot have more than one section.
 
 Each corresponding "item" instantiated by the CollectionView will have its representedObject property wired to the corresponding model object from this "content" array.  Attempts to set "content" to nil are ignored on OS X 10.10 and earlier.  On OS X 10.11 and later, setting "content" to nil raises an exception.  (Set "content" to an empty NSArray instead, if you want to empty the CollectionView.)
 */
@@ -253,9 +253,9 @@ Use this method to retrieve the layout information for a particular supplementar
 
 #pragma mark *** Section and Item Counts ***
 
-/* Returns the number of sections displayed by the collection view.
+/* The number of sections displayed by the collection view.
 */
-- (NSInteger)numberOfSections NS_AVAILABLE_MAC(10_11);
+@property(readonly) NSInteger numberOfSections NS_AVAILABLE_MAC(10_11);
 
 /* Returns the number of items in the specified "section".
 */
@@ -460,7 +460,7 @@ Deletes are processed before inserts in batch operations. This means the indexes
 
 Invocations of this method can be nested.
 */
-- (void)performBatchUpdates:(void (^)(void))updates completionHandler:(void (^)(BOOL finished))completionHandler NS_AVAILABLE_MAC(10_11);
+- (void)performBatchUpdates:(void (^__nullable)(void))updates completionHandler:(void (^__nullable)(BOOL finished))completionHandler NS_AVAILABLE_MAC(10_11);
 
 
 #pragma mark *** Scrolling ***
@@ -624,8 +624,7 @@ Multi-image drag and drop: If draggingInfo.animatesToDestination is set to YES, 
 - (NSSet<NSIndexPath *> *)collectionView:(NSCollectionView *)collectionView shouldSelectItemsAtIndexPaths:(NSSet<NSIndexPath *> *)indexPaths NS_AVAILABLE_MAC(10_11);
 
 /* Sent during interactive selection, to inform the delegate that the CollectionView would like to de-select the items at the specified "indexPaths".  In addition to optionally reacting to the proposed change, you can approve it (by returning "indexPaths" as-is), or selectively refuse some or all of the proposed selection changes (by returning a modified autoreleased mutableCopy of indexPaths, or an empty indexPaths instance). */
-- (NSSet<NSIndexPath *> *)collectionView:(NSCollectionView *)collectionView
-     shouldDeselectItemsAtIndexPaths:(NSSet<NSIndexPath *> *)indexPaths NS_AVAILABLE_MAC(10_11);
+- (NSSet<NSIndexPath *> *)collectionView:(NSCollectionView *)collectionView shouldDeselectItemsAtIndexPaths:(NSSet<NSIndexPath *> *)indexPaths NS_AVAILABLE_MAC(10_11);
 
 /* Sent at the end of interactive selection, to inform the delegate that the CollectionView has selected the items at the specified "indexPaths".
 */

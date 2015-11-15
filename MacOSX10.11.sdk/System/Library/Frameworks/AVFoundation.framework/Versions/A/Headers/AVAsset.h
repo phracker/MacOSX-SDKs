@@ -11,11 +11,7 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVAsynchronousKeyValueLoading.h>
 
-#if TARGET_OS_IPHONE
 #import <CoreGraphics/CGAffineTransform.h>
-#else // ! TARGET_OS_IPHONE
-#import <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGAffineTransform.h>
-#endif // ! TARGET_OS_IPHONE
 
 #import <CoreMedia/CMTime.h>
 
@@ -156,7 +152,9 @@ typedef NS_OPTIONS(NSUInteger, AVAssetReferenceRestrictions) {
 
 @interface AVAsset (AVAssetTrackInspection)
 
-/* provides the array of AVAssetTracks contained by the asset
+/*!
+  @property		tracks
+  @abstract		Provides the array of AVAssetTracks contained by the asset
 */
 @property (nonatomic, readonly) NSArray<AVAssetTrack *> *tracks;
 
@@ -603,6 +601,7 @@ AVF_EXPORT NSString *const AVAssetMediaSelectionGroupsDidChangeNotification NS_A
 NS_CLASS_AVAILABLE_MAC(10_11)
 @interface AVFragmentedAsset : AVURLAsset <AVFragmentMinding>
 {
+@private
 	AVFragmentedAssetInternal	*_fragmentedAsset;
 }
 
@@ -623,6 +622,40 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 	@discussion     The value of this property is an array of tracks the asset contains; the tracks are of type AVFragmentedAssetTrack.
 */
 @property (nonatomic, readonly) NSArray<AVFragmentedAssetTrack *> *tracks;
+
+@end
+
+@interface AVFragmentedAsset (AVFragmentedAssetTrackInspection)
+
+/*!
+  @method		trackWithTrackID:
+  @abstract		Provides an instance of AVFragmentedAssetTrack that represents the track of the specified trackID.
+  @param		trackID
+				The trackID of the requested AVFragmentedAssetTrack.
+  @result		An instance of AVFragmentedAssetTrack; may be nil if no track of the specified trackID is available.
+  @discussion	Becomes callable without blocking when the key @"tracks" has been loaded
+*/
+- (nullable AVFragmentedAssetTrack *)trackWithTrackID:(CMPersistentTrackID)trackID;
+
+/*!
+  @method		tracksWithMediaType:
+  @abstract		Provides an array of AVFragmentedAssetTracks of the asset that present media of the specified media type.
+  @param		mediaType
+				The media type according to which the receiver filters its AVFragmentedAssetTracks. (Media types are defined in AVMediaFormat.h)
+  @result		An NSArray of AVFragmentedAssetTracks; may be empty if no tracks of the specified media type are available.
+  @discussion	Becomes callable without blocking when the key @"tracks" has been loaded
+*/
+- (NSArray<AVFragmentedAssetTrack *> *)tracksWithMediaType:(NSString *)mediaType;
+
+/*!
+  @method		tracksWithMediaCharacteristic:
+  @abstract		Provides an array of AVFragmentedAssetTracks of the asset that present media with the specified characteristic.
+  @param		mediaCharacteristic
+				The media characteristic according to which the receiver filters its AVFragmentedAssetTracks. (Media characteristics are defined in AVMediaFormat.h)
+  @result		An NSArray of AVFragmentedAssetTracks; may be empty if no tracks with the specified characteristic are available.
+  @discussion	Becomes callable without blocking when the key @"tracks" has been loaded
+*/
+- (NSArray<AVFragmentedAssetTrack *> *)tracksWithMediaCharacteristic:(NSString *)mediaCharacteristic;
 
 @end
 

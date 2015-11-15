@@ -216,12 +216,10 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 					The collection of samples into chunks is intended to allow optimized access to the sample data during operations such as movie playback. 
  
 					You can change the default chunk size in a movie file by adjusting the chunk properties of a movie track prior to writing the track's sample data 
-					to its media storage container. A larger chunk size can result in fewer reads from the storage container, at the potential expense of 
-					a larger memory footprint. 
+					to a media storage container. A larger chunk size can result in fewer reads from the storage container, at the potential expense of a larger memory footprint.
  
-					The preferredMediaChunkSize property sets the size of the chunks to a maximum number of bytes, and the preferredMediaChunkDuration property sets
-					the size of the chunks to a maximum duration. These two properties are mutually exclusive; if you set both properties, the most recent setting 
-					is honored during subsequent writing of sample data to the track.
+					The preferredMediaChunkSize property restricts the size of the chunks to a maximum number of bytes, and the preferredMediaChunkDuration property restricts
+					the size of the chunks to a maximum duration. Note that these settings are not mutually exclusive: a chunk ends when either the preferred chunk size or the preferred chunk duration is reached.
 */
 
 /*!
@@ -229,10 +227,7 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 	@abstract       For file types that support media chunk sizes, the maximum size (in bytes) to be used for each chunk of sample data written to the file.
 	@discussion		The total size of the samples in a chunk will be no larger than this preferred chunk size, or the size of a single sample if the sample is larger than this preferred chunk size.
  
-					The default value is 0, which means that the receiver will choose an appropriate default chunk size. It is an error to set a negative chunk size.
- 
-					This property and preferredMediaChunkDuration, which also specifies the size of a chunk, are mutually exclusive. 
-					Thus, if both properties are set, the last setting is honored.
+					The default media chunk size is 1024 * 1024 bytes. It is an error to set a negative chunk size.
 */
 @property (nonatomic) NSInteger preferredMediaChunkSize;
 
@@ -242,10 +237,7 @@ NS_CLASS_AVAILABLE_MAC(10_11)
  
 	@discussion		The total duration of the samples in a chunk will be no greater than this preferred chunk duration, or the duration of a single sample if the sample's duration is greater than this preferred chunk duration.
  
-					The default value is kCMTimeInvalid, which means that the receiver will choose an appropriate default chunk duration. It is an error to set a chunk duration that is negative or non-numeric.
- 
-					This property and preferredMediaChunkSize, which also specifies the size of a chunk, are mutually exclusive. 
-					Thus, if both properties are set, the last setting is honored.
+					The default media chunk duration is 1.0 second. It is an error to set a chunk duration that is negative or non-numeric.
  */
 @property (nonatomic) CMTime preferredMediaChunkDuration;
 
@@ -253,8 +245,7 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 	@property		preferredMediaChunkAlignment
 	@abstract		For file types that support media chunk alignment, the boundary for media chunk alignment (in bytes).
  
-	@discussion		The default value is 0, which means that the receiver will choose an appropriate default value. 
-					A value of 1 implies that no padding should be used to achieve a particular chunk alignment. It is an error to set a negative value for chunk alignment.
+	@discussion		The default value is 0, which means that no padding should be used to achieve chunk alignment. It is an error to set a negative value for chunk alignment.
 */
 @property (nonatomic) NSInteger preferredMediaChunkAlignment;
 

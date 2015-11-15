@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class AVBMACAddress;
 
 /*!
@@ -118,7 +120,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	commandSpecificData
 	@abstract	The command_specific_data field of the AECP AEM message.
  */
-@property (copy) NSData *commandSpecificData;
+@property (copy, nullable) NSData *commandSpecificData;
 
 /*!
 	@method		commandMessage
@@ -138,7 +140,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 
 
 
-
+@class AVB17221AECPAddressAccessTLV;
 
 
 /*!
@@ -160,7 +162,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	tlvs
 	@abstract	An array of AVB17221AECPAddressAccessTLV objects representing the tlv_data field of the AECP Address Access message.
  */
-@property (copy) NSArray *tlvs;
+@property (copy, nullable) NSArray <AVB17221AECPAddressAccessTLV *>*tlvs;
 
 /*!
 	@method		commandMessage
@@ -213,7 +215,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	memoryData
 	@abstract	The memory_data field of the Address Access TLV.
  */
-@property (copy) NSData *memoryData;
+@property (copy, nullable) NSData *memoryData;
 
 @end
 
@@ -241,7 +243,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	commandResponse
 	@abstract	The avc_command_response field of the AECP AEM message.
  */
-@property (copy) NSData *commandResponse;
+@property (copy, nullable) NSData *commandResponse;
 
 @end
 
@@ -275,7 +277,9 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	protocolSpecificData
 	@abstract	The protocol_specific_data field of the AECP Vendor Unique message.
  */
-@property (copy) NSData *protocolSpecificData;
+@property (copy, nullable) NSData *protocolSpecificData;
 
 @end
+
+NS_ASSUME_NONNULL_END
 

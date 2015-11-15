@@ -4,7 +4,7 @@
  *
  *  See vImage/vImage.h for more on how to view the headerdoc documentation for functions declared herein.
  *
- *  @copyright Copyright (c) 2003-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2003-2015 by Apple Inc. All rights reserved.
  *
  *  @discussion Exports interfaces for collecting histograms of images, and causing images to conform to histograms.
  *

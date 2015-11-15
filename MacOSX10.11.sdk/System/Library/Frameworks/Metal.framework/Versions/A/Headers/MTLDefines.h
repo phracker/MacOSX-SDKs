@@ -37,3 +37,4 @@
 #endif
 
 
+#define MTL_DEPRECATED __attribute__((deprecated))

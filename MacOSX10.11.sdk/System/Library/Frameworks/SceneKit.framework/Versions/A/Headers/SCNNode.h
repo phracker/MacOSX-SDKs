@@ -369,7 +369,7 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
              This gives a close approximation to the version of the node that is currently displayed.
              The effect of attempting to modify the returned node in any way is undefined. The returned node has no parent and no child nodes.
  */
-- (SCNNode *)presentationNode;
+@property(nonatomic, readonly) SCNNode *presentationNode;
 
 
 #pragma mark - Pause

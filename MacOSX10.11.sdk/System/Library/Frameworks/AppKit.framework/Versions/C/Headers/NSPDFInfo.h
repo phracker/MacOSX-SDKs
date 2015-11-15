@@ -11,6 +11,8 @@
 #import <Foundation/NSGeometry.h>
 #import <AppKit/NSPrintInfo.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSURL;
 
 NS_CLASS_AVAILABLE_MAC(10_9)
@@ -23,7 +25,7 @@ NS_CLASS_AVAILABLE_MAC(10_9)
     BOOL _fileExtensionHidden;
 };
 
-@property (copy) NSURL *URL;
+@property (copy, nullable) NSURL *URL;
 @property (getter=isFileExtensionHidden) BOOL fileExtensionHidden;
 @property (copy) NSArray<NSString *> *tagNames;
 @property NSPaperOrientation orientation;
@@ -31,3 +33,5 @@ NS_CLASS_AVAILABLE_MAC(10_9)
 @property (readonly) NSMutableDictionary<NSString *, id> *attributes;
 
 @end
+
+NS_ASSUME_NONNULL_END

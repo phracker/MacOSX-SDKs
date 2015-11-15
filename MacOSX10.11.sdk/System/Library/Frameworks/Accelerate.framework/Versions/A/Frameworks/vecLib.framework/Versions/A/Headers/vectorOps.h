@@ -3,7 +3,7 @@
  
      Contains:   vector and matrix functions for AltiVec
  
-     Version:    vecLib-556.0
+     Version:    vecLib-563.3
  
      Copyright:  Copyright (c) 1999-2015 by Apple Inc. All rights reserved.
  

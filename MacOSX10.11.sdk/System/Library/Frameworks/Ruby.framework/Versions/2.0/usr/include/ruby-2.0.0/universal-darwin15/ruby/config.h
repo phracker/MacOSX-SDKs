@@ -279,10 +279,10 @@
 #define LIBDIR_BASENAME "lib"
 #define HAVE_PTHREAD_H 1
 #define RUBY_EXEC_PREFIX "/System/Library/Frameworks/Ruby.framework/Versions/2.0/usr"
-#if defined __x86_64__
-#define RUBY_PLATFORM_CPU "x86_64"
-#endif /* defined __x86_64__ */
 #if defined __i386__
 #define RUBY_PLATFORM_CPU "i386"
 #endif /* defined __i386__ */
+#if defined __x86_64__
+#define RUBY_PLATFORM_CPU "x86_64"
+#endif /* defined __x86_64__ */
 #endif /* INCLUDE_RUBY_CONFIG_H */

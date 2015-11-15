@@ -39,9 +39,11 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-	
-	typedef uint16 SecKeychainPromptSelector;
-	enum
+
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
+	typedef CF_OPTIONS(uint16, SecKeychainPromptSelector)
 	{
 		kSecKeychainPromptRequirePassphase = 0x0001, /* require re-entering of passphrase */
 		/* the following bits are ignored by 10.4 and earlier */
@@ -73,9 +75,10 @@ extern "C" {
 	 use SecACLCreateWithSimpleContents instead.
 	 */
 	OSStatus SecACLCreateFromSimpleContents(SecAccessRef access,
-											CFArrayRef applicationList,
-											CFStringRef description, const CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR *promptSelector,
-											SecACLRef *newAcl)
+											CFArrayRef __nullable applicationList,
+											CFStringRef description,
+                                            const CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR *promptSelector,
+											SecACLRef * __nonnull CF_RETURNS_RETAINED newAcl)
 	 DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 	
 	/*!
@@ -89,10 +92,10 @@ extern "C" {
 	 @result A result code.  See "Security Error Codes" (SecBase.h).
 	 */
 	OSStatus SecACLCreateWithSimpleContents(SecAccessRef access,
-											CFArrayRef applicationList,
+											CFArrayRef __nullable applicationList,
 											CFStringRef description, 
 											SecKeychainPromptSelector promptSelector,
-											SecACLRef *newAcl)
+											SecACLRef * __nonnull CF_RETURNS_RETAINED newAcl)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 	
 	/*!
@@ -116,8 +119,9 @@ extern "C" {
 	 use SecACLCopyContents instead.
 	 */
 	OSStatus SecACLCopySimpleContents(SecACLRef acl,
-									  CFArrayRef *applicationList,
-									  CFStringRef *description, CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR *promptSelector)
+									  CFArrayRef * __nonnull CF_RETURNS_RETAINED applicationList,
+									  CFStringRef * __nonnull CF_RETURNS_RETAINED description,
+                                      CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR *promptSelector)
 	 DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 	
 	/*!
@@ -130,8 +134,8 @@ extern "C" {
 	 @result A result code.  See "Security Error Codes" (SecBase.h).
 	 */	
 	OSStatus SecACLCopyContents(SecACLRef acl,
-								CFArrayRef *applicationList,
-								CFStringRef *description, 
+								CFArrayRef * __nonnull CF_RETURNS_RETAINED applicationList,
+								CFStringRef * __nonnull CF_RETURNS_RETAINED description,
 								SecKeychainPromptSelector *promptSelector)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 	/*!
@@ -146,8 +150,9 @@ extern "C" {
 	 use SecACLSetContents instead.
 	 */
 	OSStatus SecACLSetSimpleContents(SecACLRef acl,
-									 CFArrayRef applicationList,
-									 CFStringRef description, const CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR *promptSelector)
+									 CFArrayRef __nullable applicationList,
+									 CFStringRef description,
+                                     const CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR *promptSelector)
 	 DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 	
 	/*!
@@ -160,7 +165,7 @@ extern "C" {
 	 @result A result code.  See "Security Error Codes" (SecBase.h).
 	 */
 	OSStatus SecACLSetContents(SecACLRef acl,
-							   CFArrayRef applicationList,
+							   CFArrayRef __nullable applicationList,
 							   CFStringRef description, 
 							   SecKeychainPromptSelector promptSelector)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
@@ -212,7 +217,10 @@ extern "C" {
 	 */
 	OSStatus SecACLUpdateAuthorizations(SecACLRef acl, CFArrayRef authorizations)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
-	
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
+
 #if defined(__cplusplus)
 }
 #endif

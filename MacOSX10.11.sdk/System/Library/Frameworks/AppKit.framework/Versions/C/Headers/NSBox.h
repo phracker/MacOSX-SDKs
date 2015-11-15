@@ -76,7 +76,7 @@ typedef NS_ENUM(NSUInteger, NSBoxType) {
  */
 @property CGFloat borderWidth NS_AVAILABLE_MAC(10_5);
 
-/* For boxType == NSBoxCustom: Get and set the corner raduis of the box. The default value is 0.0 (no corner raduis).
+/* For boxType == NSBoxCustom: Get and set the corner radius of the box. The default value is 0.0 (no corner radius).
  */
 @property CGFloat cornerRadius NS_AVAILABLE_MAC(10_5);
 

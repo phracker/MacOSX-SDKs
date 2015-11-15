@@ -11,13 +11,15 @@
 extern "C" {
 #endif
 
+OPENGL_ASSUME_NONNULL_BEGIN
 
 /*
 ** Current context functions
 */
-extern CGLError CGLSetCurrentContext(CGLContextObj ctx);
-extern CGLContextObj CGLGetCurrentContext(void);
+extern CGLError CGLSetCurrentContext(CGLContextObj OPENGL_NULLABLE ctx);
+extern CGLContextObj OPENGL_NULLABLE CGLGetCurrentContext(void);
 
+OPENGL_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

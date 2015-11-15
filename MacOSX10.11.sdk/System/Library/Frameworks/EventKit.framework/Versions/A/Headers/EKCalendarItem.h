@@ -78,7 +78,7 @@ NS_CLASS_AVAILABLE(10_8, 5_0)
 @property(nonatomic, readonly) BOOL hasNotes  NS_AVAILABLE(10_8, 5_0);
 
 // An array of EKParticipant objects
-@property(nonatomic, readonly, nullable) NSArray/*<__kindof EKParticipant *>*/ *attendees; // TODO: blocked by <rdar://problem/20321738> __kindof not working properly in enumerateObjectsUsingBlock
+@property(nonatomic, readonly, nullable) NSArray<__kindof EKParticipant *> *attendees;
 
 
 // An array of EKAlarm objects

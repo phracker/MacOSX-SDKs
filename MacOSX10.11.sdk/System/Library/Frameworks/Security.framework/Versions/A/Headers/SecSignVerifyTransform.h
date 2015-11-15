@@ -32,10 +32,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
-	extern CFStringRef kSecKeyAttributeName, kSecSignatureAttributeName, kSecInputIsAttributeName;
+
+    CF_ASSUME_NONNULL_BEGIN
+    CF_IMPLICIT_BRIDGING_ENABLED
+
+	extern const CFStringRef kSecKeyAttributeName, kSecSignatureAttributeName, kSecInputIsAttributeName;
 	// WARNING: kSecInputIsRaw is frequently cryptographically unsafe (for example if you don't blind a DSA or ECDSA signature you give away the key very quickly), please only use it if you really know the math.
-	extern CFStringRef kSecInputIsPlainText, kSecInputIsDigest, kSecInputIsRaw;
+	extern const CFStringRef kSecInputIsPlainText, kSecInputIsDigest, kSecInputIsRaw;
 	// Supported optional attributes: kSecDigestTypeAttribute (kSecDigestMD2, kSecDigestMD4, kSecDigestMD5, kSecDigestSHA1, kSecDigestSHA2), kSecDigestLengthAttribute
 	
 	/*!
@@ -54,7 +57,8 @@ extern "C" {
 	 and the DigestType and DigestLength default to something appropriate for
 	 the type of key you have supplied.
 	 */
-	
+
+	__nullable
 	SecTransformRef SecSignTransformCreate(SecKeyRef key,
 											 CFErrorRef* error
 											 )
@@ -79,13 +83,16 @@ extern "C" {
 	 and the DigestType and DigestLength default to something appropriate for
 	 the type of key you have supplied.
 	 */
-	
+
+    __nullable
 	SecTransformRef SecVerifyTransformCreate(SecKeyRef key,
-											 CFDataRef signature,
+											 CFDataRef __nullable signature,
 											 CFErrorRef* error
 											 )
 	__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
-	
+
+    CF_IMPLICIT_BRIDGING_DISABLED
+    CF_ASSUME_NONNULL_END
 	
 #ifdef __cplusplus
 };

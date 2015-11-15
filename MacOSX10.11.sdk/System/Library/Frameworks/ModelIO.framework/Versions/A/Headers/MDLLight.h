@@ -34,17 +34,36 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 MDL_EXPORT
 @interface MDLLight : MDLObject
 
-/** A utility function that returns the radiance of the light for the given
-    direction vector.
-
-    @discussion vector is assumed to be in the light's local space, pointing
-                to the light's origin.
+/** A utility function that returns the irradiance from the light at a given point.
+    @discussion point is world space
   */
-- (CGColorRef)evaluatedColorFromVector:(vector_float3)vector;
+- (CGColorRef)irradianceAtPoint:(vector_float3)point;
+- (CGColorRef)irradianceAtPoint:(vector_float3)point colorSpace:(CGColorSpaceRef)colorSpace;
 
-@property (nonatomic, readonly) MDLLightType lightType;
+@property (nonatomic, readwrite) MDLLightType lightType;
 
 @end
+
+/*!
+ @class MDLPhysicallyPlausibleLight
+ @abstract A light with characteristics representing plausible real world lights
+ 
+ @property color The color of the light.
+ @property lumens The brightness of the light.
+ @property innerConeAngle Within this cone, light is at maximum brightness. Units are degrees.
+ @property outerConeAngle Between the inner cone angle and the outer, light 
+           quadratically attenuates to zero.
+ @property attenuationStartDistance. Within the attenuation start distance, the
+           light is maximally bright.
+ @property attenuationEndDistance. Beyond this distance, there is no light.
+
+ @discussion A good formula to calculate falloff is
+ 
+   falloff = clamp((1 - (distance/attenuationStartDistance)^4) ^2), 0, 1) / (distance^2 + 1)
+ 
+   Note that adding one to distance in the denominator prevents numerical issues 
+   very close to the light's origin.
+ */
 
 NS_CLASS_AVAILABLE(10_11, 9_0)
 MDL_EXPORT
@@ -53,11 +72,10 @@ MDL_EXPORT
 /**
  Light color specified by color temperature, in degrees Kelvin
  @discussion default color is 6500K, cool daylight.
- Setting the color property will override the cgColor property
  */
 - (void)setColorByTemperature:(float)temperature;
 
-@property (nonatomic) CGColorRef color;
+@property (nullable, nonatomic) CGColorRef color;
 
 // default light intensity is 1000 lumens
 @property (nonatomic, readwrite) float lumens;
@@ -66,15 +84,9 @@ MDL_EXPORT
 // 180 means down the light axis to up the light axis is spanned (lightType will be MDLLightPoint)
 // default is 22.5 degrees
 @property (nonatomic, readwrite) float innerConeAngle;
-
 @property (nonatomic, readwrite) float outerConeAngle;
-
 @property (nonatomic, readwrite) float attenuationStartDistance;
-
 @property (nonatomic, readwrite) float attenuationEndDistance;
-
-@property (nonatomic, readwrite) float attenuationFalloffExponent;
-
 
 @end
 
@@ -83,39 +95,39 @@ MDL_EXPORT
 @interface MDLAreaLight : MDLPhysicallyPlausibleLight
 
 @property (nonatomic, readwrite) float areaRadius;
-
 @property (nonatomic, readwrite) vector_float2 superEllipticPower;
-
 @property (nonatomic, readwrite) float aspect;
 
 @end
 
+/*!
+ @class MDLPhotometricLight
+ @abstract A light created from measurements at various angles.
+ 
+ @property lightCubeMap A cube map that can be sampled at various directions to
+           learn the intensity of the light in that direction.
+ @property sphericalHarmonicsLevel The value generateSphericalHarmonicsFromLight: 
+           used to calculate the spherical harmonics coefficients
+ @property sphericalHarmonicsCoefficients The spherical harmonic coefficiencts
+           calculated by generateSphericalHarmonicsFromLight:
+*/
 
 NS_CLASS_AVAILABLE(10_11, 9_0)
 MDL_EXPORT
-@interface MDLPhotometricLight : MDLLight
+@interface MDLPhotometricLight : MDLPhysicallyPlausibleLight
 
 // Init with an IES profile file, generate a light web of specified width and height
 - (nullable instancetype)initWithIESProfile:(NSURL*)URL;
 
-// angle spanned by width for which data is available.
-// 90 means one quadrant is given, with 0 being up, 4 way symmetry
-// 180 means two quadrants are given, 2 way symmetry
-// 360 means the entire span is given
-@property (nonatomic, readonly) float horizontalAngle;
+-(void)generateSphericalHarmonicsFromLight:(NSUInteger)sphericalHarmonicsLevel;
 
-// a coneSpans x horizontalSpans array of floating point values indicating light intensity
-// in candelas for each direction spanned by the angles
-// The cone angle spanned is in the coneAngle property
-// If the cone angle is 90, the lightType will be MDLLightSpot
-// If the cone angle is 360, the lightType will be MDLLightPoint
-@property (nonatomic, nullable, retain, readonly) NSData *lightWeb;
+-(void)generateCubemapFromLight:(NSUInteger)textureSize;
 
-@property (nonatomic, readonly) NSUInteger coneSpans;
+@property (nonatomic, retain, nullable, readonly) MDLTexture *lightCubeMap;
 
-@property (nonatomic, readonly) NSUInteger horizontalSpans;
+@property (nonatomic, readonly) NSUInteger sphericalHarmonicsLevel;
 
-@property (nonatomic, readonly) float IESConeAngle;
+@property (nonatomic, copy, nullable, readonly) NSData *sphericalHarmonicsCoefficients;
 
 @end
 

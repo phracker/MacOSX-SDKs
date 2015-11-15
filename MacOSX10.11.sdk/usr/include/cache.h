@@ -256,7 +256,7 @@ CACHE_PUBLIC_API int cache_destroy(cache_t *cache);
  */
 
 /*!
- * @function cache_key_hash_cb_t
+ * @typedef cache_key_hash_cb_t
  *
  * @abstract 
  * Calculates a hash value using key.
@@ -274,7 +274,7 @@ CACHE_PUBLIC_API int cache_destroy(cache_t *cache);
 typedef uintptr_t (*cache_key_hash_cb_t)(void *key, void *user_data);
 
 /*! 
- * @function cache_key_is_equal_cb_t
+ * @typedef cache_key_is_equal_cb_t
  *
  * @abstract 
  * Determines if two keys are equal.
@@ -298,7 +298,7 @@ typedef uintptr_t (*cache_key_hash_cb_t)(void *key, void *user_data);
 typedef bool (*cache_key_is_equal_cb_t)(void *key1, void *key2, void *user_data);
 
 /*! 
- * @function cache_key_retain_cb_t
+ * @typedef cache_key_retain_cb_t
  *
  * @abstract 
  * Retains a key.
@@ -322,7 +322,7 @@ typedef bool (*cache_key_is_equal_cb_t)(void *key1, void *key2, void *user_data)
 typedef void (*cache_key_retain_cb_t)(void *key_in, void **key_out, void *user_data);
 
 /*! 
- * @function cache_value_retain_cb_t
+ * @typedef cache_value_retain_cb_t
  *
  * @abstract 
  * Retains a value.
@@ -341,7 +341,7 @@ typedef void (*cache_key_retain_cb_t)(void *key_in, void **key_out, void *user_d
 typedef void (*cache_value_retain_cb_t)(void *value_in, void *user_data);
 
 /*! 
- * @function cache_release_cb_t
+ * @typedef cache_release_cb_t
  * 
  * @abstract 
  * Releases or deallocates a cache value.
@@ -356,17 +356,18 @@ typedef void (*cache_value_retain_cb_t)(void *value_in, void *user_data);
  * Called when a key or value is removed from the cache, ie. when the
  * cache no longer references it.  In the common case the key or value
  * should be deallocated, or released if reference counted.
- * If the callback is NULL then the cache calls free() on key_or_value. 
+ * If the callback is NULL then it is not called.
  */
 typedef void (*cache_release_cb_t)(void *key_or_value, void *user_data);
 
 /*!
- * @function cache_value_make_nonpurgeable_cb_t
+ * @typedef cache_value_make_nonpurgeable_cb_t
  *
  * @abstract
  * Makes a cache value nonpurgeable and tests to see if value is still valid.
  *
  * @param value
+ * Cache value to make nonpurgeable.
  *
  * @param user_data User-provided value passed during cache creation.
  *
@@ -379,7 +380,7 @@ typedef void (*cache_release_cb_t)(void *key_or_value, void *user_data);
 typedef bool (*cache_value_make_nonpurgeable_cb_t)(void *value, void *user_data);
 
 /*! 
- * @function cache_value_make_purgeable_cb_t
+ * @typedef cache_value_make_purgeable_cb_t
  *
  * @abstract
  * Makes a cache value purgeable.  

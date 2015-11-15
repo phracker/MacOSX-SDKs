@@ -132,7 +132,11 @@ AV_INIT_UNAVAILABLE
 
 @interface AVAssetTrack (AVAssetTrackPropertiesForFrameBasedCharacteristic)
 
-/* indicates the frame rate of the track, in units of frames per second */
+/*!
+	@property		nominalFrameRate
+	@abstract		For tracks that carry a full frame per media sample, indicates the frame rate of the track in units of frames per second.
+	@discussion		For field-based video tracks that carry one field per media sample, the value of this property is the field rate, not the frame rate.
+*/
 @property (nonatomic, readonly) float nominalFrameRate;
 
 /* indicates the minimum duration of the track's frames; the value will be kCMTimeInvalid if the minimum frame duration is not known or cannot be calculated */
@@ -355,6 +359,7 @@ AVF_EXPORT NSString *const AVAssetTrackTrackAssociationsDidChangeNotification NS
 NS_CLASS_AVAILABLE_MAC(10_11)
 @interface AVFragmentedAssetTrack : AVAssetTrack
 {
+@private
 	AVFragmentedAssetTrackInternal	*_fragmentedAssetTrack;
 }
 

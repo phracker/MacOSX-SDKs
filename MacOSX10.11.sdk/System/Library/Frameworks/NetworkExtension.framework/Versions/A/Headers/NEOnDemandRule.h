@@ -163,7 +163,7 @@ typedef NS_ENUM(NSInteger, NEEvaluateConnectionRuleAction) {
 	NEEvaluateConnectionRuleActionConnectIfNeeded = 1,
 	/*! @const NEEvaluateConnectionRuleActionNeverConnect Do not start the VPN connection */
 	NEEvaluateConnectionRuleActionNeverConnect = 2,
-};
+} NS_ENUM_AVAILABLE(10_10, 8_0);
 
 /*!
  * @interface NEEvaluateConnectionRule

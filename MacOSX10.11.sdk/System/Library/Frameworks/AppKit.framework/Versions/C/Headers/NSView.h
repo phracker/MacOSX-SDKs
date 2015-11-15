@@ -167,7 +167,6 @@ typedef NSInteger NSToolTipTag;
 - (void)viewDidHide NS_AVAILABLE_MAC(10_5);
 - (void)viewDidUnhide NS_AVAILABLE_MAC(10_5);
 
-- (void)setSubviews:(NSArray<__kindof NSView *> *)newSubviews NS_AVAILABLE_MAC(10_5);
 - (void)addSubview:(NSView *)aView;
 - (void)addSubview:(NSView *)aView positioned:(NSWindowOrderingMode)place relativeTo:(nullable NSView *)otherView;
 - (void)sortSubviewsUsingFunction:(NSComparisonResult (*)(__kindof NSView *, __kindof NSView *,  void * __nullable))compare context:(nullable void *)context;

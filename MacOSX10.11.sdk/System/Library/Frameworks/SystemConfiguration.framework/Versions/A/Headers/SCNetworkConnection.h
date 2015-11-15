@@ -78,7 +78,7 @@ typedef const struct CF_BRIDGED_TYPE(id) __SCNetworkConnection * SCNetworkConnec
  */
 typedef struct {
 	CFIndex         version;
-	void *          info;
+	void *          __nullable info;
 	const void      * __nonnull (* __nullable retain)(const void *info);
 	void            (* __nullable release)(const void *info);
 	CFStringRef     __nonnull (* __nullable copyDescription)(const void *info);
@@ -183,9 +183,9 @@ typedef CF_ENUM(int32_t, SCNetworkConnectionPPPStatus) {
 	@param info Application-specific information.
  */
 typedef void (*SCNetworkConnectionCallBack)	(
-						SCNetworkConnectionRef          connection,
-						SCNetworkConnectionStatus       status,
-						void                            *info
+						SCNetworkConnectionRef				connection,
+						SCNetworkConnectionStatus			status,
+						void			    *	__nullable	info
 						);
 
 

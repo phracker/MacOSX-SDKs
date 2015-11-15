@@ -46,7 +46,7 @@ NS_CLASS_AVAILABLE(10_6, NA)
 
 /* Returns an array of UTI strings of the data types supported by the receiver.
 */
-@property (null_unspecified, readonly, copy) NSArray<NSString *> *types;
+@property (readonly, copy) NSArray<NSString *> *types;
 
 /* Given an array of types, will return the first type contained in the pasteboard item, according to the sender's ordering of types.  It will check for UTI conformance of the requested types, preferring an exact match to conformance.
 */
@@ -54,13 +54,13 @@ NS_CLASS_AVAILABLE(10_6, NA)
 
 /* Promises the types and registers the data provider to be messaged to provide the data for that type when requested.
 */
-- (BOOL)setDataProvider:(null_unspecified id <NSPasteboardItemDataProvider>)dataProvider forTypes:(NSArray *)types;
+- (BOOL)setDataProvider:(id <NSPasteboardItemDataProvider>)dataProvider forTypes:(NSArray *)types;
 
 /* Sets a value for the provided UTI type string.
 */
-- (BOOL)setData:(null_unspecified NSData *)data forType:(NSString *)type;
-- (BOOL)setString:(null_unspecified NSString *)string forType:(NSString *)type;
-- (BOOL)setPropertyList:(null_unspecified id)propertyList forType:(NSString *)type;
+- (BOOL)setData:(nullable NSData *)data forType:(NSString *)type;
+- (BOOL)setString:(nullable NSString *)string forType:(NSString *)type;
+- (BOOL)setPropertyList:(nullable id)propertyList forType:(NSString *)type;
 
 /* Returns a value for the provided UTI type string.
 */
@@ -76,12 +76,12 @@ NS_CLASS_AVAILABLE(10_6, NA)
 /* Implemented by the data provider of a pasteboard item, to provide the data for a particular UTI type.
 */
 @required
-- (void)pasteboard:(null_unspecified NSPasteboard *)pasteboard item:(null_unspecified NSPasteboardItem *)item provideDataForType:(null_unspecified NSString *)type;
+- (void)pasteboard:(nullable NSPasteboard *)pasteboard item:(NSPasteboardItem *)item provideDataForType:(NSString *)type;
 
 /* One data provider can provide data for more than one pasteboard item.  This method is called when the pasteboard no longer needs the data provider for any of its pasteboard items.  This can be either because the data provider has fulfilled all promises, or because ownership of the pasteboard has changed.
 */
 @optional
-- (void)pasteboardFinishedWithDataProvider:(null_unspecified NSPasteboard *)pasteboard;
+- (void)pasteboardFinishedWithDataProvider:(NSPasteboard *)pasteboard;
 
 @end
 

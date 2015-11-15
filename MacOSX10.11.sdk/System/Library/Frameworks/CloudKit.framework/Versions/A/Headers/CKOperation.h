@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import <os/activity.h>
+
 @class CKContainer;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -14,6 +16,9 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 @interface CKOperation : NSOperation
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+
+- (os_activity_t)activityStart;
+
 
 /* If no container is set, [CKContainer defaultContainer] is used */
 @property (nonatomic, strong, nullable) CKContainer *container;

@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @abstract 
  * Finds and returns (by reference) the password for the specified SSID and keychain domain.
  */
-OSStatus CWKeychainFindWiFiPassword( CWKeychainDomain domain, NSData *ssid, __nullable NSString ** __nullable password ) NS_AVAILABLE_MAC(10_9);
+OSStatus CWKeychainFindWiFiPassword( CWKeychainDomain domain, NSData *ssid, NSString * __nullable * __nullable password ) NS_AVAILABLE_MAC(10_9);
 
 /*!
  * @method
@@ -98,7 +98,7 @@ OSStatus CWKeychainDeleteWiFiPassword( CWKeychainDomain domain, NSData *ssid ) N
  * @abstract 
  * Finds and returns the 802.1X username and password stored for the specified SSID and keychain domain.
  */
-OSStatus CWKeychainFindWiFiEAPUsernameAndPassword( CWKeychainDomain domain, NSData *ssid, __nullable NSString ** __nullable username, __nullable NSString ** __nullable password ) NS_AVAILABLE_MAC(10_9);
+OSStatus CWKeychainFindWiFiEAPUsernameAndPassword( CWKeychainDomain domain, NSData *ssid, NSString * __nullable * __nullable username, NSString * __nullable * __nullable password ) NS_AVAILABLE_MAC(10_9);
 
 /*!
  * @method
@@ -122,7 +122,7 @@ OSStatus CWKeychainFindWiFiEAPUsernameAndPassword( CWKeychainDomain domain, NSDa
  * @abstract 
  * Sets the 802.1X username and password for the specified SSID and keychain domain.
  */
-OSStatus CWKeychainSetWiFiEAPUsernameAndPassword( CWKeychainDomain domain, NSData *ssid, __nullable NSString *username, __nullable NSString *password ) NS_AVAILABLE_MAC(10_9);
+OSStatus CWKeychainSetWiFiEAPUsernameAndPassword( CWKeychainDomain domain, NSData *ssid, NSString * __nullable username, NSString * __nullable password ) NS_AVAILABLE_MAC(10_9);
 
 /*!
  * @method

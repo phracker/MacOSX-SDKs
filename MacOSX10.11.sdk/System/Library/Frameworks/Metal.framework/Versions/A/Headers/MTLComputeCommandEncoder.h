@@ -41,7 +41,7 @@ NS_AVAILABLE(10_11, 8_0)
  @method setBytes:length:atIndex:
  @brief Set the data (by copy) for a given buffer binding point.  This will remove any existing MTLBuffer from the binding point.
  */
-- (void)setBytes:(const void * __nullable)bytes length:(NSUInteger)length atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 8_3);
+- (void)setBytes:(const void *)bytes length:(NSUInteger)length atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 8_3);
 
 /*!
  @method setBuffer:offset:atIndex:
@@ -72,12 +72,6 @@ NS_AVAILABLE(10_11, 8_0)
  @brief Set an array of global textures for all compute kernels with the given bind point range.
  */
 - (void)setTextures:(const id <MTLTexture> __nullable [__nullable])textures withRange:(NSRange)range;
-
-/*!
- @method setTexture:baseLevel:atIndex:
- @brief Set a global texture for all compute kernels with the specified base level at the given bind point index.
- */
-- (void)setTexture:(nullable id <MTLTexture>)texture baseLevel:(NSUInteger)baseLevel atIndex:(NSUInteger)index NS_AVAILABLE(10_11, 9_0);
 
 /*!
  @method setSamplerState:atIndex:

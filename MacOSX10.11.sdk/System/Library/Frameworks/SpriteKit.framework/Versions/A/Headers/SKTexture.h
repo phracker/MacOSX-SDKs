@@ -138,7 +138,7 @@ SK_EXPORT @interface SKTexture : NSObject <NSCopying, NSCoding>
 /**
  Convert the current SKTexture into a CGImageRef object
  */
-@property(nonatomic, readonly) CGImageRef CGImage;
+@property(nonatomic, readonly) CGImageRef CGImage NS_AVAILABLE(10_11, 9_0);
 
 /**
  Start a texture preload operation on an array of textures

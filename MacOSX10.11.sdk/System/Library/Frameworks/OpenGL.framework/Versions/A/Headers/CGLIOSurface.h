@@ -13,6 +13,8 @@
 extern "C" {
 #endif
 
+OPENGL_ASSUME_NONNULL_BEGIN
+
 typedef struct __IOSurface *IOSurfaceRef;
 
 /*!
@@ -76,8 +78,8 @@ typedef struct __IOSurface *IOSurfaceRef;
             @param plane            Which plane of the IOSurface this texture is being bound to
             
 */
-extern CGLError CGLTexImageIOSurface2D(CGLContextObj __nonnull ctx, GLenum target, GLenum internal_format,
-						GLsizei width, GLsizei height, GLenum format, GLenum type, IOSurfaceRef __nonnull ioSurface, GLuint plane) OPENGL_AVAILABLE(10_6);
+extern CGLError CGLTexImageIOSurface2D(CGLContextObj ctx, GLenum target, GLenum internal_format,
+						GLsizei width, GLsizei height, GLenum format, GLenum type, IOSurfaceRef ioSurface, GLuint plane) OPENGL_AVAILABLE(10_6);
 /*!
 
     Supported IOSurface texture format/type/internal format combinations in Mac OS X 10.6
@@ -117,6 +119,9 @@ extern CGLError CGLTexImageIOSurface2D(CGLContextObj __nonnull ctx, GLenum targe
     GL_RGBA                         GL_HALF_APPLE                           GL_RGBA                 GL_RGBA_FLOAT16_APPLE
     GL_RGBA                         GL_FLOAT                                GL_RGB                  GL_RGB_FLOAT32_APPLE
     GL_RGBA                         GL_FLOAT                                GL_RGBA                 GL_RGBA_FLOAT32_APPLE
+
+    // 16-bit unorm textures
+    GL_RGBA                         GL_UNSIGNED_SHORT                       GL_RGBA                  GL_RGBA16
 
     // Integer formats for drivers that support EXT_texture_integer:
 
@@ -189,6 +194,9 @@ extern CGLError CGLTexImageIOSurface2D(CGLContextObj __nonnull ctx, GLenum targe
     GL_RG_INTEGER                   GL_INT                                                          GL_RG32I
 
 */
+
+OPENGL_ASSUME_NONNULL_END
+
 #ifdef __cplusplus
 }
 #endif

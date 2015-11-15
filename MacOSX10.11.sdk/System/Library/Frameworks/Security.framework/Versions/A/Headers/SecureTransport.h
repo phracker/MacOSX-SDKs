@@ -68,19 +68,22 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /***********************
  *** Common typedefs ***
  ***********************/
 
 /* Opaque reference to an SSL session context */
 struct                      SSLContext;
-typedef struct SSLContext   *SSLContextRef;
+typedef struct CF_BRIDGED_TYPE(id) SSLContext *SSLContextRef;
 
 /* Opaque reference to an I/O connection (socket, endpoint, etc.) */
 typedef const void *		SSLConnectionRef;
 
 /* SSL Protocol version */
-typedef enum {
+typedef CF_ENUM(int, SSLProtocol) {
 	kSSLProtocolUnknown = 0,                /* no protocol negotiated/specified; use default */
 	kSSLProtocol3       = 2,				/* SSL 3.0 */
 	kTLSProtocol1       = 4,				/* TLS 1.0 */
@@ -94,10 +97,10 @@ typedef enum {
     kTLSProtocol1Only   = 5,                /* TLS 1.0 Only */
     kSSLProtocolAll     = 6,                /* All TLS supported protocols */
 
-} SSLProtocol;
+};
 
 /* SSL session options */
-typedef enum {
+typedef CF_ENUM(int, SSLSessionOption) {
 	/*
 	 * Set this option to enable returning from SSLHandshake (with a result of
 	 * errSSLServerAuthCompleted) when the server authentication portion of the
@@ -145,22 +148,22 @@ typedef enum {
      */
     kSSLSessionOptionBreakOnClientHello = 7,
 
-} SSLSessionOption;
+};
 
 /* State of an SSLSession */
-typedef enum {
+typedef CF_ENUM(int, SSLSessionState) {
 	kSSLIdle,					/* no I/O performed yet */
 	kSSLHandshake,				/* SSL handshake in progress */
 	kSSLConnected,				/* Handshake complete, ready for normal I/O */
 	kSSLClosed,					/* connection closed normally */
 	kSSLAborted					/* connection aborted */
-} SSLSessionState;
+};
 
 /*
  * Status of client certificate exchange (which is optional
  * for both server and client).
  */
-typedef enum {
+typedef CF_ENUM(int, SSLClientCertificateState) {
 	/* Server hasn't asked for a cert. Client hasn't sent one. */
 	kSSLClientCertNone,
 	/* Server has asked for a cert, but client didn't send it. */
@@ -177,7 +180,7 @@ typedef enum {
 	 * Server app can inspect the cert via SSLGetPeerCertificates().
 	 */
 	kSSLClientCertRejected
-} SSLClientCertificateState;
+} ;
 
 /*
  * R/W functions. The application using this library provides
@@ -218,7 +221,7 @@ typedef OSStatus
     line that does not start with errZZZ.
 */
 
-enum {
+CF_ENUM(OSStatus) {
 	errSSLProtocol				= -9800,	/* SSL protocol error */
 	errSSLNegotiation			= -9801,	/* Cipher Suite negotiation failure */
 	errSSLFatalAlert			= -9802,	/* Fatal alert */
@@ -288,23 +291,23 @@ enum {
 /* DEPRECATED alias for the end of the error range */
 #define errSSLLast errSSLUnexpectedRecord
 
-typedef enum
+typedef CF_ENUM(int, SSLProtocolSide)
 {
     kSSLServerSide,
     kSSLClientSide
-} SSLProtocolSide;
+};
 
-typedef enum
+typedef CF_ENUM(int, SSLConnectionType)
 {
     kSSLStreamType,
     kSSLDatagramType
-} SSLConnectionType;
+};
 
-typedef enum
+typedef CF_ENUM(int, SSLSessionStrengthPolicy)
 {
     kSSLSessionStrengthPolicyDefault,
     kSSLSessionStrengthPolicyATSv1
-} SSLSessionStrengthPolicy;
+};
 
 /******************
  *** Public API ***
@@ -333,8 +336,9 @@ SSLContextGetTypeID(void)
 /*
  * Create a new instance of an SSLContextRef using the specified allocator.
  */
+__nullable
 SSLContextRef
-SSLCreateContext(CFAllocatorRef alloc, SSLProtocolSide protocolSide, SSLConnectionType connectionType)
+SSLCreateContext(CFAllocatorRef __nullable alloc, SSLProtocolSide protocolSide, SSLConnectionType connectionType)
 	__OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_5_0);
 
 
@@ -350,7 +354,7 @@ SSLCreateContext(CFAllocatorRef alloc, SSLProtocolSide protocolSide, SSLConnecti
  */
 OSStatus
 SSLNewContext				(Boolean 			isServer,
-							 SSLContextRef 		*contextPtr)	/* RETURNED */
+							 SSLContextRef 		* __nonnull CF_RETURNS_RETAINED contextPtr)	/* RETURNED */
 	__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_2,__MAC_10_9,__IPHONE_NA,__IPHONE_NA);
 
 /*
@@ -591,13 +595,13 @@ SSLSetCertificate			(SSLContextRef		context,
  * called when no session is active.
  */
 OSStatus
-SSLSetConnection			(SSLContextRef		context,
-							 SSLConnectionRef	connection)
+SSLSetConnection			(SSLContextRef                  context,
+							 SSLConnectionRef __nullable	connection)
 	__OSX_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_5_0);
 
 OSStatus
 SSLGetConnection			(SSLContextRef		context,
-							 SSLConnectionRef	*connection)
+							 SSLConnectionRef	* __nonnull CF_RETURNS_NOT_RETAINED connection)
 	__OSX_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_5_0);
 
 /*
@@ -609,7 +613,7 @@ SSLGetConnection			(SSLContextRef		context,
  */
 OSStatus
 SSLSetPeerDomainName		(SSLContextRef		context,
-							 const char			*peerName,
+							 const char			* __nullable peerName,
 							 size_t				peerNameLen)
 	__OSX_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_5_0);
 
@@ -637,7 +641,7 @@ SSLGetPeerDomainName		(SSLContextRef		context,
  */
 OSStatus
 SSLSetDatagramHelloCookie	(SSLContextRef		dtlsContext,
-                             const void         *cookie,
+                             const void         * __nullable cookie,
                              size_t             cookieLen)
 	__OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_5_0);
 
@@ -985,7 +989,7 @@ SSLSetTrustedRoots			(SSLContextRef 		context,
  */
 OSStatus
 SSLCopyTrustedRoots			(SSLContextRef 		context,
-							 CFArrayRef 		*trustedRoots)	/* RETURNED */
+							 CFArrayRef 		* __nonnull CF_RETURNS_RETAINED trustedRoots)	/* RETURNED */
 	__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_9,__IPHONE_NA,__IPHONE_NA);
 
 /*
@@ -1009,7 +1013,7 @@ SSLCopyTrustedRoots			(SSLContextRef 		context,
  */
 OSStatus
 SSLCopyPeerCertificates		(SSLContextRef 		context,
-							 CFArrayRef			*certs)		/* RETURNED */
+							 CFArrayRef			* __nonnull CF_RETURNS_RETAINED certs)		/* RETURNED */
 	__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_9,__IPHONE_NA,__IPHONE_NA);
 
 #endif /* MAC OS X */
@@ -1034,7 +1038,7 @@ SSLCopyPeerCertificates		(SSLContextRef 		context,
  */
 OSStatus
 SSLCopyPeerTrust			(SSLContextRef 		context,
-							 SecTrustRef		*trust)		/* RETURNED */
+							 SecTrustRef		* __nonnull CF_RETURNS_RETAINED trust)		/* RETURNED */
 	__OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_5_0);
 
 /*
@@ -1053,7 +1057,7 @@ SSLCopyPeerTrust			(SSLContextRef 		context,
  */
 OSStatus
 SSLSetPeerID				(SSLContextRef 		context,
-							 const void 		*peerID,
+							 const void 		* __nullable peerID,
 							 size_t				peerIDLen)
 	__OSX_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_5_0);
 
@@ -1063,7 +1067,7 @@ SSLSetPeerID				(SSLContextRef 		context,
  */
 OSStatus
 SSLGetPeerID				(SSLContextRef 		context,
-							 const void 		**peerID,
+							 const void 		* __nullable * __nonnull peerID,
 							 size_t				*peerIDLen)
 	__OSX_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_5_0);
 
@@ -1098,12 +1102,12 @@ SSLSetEncryptionCertificate	(SSLContextRef		context,
  *
  * Can only be called when no session is active.
  */
-typedef enum {
+typedef CF_ENUM(int, SSLAuthenticate) {
 	kNeverAuthenticate,			/* skip client authentication */
 	kAlwaysAuthenticate,		/* require it */
 	kTryAuthenticate			/* try to authenticate, but not an error
 								 * if client doesn't have a cert */
-} SSLAuthenticate;
+};
 
 OSStatus
 SSLSetClientSideAuthenticate 	(SSLContextRef		context,
@@ -1116,7 +1120,7 @@ SSLSetClientSideAuthenticate 	(SSLContextRef		context,
  */
 OSStatus
 SSLAddDistinguishedName		(SSLContextRef 		context,
-							 const void 		*derDN,
+							 const void 		* __nullable derDN,
 							 size_t 			derDNLen)
 	__OSX_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_5_0);
 
@@ -1153,7 +1157,7 @@ SSLSetCertificateAuthorities(SSLContextRef		context,
  */
 OSStatus
 SSLCopyCertificateAuthorities(SSLContextRef		context,
-							  CFArrayRef		*certificates)	/* RETURNED */
+							  CFArrayRef		* __nonnull CF_RETURNS_RETAINED certificates)	/* RETURNED */
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 #endif /* MAC OS X */
@@ -1170,7 +1174,7 @@ SSLCopyCertificateAuthorities(SSLContextRef		context,
  */
 OSStatus
 SSLCopyDistinguishedNames	(SSLContextRef		context,
-							 CFArrayRef			*names)
+							 CFArrayRef			* __nonnull CF_RETURNS_RETAINED names)
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_5_0);
 
 /*
@@ -1195,7 +1199,7 @@ SSLGetClientCertificateState	(SSLContextRef				context,
  * NOTE: this function is currently not available on iOS.
  */
 OSStatus SSLSetDiffieHellmanParams	(SSLContextRef			context,
-									 const void 			*dhParams,
+									 const void 			* __nullable dhParams,
 									 size_t					dhParamsLen)
 	__OSX_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_NA);
 
@@ -1206,7 +1210,7 @@ OSStatus SSLSetDiffieHellmanParams	(SSLContextRef			context,
  * NOTE: this function is currently not available on iOS.
  */
 OSStatus SSLGetDiffieHellmanParams	(SSLContextRef			context,
-									 const void 			**dhParams,
+									 const void 			* __nullable * __nonnull dhParams,
 									 size_t					*dhParamsLen)
 	__OSX_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_NA);
 
@@ -1293,7 +1297,7 @@ SSLHandshake				(SSLContextRef		context)
  */
 OSStatus
 SSLWrite					(SSLContextRef		context,
-							 const void *		data,
+							 const void *		__nullable data,
 							 size_t				dataLength,
 							 size_t 			*processed)		/* RETURNED */
 	__OSX_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_5_0);
@@ -1345,6 +1349,9 @@ SSLClose					(SSLContextRef		context)
 OSStatus
 SSLSetSessionStrengthPolicy(SSLContextRef context,
                             SSLSessionStrengthPolicy policyStrength);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

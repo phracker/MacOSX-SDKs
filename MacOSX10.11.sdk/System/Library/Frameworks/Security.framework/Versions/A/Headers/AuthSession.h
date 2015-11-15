@@ -35,6 +35,7 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
 
 /*!
 	@header AuthSession
@@ -77,7 +78,7 @@ typedef UInt32 SecuritySessionId;
     
     Note: -2 is reserved (see 4487137).  
 */
-enum {
+CF_ENUM(SecuritySessionId) {
     noSecuritySession                      = 0,     /* definitely not a valid SecuritySessionId */
     callerSecuritySession = ((SecuritySessionId)-1)     /* the Session I (the caller) am in */
 };
@@ -88,9 +89,7 @@ enum {
     Each Session has a set of attribute bits. You can get those from the
         SessionGetInfo API function.
  */
-typedef UInt32 SessionAttributeBits;
- 
-enum {
+typedef CF_OPTIONS(UInt32, SessionAttributeBits) {
     sessionIsRoot                          = 0x0001, /* is the root session (startup/system programs) */
     sessionHasGraphicAccess                = 0x0010, /* graphic subsystem (CoreGraphics et al) available */
     sessionHasTTY                          = 0x0020, /* /dev/tty is available */
@@ -103,9 +102,7 @@ enum {
     These flags control how a new session is created by SessionCreate.
         They have no permanent meaning beyond that.
  */
-typedef UInt32 SessionCreationFlags;
- 
-enum {
+typedef CF_OPTIONS(UInt32, SessionCreationFlags) {
     sessionKeepCurrentBootstrap             = 0x8000 /* caller has allocated sub-bootstrap (expert use only) */
 };
  
@@ -115,7 +112,7 @@ enum {
 	Error codes returned by AuthSession API.
     Note that the AuthSession APIs can also return Authorization API error codes.
 */
-enum {
+CF_ENUM(OSStatus) {
     errSessionSuccess                       = 0,      /* all is well */
     errSessionInvalidId                     = -60500, /* invalid session id specified */
     errSessionInvalidAttributes             = -60501, /* invalid set of requested attribute bits */
@@ -147,8 +144,8 @@ enum {
 
 */
 OSStatus SessionGetInfo(SecuritySessionId session,
-    SecuritySessionId *sessionId,
-    SessionAttributeBits *attributes);
+    SecuritySessionId * __nullable sessionId,
+    SessionAttributeBits * __nullable attributes);
     
 
 /*!
@@ -185,7 +182,8 @@ OSStatus SessionGetInfo(SecuritySessionId session,
 */
 OSStatus SessionCreate(SessionCreationFlags flags,
     SessionAttributeBits attributes);
-    
+
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

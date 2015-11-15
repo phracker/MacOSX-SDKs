@@ -87,10 +87,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Inserts a new menu item with the given title, action, and key equivalent, at the given index.  The index must be at least zero and no more than the receiver's item count.  The title and key equivalent must not be nil (pass the empty string to indicate no key equivalent). This returns the new item.
  */
-- (nullable NSMenuItem *)insertItemWithTitle:(NSString *)aString action:(null_unspecified SEL)aSelector keyEquivalent:(NSString *)charCode atIndex:(NSInteger)index;
+- (nullable NSMenuItem *)insertItemWithTitle:(NSString *)aString action:(nullable SEL)aSelector keyEquivalent:(NSString *)charCode atIndex:(NSInteger)index;
 
 /* Appends a new menu item with the given properties to the end of the menu. */
-- (nullable NSMenuItem *)addItemWithTitle:(NSString *)aString action:(null_unspecified SEL)aSelector keyEquivalent:(NSString *)charCode;
+- (nullable NSMenuItem *)addItemWithTitle:(NSString *)aString action:(nullable SEL)aSelector keyEquivalent:(NSString *)charCode;
 
 /* Removes the item at the given index, which must be at least zero and less than the number of items.  All subsequent items will shift down one index. */
 - (void)removeItemAtIndex:(NSInteger)index;
@@ -181,7 +181,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* Determines whether the menu contains a column for the state image.  The default is YES. */
 @property BOOL showsStateColumn NS_AVAILABLE_MAC(10_5);
 
-/* Determines the layout direction for menu items in the menu.  If no layout direction is explicitly set, the menu will default to the value of [NSApp userInterfaceLayoutDirection]. */
+/* Determines the layout direction for menu items in the menu. If no layout direction is explicitly set, the menu will default to the value of [NSApp userInterfaceLayoutDirection]. */
 @property NSUserInterfaceLayoutDirection userInterfaceLayoutDirection NS_AVAILABLE_MAC(10_11);
 
 @end

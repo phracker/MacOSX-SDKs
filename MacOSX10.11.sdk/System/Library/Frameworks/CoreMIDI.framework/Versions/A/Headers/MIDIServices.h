@@ -115,7 +115,7 @@ extern "C" {
     @constant       kMIDINotPermitted
 	                    The process does not have privileges for the requested operation.						
 */
-enum {
+CF_ENUM(OSStatus) {
 	kMIDIInvalidClient		= -10830,
 	kMIDIInvalidPort		= -10831,
 	kMIDIWrongEndpointType	= -10832,
@@ -257,7 +257,7 @@ static const MIDIObjectType kMIDIObjectType_ExternalMask		= (MIDIObjectType)0x10
 */
 typedef SInt32							MIDIUniqueID;
 
-enum {
+CF_ENUM(MIDIUniqueID) {
 	kMIDIInvalidUniqueID = 0
 };
 

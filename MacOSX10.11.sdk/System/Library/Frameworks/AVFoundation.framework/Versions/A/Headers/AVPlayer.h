@@ -313,7 +313,7 @@ typedef NS_ENUM(NSInteger, AVPlayerActionAtItemEnd)
 	@param completionHandler
 					The block that will be called when the preroll is either completed or is interrupted.
 */
-- (void)prerollAtRate:(float)rate completionHandler:(void (^)(BOOL finished))completionHandler NS_AVAILABLE(10_8, 6_0);
+- (void)prerollAtRate:(float)rate completionHandler:(nullable void (^)(BOOL finished))completionHandler NS_AVAILABLE(10_8, 6_0);
 
 /*!
 	@method			cancelPendingPrerolls

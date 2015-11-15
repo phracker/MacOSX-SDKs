@@ -104,7 +104,7 @@ OSStatus CMSimpleQueueCreate(
 	int32_t capacity,										/*! @param capacity
 																Capacity of the queue (maximum number of elements holdable at any
 																given time).  Required (must not be 0).  Must be a positive value. */
-	CMSimpleQueueRef CM_NULLABLE * CM_NONNULL queueOut)		/*! @param queueOut Returned newly created queue is written to this address.
+	CM_RETURNS_RETAINED_PARAMETER CMSimpleQueueRef CM_NULLABLE * CM_NONNULL queueOut)		/*! @param queueOut Returned newly created queue is written to this address.
 																Must not be NULL. */
 		__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_5_0);
 

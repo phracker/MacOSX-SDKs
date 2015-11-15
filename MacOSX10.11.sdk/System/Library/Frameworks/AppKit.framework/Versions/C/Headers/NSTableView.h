@@ -126,7 +126,7 @@ typedef NS_ENUM(NSInteger, NSTableViewSelectionHighlightStyle) {
      */
     NSTableViewSelectionHighlightStyleRegular = 0,
     
-    /* The source list style of NSTableView. On the current OS, a light blue gradient is used to highlight selected rows. Note: Cells that have a drawsBackground property should have it set to NO. Otherwise, they will draw over the highlighting that NSTableView does. Setting this style will have the side effect of setting the background color to the "source list" background color. Additionally in NSOutlineView, the following properties are changed to get the standard "source list" look: indentationPerLevel, rowHeight and intercellSpacing. After calling setSelectionHighlightStyle: one can change any of the other properties as required.
+    /* The source list style of NSTableView. On 10.10 and higher, a blur selection is used to highlight rows. Prior to that, a light blue gradient was used. Note: Cells that have a drawsBackground property should have it set to NO. Otherwise, they will draw over the highlighting that NSTableView does. Setting this style will have the side effect of setting the background color to the "source list" background color. Additionally in NSOutlineView, the following properties are changed to get the standard "source list" look: indentationPerLevel, rowHeight and intercellSpacing. After calling setSelectionHighlightStyle: one can change any of the other properties as required. In 10.11, if the background color has been changed from the "source list" background color to something else, the table will no longer draw the selection as a source list blur style, and instead will do a normal blue highlight.
      */
     NSTableViewSelectionHighlightStyleSourceList = 1,
 };

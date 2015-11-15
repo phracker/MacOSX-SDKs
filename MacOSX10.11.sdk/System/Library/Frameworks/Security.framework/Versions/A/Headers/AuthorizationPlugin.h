@@ -36,6 +36,7 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
 
 /*!
 	@header AuthorizationPlugin
@@ -98,8 +99,7 @@ typedef struct AuthorizationValueVector
     If data is marked as volatile (kAuthorizationContextFlagVolatile), this value will not be remembered in the AuthorizationRef.
     Sticky data (kAuthorizationContextFlagSticky) persists through a failed or interrupted evaluation. It can be used to propagate an error condition from a downstream plugin to an upstream one. It is not remembered in the AuthorizationRef.
 */
-typedef UInt32 AuthorizationContextFlags;
-enum
+typedef CF_OPTIONS(UInt32, AuthorizationContextFlags)
 {
     kAuthorizationContextFlagExtractable = (1 << 0),
     kAuthorizationContextFlagVolatile = (1 << 1),
@@ -145,13 +145,7 @@ typedef struct __OpaqueAuthorizationEngine *AuthorizationEngineRef;
 typedef void *AuthorizationSessionId;
 
 /*!
-	@typedef AuthorizationResult
-	Type for SetResult().  See AuthorizationResultConstants for all allowed values.
-*/
-typedef UInt32 AuthorizationResult;
-
-/*!
-    @enum AuthorizationResultConstants
+    @enum AuthorizationResult
 	Possible values for SetResult() in AuthorizationCallbacks.
     
     @constant kAuthorizationResultAllow the operation succeeded and authorization should be granted as far as this mechanism is concerned.
@@ -159,7 +153,7 @@ typedef UInt32 AuthorizationResult;
     @constant kAuthorizationResultUndefined the operation failed for some reason and should not be retried for this session.
     @constant kAuthorizationResultUserCanceled the user has requested that the evaluation be terminated.
 */
-enum {
+typedef CF_ENUM(UInt32, AuthorizationResult) {
     kAuthorizationResultAllow,
     kAuthorizationResultDeny,
     kAuthorizationResultUndefined,
@@ -221,7 +215,7 @@ typedef struct AuthorizationCallbacks {
     OSStatus (*GetContextValue)(AuthorizationEngineRef inEngine,
         AuthorizationString inKey,
         AuthorizationContextFlags *outContextFlags,
-        const AuthorizationValue **outValue);
+        const AuthorizationValue * __nullable * __nonnull outValue);
 
     /* Write value to context.  AuthorizationValue and data are copied. */
     OSStatus (*SetContextValue)(AuthorizationEngineRef inEngine,
@@ -232,7 +226,7 @@ typedef struct AuthorizationCallbacks {
     /* Read value from hints. AuthorizationValue does not own data. */
     OSStatus (*GetHintValue)(AuthorizationEngineRef inEngine,
         AuthorizationString inKey,
-        const AuthorizationValue **outValue);
+        const AuthorizationValue * __nullable * __nonnull outValue);
 
     /* Write value to hints.  AuthorizationValue and data are copied. */
     OSStatus (*SetHintValue)(AuthorizationEngineRef inEngine,
@@ -241,16 +235,16 @@ typedef struct AuthorizationCallbacks {
 
     /* Read arguments passed.  AuthorizationValueVector does not own data. */
     OSStatus (*GetArguments)(AuthorizationEngineRef inEngine,
-        const AuthorizationValueVector **outArguments);
+        const AuthorizationValueVector * __nullable * __nonnull outArguments);
 
     /* Read SessionId. */
     OSStatus (*GetSessionId)(AuthorizationEngineRef inEngine,
-        AuthorizationSessionId *outSessionId);
+        AuthorizationSessionId __nullable * __nonnull outSessionId);
 
     /* Read value from hints. AuthorizationValue does not own data. */
     OSStatus (*GetImmutableHintValue)(AuthorizationEngineRef inEngine,
         AuthorizationString inKey,
-        const AuthorizationValue **outValue);
+        const AuthorizationValue * __nullable * __nonnull outValue);
 
 } AuthorizationCallbacks;
 
@@ -280,7 +274,7 @@ typedef struct AuthorizationPluginInterface
     OSStatus (*MechanismCreate)(AuthorizationPluginRef inPlugin,
         AuthorizationEngineRef inEngine,
         AuthorizationMechanismId mechanismId,
-        AuthorizationMechanismRef *outMechanism);
+        AuthorizationMechanismRef __nullable * __nonnull outMechanism);
 
     /* Invoke an instance of a mechanism.  It should call SetResult during or after returning from this function.  */
     OSStatus (*MechanismInvoke)(AuthorizationMechanismRef inMechanism);
@@ -304,8 +298,10 @@ typedef struct AuthorizationPluginInterface
     @param outPlugin (output) On successful completion should contain a valid AuthorizationPluginRef.  This will be passed in to any subsequent calls the engine makes to  outPluginInterface->MechanismCreate and outPluginInterface->PluginDestroy.
     @param outPluginInterface (output) On successful completion should contain a pointer to a AuthorizationPluginInterface that will stay valid until outPluginInterface->PluginDestroy is called. */
 OSStatus AuthorizationPluginCreate(const AuthorizationCallbacks *callbacks,
-    AuthorizationPluginRef *outPlugin,
-    const AuthorizationPluginInterface **outPluginInterface);
+    AuthorizationPluginRef __nullable * __nonnull outPlugin,
+    const AuthorizationPluginInterface * __nullable * __nonnull outPluginInterface);
+
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

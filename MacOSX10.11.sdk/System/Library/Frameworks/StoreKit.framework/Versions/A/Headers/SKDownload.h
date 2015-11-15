@@ -24,6 +24,7 @@ SKDownloadState;
 
 // Model class to define a download for a particular product
 NS_CLASS_AVAILABLE(10_8, NA) 
+NS_ASSUME_NONNULL_BEGIN
 @interface SKDownload : NSObject {
 @private
     id _internal;
@@ -36,13 +37,13 @@ NS_CLASS_AVAILABLE(10_8, NA)
 @property(readonly) SKDownloadState state;
 
 // Content URL
-@property(copy, readonly) NSURL *contentURL;
+@property(nullable, copy, readonly) NSURL *contentURL;
 
 // Download progress 
 @property(readonly) float progress;
 
 // Last error, can be NULL
-@property(copy, readonly) NSError *error;
+@property(nullable, copy, readonly) NSError *error;
 
 // Estimated number of seconds remaining in the download
 @property(readonly) NSTimeInterval timeRemaining;
@@ -51,15 +52,16 @@ NS_CLASS_AVAILABLE(10_8, NA)
 @property(copy, readonly) NSNumber *contentLength;
 
 // Version string of the product
-@property(copy, readonly) NSString* contentVersion;
+@property(nullable, copy, readonly) NSString* contentVersion;
 
 // The transaction associated with the downloadable file
-@property(nonatomic, readonly) SKPaymentTransaction *transaction;
+@property(nullable, nonatomic, readonly) SKPaymentTransaction *transaction;
 
 //
-+ (NSURL *) contentURLForProductID:(NSString *)productID;
++ (nullable NSURL *) contentURLForProductID:(NSString *)productID;
 
 // Deletes the content for that identifier from disk
 + (void) deleteContentForProductID:(NSString *)productID;
 
 @end
+NS_ASSUME_NONNULL_END

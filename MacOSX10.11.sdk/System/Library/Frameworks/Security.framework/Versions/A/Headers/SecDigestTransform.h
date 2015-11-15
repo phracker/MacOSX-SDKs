@@ -31,6 +31,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
 	@abstract
@@ -125,7 +127,7 @@ extern const CFStringRef kSecDigestHMACKeyAttribute;
 						cryptographic digest.
 */
 
-SecTransformRef SecDigestTransformCreate(CFTypeRef digestType,
+SecTransformRef SecDigestTransformCreate(CFTypeRef __nullable digestType,
 										 CFIndex digestLength,
 										 CFErrorRef* error
 										 )
@@ -141,6 +143,8 @@ SecTransformRef SecDigestTransformCreate(CFTypeRef digestType,
 CFTypeID SecDigestTransformGetTypeID()
 										 __OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA);
 
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 };

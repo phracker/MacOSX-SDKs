@@ -93,6 +93,7 @@ extern const OSSymbol *		gIOPlatformWakeActionKey;
 extern const OSSymbol *		gIOPlatformQuiesceActionKey;
 extern const OSSymbol *		gIOPlatformActiveActionKey;
 extern const OSSymbol *		gIOPlatformHaltRestartActionKey;
+extern const OSSymbol *		gIOPlatformPanicActionKey;
 
 class IORangeAllocator;
 class IONVRAMController;

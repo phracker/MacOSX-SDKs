@@ -281,6 +281,9 @@
 /* Define this if you have flockfile(), getc_unlocked(), and funlockfile() */
 #define HAVE_GETC_UNLOCKED 1
 
+/* Define to 1 if you have the `getentropy' function. */
+/* #undef HAVE_GETENTROPY */
+
 /* Define to 1 if you have the `getgroups' function. */
 #define HAVE_GETGROUPS 1
 
@@ -480,6 +483,9 @@
 /* Define to 1 if you have the `mktime' function. */
 #define HAVE_MKTIME 1
 
+/* Define to 1 if you have the `mmap' function. */
+#define HAVE_MMAP 1
+
 /* Define to 1 if you have the `mremap' function. */
 /* #undef HAVE_MREMAP */
 
@@ -545,6 +551,9 @@
 
 /* Define to 1 if you have the `putenv' function. */
 #define HAVE_PUTENV 1
+
+/* Define if the libcrypto has RAND_egd */
+#define HAVE_RAND_EGD 1
 
 /* Define to 1 if you have the `readlink' function. */
 #define HAVE_READLINK 1

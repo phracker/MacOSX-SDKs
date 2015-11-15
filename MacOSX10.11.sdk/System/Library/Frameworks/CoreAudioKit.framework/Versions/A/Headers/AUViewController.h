@@ -6,6 +6,7 @@
 //
 
 #import <AudioUnit/AudioUnit.h>
+#import <Foundation/NSExtensionRequestHandling.h>
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -18,7 +19,7 @@ typedef NSViewController AUViewControllerBase;
 NS_ASSUME_NONNULL_BEGIN
 
 NS_CLASS_AVAILABLE(10_11, 9_0)
-@interface AUViewController : AUViewControllerBase
+@interface AUViewController : AUViewControllerBase <NSExtensionRequestHandling>
 @end
 
 @interface AUAudioUnit (AUAudioUnit_ViewController)
@@ -29,7 +30,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 		completion handler, in a thread/dispatch queue context internal to the implementation, with
 		a view controller, or nil in the case of an audio unit without a custom view controller.
 */
-- (void)requestViewControllerWithCompletionHandler:(void (^)(AUViewController * __nullable viewController))completionHandler;
+- (void)requestViewControllerWithCompletionHandler:(void (^)(AUViewControllerBase * __nullable viewController))completionHandler;
 
 @end
 

@@ -27,7 +27,7 @@
 #import <AVFoundation/AVAudioMix.h>
 #import <AVFoundation/AVAudioProcessingSettings.h>
 
-#if (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
+#if TARGET_OS_IPHONE
 #import <AVFoundation/AVAssetDownloadTask.h>
 #endif
 

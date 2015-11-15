@@ -95,10 +95,13 @@ must be run as root in order to modify any settings.
 - system sleep timer (value in minutes, or 0 to disable)
 .br
 .Ar womp
-- wake on ethernet magic packet (value = 0/1)
+- wake on ethernet magic packet (value = 0/1). Same as "Wake for network access" in the Energy Saver preferences.
 .br
 .Ar ring
 - wake on modem ring (value = 0/1)
+.br
+.Ar powernap
+- enable/disable Power Nap on supported machines (value = 0/1)
 .br
 .Ar autorestart
 - automatic restart on power loss (value = 0/1)
@@ -132,12 +135,6 @@ must be run as root in order to modify any settings.
 .br
 .Ar destroyfvkeyonstandby
 - Destroy File Vault Key when going to standby mode. By default File vault keys are retained even when system goes to standby. If the keys are destroyed, user will be prompted to enter the password while coming out of standby mode.(value: 1 - Destroy, 0 - Retain)
-.br
-.Ar autopoweroff
-- Where supported, enabled per default as an implementation of Lot 6 to the European Energy-related Products Directive. After sleeping for <autopoweroffdelay> seconds, the system will write a hibernation image and go into a lower power chipset sleep. Wakeups from this state will take longer than wakeups from regular sleep. The system will not auto power off if any external devices are connected, if the system is on battery power, or if the system is bound to a network and wake for network access is enabled.
-.br
-.Ar autopoweroffdelay
-- delay before entering autopoweroff mode. (Value = integer, in seconds)
 .Sh GETTING
 .Fl g
 (with no argument) will display the settings currently in use.
@@ -250,14 +247,27 @@ Prints the current power state of the system and available capabilites.
 Prints output from every argument under the GETTING header. This is useful for quickly collecting all the output that pmset provides. Available in 10.8.
 .Sh SAFE SLEEP ARGUMENTS
 .Ar hibernatemode
+supports values of 0, 3, or 25. Whether or not a hibernation image gets written is also dependent on the values of
+.Ar standby
+and
+.Ar autopoweroff
 .Pp
-The only supported modes are  0, 3, or 25.
+For example, on desktops that support
+.Ar standby
+a hibernation image will be written after the specified
+.Ar standbydelay
+time. To disable hibernation images completely, ensure
+.Ar hibernatemode
+.Ar standby
+and
+.Ar autopoweroff
+are all set to 0.
 .Pp
 .Ar hibernatemode 
-= 0 by default on desktops that do not support autopoweroff. The system will not back memory up to persistent storage. The system must wake from the contents of memory; the system will lose context on power loss. This is, historically, plain old sleep.
+= 0 by default on desktops. The system will not back memory up to persistent storage. The system must wake from the contents of memory; the system will lose context on power loss. This is, historically, plain old sleep.
 .Pp
 .Ar hibernatemode 
-= 3 by default on supported portables and on desktops that support autopoweroff. The system will store a copy of memory to persistent storage (the disk), and will power memory during sleep. The system will wake from memory, unless a power loss forces it to restore from hibernate image.
+= 3 by default on portables. The system will store a copy of memory to persistent storage (the disk), and will power memory during sleep. The system will wake from memory, unless a power loss forces it to restore from hibernate image.
 .Pp
 .Ar hibernatemode
 = 25 is only settable via pmset. The system will store a copy of memory to persistent storage (the disk), and will remove power to memory. The system will restore from disk image. If you want "hibernation" - slower sleeps, slower wakes, and better battery life, you should use this setting.
@@ -276,13 +286,14 @@ will be visible in
 .Fl g
 if the feature is supported on this machine.
 .Pp
-.Ar standby 
-only works if
-.Ar hibernation
-is turned on to hibernatemode 3 or 25.
-.Pp
 .Ar standbydelay
 specifies the delay, in seconds, before writing the hibernation image to disk and powering off memory for Standby.
+
+.Ar autopoweroff
+is enabled by default on supported platforms as an implementation of Lot 6 to the European Energy-related Products Directive. After sleeping for <autopoweroffdelay> seconds, the system will write a hibernation image and go into a lower power chipset sleep. Wakeups from this state will take longer than wakeups from regular sleep.
+.Pp
+.Ar autopoweroffdelay
+specifies the delay, in seconds, before entering autopoweroff mode.
 .Sh UPS SPECIFIC ARGUMENTS
 .br
 UPS-specific arguments are only valid following the 

@@ -42,7 +42,7 @@ NS_CLASS_AVAILABLE(10_8, NA)
 // The title of the button displayed in the notification. Must be localized as it will be presented to the user. String will be truncated to a length appropriate for display.
 @property (copy) NSString *actionButtonTitle;
 
-// Application-specific user info that may be retrieved later. All items must be property list types or an exception will be thrown. The userInfo should be of reasonable serialized size (less than 1k) or an exception will be thrown.
+// Application-specific user info that may be retrieved later. All items must be property list types or an exception will be thrown. The userInfo should be of reasonable serialized size or an exception will be thrown.
 @property (nullable, copy) NSDictionary<NSString *, id> *userInfo;
 
 // Specifies when (in an absolute time) the notification should be delivered. After a notification is delivered, it may be presented to the user.

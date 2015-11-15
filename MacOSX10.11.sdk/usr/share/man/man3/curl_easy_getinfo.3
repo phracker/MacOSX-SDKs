@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2014, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2015, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -76,8 +76,8 @@ start until the connect to the remote host (or proxy) was completed.
 Pass a pointer to a double to receive the time, in seconds, it took from the
 start until the SSL/SSH connect/handshake to the remote host was completed.
 This time is most often very near to the PRETRANSFER time, except for cases
-such as HTTP pippelining where the pretransfer time can be delayed due to
-waits in line for the pipeline and more. (Added in 7.19.0)
+such as HTTP pipelining where the pretransfer time can be delayed due to waits
+in line for the pipeline and more. (Added in 7.19.0)
 .IP CURLINFO_PRETRANSFER_TIME
 Pass a pointer to a double to receive the time, in seconds, it took from the
 start until the file transfer is just about to begin. This includes all
@@ -222,19 +222,39 @@ request was done. The struct reports how many certs it found and then you can
 extract info for each of those certs by following the linked lists. The info
 chain is provided in a series of data in the format "name:content" where the
 content is for the specific named data. See also the certinfo.c example. NOTE:
-this option is only available in libcurl built with OpenSSL, NSS, GSKit or
-QsoSSL support. (Added in 7.19.1)
+this option is only available in libcurl built with OpenSSL, NSS or GSKit
+support. (Added in 7.19.1)
 .IP CURLINFO_TLS_SESSION
-Pass a pointer to a 'struct curl_tlsinfo *'.  The pointer will be initialized
-to refer to a 'struct curl_tlsinfo *' that will contain an enum indicating the
-SSL library used for the handshake and the respective internal TLS session
-structure of this underlying SSL library.
+Pass a pointer to a 'struct curl_tlssessioninfo *'.  The pointer will be
+initialized to refer to a 'struct curl_tlssessioninfo *' that will contain an
+enum indicating the SSL library used for the handshake and the respective
+internal TLS session structure of this underlying SSL library.
 
 This may then be used to extract certificate information in a format
 convenient for further processing, such as manual validation. NOTE: this
 option may not be available for all SSL backends; unsupported SSL backends
 will return 'CURLSSLBACKEND_NONE' to indicate that they are not supported;
 this does not mean that no SSL backend was used. (Added in 7.34.0)
+
+.nf
+struct curl_tlssessioninfo {
+  curl_sslbackend backend;
+  void *internals;
+};
+.fi
+
+The \fIinternals\fP struct member will point to a TLS library specific pointer
+with the following underlying types:
+.RS
+.IP OpenSSL
+SSL_CTX *
+.IP GnuTLS
+gnutls_session_t
+.IP NSS
+PRFileDesc *
+.IP gskit
+gsk_handle
+.RE
 
 .IP CURLINFO_CONDITION_UNMET
 Pass a pointer to a long to receive the number 1 if the condition provided in

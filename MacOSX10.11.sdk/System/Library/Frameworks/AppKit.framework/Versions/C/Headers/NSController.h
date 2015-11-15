@@ -45,11 +45,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_DESIGNATED_INITIALIZER;
 
-- (void)objectDidBeginEditing:(null_unspecified id)editor;
-- (void)objectDidEndEditing:(null_unspecified id)editor;
+- (void)objectDidBeginEditing:(id)editor;
+- (void)objectDidEndEditing:(id)editor;
 - (void)discardEditing;
 - (BOOL)commitEditing;
-- (void)commitEditingWithDelegate:(nullable id)delegate didCommitSelector:(null_unspecified SEL)didCommitSelector contextInfo:(null_unspecified void *)contextInfo;
+- (void)commitEditingWithDelegate:(nullable id)delegate didCommitSelector:(nullable SEL)didCommitSelector contextInfo:(nullable void *)contextInfo;
 @property (getter=isEditing, readonly) BOOL editing;
 
 @end

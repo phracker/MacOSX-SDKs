@@ -266,21 +266,8 @@ public:
 											 char		*	calledByFunction,
 											 bool			panicMachine);
 	
-	OSMetaClassDeclareReservedUsed( IOBluetoothHIDDriver, 11 );
-	virtual	IOReturn		powerStateWillChangeTo (IOPMPowerFlags		powerFlags,
-													unsigned long		powerState,
-													IOService		*	from);
-	
-	static	IOReturn		powerStateWillChangeToAction (OSObject	*	owner,
-														  void		*	arg1,
-														  void		*	arg2,
-														  void		*	arg3,
-														  void		*	arg4);
-	
-	OSMetaClassDeclareReservedUsed( IOBluetoothHIDDriver, 12 );
-	virtual	IOReturn		powerStateWillChangeToWL (UInt32		messageType,
-													  void		*	reserved);
-	
+    OSMetaClassDeclareReservedUnused( IOBluetoothHIDDriver, 11 );
+    OSMetaClassDeclareReservedUnused( IOBluetoothHIDDriver, 12 );
     OSMetaClassDeclareReservedUnused( IOBluetoothHIDDriver, 13 );
     OSMetaClassDeclareReservedUnused( IOBluetoothHIDDriver, 14 );
     OSMetaClassDeclareReservedUnused( IOBluetoothHIDDriver, 15 );

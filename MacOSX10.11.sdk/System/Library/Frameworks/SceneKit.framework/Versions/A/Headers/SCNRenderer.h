@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class MTLRenderPassDescriptor;
 
 /*! @class SCNRenderer
-	@abstract SCNRenderer lets you use the SceneKit renderer in an OpenGL context of your own.
+	@abstract SCNRenderer lets you use the SceneKit renderer in an OpenGL context or Metal render pass descriptor of your own.
  */
 NS_CLASS_AVAILABLE(10_8, 8_0)
 @interface SCNRenderer : NSObject <SCNSceneRenderer, SCNTechniqueSupport>

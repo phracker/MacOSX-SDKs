@@ -117,7 +117,7 @@ APPKIT_EXTERN NSString *NSImageFallbackBackgroundColor  NS_AVAILABLE_MAC(10_5); 
 @property (readonly) NSInteger numberOfPlanes;
 @property (readonly) NSBitmapFormat bitmapFormat;
 
-- (void)getCompression:(null_unspecified NSTIFFCompression *)compression factor:(null_unspecified float *)factor;
+- (void)getCompression:(nullable NSTIFFCompression *)compression factor:(nullable float *)factor;
 - (void)setCompression:(NSTIFFCompression)compression factor:(float)factor;
 
 @property (nullable, readonly, copy) NSData *TIFFRepresentation;
@@ -126,7 +126,7 @@ APPKIT_EXTERN NSString *NSImageFallbackBackgroundColor  NS_AVAILABLE_MAC(10_5); 
 + (nullable NSData *)TIFFRepresentationOfImageRepsInArray:(NSArray<NSImageRep *> *)array;
 + (nullable NSData *)TIFFRepresentationOfImageRepsInArray:(NSArray<NSImageRep *> *)array usingCompression:(NSTIFFCompression)comp factor:(float)factor;
 
-+ (void)getTIFFCompressionTypes:(const NSTIFFCompression * __null_unspecified* __null_unspecified)list count:(null_unspecified NSInteger *)numTypes;
++ (void)getTIFFCompressionTypes:(const NSTIFFCompression * __nullable * __nonnull)list count:(NSInteger *)numTypes;
 + (nullable NSString *)localizedNameForTIFFCompressionType:(NSTIFFCompression)compression;
 - (BOOL)canBeCompressedUsing:(NSTIFFCompression)compression;
 
@@ -158,7 +158,7 @@ Works on images with 8-bit SPP; thus either 8-bit gray or 24-bit color (with opt
 
 @interface NSBitmapImageRep (NSBitmapImageFileTypeExtensions)
 
-+ (nullable NSData *)representationOfImageRepsInArray:(NSArray *)imageReps usingType:(NSBitmapImageFileType)storageType properties:(NSDictionary<NSString *, id> *)properties;
++ (nullable NSData *)representationOfImageRepsInArray:(NSArray<NSImageRep *> *)imageReps usingType:(NSBitmapImageFileType)storageType properties:(NSDictionary<NSString *, id> *)properties;
 
 - (nullable NSData *)representationUsingType:(NSBitmapImageFileType)storageType properties:(NSDictionary<NSString *, id> *)properties;
 

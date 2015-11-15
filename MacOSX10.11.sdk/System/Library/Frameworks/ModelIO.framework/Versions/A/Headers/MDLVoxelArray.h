@@ -8,7 +8,7 @@
 /*!
  @header MDLVoxelArray.h
  @framework ModelIO
- @abstract Structures for describing volumetric data obtained from 3d assetsb2
+ @abstract Structures for describing volumetric data obtained from 3d assets
  @copyright Copyright © 2015 Apple, Inc. All rights reserved.
  */
 
@@ -25,12 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  MDLVoxelIndex is a four component voxel index.
  @discussion The index's x, y, and z components correspond to the voxel grid's
-             x, y, and z indices. The w component corresponds to the voxel grid shell level.
-             A shell level of zero corresponds to a voxel on the surface of an object.
-             A positive shell index corresponds to a shell on the exterior of the object,
-             and a negative index corresponds to a shell on the interior. A shell index of
-             one is immediately adjacent to the zero shell, two is immediately adjacent 
-             one, and so on.
+ x, y, and z indices. The w component corresponds to the voxel grid shell level.
+ A shell level of zero corresponds to a voxel on the surface of an object.
+ A positive shell index corresponds to a shell on the exterior of the object,
+ and a negative index corresponds to a shell on the interior. A shell index of
+ one is immediately adjacent to the zero shell, two is immediately adjacent
+ one, and so on.
  */
 typedef vector_int4 MDLVoxelIndex;
 
@@ -54,23 +54,51 @@ MDL_EXPORT
 @interface MDLVoxelArray : NSObject
 
 /**
- Initialize a voxel grid from an MDLAsset
+ Initialize a voxel grid from an MDLAsset and dilate the resulting voxels by
+ a number of interior and exterior shells. 
+ Routine will attempt to create a closed volume model by applying patches of
+ a given radius to any holes it may find in the asset.
+ 
  @param divisions The number of divisions to divide the vertical extent of the 
         model by.
  @param interiorShells The number of shells to compute inside the surface shell
  @param exteriorShells The number of shells to compute outside the surface shell
+ @param patchRadius The radius of the largest model mending patch in world space units
  */
 - (instancetype)initWithAsset:(MDLAsset*)asset
                     divisions:(int)divisions
-               interiorShells:(float)interiorShells
-               exteriorShells:(float)exteriorShells;
+               interiorShells:(int)interiorShells
+               exteriorShells:(int)exteriorShells
+                  patchRadius:(float)patchRadius;
+
+/**
+ Initialize a voxel grid from an MDLAsset and dilate the resulting voxels by
+ a spatial distance in the interior and exterior directions.
+ Routine will attempt to create a closed volume model by applying "patches" of
+ a given radius to any holes it may find in the asset.
+ 
+ @param divisions The number of divisions to divide the vertical extent of the
+ model by.
+ @param interiorNBWidth The interior narrow band width in world space units
+ @param exteriorNBWidth The exterior narrow band width in world space units
+ @param patchRadius The radius of the largest model mending patch in world space units
+ */
+- (instancetype)initWithAsset:(MDLAsset*)asset
+                    divisions:(int)divisions
+              interiorNBWidth:(float)interiorNBWidth
+              exteriorNBWidth:(float)exteriorNBWidth
+                  patchRadius:(float)patchRadius;
+
 
 /**
  Initialize a voxel grid from an NSData containing an array of MDLVoxelIndex values.
- @param interiorShells The number of shells to compute inside the surface shell
- @param exteriorShells The number of shells to compute outside the surface shell
+ 
+ @param boundingBox The bounds defining the extent of the volume model in Cartesian space
+ @param voxelExtent The extent of a single voxel
  */
-- (instancetype)initWithData:(NSData*)voxelData;
+- (instancetype)initWithData:(NSData*)voxelData
+                 boundingBox:(MDLAxisAlignedBoundingBox)boundingBox
+                 voxelExtent:(float)voxelExtent;
 
 /**
  Create a mesh from the voxel grid
@@ -82,7 +110,7 @@ MDL_EXPORT
  @discussion the allowAny parameters can be used to wildcard any dimensions. This 
              is useful to perform queries such as determining if any voxel 
              exists on the XY plane at a certain Z, or if any voxel exists at 
-             any X, Y, Z, but a particular shell, and so on.
+             any X, Y, Z, or a particular shell, and so on.
  */
 - (BOOL)voxelExistsAtIndex:(MDLVoxelIndex)index
                  allowAnyX:(BOOL)allowAnyX allowAnyY:(BOOL)allowAnyY allowAnyZ:(BOOL)allowAnyZ
@@ -95,24 +123,69 @@ MDL_EXPORT
 - (void)setVoxelAtIndex:(MDLVoxelIndex)index;
 
 /**
+ Set voxels corresponding to a mesh
+ Routine will attempt to create a closed volume model by applying "patches" of
+ a given radius to any holes it may find in the mesh.
+ 
+ @param divisions The number of divisions to divide the vertical extent of the
+ model by.
+ @param interiorShells The number of shells to compute inside the surface shell
+ @param exteriorShells The number of shells to compute outside the surface shell
+ @param patchRadius The radius of the largest model mending patch in world space units
+ */
+- (void)setVoxelsForMesh:(nonnull MDLMesh*)mesh
+               divisions:(int)divisions
+          interiorShells:(int)interiorShells
+          exteriorShells:(int)exteriorShells
+             patchRadius:(float)patchRadius;
+
+
+/**
+ Set voxels corresponding to a mesh
+ Routine will attempt to create a closed volume model by applying "patches" of
+ a given radius to any holes it may find in the mesh.
+ 
+ @param divisions The number of divisions to divide the vertical extent of the
+ model by.
+ @param interiorNBWidth The interior narrow band width in world space units
+ @param exteriorNBWidth The exterior narrow band width in world space units
+ @param patchRadius The radius of the largest model mending patch in world space units
+ */
+- (void)setVoxelsForMesh:(nonnull MDLMesh*)mesh
+               divisions:(int)divisions
+         interiorNBWidth:(float)interiorNBWidth
+         exteriorNBWidth:(float)exteriorNBWidth
+             patchRadius:(float)patchRadius;
+
+
+/**
  Returns an NSData containing the indices of all voxels found in the extent
  */
 - (nullable NSData *)voxelsWithinExtent:(MDLVoxelIndexExtent)extent;
 
 /**
- Union modifies the voxel grid to be the merger with the supplied voxel grid
+ Returns an NSData containing the indices of all voxels in the voxel grid
+ */
+- (nullable NSData *)voxelIndices;
+
+/**
+ Union modifies the voxel grid to be the merger with the supplied voxel grid.
+ It is assumed that the spatial voxel extent of one voxel in the supplied grid is the same as that of the voxel grid.
+ Note that the shell level data will be cleared.
  */
 - (void)unionWithVoxels:(MDLVoxelArray*)voxels;
 
 /**
- Difference modifies the voxel grid so that voxels also in the supplied voxel 
- grid are removed
+ Difference modifies the voxel grid so that voxels also in the supplied voxel grid are removed.
+ It is assumed that the spatial voxel extent of one voxel in the supplied grid is the same as that of the voxel grid.
+ Note that the shell level data will be cleared.
  */
 - (void)differenceWithVoxels:(MDLVoxelArray*)voxels;
 
 /**
- Intersections modifies the voxel grid so that only voxels that are also in the
- supplied voxel grid are retained
+ Intersection modifies the voxel grid so that only voxels that are also in the supplied voxel grid are retained.
+ It is assumed that the spatial voxel extent of one voxel in the supplied grid is the same as that of the voxel grid.
+ Note that the shell level data will be cleared.
  */
 - (void)intersectWithVoxels:(MDLVoxelArray*)voxels;
 

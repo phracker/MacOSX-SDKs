@@ -11,7 +11,7 @@
 #import <CoreMedia/CMFormatDescription.h>
 #import <CoreMedia/CMSync.h>
 #if TARGET_OS_MAC && ! (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE || TARGET_OS_WIN32)
-	#import <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGDirectDisplay.h>
+	#import <CoreGraphics/CGDirectDisplay.h>
 #endif
 
 @class AVCaptureInputPort;
@@ -327,8 +327,13 @@ NS_CLASS_AVAILABLE(10_7, NA)
 	detects duplicate frames, it drops them.  If set to NO, the captured output receives all frames
     from the input.  Prior to 10.9 this value defaulted to YES.  In 10.9 and later, it defaults to
 	NO, as modern platforms support frame differencing in hardware-based encoders.
+	
+	As of 10.10, this property has been deprecated and is ignored.  Clients wishing to re-create
+	this functionality can use an AVCaptureVideoDataOutput and compare frame contents in their
+	own code.  If they wish to write a movie file, they can then pass the unique frames to an
+	AVAssetWriterInput.
 */
-@property(nonatomic) BOOL removesDuplicateFrames NS_AVAILABLE(10_8, NA);
+@property(nonatomic) BOOL removesDuplicateFrames NS_DEPRECATED(10_8, 10_10, NA, NA);
 
 @end
 

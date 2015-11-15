@@ -90,6 +90,8 @@ extern "C" {
 #endif
     
 #pragma pack(push, 4)
+	
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
 	@enum CMBufferQueue Errors
@@ -238,6 +240,8 @@ CM_EXPORT const CMBufferCallbacks * CM_NONNULL CMBufferQueueGetCallbacksForUnsor
  */
 CM_EXPORT const CMBufferCallbacks * CM_NONNULL CMBufferQueueGetCallbacksForSampleBuffersSortedByOutputPTS(void)
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_3);
+	
+CF_IMPLICIT_BRIDGING_DISABLED
 
 /*!
 	@function	CMBufferQueueCreate
@@ -255,9 +259,11 @@ CM_EXPORT OSStatus CMBufferQueueCreate(
 												Callbacks the queue should use to interrogate the buffer objects.
 												This struct is copied internally, so the client can pass a pointer
 												to a temporary struct on the stack. */
-	CMBufferQueueRef CM_NULLABLE * CM_NONNULL queueOut)	/*! @param queueOut
+	CM_RETURNS_RETAINED_PARAMETER CMBufferQueueRef CM_NULLABLE * CM_NONNULL queueOut)	/*! @param queueOut
 												Returned newly created CMBufferQueue. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
+	
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
 	@function	CMBufferQueueGetTypeID
@@ -716,6 +722,8 @@ CM_EXPORT OSStatus CMBufferQueueSetValidationCallback(
 		void * CM_NULLABLE validationRefCon )						/*! @param validationRefCon
 																		Context refcon for validation callback. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0);
+	
+CF_IMPLICIT_BRIDGING_DISABLED
 
 #pragma pack(pop)
     

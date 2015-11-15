@@ -71,20 +71,12 @@ typedef NS_ENUM(NSUInteger, MTLCPUCacheMode)
  @constant MTLStorageModePrivate
  This mode allows the data to be kept entirely to GPU (or driver) private memory that will never be accessed by the CPU directly, so no
  conherency of any kind must be maintained.
-
- @constant MTLStorageModeAuto
- This value tells MTLTextureDescriptor to automatically pick a compatible storageMode, given platform
- and other MTLTextureDescriptor properties including sampleCount and pixelFormat.
- MTLStorageModeAuto is the default value for MTLTextureDescriptor's storageMode property.
- Once created, a MTLTexture's storageMode property can be queried to know the storageMode it was created with.
-
 */
 typedef NS_ENUM(NSUInteger, MTLStorageMode)
 {
     MTLStorageModeShared  = 0,
     MTLStorageModeManaged NS_ENUM_AVAILABLE(10_11, NA) = 1,
     MTLStorageModePrivate = 2,
-    MTLStorageModeAuto    = 15,
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
 /*!
@@ -117,39 +109,28 @@ typedef NS_ENUM(NSUInteger, MTLStorageMode)
  This mode allows the data to be kept entirely to GPU (or driver) private memory that will never be accessed by the CPU directly, so no
  conherency of any kind must be maintained.
 
- @constant MTLResourceStorageModeAuto
- See MTLStorageModeAuto.  This value is only valid when used with MTLTextureDescriptor.
-
  @discussion
  Note that resource options are a property of MTLTextureDescriptor (resourceOptions), so apply to texture creation.
  they are also passed directly into MTLBuffer creation methods.
 */
+
+#define MTLResourceCPUCacheModeShift 0
+#define MTLResourceCPUCacheModeMask  (0xfUL << MTLResourceCPUCacheModeShift)
+#define MTLResourceStorageModeShift  4
+#define MTLResourceStorageModeMask   (0xfUL << MTLResourceStorageModeShift)
+
 typedef NS_OPTIONS(NSUInteger, MTLResourceOptions)
 {
-    MTLResourceCPUCacheModeShift         = 0,
     MTLResourceCPUCacheModeDefaultCache  = MTLCPUCacheModeDefaultCache  << MTLResourceCPUCacheModeShift,
     MTLResourceCPUCacheModeWriteCombined = MTLCPUCacheModeWriteCombined << MTLResourceCPUCacheModeShift,
-    MTLResourceCPUCacheModeMask          = 0xf                          << MTLResourceCPUCacheModeShift,
 
-    MTLResourceStorageModeShift   NS_ENUM_AVAILABLE(10_11, 9_0) = 4,
     MTLResourceStorageModeShared  NS_ENUM_AVAILABLE(10_11, 9_0) = MTLStorageModeShared  << MTLResourceStorageModeShift,
     MTLResourceStorageModeManaged NS_ENUM_AVAILABLE(10_11, NA)  = MTLStorageModeManaged << MTLResourceStorageModeShift,
     MTLResourceStorageModePrivate NS_ENUM_AVAILABLE(10_11, 9_0) = MTLStorageModePrivate << MTLResourceStorageModeShift,
-    MTLResourceStorageModeAuto    NS_ENUM_AVAILABLE(10_11, 9_0) = MTLStorageModeAuto    << MTLResourceStorageModeShift,
-    MTLResourceStorageModeMask    NS_ENUM_AVAILABLE(10_11, 9_0) = 0xf                   << MTLResourceStorageModeShift,
 
     // Deprecated spellings
     MTLResourceOptionCPUCacheModeDefault       = MTLResourceCPUCacheModeDefaultCache,
     MTLResourceOptionCPUCacheModeWriteCombined = MTLResourceCPUCacheModeWriteCombined,
-
-    // <rdar://problem/20750269> inconsistent naming for NS_OPTIONS MTLResourceOptions
-    MTLResourceOptionCPUCacheModeShift  = MTLResourceCPUCacheModeShift,
-    MTLResourceOptionCPUCacheModeMask   = MTLResourceCPUCacheModeMask,
-    MTLResourceOptionStorageModeShift   NS_ENUM_AVAILABLE(10_11, 9_0) = MTLResourceStorageModeShift,
-    MTLResourceOptionStorageModeShared  NS_ENUM_AVAILABLE(10_11, 9_0) = MTLResourceStorageModeShared,
-    MTLResourceOptionStorageModeManaged NS_ENUM_AVAILABLE(10_11, NA)  = MTLResourceStorageModeManaged,
-    MTLResourceOptionStorageModePrivate NS_ENUM_AVAILABLE(10_11, 9_0) = MTLResourceStorageModePrivate,
-    MTLResourceOptionStorageModeMask    NS_ENUM_AVAILABLE(10_11, 9_0) = MTLResourceStorageModeMask,
 } NS_ENUM_AVAILABLE(10_11, 8_0);
 
 @protocol MTLDevice;

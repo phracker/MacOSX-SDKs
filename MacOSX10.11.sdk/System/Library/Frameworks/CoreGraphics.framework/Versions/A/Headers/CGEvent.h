@@ -361,6 +361,10 @@ CG_EXTERN void CGEventPostToPSN(void * __nullable processSerialNumber,
     CGEventRef __nullable event)
     CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_NA);
 
+CG_EXTERN void CGEventPostToPid( pid_t pid,
+    CGEventRef __nullable event)
+    CG_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_NA);
+
 /* Gets a list of currently installed event taps.
 
    `tapList' is an array of event tap information structures of length

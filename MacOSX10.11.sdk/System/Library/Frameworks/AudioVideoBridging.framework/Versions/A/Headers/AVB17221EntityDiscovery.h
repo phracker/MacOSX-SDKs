@@ -9,6 +9,8 @@
 
 #include <IOKit/IOKitLib.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class AVB17221Entity;
 @class AVBInterface;
 
@@ -64,13 +66,13 @@ NS_CLASS_AVAILABLE(10_8, NA)
 	@property	interface
 	@abstract	The AVBInterface object which owns this object. This may be nil if it was not created by an instance of AVBInterface
  */
-@property (readonly, assign) AVBInterface *interface;
+@property (readonly, assign, nullable) AVBInterface *interface;
 
 /*!
 	@property	discoveryDelegate
 	@abstract	The delegate, implementing the AVB17221EntityDiscoveryDelegate protocol, which will handle entities arriving, departing and changing properties.
  */
-@property (assign) id <AVB17221EntityDiscoveryDelegate> discoveryDelegate;
+@property (assign, nullable) id <AVB17221EntityDiscoveryDelegate> discoveryDelegate;
 
 /*!
 	@method		initWithInterfaceName:
@@ -141,3 +143,5 @@ NS_CLASS_AVAILABLE(10_8, NA)
 - (BOOL)changeEntityWithEntityID:(uint64_t)entityID toNewGPTPGrandmasterID:(uint64_t)gPTPGrandmasterID error:(NSError **)error NS_AVAILABLE(10_9, NA);
 
 @end
+
+NS_ASSUME_NONNULL_END

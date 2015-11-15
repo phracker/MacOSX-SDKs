@@ -52,6 +52,8 @@ typedef NS_ENUM(NSUInteger, NSHTTPCookieAcceptPolicy) {
     @method sharedHTTPCookieStorage
     @abstract Get the shared cookie storage in the default location.
     @result The shared cookie storage
+    @discussion Starting in OS X 10.11, each app has its own sharedHTTPCookieStorage singleton, 
+    which will not be shared with other applications.
 */
 + (NSHTTPCookieStorage *)sharedHTTPCookieStorage;
 

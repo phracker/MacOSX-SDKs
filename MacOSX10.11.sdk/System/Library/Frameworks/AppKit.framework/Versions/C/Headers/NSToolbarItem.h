@@ -96,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, weak) id target;
 
 /* Set and get the action of an item. For custom views, this method will call setAction:/action on the view if it responds. (forwards to -view if it responds) */
-@property (null_unspecified) SEL action;
+@property (nullable) SEL action;
 
 /* Set and get the enabled flag of an item.  For custom views, this method will call setEnabled:/isEnabled on the view if it responds. (forwards to -view if it responds) */
 @property (getter=isEnabled) BOOL enabled;
@@ -162,5 +162,6 @@ APPKIT_EXTERN NSString * NSToolbarShowColorsItemIdentifier;        // Shows the 
 APPKIT_EXTERN NSString * NSToolbarShowFontsItemIdentifier;         // Shows the font panel.
 APPKIT_EXTERN NSString * NSToolbarCustomizeToolbarItemIdentifier;  // Puts the current toolbar into customize mode.
 APPKIT_EXTERN NSString * NSToolbarPrintItemIdentifier;             // Sends printDocument: to firstResponder, but you can change this in toolbarWillAddItem: if you need to do so.
+APPKIT_EXTERN NSString * NSToolbarToggleSidebarItemIdentifier NS_AVAILABLE_MAC(10_11);  // A standard toolbar item identifier for sidebars. It sends -toggleSidebar: to the firstResponder.
 
 NS_ASSUME_NONNULL_END

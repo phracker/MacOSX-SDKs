@@ -26,6 +26,11 @@ CSEXTERN CFStringRef kColorSyncAdobeRGB1998Profile;         /* com.apple.ColorSy
 CSEXTERN CFStringRef kColorSyncGenericLabProfile;           /* com.apple.ColorSync.GenericLab */
 CSEXTERN CFStringRef kColorSyncGenericXYZProfile;           /* com.apple.ColorSync.GenericXYZ */
 
+CSEXTERN CFStringRef kColorSyncACESCGLinearProfile;         /* com.apple.ColorSync.ACESCGLinear */
+CSEXTERN CFStringRef kColorSyncITUR709Profile;              /* com.apple.ColorSync.ITUR709 */
+CSEXTERN CFStringRef kColorSyncITUR2020Profile;             /* com.apple.ColorSync.ITUR2020 */
+CSEXTERN CFStringRef kColorSyncROMMRGBProfile;              /* com.apple.ColorSync.ROMMRGB */
+    
 CSEXTERN CFStringRef kColorSyncProfileHeader;      /* com.apple.ColorSync.ProfileHeader */
 CSEXTERN CFStringRef kColorSyncProfileClass;       /* com.apple.ColorSync.ProfileClass */
 CSEXTERN CFStringRef kColorSyncProfileColorSpace;  /* com.apple.ColorSync.ProfileColorSpace */
@@ -79,7 +84,6 @@ CSEXTERN CFStringRef kColorSyncProfileComputerDomain; /* com.apple.ColorSync.Pro
 CSEXTERN CFStringRef kColorSyncProfileUserDomain;     /* com.apple.ColorSync.ProfileDomain.User */
 
 #define COLORSYNC_PROFILE_INSTALL_ENTITLEMENT   "com.apple.developer.ColorSync.profile.install"
-#define COLORSYNC_PROFILE_UNINSTALL_ENTITLEMENT "com.apple.developer.ColorSync.profile.uninstall"
 
 CSEXTERN CFTypeID ColorSyncProfileGetTypeID(void);
    /*

@@ -31,9 +31,10 @@ NS_CLASS_AVAILABLE(10_4, 3_0)
 @property (readonly, copy) NSArray *subpredicates;
 
 /*** Convenience Methods ***/
-+ (NSCompoundPredicate *)andPredicateWithSubpredicates:(NSArray<NSPredicate *> *)subpredicates;
-+ (NSCompoundPredicate *)orPredicateWithSubpredicates:(NSArray<NSPredicate *> *)subpredicates;
-+ (NSCompoundPredicate *)notPredicateWithSubpredicate:(NSPredicate *)predicate;
++ (NSCompoundPredicate *)andPredicateWithSubpredicates:(NSArray<NSPredicate *> *)subpredicates NS_SWIFT_NAME(init(andPredicateWithSubpredicates:));
++ (NSCompoundPredicate *)orPredicateWithSubpredicates:(NSArray<NSPredicate *> *)subpredicates NS_SWIFT_NAME(init(orPredicateWithSubpredicates:));
++ (NSCompoundPredicate *)notPredicateWithSubpredicate:(NSPredicate *)predicate NS_SWIFT_NAME(init(notPredicateWithSubpredicate:));
+
 @end
 
 NS_ASSUME_NONNULL_END

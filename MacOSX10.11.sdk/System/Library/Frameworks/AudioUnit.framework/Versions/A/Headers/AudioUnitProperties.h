@@ -732,7 +732,7 @@ CF_ENUM(AudioUnitScope) {
 
 	@constant		kAudioUnitProperty_RequestViewController
 						Scope:			Global
-						Value Type:		block: void (^)(AUViewController *)
+						Value Type:		block: void (^)(AUViewControllerBase *)
 						Access:			write
 						
 						If the audio unit is implemented using the version 3 API, it may provide a
@@ -883,7 +883,7 @@ typedef struct AudioUnitExternalBuffer {
 */
 typedef struct AURenderCallbackStruct {
 	AURenderCallback			inputProc;
-	void *						inputProcRefCon;
+	void * __nullable			inputProcRefCon;
 } AURenderCallbackStruct;
 
 /*!
@@ -959,9 +959,9 @@ typedef struct AudioUnitFrequencyResponseBin
 	@param			outCurrentBeat			The current beat, where 0 is the first beat. Tempo is defined as the number of whole-number (integer) beat values (as indicated by the outCurrentBeat field) per minute.
 	@param			outCurrentTempo			The current tempo
 */
-typedef OSStatus (*HostCallback_GetBeatAndTempo) (void		*inHostUserData, 
-											Float64			*outCurrentBeat, 
-											Float64			*outCurrentTempo);
+typedef OSStatus (*HostCallback_GetBeatAndTempo)(void * __nullable	inHostUserData,
+											Float64	* __nullable	outCurrentBeat,
+											Float64	* __nullable	outCurrentTempo);
 
 /*!
 	@typedef		HostCallback_GetMusicalTimeLocation
@@ -984,11 +984,11 @@ typedef OSStatus (*HostCallback_GetBeatAndTempo) (void		*inHostUserData,
 	@param			outCurrentMeasureDownBeat		The beat that corresponds to the downbeat (first beat) of the current measure that is being rendered
 
 */
-typedef OSStatus (*HostCallback_GetMusicalTimeLocation) (void     *inHostUserData, 
-												UInt32            *outDeltaSampleOffsetToNextBeat,
-												Float32           *outTimeSig_Numerator,
-												UInt32            *outTimeSig_Denominator,
-												Float64           *outCurrentMeasureDownBeat);
+typedef OSStatus (*HostCallback_GetMusicalTimeLocation)(void * __nullable	inHostUserData,
+												UInt32 * __nullable			outDeltaSampleOffsetToNextBeat,
+												Float32 * __nullable		outTimeSig_Numerator,
+												UInt32 * __nullable			outTimeSig_Denominator,
+												Float64 * __nullable		outCurrentMeasureDownBeat);
 
 /*!
 	@typedef		HostCallback_GetTransportState
@@ -1013,13 +1013,13 @@ typedef OSStatus (*HostCallback_GetMusicalTimeLocation) (void     *inHostUserDat
 	@param			outCycleEndBeat					If cycling is true, the end beat of the cycle or loop point in the host's transport
 	
 */
-typedef OSStatus (*HostCallback_GetTransportState) (void 	*inHostUserData,
-										Boolean 			*outIsPlaying,
-										Boolean 			*outTransportStateChanged,
-										Float64 			*outCurrentSampleInTimeLine,
-										Boolean 			*outIsCycling,
-										Float64 			*outCycleStartBeat,
-										Float64 			*outCycleEndBeat);
+typedef OSStatus (*HostCallback_GetTransportState)(void * __nullable	inHostUserData,
+										Boolean * __nullable			outIsPlaying,
+										Boolean * __nullable			outTransportStateChanged,
+										Float64 * __nullable			outCurrentSampleInTimeLine,
+										Boolean * __nullable			outIsCycling,
+										Float64 * __nullable			outCycleStartBeat,
+										Float64 * __nullable			outCycleEndBeat);
 
 /*!
 	@typedef		HostCallback_GetTransportState2
@@ -1045,14 +1045,14 @@ typedef OSStatus (*HostCallback_GetTransportState) (void 	*inHostUserData,
 	@param			outCycleEndBeat					If cycling is true, the end beat of the cycle or loop point in the host's transport
 	
 */
-typedef OSStatus (*HostCallback_GetTransportState2) (void 	*inHostUserData,
-										Boolean 			*outIsPlaying,
-										Boolean				*outIsRecording,
-										Boolean 			*outTransportStateChanged,
-										Float64 			*outCurrentSampleInTimeLine,
-										Boolean 			*outIsCycling,
-										Float64 			*outCycleStartBeat,
-										Float64 			*outCycleEndBeat);
+typedef OSStatus (*HostCallback_GetTransportState2)(void * __nullable	inHostUserData,
+										Boolean * __nullable			outIsPlaying,
+										Boolean	* __nullable			outIsRecording,
+										Boolean * __nullable			outTransportStateChanged,
+										Float64 * __nullable			outCurrentSampleInTimeLine,
+										Boolean * __nullable			outIsCycling,
+										Float64 * __nullable			outCycleStartBeat,
+										Float64 * __nullable			outCycleEndBeat);
 
 /*!
 	@struct			HostCallbackInfo
@@ -1061,11 +1061,11 @@ typedef OSStatus (*HostCallback_GetTransportState2) (void 	*inHostUserData,
 		Any callback can be NULL.
 */
 typedef struct HostCallbackInfo {
-	void *									hostUserData;
-	HostCallback_GetBeatAndTempo			beatAndTempoProc;
-    HostCallback_GetMusicalTimeLocation     musicalTimeLocationProc;
-	HostCallback_GetTransportState			transportStateProc;	
-	HostCallback_GetTransportState2			transportStateProc2;
+	void * __nullable									hostUserData;
+	HostCallback_GetBeatAndTempo __nullable				beatAndTempoProc;
+    HostCallback_GetMusicalTimeLocation __nullable		musicalTimeLocationProc;
+	HostCallback_GetTransportState __nullable			transportStateProc;
+	HostCallback_GetTransportState2 __nullable			transportStateProc2;
 } HostCallbackInfo;
 
 /*!
@@ -1112,7 +1112,7 @@ struct MIDIPacketList;
 	@abstract		A callback used by an audio unit to provide MIDI data to a host application
 */
 typedef OSStatus
-(*AUMIDIOutputCallback)(void *							userData,
+(*AUMIDIOutputCallback)(void * __nullable				userData,
 						const AudioTimeStamp *			timeStamp,
 						UInt32							midiOutNum,
 						const struct MIDIPacketList *	pktlist);
@@ -1124,7 +1124,7 @@ typedef OSStatus
 */
 typedef struct AUMIDIOutputCallbackStruct {
 	AUMIDIOutputCallback	midiOutputCallback;
-	void*					userData;
+	void * __nullable		userData;
 } AUMIDIOutputCallbackStruct;
 
 /*!
@@ -1134,7 +1134,7 @@ typedef struct AUMIDIOutputCallbackStruct {
 */
 typedef struct AUInputSamplesInOutputCallbackStruct {
 	AUInputSamplesInOutputCallback		inputToOutputCallback;
-	void *								userData;
+	void * __nullable					userData;
 } AUInputSamplesInOutputCallbackStruct;
 
 
@@ -1335,9 +1335,9 @@ typedef CF_OPTIONS(UInt32, AudioUnitParameterOptions)
 typedef struct AudioUnitParameterInfo
 {
 	char						name[52];
-	CFStringRef					unitName;
+	CFStringRef __nullable		unitName;
 	UInt32						clumpID;
-	CFStringRef					cfNameString;
+	CFStringRef __nullable		cfNameString;
 	AudioUnitParameterUnit		unit;
 	AudioUnitParameterValue		minValue;
 	AudioUnitParameterValue		maxValue;
@@ -1421,7 +1421,7 @@ enum {
 typedef struct AudioUnitParameterNameInfo {
 	AudioUnitParameterID	inID;
 	SInt32					inDesiredLength;
-	CFStringRef				outName;
+	CFStringRef __nullable	outName;
 } AudioUnitParameterIDName;
 
 /*!
@@ -1431,7 +1431,7 @@ typedef struct AudioUnitParameterNameInfo {
 typedef struct AudioUnitParameterStringFromValue {
 	AudioUnitParameterID				inParamID;
 	const AudioUnitParameterValue *		inValue;	
-	CFStringRef							outString;  	
+	CFStringRef __nullable				outString;
 } AudioUnitParameterStringFromValue;
 
 /*!
@@ -2700,9 +2700,8 @@ typedef struct ScheduledAudioSlice ScheduledAudioSlice; // forward dec, see defi
 /*!
 	@typedef			ScheduledAudioSliceCompletionProc
 */
-typedef void (*ScheduledAudioSliceCompletionProc)(void *userData, 
-				ScheduledAudioSlice *bufferList);
-				
+typedef void (*ScheduledAudioSliceCompletionProc)(void * __nullable userData, ScheduledAudioSlice *bufferList);
+
 /*
 	@struct				ScheduledAudioSlice
 	@field				mTimeStamp
@@ -2867,7 +2866,7 @@ typedef struct ScheduledAudioFileRegion ScheduledAudioFileRegion; //forward decl
 /*!
 	@typedef		ScheduledAudioFileRegionCompletionProc
 */
-typedef void (*ScheduledAudioFileRegionCompletionProc)(void *userData, 
+typedef void (*ScheduledAudioFileRegionCompletionProc)(void * __nullable userData,
 				ScheduledAudioFileRegion *fileRegion, OSStatus result);
 
 /*!

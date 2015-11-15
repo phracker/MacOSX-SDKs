@@ -94,6 +94,7 @@
 #define	_NETINET6_IN6_VAR_H_
 #include <sys/appleapiopts.h>
 
+#include <netinet6/scope6_var.h>
 #include <sys/kern_event.h>
 #include <net/ethernet.h>
 
@@ -240,7 +241,6 @@ struct icmp6_ifstat {
 	/* ipv6IfIcmpOutGroupMembReductions, # of output MLD done */
 	u_quad_t ifs6_out_mlddone;
 };
-
 
 struct in6_ifreq {
 	char	ifr_name[IFNAMSIZ];

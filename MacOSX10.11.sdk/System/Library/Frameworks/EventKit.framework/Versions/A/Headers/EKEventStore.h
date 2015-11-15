@@ -103,20 +103,20 @@ typedef void(^EKEventStoreRequestAccessCompletionHandler)(BOOL granted, NSError 
 //----------------------------------------------------
 
 /*!
-    @method     delegateSources
+    @property   delegateSources
     @abstract   Returns an unordered array of sources for all available delegates.
     @discussion By default, delegates are not included in an event store's sources. To work with delegates,
                 you can create a new event store and pass in the sources, including sources returned from this
                 method, that you're interested in.
     @see        initWithSources:
  */
-- (NSArray<EKSource *> *)delegateSources NS_AVAILABLE(10_11, NA);
+@property (nonatomic, readonly) NSArray<EKSource *> *delegateSources NS_AVAILABLE(10_11, NA);
 
 /*!
-    @method     sources
+    @property   sources
     @abstract   Returns an unordered array of sources.
 */
-- (NSArray<EKSource *> *)sources NS_AVAILABLE(10_8, 5_0);
+@property (nonatomic, readonly) NSArray<EKSource *> *sources NS_AVAILABLE(10_8, 5_0);
 
 /*!
     @method     sourceWithIdentifier:

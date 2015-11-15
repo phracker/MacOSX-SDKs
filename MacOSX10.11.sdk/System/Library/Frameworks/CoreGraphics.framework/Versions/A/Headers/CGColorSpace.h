@@ -49,7 +49,7 @@ CF_ASSUME_NONNULL_BEGIN
    kCGColorSpaceGenericGray. */
 
 CG_EXTERN const CFStringRef kCGColorSpaceGenericGray
-  CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_NA);
+  CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_9_0);
 
 /* The name of the "Generic" RGB color space. It is a legacy
    color space so use it only if you definitely know that you
@@ -58,12 +58,13 @@ CG_EXTERN const CFStringRef kCGColorSpaceGenericGray
    instead of kCGColorSpaceGenericRGB. */
 
 CG_EXTERN const CFStringRef kCGColorSpaceGenericRGB
-  CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_NA);
+  CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_9_0);
 
 /* The name of the "Generic" CMYK color space. */
 
 CG_EXTERN const CFStringRef kCGColorSpaceGenericCMYK
   CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_8_0);
+  
 
 /* The name of the "Generic" linear RGB color space. This is the same as
    `kCGColorSpaceGenericRGB' but with a 1.0 gamma. */
@@ -91,6 +92,22 @@ CG_EXTERN const CFStringRef kCGColorSpaceSRGB
 
 CG_EXTERN const CFStringRef kCGColorSpaceGenericGrayGamma2_2
   CG_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_8_0);
+
+CG_EXTERN const CFStringRef kCGColorSpaceGenericXYZ
+  CG_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+
+CG_EXTERN const CFStringRef kCGColorSpaceACESCGLinear
+CG_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+
+CG_EXTERN const CFStringRef kCGColorSpaceITUR_709
+CG_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+
+CG_EXTERN const CFStringRef kCGColorSpaceITUR_2020
+CG_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+
+CG_EXTERN const CFStringRef kCGColorSpaceROMMRGB
+CG_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+
 
 /* Create a DeviceGray color space. */
 
@@ -192,7 +209,7 @@ CG_EXTERN CGColorSpaceRef __nullable CGColorSpaceCreatePattern(CGColorSpaceRef _
 
 CG_EXTERN CGColorSpaceRef __nullable
   CGColorSpaceCreateWithPlatformColorSpace(const void * __nullable ref)
-  CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_NA);
+  CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_9_0);
 
 /* Create a color space using `name' as the identifier for the color
    space. */

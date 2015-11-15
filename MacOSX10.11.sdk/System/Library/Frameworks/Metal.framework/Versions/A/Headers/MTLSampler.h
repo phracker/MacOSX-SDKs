@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <Metal/MTLDefines.h>
 #import <Metal/MTLDevice.h>
+#import <Metal/MTLDepthStencil.h>
 
 NS_ASSUME_NONNULL_BEGIN
 /*!
@@ -44,7 +45,10 @@ typedef NS_ENUM(NSUInteger, MTLSamplerMipFilter) {
  
  @constant MTLSamplerAddressModeClampToEdge
  Texture coordinates will be clamped between 0 and 1.
- 
+
+ @constant MTLSamplerAddressModeMirrorClampToEdge
+ Mirror the texture while coordinates are within -1..1, and clamp to edge when outside.
+
  @constant MTLSamplerAddressModeRepeat
  Wrap to the other side of the texture, effectively ignoring fractional parts of the texture coordinate.
  
@@ -54,14 +58,9 @@ typedef NS_ENUM(NSUInteger, MTLSamplerMipFilter) {
  @constant MTLSamplerAddressModeClampToZero
  ClampToZero returns transparent zero (0,0,0,0) for images with an alpha channel, and returns opaque zero (0,0,0,1) for images without an alpha channel.
  */
-/*!
- @constant MTLSamplerAddressModeMirrorClampToEdge
- Mirror the texture while coordinates are within -1..1, and clamp to edge when outside.
- MirrorClampToEdge functionality is not supported on all devices.  Support can be queried from MTLDevice.samplerMirrorClampToEdgeSupported.
- */
 typedef NS_ENUM(NSUInteger, MTLSamplerAddressMode) {
     MTLSamplerAddressModeClampToEdge = 0,
-    MTLSamplerAddressModeMirrorClampToEdge = 1,
+    MTLSamplerAddressModeMirrorClampToEdge NS_AVAILABLE_MAC(10_11) = 1,
     MTLSamplerAddressModeRepeat = 2,
     MTLSamplerAddressModeMirrorRepeat = 3,
     MTLSamplerAddressModeClampToZero = 4,
@@ -140,6 +139,13 @@ NS_CLASS_AVAILABLE(10_11, 8_0)
  @discussion The default value of lodMaxClamp is FLT_MAX.  Clamp values are ignored for texture sample variants that specify an explicit level of detail.
  */
 @property (nonatomic) float lodMaxClamp;
+
+
+/*!
+ @property compareFunction
+ @abstract Set the comparison function used when sampling shadow maps. The default value is MTLCompareFunctionNever.
+ */
+@property (nonatomic) MTLCompareFunction compareFunction NS_AVAILABLE(10_11, 9_0);
 
 /*!
  @property label

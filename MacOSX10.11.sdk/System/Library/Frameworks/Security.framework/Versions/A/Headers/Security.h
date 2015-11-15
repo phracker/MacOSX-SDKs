@@ -101,3 +101,6 @@
 #include <Security/SecReadTransform.h>
 #endif
 
+/* DER */
+#include <Security/oids.h>
+

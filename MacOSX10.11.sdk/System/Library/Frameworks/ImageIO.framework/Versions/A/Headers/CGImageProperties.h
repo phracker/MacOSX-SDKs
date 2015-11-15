@@ -455,6 +455,25 @@ typedef CF_ENUM(uint32_t, CGImagePropertyOrientation) {
     kCGImagePropertyOrientationLeft           // 0th row on left,   0th column at bottom - 90 deg CCW
 };
 
+
+/*
+ * Allows client to choose the filters applied before PNG compression
+ * http://www.libpng.org/pub/png/book/chapter09.html#png.ch09.div.1
+ * The value should be a CFNumber, of type long, containing a bitwise OR of the desired filters
+ * The filters are defined below, IMAGEIO_PNG_NO_FILTERS, IMAGEIO_PNG_FILTER_NONE, etc
+ * This value has no effect when compressing to any format other than PNG
+ */
+IMAGEIO_EXTERN const CFStringRef kCGImagePropertyPNGCompressionFilter IMAGEIO_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+
+#define IMAGEIO_PNG_NO_FILTERS     0x00
+#define IMAGEIO_PNG_FILTER_NONE    0x08
+#define IMAGEIO_PNG_FILTER_SUB     0x10
+#define IMAGEIO_PNG_FILTER_UP      0x20
+#define IMAGEIO_PNG_FILTER_AVG     0x40
+#define IMAGEIO_PNG_FILTER_PAETH   0x80
+#define IMAGEIO_PNG_ALL_FILTERS (IMAGEIO_PNG_FILTER_NONE | IMAGEIO_PNG_FILTER_SUB | IMAGEIO_PNG_FILTER_UP | IMAGEIO_PNG_FILTER_AVG | IMAGEIO_PNG_FILTER_PAETH)
+
+
 CF_ASSUME_NONNULL_END
 
 CF_IMPLICIT_BRIDGING_DISABLED

@@ -134,6 +134,7 @@ typedef signed long	CMItemIndex;
 #endif
 #if __has_feature(attribute_cf_returns_on_parameters)
 	#define COREMEDIA_DECLARE_RETURNS_RETAINED_ON_PARAMETERS 1
+	#define COREMEDIA_DECLARE_RETURNS_NOT_RETAINED_ON_PARAMETERS 1
 #endif
 #endif // (TARGET_OS_IPHONE || TARGET_OS_MAC) && defined(__has_feature)
 
@@ -169,6 +170,12 @@ typedef signed long	CMItemIndex;
 #define CM_RETURNS_RETAINED_PARAMETER	CF_RETURNS_RETAINED
 #else
 #define CM_RETURNS_RETAINED_PARAMETER
+#endif
+	
+#if COREMEDIA_DECLARE_RETURNS_NOT_RETAINED_ON_PARAMETERS
+#define CM_RETURNS_NOT_RETAINED_PARAMETER	CF_RETURNS_NOT_RETAINED
+#else
+#define CM_RETURNS_NOT_RETAINED_PARAMETER
 #endif
 	
 typedef int32_t CMPersistentTrackID;

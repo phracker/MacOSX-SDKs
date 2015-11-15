@@ -38,6 +38,8 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 extern const CFStringRef kSecOIDADC_CERT_POLICY __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 extern const CFStringRef kSecOIDAPPLE_CERT_POLICY __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 extern const CFStringRef kSecOIDAPPLE_EKU_CODE_SIGNING __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
@@ -160,6 +162,8 @@ extern const CFStringRef kSecOIDX509V3CertificateNumberOfExtensions __OSX_AVAILA
 extern const CFStringRef kSecOIDX509V3SignedCertificate __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 extern const CFStringRef kSecOIDX509V3SignedCertificateCStruct __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 extern const CFStringRef kSecOIDSRVName  __OSX_AVAILABLE_STARTING(__MAC_10_8, __IPHONE_NA);
+
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

@@ -58,10 +58,11 @@ typedef double CLLocationDirection;
  *    longitude:
  *      The longitude in degrees.
  */
-typedef struct {
+struct CLLocationCoordinate2D {
 	CLLocationDegrees latitude;
 	CLLocationDegrees longitude;
-} CLLocationCoordinate2D;
+};
+typedef struct CLLocationCoordinate2D CLLocationCoordinate2D;
 
 /*
  *  CLLocationDistance

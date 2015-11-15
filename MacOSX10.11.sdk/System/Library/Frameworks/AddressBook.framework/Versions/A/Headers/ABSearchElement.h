@@ -5,6 +5,9 @@
 //  Copyright (c) 2003-2014 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABSEARCHELEMENT__
+#define __ABSEARCHELEMENT__
+
 #import <Foundation/Foundation.h>
 
 #import <AddressBook/ABTypedefs.h>
@@ -29,3 +32,5 @@
     // Given a record returns YES if this record matches the search element
     // Raises if record is nil
 @end
+
+#endif // __ABSEARCHELEMENT__

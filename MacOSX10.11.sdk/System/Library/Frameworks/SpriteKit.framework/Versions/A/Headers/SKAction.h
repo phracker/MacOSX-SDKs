@@ -220,7 +220,7 @@ SK_EXPORT @interface SKAction : NSObject <NSCopying, NSCoding>
 /** Creates an action that changes a sprite’s texture
  @param The new texture to use on the sprite
  */
-+ (SKAction *)setTexture:(SKTexture *)texture NS_AVAILABLE(10_11, 9_0);
++ (SKAction *)setTexture:(SKTexture *)texture NS_AVAILABLE(10_10, 7_1);
 + (SKAction *)setNormalTexture:(SKTexture *)texture NS_AVAILABLE(10_11, 9_0);
 
 /** Creates an action that changes a sprite’s texture, possibly resizing the sprite
@@ -228,7 +228,7 @@ SK_EXPORT @interface SKAction : NSObject <NSCopying, NSCoding>
  @param resize If YES, the sprite is resized to match the new texture.
  If NO, the size of the sprite is unchanged.
  */
-+ (SKAction *)setTexture:(SKTexture *)texture resize:(BOOL)resize;
++ (SKAction *)setTexture:(SKTexture *)texture resize:(BOOL)resize NS_AVAILABLE(10_10, 7_1);
 + (SKAction *)setNormalTexture:(SKTexture *)texture resize:(BOOL)resize NS_AVAILABLE(10_11, 9_0);
 
 /** Creates an action that animates changes to a sprite’s texture

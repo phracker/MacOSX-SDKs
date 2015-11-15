@@ -306,6 +306,7 @@ private:
     virtual OSReturn slidePrelinkedExecutable(void);
     virtual OSReturn loadExecutable(void);
     virtual void     jettisonLinkeditSegment(void);
+    virtual void     jettisonDATASegmentPadding(void);
     static  void     considerDestroyingLinkContext(void);
     virtual OSData * getExecutable(void);
     virtual void     setLinkedExecutable(OSData * anExecutable);
@@ -319,7 +320,7 @@ private:
 
     virtual OSReturn start(bool startDependenciesFlag = true);
     virtual OSReturn stop(void);
-    virtual OSReturn setVMProtections(void);
+    virtual OSReturn setVMAttributes(bool protect, bool wire);
     virtual boolean_t segmentShouldBeWired(kernel_segment_command_t *seg);
     virtual OSReturn validateKextMapping(bool startFlag);
     virtual boolean_t verifySegmentMapping(kernel_segment_command_t *seg);

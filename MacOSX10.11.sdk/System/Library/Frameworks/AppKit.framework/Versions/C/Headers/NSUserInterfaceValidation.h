@@ -68,7 +68,7 @@ You can extend this functionality by introducing a new set of protocols that are
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol NSValidatedUserInterfaceItem
-- (SEL)action;
+- (nullable SEL)action;
 - (NSInteger)tag;
 @end
 

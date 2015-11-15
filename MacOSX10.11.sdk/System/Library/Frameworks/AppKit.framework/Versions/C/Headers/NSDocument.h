@@ -520,7 +520,7 @@ The default implementation of this method first uses -writeSafelyToURL:ofType:fo
 
 You can override this method to customize what is done during document duplication, but if your override does not invoke -[NSDocumentController duplicateDocumentWithContentsOfURL:copying:displayName:error:] you must take care to do things that that method does, especially invoking -[NSDocumentController addDocument:] and +[NSFileCoordinator addFilePresenter:].
 */
-- (nullable NSDocument *)duplicateAndReturnError:(NSError **)outError NS_AVAILABLE_MAC(10_7);
+- (nullable __kindof NSDocument *)duplicateAndReturnError:(NSError **)outError NS_AVAILABLE_MAC(10_7);
 
 #pragma mark *** Renaming ***
 
@@ -727,7 +727,7 @@ You can customize the presentation of errors on a per-NSDocument-subclass basis 
 
 /* Return an array of all window controllers that have been added to this document with -addWindowController: but not yet removed with -removeWindowController:.
 */
-@property (readonly, copy) NSArray<NSWindowController *> *windowControllers;
+@property (readonly, copy) NSArray<__kindof NSWindowController *> *windowControllers;
 
 /* If the window controller is one whose closing results in the document being closed too, or there is only one window controller attached to the document, do the exact same thing that -canCloseDocumentWithDelegate:shouldCloseSelector:contextInfo: would do. Otherwise send the message selected by shouldCloseSelector to the delegate, with the contextInfo as the last argument, specifying that the window controller should be closed. The method selected by shouldCloseSelector must have the same signature as:
 

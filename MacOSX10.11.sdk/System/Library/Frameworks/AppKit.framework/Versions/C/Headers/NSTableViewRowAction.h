@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSColor, NSButton;
 
 typedef NS_ENUM(NSInteger, NSTableViewRowActionStyle) {
@@ -33,6 +35,8 @@ NS_CLASS_AVAILABLE_MAC(10_11)
 
 @property (readonly) NSTableViewRowActionStyle style;
 @property (copy) NSString *title;
-@property (copy) NSColor *backgroundColor; // The default background color is dependent on style. Generally this is red for destructive actions, and blue for others.
+@property (null_resettable, copy) NSColor *backgroundColor; // The default background color is dependent on style. Generally this is red for destructive actions, and blue for others.
 
 @end
+
+NS_ASSUME_NONNULL_END

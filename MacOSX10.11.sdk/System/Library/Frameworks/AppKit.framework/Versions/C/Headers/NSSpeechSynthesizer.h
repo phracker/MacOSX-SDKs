@@ -46,10 +46,10 @@ typedef NS_ENUM(NSUInteger, NSSpeechBoundary) {
     id	_privateNSSpeechSynthesizerVars;
 }
 
-- (null_unspecified instancetype)initWithVoice:(nullable NSString *)voice;
+- (nullable instancetype)initWithVoice:(nullable NSString *)voice;
 
-- (BOOL)startSpeakingString:(null_unspecified NSString *)string;
-- (BOOL)startSpeakingString:(null_unspecified NSString *)string toURL:(null_unspecified NSURL *)url;
+- (BOOL)startSpeakingString:(NSString *)string;
+- (BOOL)startSpeakingString:(NSString *)string toURL:(NSURL *)url;
 
 @property (getter=isSpeaking, readonly) BOOL speaking;
 - (void)stopSpeaking;
@@ -65,13 +65,13 @@ typedef NS_ENUM(NSUInteger, NSSpeechBoundary) {
 @property BOOL usesFeedbackWindow;
 
 - (void)addSpeechDictionary:(NSDictionary<NSString *, id> *)speechDictionary NS_AVAILABLE_MAC(10_5);
-- (null_unspecified NSString *)phonemesFromText:(NSString *)text NS_AVAILABLE_MAC(10_5);
+- (NSString *)phonemesFromText:(NSString *)text NS_AVAILABLE_MAC(10_5);
 
 - (nullable id)objectForProperty:(NSString *)property error:(NSError **)outError NS_AVAILABLE_MAC(10_5);
 - (BOOL)setObject:(nullable id)object forProperty:(NSString *)property error:(NSError **)outError NS_AVAILABLE_MAC(10_5);
 
 + (BOOL)isAnyApplicationSpeaking;
-+ (null_unspecified NSString *)defaultVoice;
++ (NSString *)defaultVoice;
 + (NSArray<NSString *> *)availableVoices;
 + (NSDictionary<NSString *, id> *)attributesForVoice:(NSString *)voice;
 

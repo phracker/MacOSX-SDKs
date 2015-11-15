@@ -38,6 +38,8 @@ extern "C" {
 #endif
     
 #pragma pack(push, 4)
+	
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*! 
 	@group	Errors
@@ -165,6 +167,8 @@ CM_EXPORT const CFStringRef kCMMetadataIdentifier_QuickTimeMetadataVideoOrientat
 	
 CM_ASSUME_NONNULL_END
 
+CF_IMPLICIT_BRIDGING_DISABLED
+
 /*! 
 	@functiongroup	Metadata Identifier services
 */
@@ -225,7 +229,7 @@ OSStatus CMMetadataCreateIdentifierForKeyAndKeySpace(
 	CFStringRef CM_NONNULL keySpace,						/*! @param keySpace
 																Keyspace;  must be string of one to four printable
 																ASCII characters. */
-	CFStringRef CM_NULLABLE * CM_NONNULL identifierOut)		/*! @param identifierOut
+	CM_RETURNS_RETAINED_PARAMETER CFStringRef CM_NULLABLE * CM_NONNULL identifierOut)		/*! @param identifierOut
 																The created identifier. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
@@ -249,7 +253,7 @@ OSStatus CMMetadataCreateKeyFromIdentifier(
 													Allocator to use for creating the key. */
 	CFStringRef CM_NONNULL identifier,			/*! @param identifier
 										Identifier being inspected. */
-	CFTypeRef CM_NULLABLE * CM_NONNULL keyOut)				/*! @param keyOut
+	CM_RETURNS_RETAINED_PARAMETER CFTypeRef CM_NULLABLE * CM_NONNULL keyOut)				/*! @param keyOut
 										The key data that was used create the identifier. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
@@ -264,7 +268,7 @@ OSStatus CMMetadataCreateKeyFromIdentifierAsCFData(
 													Allocator to use for creating the key. */
 	CFStringRef CM_NONNULL identifier,			/*! @param identifier
 													Identifier being inspected. */
-	CFDataRef CM_NULLABLE * CM_NONNULL keyOut)	/*! @param keyOut
+	CM_RETURNS_RETAINED_PARAMETER CFDataRef CM_NULLABLE * CM_NONNULL keyOut)	/*! @param keyOut
 													The key data that was used create the identifier, as a CFData. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
 
@@ -278,9 +282,11 @@ OSStatus CMMetadataCreateKeySpaceFromIdentifier(
 															Allocator to use for creating the keyspace. */
 	CFStringRef CM_NONNULL identifier,					/*! @param identifier
 															Identifier being inspected. */
-	CFStringRef CM_NULLABLE * CM_NONNULL keySpaceOut)	/*! @param keySpaceOut
+	CM_RETURNS_RETAINED_PARAMETER CFStringRef CM_NULLABLE * CM_NONNULL keySpaceOut)	/*! @param keySpaceOut
 															The key space that was used to create the identifier. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
+	
+CF_IMPLICIT_BRIDGING_ENABLED
 
 /*!
 	@group	Metadata Datatype Registry
@@ -520,6 +526,8 @@ CFStringRef CM_NONNULL CMMetadataDataTypeRegistryGetBaseDataTypeForConformingDat
 	CFStringRef CM_NONNULL dataType)								/*! @param dataType
 																		Identifier of data type being interrogated. */
 							__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0);
+	
+CF_IMPLICIT_BRIDGING_DISABLED
 
 #pragma pack(pop)
     

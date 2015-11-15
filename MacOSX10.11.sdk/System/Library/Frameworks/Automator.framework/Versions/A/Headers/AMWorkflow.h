@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 	AM_UNUSED_FOR_ANALYZER id _future4;
 }
 
-+ (nullable id)runWorkflowAtURL:(NSURL *)fileURL withInput:(id)input error:(NSError **)error;
++ (nullable id)runWorkflowAtURL:(NSURL *)fileURL withInput:(nullable id)input error:(NSError **)error;
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 - (nullable instancetype)initWithContentsOfURL:(NSURL *)fileURL error:(NSError **)outError;

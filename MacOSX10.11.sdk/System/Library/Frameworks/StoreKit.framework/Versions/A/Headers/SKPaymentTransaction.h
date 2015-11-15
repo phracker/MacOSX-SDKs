@@ -21,29 +21,31 @@ typedef NSInteger SKPaymentTransactionState;
 
 // Model object representing a transaction with the server
 NS_CLASS_AVAILABLE(10_7, NA)
+NS_ASSUME_NONNULL_BEGIN
 @interface SKPaymentTransaction : NSObject {
 @private
     id _internal;
 }
 
 // Only set if state is SKPaymentTransactionFailed
-@property(readonly) NSError *error;
+@property(nullable, readonly) NSError *error;
 
 // Only valid if state is SKPaymentTransactionStateRestored.
-@property(readonly) SKPaymentTransaction *originalTransaction;
+@property(nullable, readonly) SKPaymentTransaction *originalTransaction;
 
 @property(readonly) SKPayment *payment;
 
 // The date when the transaction was added to the server queue.  Only valid if state is SKPaymentTransactionStatePurchased or SKPaymentTransactionStateRestored.
-@property(readonly) NSDate *transactionDate;
+@property(nullable, readonly) NSDate *transactionDate;
 
 // The unique server-provided identifier.  Only valid if state is SKPaymentTransactionStatePurchased or SKPaymentTransactionStateRestored.
-@property(readonly) NSString *transactionIdentifier;
+@property(nullable, readonly) NSString *transactionIdentifier;
 
 // Array of SKDownload objects
 // Only valid if state is SKPaymentTransactionStatePurchased or SKPaymentTransactionStateRestored.
-@property(readonly) NSArray *downloads;
+@property(nullable, readonly) NSArray *downloads;
 
 @property(readonly) SKPaymentTransactionState transactionState;
 
 @end
+NS_ASSUME_NONNULL_END

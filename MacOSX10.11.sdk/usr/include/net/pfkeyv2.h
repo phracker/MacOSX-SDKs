@@ -427,6 +427,7 @@ struct sadb_sastat {
 #define SADB_X_EXT_PMASK	0x0300	/* mask for padding flag */
 
 
+
 #if 1
 #define SADB_X_EXT_RAWCPI	0x0080	/* use well known CPI (IPComp) */
 #endif

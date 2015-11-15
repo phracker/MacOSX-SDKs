@@ -176,12 +176,6 @@ struct sockaddr_in6 {
 	__uint32_t	sin6_scope_id;	/* scope zone index */
 };
 
-/*
- * 16 is correspondent to 4bit multicast scope field.
- * i.e. from node-local to global with some reserved/unassigned types.
- */
-#define	SCOPE6_ID_MAX   16
-
 
 
 

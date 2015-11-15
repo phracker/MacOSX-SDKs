@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSValue *)valueWithNonretainedObject:(nullable id)anObject;
 @property (nullable, readonly) id nonretainedObjectValue;
 
-+ (NSValue *)valueWithPointer:(const void *)pointer;
++ (NSValue *)valueWithPointer:(nullable const void *)pointer;
 @property (nullable, readonly) void *pointerValue;
 
 - (BOOL)isEqualToValue:(NSValue *)value;

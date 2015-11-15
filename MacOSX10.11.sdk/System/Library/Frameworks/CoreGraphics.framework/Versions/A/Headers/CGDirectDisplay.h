@@ -173,7 +173,8 @@ CG_EXTERN size_t CGDisplayModeGetHeight(CGDisplayModeRef __nullable mode)
 
 CG_EXTERN CFStringRef __nullable CGDisplayModeCopyPixelEncoding(
     CGDisplayModeRef __nullable mode)
-    CG_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_NA);
+    CG_AVAILABLE_BUT_DEPRECATED(__MAC_10_6, __MAC_10_11,
+                                __IPHONE_NA, __IPHONE_NA);
 
 /* Return the refresh rate of the specified display mode. */
 

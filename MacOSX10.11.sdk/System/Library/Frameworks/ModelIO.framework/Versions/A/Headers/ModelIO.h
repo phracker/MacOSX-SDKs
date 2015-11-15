@@ -5,7 +5,6 @@
 //  @copyright (c)2015 Apple, Inc. All rights reserved.
 //
 
-#import <ModelIO/ModelIOVersion.h>
 #import <ModelIO/ModelIOExports.h>
 
 #import <ModelIO/MDLAsset.h>

@@ -83,7 +83,7 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
    the last instruction must be greater than or equal to the latest time for which playback or other processing will be attempted (note that this will often be
    the duration of the asset with which the instance of AVVideoComposition is associated).
 */
-@property (nonatomic, readonly, copy) NSArray<id <AVVideoCompositionInstruction> > *instructions;
+@property (nonatomic, readonly, copy) NSArray<id <AVVideoCompositionInstruction>> *instructions;
 
 /* indicates a special video composition tool for use of Core Animation; may be nil */
 @property (nonatomic, readonly, retain, nullable) AVVideoCompositionCoreAnimationTool *animationTool;
@@ -108,12 +108,13 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
 		- A renderScale of 1.0.
 
 	The default CIContext has the following properties:
-	
-		- Color management off
+
+		- iOS: Device RGB color space
+		- OS X: sRGB color space
  
 	Example usage:
 
-		playerItem.videoComposition = [AVMutableVideoComposition videoCompositionWithAsset:srcAsset applyingCIFiltersWithHandler:
+		playerItem.videoComposition = [AVVideoComposition videoCompositionWithAsset:srcAsset applyingCIFiltersWithHandler:
 			^(AVAsynchronousCIImageFilteringRequest *request)
 			{
 				NSError *err = nil;
@@ -150,7 +151,7 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
  @discussion
    The returned AVMutableVideoComposition will have a frameDuration of kCMTimeZero, a renderSize of {0.0, 0.0}, a nil array of instructions, and a nil animationTool.
 */
-+ (instancetype)videoComposition;
++ (AVMutableVideoComposition *)videoComposition;
 
 /*  
  @method		videoCompositionWithPropertiesOfAsset:
@@ -192,10 +193,50 @@ NS_CLASS_AVAILABLE(10_7, 4_0)
    the last instruction must be greater than or equal to the latest time for which playback or other processing will be attempted (note that this will often be
    the duration of the asset with which the instance of AVVideoComposition is associated).
 */
-@property (nonatomic, copy) NSArray<id <AVVideoCompositionInstruction> > *instructions;
+@property (nonatomic, copy) NSArray<id <AVVideoCompositionInstruction>> *instructions;
 
 /* indicates a special video composition tool for use of Core Animation; may be nil */
 @property (nonatomic, retain, nullable) AVVideoCompositionCoreAnimationTool *animationTool;
+
+@end
+
+@interface AVMutableVideoComposition (AVMutableVideoCompositionFiltering)
+
+/*  
+ @method		videoCompositionWithAsset:options:applyingFiltersWithHandler:
+ @abstract
+	Returns a new instance of AVMutableVideoComposition with values and instructions that will apply the specified handler block to video frames represented as instances of CIImage.
+ @param			asset		An instance of AVAsset. For best performance, ensure that the duration and tracks properties of the asset are already loaded before invoking this method.
+ @result		An instance of AVMutableVideoComposition.
+ @discussion
+	The returned AVMutableVideoComposition will cause the specified handler block to be called to filter each frame of the asset's first enabled video track. The handler block should use the properties of the provided AVAsynchronousCIImageFilteringRequest and respond using finishWithImage:context: with a "filtered" new CIImage (or the provided source image for no affect). In the event of an error, respond to the request using finishWithError:. The error can be observed via AVPlayerItemFailedToPlayToEndTimeNotification, see AVPlayerItemFailedToPlayToEndTimeErrorKey in notification payload.
+ 
+	The video composition will also have the following values for its properties:
+
+		- A value for frameDuration to accommodate the nominalFrameRate for asset's first enabled video track. If the nominalFrameRate is 0, a default framerate of 30fps is used.
+		- A renderSize that encompasses the asset's first enabled video track respecting the track's preferredTransform.
+		- A renderScale of 1.0.
+
+	The default CIContext has the following properties:
+
+		- iOS: Device RGB color space
+		- OS X: sRGB color space
+ 
+	Example usage:
+
+		playerItem.videoComposition = [AVMutableVideoComposition videoCompositionWithAsset:srcAsset applyingCIFiltersWithHandler:
+			^(AVAsynchronousCIImageFilteringRequest *request)
+			{
+				NSError *err = nil;
+				CIImage *filtered = myRenderer(request, &err);
+				if (filtered)
+					[request finishWithImage:filtered context:nil];
+				else
+					[request finishWithError:err];
+			}];
+*/
++ (AVMutableVideoComposition *)videoCompositionWithAsset:(AVAsset *)asset
+			 applyingCIFiltersWithHandler:(void (^)(AVAsynchronousCIImageFilteringRequest *request))applier NS_AVAILABLE(10_11, 9_0);
 
 @end
 

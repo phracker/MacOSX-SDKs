@@ -5,7 +5,6 @@
 //
 
 #import <simd/simd.h>
-#import <simd/geometry.h>
 
 /*! @header SceneKit_simd.h
     @abstract Bridge with the SIMD math library

@@ -1,6 +1,6 @@
 /* Quartz.h
 
-   Copyright (c) 2004 Apple Computer, Inc.
+   Copyright (c) 2004-2015 Apple Computer, Inc.
    All rights reserved. */
 
 #import <QuartzCore/QuartzCore.h>

@@ -180,12 +180,6 @@ struct sockaddr_in6 {
 };
 
 /*
- * 16 is correspondent to 4bit multicast scope field.
- * i.e. from node-local to global with some reserved/unassigned types.
- */
-#define	SCOPE6_ID_MAX   16
-
-/*
  * Local definition for masks
  */
 #define	IN6MASK0	{{{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }}}

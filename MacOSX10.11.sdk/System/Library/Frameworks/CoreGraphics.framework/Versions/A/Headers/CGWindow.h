@@ -179,7 +179,8 @@ CG_EXTERN CFArrayRef __nullable CGWindowListCopyWindowInfo(CGWindowListOption op
 
 CG_EXTERN CFArrayRef __nullable CGWindowListCreate(CGWindowListOption option,
     CGWindowID relativeToWindow)
-    CG_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
+    CG_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA)
+    CF_SWIFT_UNAVAILABLE("No replacement at present");
 
 /* Return an array of window dictionaries, each corresponding to a window ID
    specified in `windowArray'.

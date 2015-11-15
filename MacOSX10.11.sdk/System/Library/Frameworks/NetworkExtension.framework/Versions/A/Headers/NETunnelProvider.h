@@ -41,6 +41,18 @@ typedef NS_ENUM(NSInteger, NETunnelProviderError) {
 	NETunnelProviderErrorNetworkSettingsFailed = 3,
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
+/*!
+ * @typedef NETunnelProviderRoutingMethod
+ * @abstract Network traffic routing methods.
+ */
+typedef NS_ENUM(NSInteger, NETunnelProviderRoutingMethod) {
+	/*! @const NETunnelProviderRoutingMethodDestinationIP Route network traffic to the tunnel based on destination IP */
+	NETunnelProviderRoutingMethodDestinationIP = 1,
+	/*! @const NETunnelProviderRoutingMethodSourceApplication Route network traffic to the tunnel based on source application */
+	NETunnelProviderRoutingMethodSourceApplication = 2,
+} NS_ENUM_AVAILABLE(10_11, 9_0);
+
+
 /*! @const NETunnelProviderErrorDomain The tunnel provider error domain */
 NETUNNELPROVIDER_EXPORT NSString * const NETunnelProviderErrorDomain NS_AVAILABLE(10_11, 9_0);
 
@@ -70,16 +82,22 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 - (void)setTunnelNetworkSettings:(nullable NETunnelNetworkSettings *)tunnelNetworkSettings completionHandler:(nullable void (^)( NSError * __nullable error))completionHandler NS_AVAILABLE(10_11, 9_0);
 
 /*!
- * @property protocol
+ * @property protocolConfiguration
  * @discussion An NEVPNProtocol object containing the provider's current configuration. The value of this property may change during the lifetime of the tunnel provided by this NETunnelProvider, KVO can be used to detect when changes occur.  For different protocol types, this property will contain the corresponding subclass.   For NEVPNProtocolTypePlugin protocol type, this property will contain the NETunnelProviderProtocol subclass.  For NEVPNProtocolTypeIKEv2 protocol type, this property will contain the NEVPNProtocolIKEv2 subclass.
  */
-@property (readonly) NEVPNProtocol *protocol NS_AVAILABLE(10_11, 9_0);
+@property (readonly) NEVPNProtocol *protocolConfiguration NS_AVAILABLE(10_11, 9_0);
 
 /*!
  * @property appRules
  * @discussion An array of NEAppRule objects specifying which applications are currently being routed through the tunnel provided by this NETunnelProvider. If application-based routing is not enabled for the tunnel, then this property is set to nil. 
  */
 @property (readonly, nullable) NSArray<NEAppRule *> *appRules NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ * @property routingMethod
+ * @discussion The method by which network traffic is routed to the tunnel. The default is NETunnelProviderRoutingMethodDestinationIP.
+ */
+@property (readonly) NETunnelProviderRoutingMethod routingMethod NS_AVAILABLE(10_11, 9_0);
 
 /*!
  * @property reasserting

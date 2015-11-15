@@ -18,6 +18,8 @@ class IOUSBHostStream : public IOUSBHostIOSource
 {
     OSDeclareDefaultStructors(IOUSBHostStream)
 
+    friend class IOUSBHostPipe;
+
 public:
     IOUSBHostStream* withOwnersAndStreamID(AppleUSBHostController* controller, IOUSBHostDevice* device, IOUSBHostPipe* pipe, uint32_t streamID);
 
@@ -55,6 +57,18 @@ public:
      */
     virtual IOReturn io(IOMemoryDescriptor* dataBuffer, uint32_t dataBufferLength, uint32_t& bytesTransferred, uint32_t completionTimeoutMs = 0);
 
+    // Public pad slots for future expansion
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 0);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 1);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 2);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 3);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 4);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 5);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 6);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 7);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 8);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 9);
+
 protected:
     virtual bool initWithOwnersAndStreamID(AppleUSBHostController* controller, IOUSBHostDevice* device, IOUSBHostPipe* pipe, uint32_t streamID);
 
@@ -62,6 +76,19 @@ protected:
 
     virtual IOReturn abortGated(IOOptionBits options, IOReturn withError, IOService* forClient);
 
+    // Protected pad slots for future expansion
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 10);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 11);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 12);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 13);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 14);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 15);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 16);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 17);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 18);
+    OSMetaClassDeclareReservedUnused(IOUSBHostStream, 19);
+
+protected:
     IOUSBHostPipe* _pipe;
     uint32_t       _streamID;
 };

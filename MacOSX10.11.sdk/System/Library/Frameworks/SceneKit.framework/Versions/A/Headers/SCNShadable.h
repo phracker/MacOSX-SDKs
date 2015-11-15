@@ -25,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
  When the frequency is set to SCNBufferFrequencyPerShadable, the binding block is invoked once per SCNMaterial or SCNGeometry (depending on the object that owns the SCNProgram).
  */
 typedef NS_ENUM(NSInteger, SCNBufferFrequency) {
-    SCNBufferFrequencyPerFrame     = 0,
-    SCNBufferFrequencyPerNode      = 1,
-    SCNBufferFrequencyPerShadable  = 2, // SCNMaterial or SCNGeometry
+    SCNBufferFrequencyPerFrame    = 0,
+    SCNBufferFrequencyPerNode     = 1,
+    SCNBufferFrequencyPerShadable = 2 // SCNMaterial or SCNGeometry
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
 @protocol SCNBufferStream <NSObject>
@@ -151,6 +151,7 @@ typedef void (^SCNBindingBlock)(unsigned int programID, unsigned int location, S
  
  SceneKit declares the following built-in uniforms:
  float u_time;                               // The current time, in seconds
+ vec2  u_inverseResolution;                 // 1./screen size (available on iOS 9 and OS X 10.11)
  -------------------------------------------------------------------------------------
  mat4  u_modelTransform                      // See SCNModelTransform
  mat4  u_viewTransform                       // See SCNViewTransform

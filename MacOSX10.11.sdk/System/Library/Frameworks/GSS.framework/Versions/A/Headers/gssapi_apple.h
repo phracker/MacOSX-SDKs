@@ -192,6 +192,8 @@ gss_aapl_change_password (
  *  		in a CFDataRef.
  * - kGSSICAppleSourceAppPID - PID in a CFNumberRef of process this is
  *              preformed on behalf of
+ * - kGSSICAppleSourceAppUUID - UUID of the application
+ * - kGSSICAppleSourceAppSigningIdentity - bundle/signing identity of the application
  *
  *	  
  * @ingroup gssapi

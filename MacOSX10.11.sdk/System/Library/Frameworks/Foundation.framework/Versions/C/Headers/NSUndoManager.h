@@ -111,7 +111,7 @@ NS_CLASS_AVAILABLE(10_0, 3_0)
     @discussion
       As with other undo operations, this does not strongly retain target. Care should be taken to avoid introducing retain cycles by other references captured by the block.
  */
-- (void)registerUndoWithTarget:(id)target handler:(void (^)(id target))undoHandler NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use generic version instead");
+- (void)registerUndoWithTarget:(id)target handler:(void (^)(id target))undoHandler NS_AVAILABLE(10_11, 9_0) NS_REFINED_FOR_SWIFT;
 
 - (void)setActionIsDiscardable:(BOOL)discardable NS_AVAILABLE(10_7, 5_0);
    // Set the latest undo action to discardable if it may be safely discarded when a document can not be saved for any reason. An example might be an undo action that changes the viewable area of a document. To find out if an undo group contains only discardable actions, look for the NSUndoManagerGroupIsDiscardableKey in the userInfo dictionary of the NSUndoManagerDidCloseUndoGroupNotification.

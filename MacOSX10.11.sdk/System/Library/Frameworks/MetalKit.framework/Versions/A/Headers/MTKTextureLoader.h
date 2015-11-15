@@ -48,9 +48,16 @@ MTK_EXTERN NSString * __nonnull const MTKTextureLoaderOptionSRGB NS_AVAILABLE(10
 /*!
  @constant MTKTextureLoaderOptionTextureUsage
  @abstract Identifier to be used with an NSNumber specifying the MTLTextureUsage flags
- @discussion The resulting Metal texture will be created with the texture usage flags indicated by the NSNumber associated with this string.
+ @discussion The resulting Metal texture will be created with the MTLTextureUsage flags indicated by the NSNumber associated with this string.
  */
 MTK_EXTERN NSString * __nonnull const MTKTextureLoaderOptionTextureUsage NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ @constant MTKTextureLoaderOptionTextureCPUCacheMode
+ @abstract Identifier to be used with an NSNumber specifying the MTLCPUCacheMode
+ @discussion The resulting Metal texture will be created with the MTLCPUCacheMode indicated by the NSNumber associated with this string.
+ */
+MTK_EXTERN NSString * __nonnull const MTKTextureLoaderOptionTextureCPUCacheMode NS_AVAILABLE(10_11, 9_0);
 
 typedef void (^MTKTextureLoaderCallback) (id <MTLTexture> __nullable texture, NSError * __nullable error);
 
@@ -67,7 +74,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  */
 @property (nonatomic, readonly, nonnull) id <MTLDevice> device;
 
-- (nonnull instancetype)init __unavailable;
+- (nonnull instancetype)init NS_UNAVAILABLE;
 
 /*!
  @method initWithDevice:
@@ -77,72 +84,72 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 - (nonnull instancetype)initWithDevice:(nonnull id <MTLDevice>)device;
 
 /*!
- @method textureWithContentsOfURL:options:completionHandler:
+ @method newTextureWithContentsOfURL:options:completionHandler:
  @abstract Asynchronously create a Metal texture and load image data from the file at URL
  @param URL Location of image file from which to create the texture
  @param options Dictonary of MTKTextureLoaderOptions
  @param completionHandler Block called when the texture has been loaded and fully initialized
  */
-- (void)textureWithContentsOfURL:(nonnull NSURL *)URL
-                         options:(nullable NSDictionary <NSString *, NSNumber *> *)options
-               completionHandler:(nonnull MTKTextureLoaderCallback)completionHandler;
+- (void)newTextureWithContentsOfURL:(nonnull NSURL *)URL
+                            options:(nullable NSDictionary <NSString *, NSNumber *> *)options
+                  completionHandler:(nonnull MTKTextureLoaderCallback)completionHandler;
 
 /*!
- @method textureWithData:options:completionHandler:
- @abstract Asynchronously create a Metal texture load texture with given file data
+ @method newTextureWithData:options:completionHandler:
+ @abstract Asynchronously create a Metal texture and load image data from the NSData object provided
  @param data NSData object containing image file data from which to create the texture
  @param options Dictonary of MTKTextureLoaderOptions
  @param completionHandler Block called when texture has been loaded and fully initialized
  */
-- (void)textureWithData:(nonnull NSData *)data
-                options:(nullable NSDictionary <NSString *, NSNumber *> *)options
-      completionHandler:(nonnull MTKTextureLoaderCallback)completionHandler;
-
-/*!
- @method textureWithCGImage:options:completionHandler:
- @abstract Asynchronously create a Metal texture and load image data from given CGImageRef
- @param cgImage CGImageRef containing image data from which to create the texture
- @param options Dictonary of MTKTextureLoaderOptions
- @param completionHandler Block called when texture has been loaded and fully initialized
- */
-- (void)textureWithCGImage:(nonnull CGImageRef)cgImage
+- (void)newTextureWithData:(nonnull NSData *)data
                    options:(nullable NSDictionary <NSString *, NSNumber *> *)options
          completionHandler:(nonnull MTKTextureLoaderCallback)completionHandler;
 
 /*!
- @method textureWithContentsOfURL:options:error:
- @abstract Synchronously create a Metal texture and load image data from file at URL
+ @method newTextureWithCGImage:options:completionHandler:
+ @abstract Asynchronously create a Metal texture and load image data from the given CGImageRef
+ @param cgImage CGImageRef containing image data from which to create the texture
+ @param options Dictonary of MTKTextureLoaderOptions
+ @param completionHandler Block called when texture has been loaded and fully initialized
+ */
+- (void)newTextureWithCGImage:(nonnull CGImageRef)cgImage
+                      options:(nullable NSDictionary <NSString *, NSNumber *> *)options
+            completionHandler:(nonnull MTKTextureLoaderCallback)completionHandler;
+
+/*!
+ @method newTextureWithContentsOfURL:options:error:
+ @abstract Synchronously create a Metal texture and load image data from the file at URL
  @return The Metal texture. nil if an error occured
  @param URL Location of image file from which to create the texture
  @param options Dictonary of MTKTextureLoaderOptions
- @param error Pointer to an NSError object which will be set if an error occurred
+ @param error Pointer to an autoreleased NSError object which will be set if an error occurred
  */
-- (nullable id <MTLTexture>)textureWithContentsOfURL:(nonnull NSURL *)URL
-                                             options:(nullable NSDictionary <NSString *, NSNumber *> *)options
-                                               error:(NSError *__nullable *__nullable)error;
+- (nullable id <MTLTexture>)newTextureWithContentsOfURL:(nonnull NSURL *)URL
+                                                options:(nullable NSDictionary <NSString *, NSNumber *> *)options
+                                                  error:(NSError *__nullable *__nullable)error;
 
 /*!
- @method textureWithData:options:error:
- @abstract Synchronously create a Metal texture and load with given file data
+ @method newTextureWithData:options:error:
+ @abstract Synchronously create a Metal texture and load image data from the NSData object provided
  @return The Metal texture. nil if an error occured
  @param data NSData object containing image file data from which to create the texture
  @param options Dictonary of MTKTextureLoaderOptions
- @param error Pointer to an NSError object which will be set if an error occurred
+ @param error Pointer to an autoreleased NSError object which will be set if an error occurred
  */
-- (nullable id <MTLTexture>)textureWithData:(nonnull NSData *)data
-                                    options:(nullable NSDictionary <NSString *, NSNumber *> *)options
-                                      error:(NSError *__nullable *__nullable)error;
+- (nullable id <MTLTexture>)newTextureWithData:(nonnull NSData *)data
+                                       options:(nullable NSDictionary <NSString *, NSNumber *> *)options
+                                         error:(NSError *__nullable *__nullable)error;
 
 /*!
- @method textureWithCGImage:options:error:
- @abstract Synchronously create a Metal texture and load image data from given CGImageRef
+ @method newTextureWithCGImage:options:error:
+ @abstract Synchronously create a Metal texture and load image data from the given CGImageRef
  @return The Metal texture. nil if an error occured
  @param cgImage CGImageRef containing image data from which to create the texture
  @param options Dictonary of MTKTextureLoaderOptions
- @param error Pointer to an NSError object which will be set if an error occurred
+ @param error Pointer to an autoreleased NSError object which will be set if an error occurred
  */
-- (nullable id <MTLTexture>)textureWithCGImage:(nonnull CGImageRef)cgImage
-                                       options:(nullable NSDictionary <NSString *, NSNumber *> *)options
-                                         error:(NSError *__nullable *__nullable)error;
+- (nullable id <MTLTexture>)newTextureWithCGImage:(nonnull CGImageRef)cgImage
+                                          options:(nullable NSDictionary <NSString *, NSNumber *> *)options
+                                            error:(NSError *__nullable *__nullable)error;
 
 @end

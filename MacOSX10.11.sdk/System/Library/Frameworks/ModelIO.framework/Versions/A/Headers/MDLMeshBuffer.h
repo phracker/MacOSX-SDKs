@@ -22,8 +22,33 @@ typedef NS_ENUM(NSUInteger, MDLMeshBufferType) {
     MDLMeshBufferTypeIndex = 2,
 };
 
+@protocol MDLMeshBuffer;
 @protocol MDLMeshBufferAllocator;
 @protocol MDLMeshBufferZone;
+
+/*!
+ @class MDLMeshBufferMap
+ @abstract Represents a reference to memory of a mapped MeshBuffer
+ */
+NS_CLASS_AVAILABLE(10_11, 9_0)
+MDL_EXPORT
+@interface MDLMeshBufferMap : NSObject
+
+/*!
+ @method initWithBytes:deallocator:
+ @abstract Called by implementor of MDLMeshBuffer protocol to create the map
+           and arrange for unmapping on deallocation.
+ */
+-(instancetype) initWithBytes:(void*)bytes
+                  deallocator:(nullable void (^)())deallocator;
+
+/*!
+ @property bytes
+ @abstract Mutable pointer to data in a MDLMeshBuffer object.
+ */
+@property (nonatomic, readonly) void *bytes;
+
+@end
 
 /*!
  @protocol MDLMeshBuffer
@@ -46,15 +71,15 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 /*!
  @method map
- @abstract Immutable CPU access to buffer's memory
- @return An immutable NSData object to read from buffer's memory
- @discussion The buffer will remain mapped as long as the NSData object exists. 
-             Mapping a buffer may impose restrictions on a system. For instance, 
-             if the implementing class maps an OpenGL buffer, that buffer may be 
-             unavailable for rendering while mapped, and cause a draw failure. 
-             Precautions must be taken in such cases.
+ @abstract CPU access to buffer's memory
+ @return An MDLMeshBufferMap object to read or modify a buffer's memory
+ @discussion The buffer will remain mapped as long as the returned MDLMeshBufferMap
+             object exists. Mapping a buffer may impose restrictions on a system.
+             For instance,  if the implementing class maps an OpenGL buffer, that
+             buffer may be  unavailable for rendering while mapped, and cause a
+             draw failure.  Precautions must be taken in such cases.
  */
-- (NSData *)map;
+- (MDLMeshBufferMap *)map;
 
 /*!
  @property length
@@ -113,6 +138,7 @@ MDL_EXPORT
  */
 - (instancetype)initWithType:(MDLMeshBufferType)type data:(nullable NSData*)data;
 
+@property (nonatomic, readonly, retain) NSData *data;
 
 @end
 
@@ -155,11 +181,25 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 
 /*!
  @method newZone:
- @abstract Create a zone which can be used to allocate memory
+ @abstract Create a zone which can be used to allocate MDLMeshBuffer objects
  @param capacity Total size in bytes of all buffers which can be created from 
         this zone
  */
 -(id<MDLMeshBufferZone>)newZone:(NSUInteger)capacity;
+
+/*!
+ @method newZoneForBuffersWithSize:andType:
+ @abstract Create a zone which can be used to allocate MDLMeshBuffer objects
+ @param sizes Sizes of each buffer to be created in this zone
+ @param types Type of each buffer to be created in this zone. Values to be of
+              MDLMeshBufferType
+ @discussion Will create a zone from which MDLMeshBuffer objects can be 
+             allocated.  This will allocate a zone with enough capacity
+             for each of the buffers with sizes and types specified even taking
+             into any alignment restrictions necessary to use these buffers.
+ */
+-(id<MDLMeshBufferZone>)newZoneForBuffersWithSize:(NSArray<NSNumber*>*)sizes
+                                          andType:(NSArray<NSNumber*>*)types;
 
 /*!
  @method newBuffer:type:
@@ -214,6 +254,26 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 -(nullable id<MDLMeshBuffer>)newBufferFromZone:(nullable id<MDLMeshBufferZone>)zone
                                          data:(NSData *)data
                                          type:(MDLMeshBufferType)type;
+
+@end
+
+
+
+/*!
+ An allocator to use when backing with an NSData is appropriate.
+ */
+MDL_EXPORT
+@interface MDLMeshBufferDataAllocator: NSObject <MDLMeshBufferAllocator>
+
+@end
+
+/*!
+ A default zone that can be use for convenience 
+ */
+@interface MDLMeshBufferZoneDefault : NSObject <MDLMeshBufferZone>
+
+@property (nonatomic, readonly) NSUInteger capacity;
+@property (nonatomic, readonly, retain) id<MDLMeshBufferAllocator> allocator;
 
 @end
 

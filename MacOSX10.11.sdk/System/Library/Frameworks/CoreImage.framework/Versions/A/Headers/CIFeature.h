@@ -144,6 +144,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 @property (readonly) CGPoint topRight;
 @property (readonly) CGPoint bottomLeft;
 @property (readonly) CGPoint bottomRight;
+@property (readonly) NSArray *subFeatures;
 
 
 @end

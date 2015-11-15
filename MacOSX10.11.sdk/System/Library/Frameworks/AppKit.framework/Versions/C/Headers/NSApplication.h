@@ -50,7 +50,11 @@ APPKIT_EXTERN const double NSAppKitVersionNumber;
 #define NSAppKitVersionNumber10_8 1187
 #define NSAppKitVersionNumber10_9 1265
 #define NSAppKitVersionNumber10_10 1343
-
+#define NSAppKitVersionNumber10_10_2 1344
+#define NSAppKitVersionNumber10_10_3 1347
+#define NSAppKitVersionNumber10_10_4 1348
+#define NSAppKitVersionNumber10_10_5 1348
+#define NSAppKitVersionNumber10_10_Max 1349
 
 /* Modes passed to NSRunLoop */
 APPKIT_EXTERN NSString *NSModalPanelRunLoopMode;

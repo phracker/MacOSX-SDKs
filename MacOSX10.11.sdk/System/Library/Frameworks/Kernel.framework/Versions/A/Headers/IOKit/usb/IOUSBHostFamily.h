@@ -77,6 +77,7 @@ inline uint8_t makeDeviceRequestbmRequestType(tDeviceRequestDirection direction,
 enum
 {
     kUSBHostVendorSpecificClass             = 255,
+    kUSBHostHubClass                        = 9,
     kUSBHostMaxDevices                      = 128,           // The largest number of devices permitted on USB 2.0 buses
     kUSBHostMaxPipes                        = 32,            // The largest number of endpoints permitted on USB devices
     kUSBHostMaxCountFullSpeedIsochronous    = 1023,       // max size (bytes) of any one Isoc frame for 1 FS endpoint
@@ -106,17 +107,27 @@ enum
 #define iokit_usb_codemask       StandardUSBBitRange(0, 11)
 
 #define iokit_usbhost_msg(message) ((uint32_t)(iokit_family_msg(sub_iokit_usb, iokit_usbhost_group | (message & iokit_usb_codemask))))
+#define	iokit_usblegacy_err_msg(message)     ((uint32_t)(sys_iokit | sub_iokit_usb | message))
 
-#define kUSBHostMessageConfigurationSet               iokit_usbhost_msg(0x00)    // 0xe0005000  IOUSBHostDevice -> clients upon a setConfiguration call.
-#define kUSBHostMessageRenegotiateCurrent             iokit_usbhost_msg(0x01)    // 0xe0005001  Request clients to renegotiate bus current allocations
+#define kUSBHostMessageConfigurationSet               iokit_usbhost_msg(0x00)       // 0xe0005000  IOUSBHostDevice -> clients upon a setConfiguration call.
+#define kUSBHostMessageRenegotiateCurrent             iokit_usbhost_msg(0x01)       // 0xe0005001  Request clients to renegotiate bus current allocations
 
-#define kUSBHostMessageUpdateIdlePolicy               iokit_usbhost_msg(0x100)   // 0xe0005100  Internal use only.  IOUSBHostInterface -> IOUSBHostDevice to update its idle policy.
-#define kUSBHostMessageRemoteWake                     iokit_usbhost_msg(0x101)   // 0xe0005101  Internal use only.  AppleUSBHostPort -> IOUSBHostDevice upon a remote wake event.
-#define kUSBHostMessageDeviceSuspend                  iokit_usbhost_msg(0x102)   // 0xe0005102  Internal use only.  IOUSBHostDevice -> clients upon a suspend event.
-#define kUSBHostMessageDeviceResume                   iokit_usbhost_msg(0x103)   // 0xe0005103  Internal use only.  IOUSBHostDevice -> clients upon a resume event.
-#define kUSBHostMessageControllerPortsCreated         iokit_usbhost_msg(0x104)   // 0xe0005104  Internal use only.  AppleUSBHostController -> clients after all ports have been created.
-#define kUSBHostMessageDeviceConnected                iokit_usbhost_msg(0x105)   // 0xe0005105  Apple Internal use only.  AppleUSBRemovablePort -> clients after a connect.
-#define kUSBHostMessageDeviceDisconnected             iokit_usbhost_msg(0x106)   // 0xe0005106  Apple Internal use only.  AppleUSBRemovablePort -> clients after a disconnect.
+#define kUSBHostMessageUpdateIdlePolicy               iokit_usbhost_msg(0x100)      // 0xe0005100  Internal use only.  IOUSBHostInterface -> IOUSBHostDevice to update its idle policy.
+#define kUSBHostMessageRemoteWake                     iokit_usbhost_msg(0x101)      // 0xe0005101  Internal use only.  AppleUSBHostPort -> IOUSBHostDevice upon a remote wake event.
+#define kUSBHostMessageDeviceSuspend                  iokit_usbhost_msg(0x102)      // 0xe0005102  Internal use only.  IOUSBHostDevice -> clients upon a suspend event.
+#define kUSBHostMessageDeviceResume                   iokit_usbhost_msg(0x103)      // 0xe0005103  Internal use only.  IOUSBHostDevice -> clients upon a resume event.
+#define kUSBHostMessagePortsCreated                   iokit_usbhost_msg(0x104)      // 0xe0005104  Internal use only.  AppleUSBHostController and AppleUSBHub -> clients after all ports have been created.
+#define kUSBHostMessageDeviceConnected                iokit_usbhost_msg(0x105)      // 0xe0005105  Apple Internal use only.  AppleUSBRemovablePort -> clients after a connect.
+#define kUSBHostMessageDeviceDisconnected             iokit_usbhost_msg(0x106)      // 0xe0005106  Apple Internal use only.  AppleUSBRemovablePort -> clients after a disconnect.
+
+// User Message Support
+#define kUSBHostMessageOvercurrentCondition           iokit_usblegacy_err_msg(0x13) // 0xe0004013  Message sent to the clients of the device's hub parent, when a device causes an overcurrent condition.  The message argument contains the locationID of the device
+#define kUSBHostMessageNotEnoughPower                 iokit_usblegacy_err_msg(0x14) // 0xe0004014  Message sent to the clients of the device's hub parent, when a device causes an low power notice to be displayed.  The message argument contains the locationID of the device
+#define kUSBHostMessageEndpointCountExceeded          iokit_usblegacy_err_msg(0x19) // 0xe0004019  Message sent to a device when endpoints cannot be created because the USB controller ran out of resources
+#define kUSBHostMessageDeviceCountExceeded            iokit_usblegacy_err_msg(0x1a) // 0xe000401a  Message sent by a hub when a device cannot be enumerated because the USB controller ran out of resources
+#define kUSBHostMessageUnsupportedConfiguration       iokit_usblegacy_err_msg(0x1c) // 0xe000401c  Message sent to the clients of the device when a device is not supported in the current configuration.  The message argument contains the locationID of the device
+#define kUSBHostMessageHubCountExceeded               iokit_usblegacy_err_msg(0x1d) // 0xe000401d  Message sent when a 6th hub was plugged in and was not enumerated, as the USB spec only support 5 hubs in a chain
+#define kUSBHostMessageTDMLowBattery                  iokit_usblegacy_err_msg(0x1e) // 0xe000401e  Message sent when when an attached TDM system battery is running low.
 
 /*!
  @defined IOUSBHostFamily error codes
@@ -266,6 +277,13 @@ enum
 #define kUSBHostPropertySleepPortCurrentLimit                   "kUSBSleepPortCurrentLimit"
 #define kUSBHostPropertyFailedRemoteWake                        "kUSBFailedRemoteWake"
 
+// Legacy power properties
+#define kAppleMaxPortCurrent                "AAPL,current-available"
+#define kAppleCurrentExtra                  "AAPL,current-extra"
+#define kAppleMaxPortCurrentInSleep         "AAPL,max-port-current-in-sleep"
+#define kAppleCurrentExtraInSleep           "AAPL,current-extra-in-sleep"
+#define kAppleExternalConnectorBitmap       "AAPL,ExternalConnectorBitmap"
+
 #if TARGET_OS_EMBEDDED
 // Only define these properties on embedded platforms because the legacy IOUSBLib code still uses them
 #define kUSBHostDevicePropertyAddress                           "kUSBAddress"
@@ -296,12 +314,16 @@ enum
 #endif
 #define kUSBHostInterfacePropertyAlternateSetting               "bAlternateSetting"
 
+#define kUSBHostPortPropertyPortNumber                          "port"
 #define kUSBHostPortPropertyRemovable                           "removable"
 #define kUSBHostPortPropertyTestMode                            "kUSBTestMode"
+#define kUSBHostPortPropertySimulateInterrupt                   "kUSBSimulateInterrupt"
 #define kUSBHostPortPropertyBusCurrentAllocation                "kUSBBusCurrentAllocation"
+#define kUSBHostPortPropertyBusCurrentSleepAllocation           "kUSBBusCurrentSleepAllocation"
 #define kUSBHostPortPropertyConnectable                         "UsbConnectable"
 #define kUSBHostPortPropertyConnectorType                       "UsbConnector"
 #define kUSBHostPortPropertyMux                                 "UsbMux"
+#define kUSBHostPortPropertyCompanionIndex                      "kUSBCompanionIndex"
 
 #define kUSBHostHubPropertyPowerSupply                          "kUSBHubPowerSupply"                    // OSNumber mA available for downstream ports, 0 for bus-powered
 #define kUSBHostHubPropertyIdlePolicy                           "kUSBHubIdlePolicy"                     // OSNumber ms to be used as device idle policy
@@ -312,6 +334,11 @@ enum
 #define kUSBHostControllerPropertyDebugError                    "kUSBDebugError"
 #define kUSBHostControllerPropertySleepSupported                "kUSBSleepSupported"
 #define kUSBHostControllerPropertyMuxEnabled                    "kUSBMuxEnabled"
+#define kUSBHostControllerPropertyCompanion                     "kUSBCompanion"                         // OSBoolean false to disable all companion controllers
+#define kUSBHostControllerPropertyLowSpeedCompanion             "kUSBLowSpeedCompanion"                 // OSBoolean false to disable low-speed companion controller
+#define kUSBHostControllerPropertyFullSpeedCompanion            "kUSBFullSpeedCompanion"                // OSBoolean false to disable full-speed companion controller
+#define kUSBHostControllerPropertyHighSpeedCompanion            "kUSBHighSpeedCompanion"                // OSBoolean false to disable high-speed companion controller
+#define kUSBHostControllerPropertySuperSpeedCompanion           "kUSBSuperSpeedCompanion"               // OSBoolean false to disable superspeed companion controller
 
 #define kUSBHostPortPropertyExternalDeviceResetController       "kUSBHostPortExternalDeviceResetController"
 #define kUSBHostPortPropertyExternalDevicePowerController       "kUSBHostPortExternalDevicePowerController"
@@ -319,6 +346,10 @@ enum
 #define kUSBHostPortPropertyCardReader                          "kUSBHostPortPropertyCardReader"
 
 #define kUSBHostPortPropertyOffset                              "kUSBHostPortPropertyOffset"
+
+#if !TARGET_OS_EMBEDDED
+#define kUSBExpressCardCantWake                                 "kUSBExpressCardCantWake"
+#endif
 
 #pragma mark APCI enumerations
 
@@ -369,6 +400,8 @@ typedef enum
 #define kGPEACPIString                                  "_GPE"
 #define kRDYForGPIOTest                                 "RDYG"
 #define kReconfiguredCount                              "RCFG"
+#define kUSBPlatformProperties                          "USBX"
+
 
 #endif
 

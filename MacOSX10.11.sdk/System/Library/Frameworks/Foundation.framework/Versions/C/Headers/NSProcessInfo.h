@@ -198,6 +198,13 @@ typedef NS_ENUM(NSInteger, NSProcessInfoThermalState) {
 
 @end
 
+@interface NSProcessInfo (NSProcessInfoPowerState)
+
+// Retrieve the current setting of the system for the low power mode setting. On systems where the low power mode is unknown or unsupported, the value returned from the lowPowerModeEnabled property is always NO
+@property (readonly, getter=isLowPowerModeEnabled) BOOL lowPowerModeEnabled NS_AVAILABLE(NA, 9_0);
+
+@end
+
 /*
  NSProcessInfoThermalStateDidChangeNotification is posted once the thermal state of the system has changed. Once the notification is posted, use the thermalState property to retrieve the current thermal state of the system.
  
@@ -206,5 +213,14 @@ typedef NS_ENUM(NSInteger, NSProcessInfoThermalState) {
  This notification is posted on the global dispatch queue. Register for it using the default notification center. The object associated with the notification is +[NSProcessInfo processInfo].
 */
 FOUNDATION_EXTERN NSString * const NSProcessInfoThermalStateDidChangeNotification NS_AVAILABLE(10_10_3, NA);
+
+/*
+ NSProcessInfoPowerStateDidChangeNotification is posted once any power usage mode of the system has changed. Once the notification is posted, use the isLowPowerModeEnabled property to retrieve the current state of the low power mode setting of the system.
+ 
+ When this notification is posted your application should attempt to reduce power usage by reducing potentially costly computation and other power using activities like network activity or keeping the screen on if the low power mode setting is enabled.
+ 
+ This notification is posted on the global dispatch queue. Register for it using the default notification center. The object associated with the notification is +[NSProcessInfo processInfo].
+ */
+FOUNDATION_EXTERN NSString * const NSProcessInfoPowerStateDidChangeNotification NS_AVAILABLE(NA, 9_0);
 
 NS_ASSUME_NONNULL_END

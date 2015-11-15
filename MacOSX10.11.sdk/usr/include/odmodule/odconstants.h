@@ -3555,18 +3555,6 @@ ODPolicyCategoryType kODPolicyCategoryPasswordChange __OSX_AVAILABLE_STARTING(__
 
 
 /*!
-    @const      kODPolicyKeyPasswordContentSummaries
-    @abstract   Key for the localized password content summaries.
-    @discussion Optional key for the localized password content summaries in the
-                policy set dictionary.  The value of this key is a dictionary
-                with key/value pairs of locale identifiers and localized
-                password content summaries.  The password content summaries
-                describe all of the rules to which a password must adhere.
- */
-CF_EXPORT
-const ODPolicyKeyType kODPolicyKeyPasswordContentSummaries __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_NA);
-
-/*!
     @typedef    kODPolicyAttributeType
     @abstract   Type for attributes that may be used in policies.
     @discussion Type for attributes that may be used in policies.  Policies in

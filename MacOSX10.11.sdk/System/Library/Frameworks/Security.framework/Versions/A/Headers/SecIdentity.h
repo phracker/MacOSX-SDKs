@@ -39,6 +39,9 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+CF_IMPLICIT_BRIDGING_ENABLED
+
 /*!
 	@function SecIdentityGetTypeID
 	@abstract Returns the type identifier of SecIdentity instances.
@@ -56,9 +59,9 @@ CFTypeID SecIdentityGetTypeID(void)
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
 OSStatus SecIdentityCreateWithCertificate(
-			CFTypeRef keychainOrArray,
+			CFTypeRef __nullable keychainOrArray,
 			SecCertificateRef certificateRef,
-            SecIdentityRef *identityRef)
+            SecIdentityRef * __nonnull CF_RETURNS_RETAINED identityRef)
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*!
@@ -70,7 +73,7 @@ OSStatus SecIdentityCreateWithCertificate(
 */
 OSStatus SecIdentityCopyCertificate(
             SecIdentityRef identityRef, 
-            SecCertificateRef *certificateRef)
+            SecCertificateRef * __nonnull CF_RETURNS_RETAINED certificateRef)
 	__OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_2_0);
 
 /*!
@@ -82,7 +85,7 @@ OSStatus SecIdentityCopyCertificate(
 */
 OSStatus SecIdentityCopyPrivateKey(
             SecIdentityRef identityRef, 
-            SecKeyRef *privateKeyRef)
+            SecKeyRef * __nonnull CF_RETURNS_RETAINED privateKeyRef)
 	__OSX_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_2_0);
 
 /*!
@@ -95,7 +98,7 @@ OSStatus SecIdentityCopyPrivateKey(
     @result A result code. See "Security Error Codes" (SecBase.h).
     @discussion This API is deprecated in 10.7. Please use the SecIdentityCopyPreferred API instead.
 */
-OSStatus SecIdentityCopyPreference(CFStringRef name, CSSM_KEYUSE keyUsage, CFArrayRef validIssuers, SecIdentityRef *identity)
+OSStatus SecIdentityCopyPreference(CFStringRef name, CSSM_KEYUSE keyUsage, CFArrayRef __nullable validIssuers, SecIdentityRef * __nonnull CF_RETURNS_RETAINED identity)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -108,7 +111,8 @@ OSStatus SecIdentityCopyPreference(CFStringRef name, CSSM_KEYUSE keyUsage, CFArr
     @result An identity or NULL. if the preferred identity has not been set. Your code should then typically perform a search for possible identities using the SecItem APIs.
     @discussion If a preferred identity has not been set for the supplied name, the returned identity reference will be NULL. Your code should then perform a search for possible identities, using the SecItemCopyMatching API.
 */
-SecIdentityRef SecIdentityCopyPreferred(CFStringRef name, CFArrayRef keyUsage, CFArrayRef validIssuers)	
+__nullable
+SecIdentityRef SecIdentityCopyPreferred(CFStringRef name, CFArrayRef __nullable keyUsage, CFArrayRef __nullable validIssuers)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 	
 /*!
@@ -131,7 +135,7 @@ OSStatus SecIdentitySetPreference(SecIdentityRef identity, CFStringRef name, CSS
     @param keyUsage A CFArrayRef value, containing items defined in SecItem.h  Pass NULL to specify any key usage. (kSecAttrCanEncrypt, kSecAttrCanDecrypt, kSecAttrCanDerive, kSecAttrCanSign, kSecAttrCanVerify, kSecAttrCanWrap, kSecAttrCanUnwrap)
     @result A result code. See "Security Error Codes" (SecBase.h).
 */	
-OSStatus SecIdentitySetPreferred(SecIdentityRef identity, CFStringRef name, CFArrayRef keyUsage)
+OSStatus SecIdentitySetPreferred(SecIdentityRef __nullable identity, CFStringRef name, CFArrayRef __nullable keyUsage)
 	__OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_NA);
 
 /*!
@@ -154,8 +158,8 @@ OSStatus SecIdentitySetPreferred(SecIdentityRef identity, CFStringRef name, CFAr
  */
 OSStatus SecIdentityCopySystemIdentity(
    CFStringRef domain,          
-   SecIdentityRef *idRef,
-   CFStringRef *actualDomain) /* optional */
+   SecIdentityRef * __nonnull CF_RETURNS_RETAINED idRef,
+   CFStringRef * __nullable CF_RETURNS_RETAINED actualDomain) /* optional */
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
 
 /*!
@@ -173,9 +177,8 @@ OSStatus SecIdentityCopySystemIdentity(
 */
 OSStatus SecIdentitySetSystemIdentity(
    CFStringRef domain,     
-   SecIdentityRef idRef)
+   SecIdentityRef __nullable idRef)
 	__OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
-
 
 /*
  * Defined system identity domains.
@@ -190,6 +193,9 @@ extern const CFStringRef kSecIdentityDomainDefault __OSX_AVAILABLE_STARTING(__MA
 	@const kSecIdentityDomainKerberosKDC Kerberos KDC identity.
 */
 extern const CFStringRef kSecIdentityDomainKerberosKDC __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA);
+
+CF_IMPLICIT_BRIDGING_DISABLED
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

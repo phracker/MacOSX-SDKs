@@ -340,13 +340,5 @@ typedef struct vm_page_info_basic		vm_page_info_basic_data_t;
 #define VM_PAGE_INFO_BASIC_COUNT	((mach_msg_type_number_t) \
 	(sizeof(vm_page_info_basic_data_t)/sizeof(int)))
 
-#define VM_SAVED_DATA_ATTRIBUTES_TYPE 1
-struct vm_saved_data_attributes {
-	unsigned int attribute_type;
-	unsigned int user_tag;
-	vm_object_id_t  object_id;
-} __attribute__ ((packed));
-typedef struct vm_saved_data_attributes * vm_saved_data_attributes_t;
-
 
 #endif	/*_MACH_VM_REGION_H_*/

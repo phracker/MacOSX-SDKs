@@ -466,7 +466,7 @@ Completion Code         Error Returned              Description
 #define kIOUSBMessageTDMLowBattery                  iokit_usb_err(0x1e)     // 0xe000401e  Message sent when when an attached TDM system battery is running low.
 #define kIOUSBMessageLegacySuspendDevice            iokit_usb_err(0x1f)     // 0xe000401f  Message sent to legacy interfaces when SuspedDevice() is called .
 #define kIOUSBMessageLegacyResetDevice              iokit_usb_err(0x20)     // 0xe0004020  Message sent to legacy interfaces when ResetDevice() is called .
-
+#define kIOUSBMessageLegacyReEnumerateDevice        iokit_usb_err(0x21)     // 0xe0004021  Message sent to legacy interfaces when ReEnumerateDevice() is called .
     
 /*! @/defineblock */
 

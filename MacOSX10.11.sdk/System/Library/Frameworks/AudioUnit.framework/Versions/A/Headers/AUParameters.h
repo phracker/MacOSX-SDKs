@@ -243,7 +243,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 /// The parameter's unit of measurement.
 @property (NS_NONATOMIC_IOSONLY, readonly) AudioUnitParameterUnit unit;
 
-/// A custom name for the parameter's unit. Only queried when unit is kAudioUnitParameterUnit_CustomUnit.
+/// A localized name for the parameter's unit. Supplied by the AU if kAudioUnitParameterUnit_CustomUnit; else by the framework.
 @property (NS_NONATOMIC_IOSONLY, readonly, copy, nullable) NSString *unitName;
 
 /// Various details of the parameter.

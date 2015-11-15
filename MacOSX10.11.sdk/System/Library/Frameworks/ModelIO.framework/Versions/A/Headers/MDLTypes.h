@@ -13,6 +13,18 @@
 #include <simd/simd.h>
 #include <math.h>
 
+/* Alembic file format, file extension ABC, UTI public.alembic */
+MDL_EXPORT NSString * __nonnull const kUTTypeAlembic NS_AVAILABLE(10_11, 9_0);
+
+/* 3d Object file format, file extension OBJ, UTI public.geometry-definition-format */
+MDL_EXPORT NSString * __nonnull const kUTType3dObject NS_AVAILABLE(10_11, 9_0);
+
+/* Polygon file format, file extension PLY, UTI public.polygon-file-format */
+MDL_EXPORT NSString * __nonnull const kUTTypePolygon NS_AVAILABLE(10_11, 9_0);
+
+/* Stereolithography file format, file extension STL, UTI public.standard-tesselated-geometry-format */
+MDL_EXPORT NSString * __nonnull const kUTTypeStereolithography NS_AVAILABLE(10_11, 9_0);
+
 NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, MDLIndexBitDepth)
 {
@@ -25,8 +37,14 @@ typedef NS_ENUM(NSUInteger, MDLIndexBitDepth)
     MDLIndexBitDepthUint32 = 32,
 };
 
-typedef NS_ENUM(NSInteger, MDLGeometryKind) {
-    MDLGeometryKindPoints = 0,
+typedef NS_ENUM(NSInteger, MDLGeometryType) {
+    MDLGeometryTypePoints = 0,
+    MDLGeometryTypeLines,
+    MDLGeometryTypeTriangles,
+    MDLGeometryTypeTriangleStrips,
+    MDLGeometryTypeQuads,
+    MDLGeometryTypeVariableTopology,
+    MDLGeometryKindPoints = 0,        // Legacy enumerations
     MDLGeometryKindLines,
     MDLGeometryKindTriangles,
     MDLGeometryKindTriangleStrips,
@@ -37,7 +55,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 MDL_EXPORT
 @protocol MDLNamed
 @required
-@property (nonatomic, copy, nullable) NSString *name;
+@property (nonatomic, copy) NSString *name;
 @end
 
 NS_CLASS_AVAILABLE(10_11, 9_0)

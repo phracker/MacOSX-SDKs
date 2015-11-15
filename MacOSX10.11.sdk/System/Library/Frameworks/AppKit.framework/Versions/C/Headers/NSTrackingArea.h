@@ -50,7 +50,7 @@ NS_CLASS_AVAILABLE(10_5, NA)
 - (instancetype)initWithRect:(NSRect)rect options:(NSTrackingAreaOptions)options owner:(nullable id)owner userInfo:(nullable NSDictionary<id, id> *)userInfo;
 @property (readonly) NSRect rect;
 @property (readonly) NSTrackingAreaOptions options;
-@property (null_unspecified, readonly, assign) id owner;
+@property (nullable, readonly, assign) id owner;
 @property (nullable, readonly, copy) NSDictionary<id, id> *userInfo;
 @end
 

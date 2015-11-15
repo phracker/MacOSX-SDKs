@@ -29,8 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)encodeArrayOfObjCType:(const char *)type count:(NSUInteger)count at:(const void *)array;
 - (void)encodeBytes:(nullable const void *)byteaddr length:(NSUInteger)length;
 
-- (nullable id)decodeObject NS_SWIFT_UNAVAILABLE("Use 'decodeObject() throws' instead");
-- (nullable id)decodeObjectAndReturnError:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'decodeObject() throws' instead");
+- (nullable id)decodeObject;
+- (nullable id)decodeTopLevelObjectAndReturnError:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'decodeTopLevelObject() throws' instead");
 - (void)decodeValuesOfObjCTypes:(const char *)types, ...;
 - (void)decodeArrayOfObjCType:(const char *)itemType count:(NSUInteger)count at:(void *)array;
 - (nullable void *)decodeBytesWithReturnedLength:(NSUInteger *)lengthp NS_RETURNS_INNER_POINTER;
@@ -58,8 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)encodeBytes:(nullable const uint8_t *)bytesp length:(NSUInteger)lenv forKey:(NSString *)key;
 
 - (BOOL)containsValueForKey:(NSString *)key;
-- (nullable id)decodeObjectForKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use 'decodeObjectForKey(_) throws' instead");
-- (nullable id)decodeObjectForKey:(NSString *)key error:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'decodeObjectForKey(_) throws' instead");
+- (nullable id)decodeObjectForKey:(NSString *)key;
+- (nullable id)decodeTopLevelObjectForKey:(NSString *)key error:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'decodeObjectForKey(_:) throws' instead");
 - (BOOL)decodeBoolForKey:(NSString *)key;
 - (int)decodeIntForKey:(NSString *)key;
 - (int32_t)decodeInt32ForKey:(NSString *)key;
@@ -75,12 +75,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL requiresSecureCoding NS_AVAILABLE(10_8, 6_0);
 
 // Specify what the expected class of the allocated object is. If the coder responds YES to -requiresSecureCoding, then an exception will be thrown if the class to be decoded does not implement NSSecureCoding or is not isKindOfClass: of the argument. If the coder responds NO to -requiresSecureCoding, then the class argument is ignored and no check of the class of the decoded object is performed, exactly as if decodeObjectForKey: had been called.
-- (nullable id)decodeObjectOfClass:(Class)aClass forKey:(NSString *)key NS_AVAILABLE(10_8, 6_0) NS_SWIFT_UNAVAILABLE("Use 'decodeObjectOfClass(_,forKey:) throws' instead");
-- (nullable id)decodeObjectOfClass:(Class)aClass forKey:(NSString *)key error:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'decodeObjectOfClass(_,forKey:) throws instead");
+- (nullable id)decodeObjectOfClass:(Class)aClass forKey:(NSString *)key NS_AVAILABLE(10_8, 6_0);
+- (nullable id)decodeTopLevelObjectOfClass:(Class)aClass forKey:(NSString *)key error:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'decodeTopLevelObjectOfClass(_:,forKey:) throws instead");
 
 // The class of the object may be any class in the provided NSSet, or a subclass of any class in the set. Otherwise, the behavior is the same as -decodeObjectOfClass:forKey:.
-- (nullable id)decodeObjectOfClasses:(nullable NSSet<Class> *)classes forKey:(NSString *)key NS_AVAILABLE(10_8, 6_0)  NS_SWIFT_UNAVAILABLE("Use 'decodeObjectOfClasses(_,forKey:) throws' instead");
-- (nullable id)decodeObjectOfClasses:(nullable NSSet<Class> *)classes forKey:(NSString *)key error:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'decodeObjectOfClasses(_,forKey:) throws' instead");
+- (nullable id)decodeObjectOfClasses:(nullable NSSet<Class> *)classes forKey:(NSString *)key NS_AVAILABLE(10_8, 6_0) NS_REFINED_FOR_SWIFT;
+- (nullable id)decodeTopLevelObjectOfClasses:(nullable NSSet<Class> *)classes forKey:(NSString *)key error:(NSError **)error NS_AVAILABLE(10_11, 9_0) NS_SWIFT_UNAVAILABLE("Use 'decodeObjectOfClasses(_:,forKey:) throws' instead");
 
 // Calls -decodeObjectOfClasses:forKey: with a set allowing only property list types.
 - (nullable id)decodePropertyListForKey:(NSString *)key NS_AVAILABLE(10_8, 6_0);

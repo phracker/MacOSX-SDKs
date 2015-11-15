@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/NSGestureRecognizer.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 NS_CLASS_AVAILABLE(10_10, NA)
 @interface NSMagnificationGestureRecognizer : NSGestureRecognizer {
 @private
@@ -24,3 +26,5 @@ NS_CLASS_AVAILABLE(10_10, NA)
 @property CGFloat magnification;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -22,11 +22,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreMedia/CMTime.h>
 
-#if TARGET_OS_IPHONE
 #import <CoreGraphics/CoreGraphics.h>
-#else // ! TARGET_OS_IPHONE
-#import <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CoreGraphics.h>
-#endif // ! TARGET_OS_IPHONE
 
 @class AVAsset;
 @class AVVideoComposition;

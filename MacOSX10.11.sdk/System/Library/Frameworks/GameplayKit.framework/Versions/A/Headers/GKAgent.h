@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Delegate that will receive messages regarding GKAgent updates.
  */
 @protocol GKAgentDelegate <NSObject>
+@optional
 
 /*
  * Called before [GKAgent updateWithDeltaTime:] is called each frame.
@@ -49,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 GK_BASE_AVAILABILITY @interface GKAgent : GKComponent
 
 /**
- * Object which has agentDidUpdate called on it during this agent's behavior update
+ * Object which has agentDidUpdate called on it during this agent's behavior updatekbeha
  */
 @property (nullable, nonatomic, weak) id<GKAgentDelegate> delegate;
 
@@ -78,12 +79,12 @@ GK_BASE_AVAILABILITY @interface GKAgent : GKComponent
  *
  * Defaults to 0.0
  */
-@property (nonatomic) float speed;
+@property (nonatomic, readonly) float speed;
 
 /**
  * Maximum amount of acceleration that can be applied to this agent.  All applied impulses are clipped to this amount.
  *
- * Defaults to 0.1
+ * Defaults to 1.0
  */
 @property (nonatomic) float maxAcceleration;
 

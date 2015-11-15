@@ -251,7 +251,7 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
  }
  
  */
-+ (instancetype)geometrySourceWithBuffer:(id <MTLBuffer>)mtlBuffer vertexFormat:(MTLVertexFormat)vertexFormat semantic:(NSString *)semantic vertexCount:(NSInteger)vertexCount dataOffset:(NSInteger)offset dataStride:(NSInteger)stride;
++ (instancetype)geometrySourceWithBuffer:(id <MTLBuffer>)mtlBuffer vertexFormat:(MTLVertexFormat)vertexFormat semantic:(NSString *)semantic vertexCount:(NSInteger)vertexCount dataOffset:(NSInteger)offset dataStride:(NSInteger)stride NS_AVAILABLE(10_11, 9_0);
 #endif
 
 /*! 
@@ -316,12 +316,12 @@ NS_CLASS_AVAILABLE(10_8, 8_0)
 /*!
  @method geometryElementWithData:primitiveType:primitiveCount:bytesPerIndex:
  @abstract Creates and returns a geometry element from the given data and data format info.
- @param data The data that contains element indexes.
+ @param data The data that contains element indexes. You can pass nil to use an implicit vertex ordering (0,1,2...).
  @param primitiveType The primitive type, as listed in the SCNGeometryPrimitiveType enumeration.
  @param primitiveCount The number of primitives in the data.
  @param bytesPerIndex The number of bytes that represent a single index value in the data.
  */
-+ (instancetype)geometryElementWithData:(NSData *)data primitiveType:(SCNGeometryPrimitiveType)primitiveType primitiveCount:(NSInteger)primitiveCount bytesPerIndex:(NSInteger)bytesPerIndex;
++ (instancetype)geometryElementWithData:(nullable NSData *)data primitiveType:(SCNGeometryPrimitiveType)primitiveType primitiveCount:(NSInteger)primitiveCount bytesPerIndex:(NSInteger)bytesPerIndex;
 
 /*!
  @property data

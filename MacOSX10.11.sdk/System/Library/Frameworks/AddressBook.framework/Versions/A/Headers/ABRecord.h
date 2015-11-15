@@ -5,6 +5,9 @@
 //  Copyright (c) 2003-2007 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABRECORD__
+#define __ABRECORD__
+
 #import <Foundation/Foundation.h>
 
 @class ABAddressBook;
@@ -80,3 +83,5 @@
     // The return value is only defined for ABPerson and ABGroup.
 
 @end
+
+#endif // __ABRECORD__

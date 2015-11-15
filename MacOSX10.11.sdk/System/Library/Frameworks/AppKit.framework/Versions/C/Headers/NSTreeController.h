@@ -47,13 +47,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 // proxy for the root tree node responds to -childNodes and -descendantNodeAtIndexPath:(NSIndexPath *)indexPath
 @property (readonly, strong) id arrangedObjects; 
-@property (null_unspecified, copy) NSString *childrenKeyPath; // key used to find the children of a model object.
-@property (null_unspecified, copy) NSString *countKeyPath; // optional for performance
+@property (nullable, copy) NSString *childrenKeyPath; // key used to find the children of a model object.
+@property (nullable, copy) NSString *countKeyPath; // optional for performance
 @property (nullable, copy) NSString *leafKeyPath; // optional. inserting/adding children disabled for leaf nodes
 
-@property (null_unspecified, copy) NSArray<NSSortDescriptor *> *sortDescriptors;
+@property (copy) NSArray<NSSortDescriptor *> *sortDescriptors;
 
-@property (null_unspecified, strong) id content;
+@property (nullable, strong) id content;
 
 - (void)add:(nullable id)sender;    // adds a new sibling node to the end of the selected objects
 - (void)remove:(nullable id)sender; 	//removes the currently selected objects from the tree
@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL canInsertChild;
 @property (readonly) BOOL canAddChild;
 
-- (void)insertObject:(null_unspecified id)object atArrangedObjectIndexPath:(NSIndexPath *)indexPath;
+- (void)insertObject:(nullable id)object atArrangedObjectIndexPath:(NSIndexPath *)indexPath;
 - (void)insertObjects:(NSArray *)objects atArrangedObjectIndexPaths:(NSArray<NSIndexPath *> *)indexPaths;
 - (void)removeObjectAtArrangedObjectIndexPath:(NSIndexPath *)indexPath;
 - (void)removeObjectsAtArrangedObjectIndexPaths:(NSArray<NSIndexPath *> *)indexPaths;
@@ -78,16 +78,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* All selection modification methods returning a BOOL indicate through that flag whether changing the selection was successful (changing the selection might trigger a commitEditing call which fails and thus deny's the selection change).
 	*/
-@property (null_unspecified, readonly, copy) NSArray *selectedObjects;
+@property (readonly, copy) NSArray *selectedObjects;
 
-- (BOOL)setSelectionIndexPaths:(null_unspecified NSArray<NSIndexPath *> *)indexPaths;
-@property (null_unspecified, readonly, copy) NSArray<NSIndexPath *> *selectionIndexPaths;
+- (BOOL)setSelectionIndexPaths:(NSArray<NSIndexPath *> *)indexPaths;
+@property (readonly, copy) NSArray<NSIndexPath *> *selectionIndexPaths;
 - (BOOL)setSelectionIndexPath:(nullable NSIndexPath *)indexPath;
 @property (nullable, readonly, copy) NSIndexPath *selectionIndexPath;
 - (BOOL)addSelectionIndexPaths:(NSArray<NSIndexPath *> *)indexPaths;
 - (BOOL)removeSelectionIndexPaths:(NSArray<NSIndexPath *> *)indexPaths;
 
-@property (null_unspecified, readonly, copy) NSArray<NSTreeNode *> *selectedNodes NS_AVAILABLE_MAC(10_5);
+@property (readonly, copy) NSArray<NSTreeNode *> *selectedNodes NS_AVAILABLE_MAC(10_5);
 
 - (void)moveNode:(NSTreeNode *)node toIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_MAC(10_5);
 - (void)moveNodes:(NSArray<NSTreeNode *> *)nodes toIndexPath:(NSIndexPath *)startingIndexPath NS_AVAILABLE_MAC(10_5);

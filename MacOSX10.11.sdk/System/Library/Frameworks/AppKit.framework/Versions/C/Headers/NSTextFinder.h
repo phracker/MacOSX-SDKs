@@ -171,7 +171,7 @@ NS_CLASS_AVAILABLE(10_7, NA)
 @required
 
 /* This property is used by NSTextFinder to assign a find bar to a container. The container may freely modify the view's width, but should not modify its height. This property is managed by NSTextFinder. You should not set this property. */
-@property (strong) NSView *findBarView;
+@property (nullable, strong) NSView *findBarView;
 
 /* This property controls whether the receiver should display its find bar or not. When this property is YES and the findBarView property is set, then the find bar should be displayed by the container. Otherwise, the find bar should not be displayed. The default value should be NO. */
 @property (getter=isFindBarVisible) BOOL findBarVisible;
@@ -182,7 +182,7 @@ NS_CLASS_AVAILABLE(10_7, NA)
 @optional
 
 /* This contentView should contain all the views which display the contents being searched. This content view defines the area to be dimmed during incremental search, if incrementalSearchingShouldDimContentView is YES. If this method is not implemented or returns nil, then NSTextFinder will act as if incrementalSearchingShouldDimContentView is NO. */
-- (NSView *)contentView;
+- (nullable NSView *)contentView;
 
 @end
 

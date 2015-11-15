@@ -14,11 +14,7 @@
 #import <CoreMedia/CMTimeRange.h>
 
 // for CGSize
-#if TARGET_OS_IPHONE
 #import <CoreGraphics/CoreGraphics.h>
-#else // ! TARGET_OS_IPHONE
-#import <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CoreGraphics.h>
-#endif // ! TARGET_OS_IPHONE
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -56,17 +52,13 @@ NS_ASSUME_NONNULL_BEGIN
 // -- Export Preset Names --
 
 
-#if TARGET_OS_IPHONE
-
 /* These export options can be used to produce movie files with video size appropriate to the device.
 	The export will not scale the video up from a smaller size. The video will be compressed using
 	H.264 and the audio will be compressed using AAC.  */
 
-AVF_EXPORT NSString *const AVAssetExportPresetLowQuality        NS_AVAILABLE_IOS(4_0);
-AVF_EXPORT NSString *const AVAssetExportPresetMediumQuality     NS_AVAILABLE_IOS(4_0);
-AVF_EXPORT NSString *const AVAssetExportPresetHighestQuality    NS_AVAILABLE_IOS(4_0);
-
-#endif // TARGET_OS_IPHONE
+AVF_EXPORT NSString *const AVAssetExportPresetLowQuality        NS_AVAILABLE(10_11, 4_0);
+AVF_EXPORT NSString *const AVAssetExportPresetMediumQuality     NS_AVAILABLE(10_11, 4_0);
+AVF_EXPORT NSString *const AVAssetExportPresetHighestQuality    NS_AVAILABLE(10_11, 4_0);
 
 /* These export options can be used to produce movie files with the specified video size.
 	The export will not scale the video up from a smaller size. The video will be compressed using
@@ -75,7 +67,7 @@ AVF_EXPORT NSString *const AVAssetExportPreset640x480			NS_AVAILABLE(10_7, 4_0);
 AVF_EXPORT NSString *const AVAssetExportPreset960x540   		NS_AVAILABLE(10_7, 4_0);
 AVF_EXPORT NSString *const AVAssetExportPreset1280x720  		NS_AVAILABLE(10_7, 4_0);
 AVF_EXPORT NSString *const AVAssetExportPreset1920x1080			NS_AVAILABLE(10_7, 5_0);
-AVF_EXPORT NSString *const AVAssetExportPreset3840x2160			NS_AVAILABLE(10_10, NA);
+AVF_EXPORT NSString *const AVAssetExportPreset3840x2160			NS_AVAILABLE(10_10, 9_0);
 
 /*  This export option will produce an audio-only .m4a file with appropriate iTunes gapless playback data */
 AVF_EXPORT NSString *const AVAssetExportPresetAppleM4A			NS_AVAILABLE(10_7, 4_0);

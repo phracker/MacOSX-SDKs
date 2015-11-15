@@ -9,13 +9,8 @@
 #import <AVFoundation/AVBase.h>
 #import <Foundation/Foundation.h>
 #import <CoreMedia/CMFormatDescription.h>
-#if (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE || TARGET_OS_WIN32)
-	#include <CoreGraphics/CGBase.h>
-	#include <CoreGraphics/CGGeometry.h>
-#elif TARGET_OS_MAC
-	#include <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGBase.h>
-	#include <ApplicationServices/../Frameworks/CoreGraphics.framework/Headers/CGGeometry.h>
-#endif
+#import <CoreGraphics/CGBase.h>
+#import <CoreGraphics/CGGeometry.h>
 
 /*!
  @constant AVCaptureDeviceWasConnectedNotification
@@ -551,7 +546,10 @@ typedef NS_ENUM(NSInteger, AVCaptureFlashMode) {
  @discussion
     The value of this property is a BOOL indicating whether the receiver's flash is 
     currently active. When the flash is active, it will flash if a still image is
-    captured. This property is key-value observable.
+    captured. When a still image is captured with the flash active, exposure and
+    white balance settings are overridden for the still. This is true even when
+    using AVCaptureExposureModeCustom and/or AVCaptureWhiteBalanceModeLocked.
+    This property is key-value observable.
 */
 @property(nonatomic, readonly, getter=isFlashActive) BOOL flashActive NS_AVAILABLE_IOS(5_0);
 
@@ -968,7 +966,12 @@ typedef NS_ENUM(NSInteger, AVCaptureExposureMode) {
     The value of this property is an AVCaptureExposureMode that determines the receiver's exposure mode, if it has
     adjustable exposure.  -setExposureMode: throws an NSInvalidArgumentException if set to an unsupported value 
     (see -isExposureModeSupported:).  -setExposureMode: throws an NSGenericException if called without first obtaining 
-    exclusive access to the receiver using lockForConfiguration:.  Clients can observe automatic changes to the receiver's 
+    exclusive access to the receiver using lockForConfiguration:. When using AVCaptureStillImageOutput with
+    automaticallyEnablesStillImageStabilizationWhenAvailable set to YES (the default behavior), the receiver's ISO and 
+    exposureDuration values may be overridden by automatic still image stabilization values if the scene is dark enough to 
+    warrant still image stabilization.  To ensure that the receiver's ISO and exposureDuration values are honored while
+    in AVCaptureExposureModeCustom or AVCaptureExposureModeLocked, you must set AVCaptureStillImageOutput's
+    automaticallyEnablesStillImageStabilizationWhenAvailable property to NO. Clients can observe automatic changes to the receiver's
     exposureMode by key value observing this property.
 */
 @property(nonatomic) AVCaptureExposureMode exposureMode;
@@ -1090,6 +1093,11 @@ AVF_EXPORT const float AVCaptureISOCurrent NS_AVAILABLE_IOS(8_0);
     This is the only way of setting exposureDuration and ISO.
     This method throws an NSRangeException if either exposureDuration or ISO is set to an unsupported level.
     This method throws an NSGenericException if called without first obtaining exclusive access to the receiver using lockForConfiguration:.
+    When using AVCaptureStillImageOutput with automaticallyEnablesStillImageStabilizationWhenAvailable set to YES (the default behavior),
+    the receiver's ISO and exposureDuration values may be overridden by automatic still image stabilization values if the scene is dark
+    enough to warrant still image stabilization.  To ensure that the receiver's ISO and exposureDuration values are honored while
+    in AVCaptureExposureModeCustom or AVCaptureExposureModeLocked, you must set AVCaptureStillImageOutput's
+    automaticallyEnablesStillImageStabilizationWhenAvailable property to NO.
 */
 - (void)setExposureModeCustomWithDuration:(CMTime)duration ISO:(float)ISO completionHandler:(void (^)(CMTime syncTime))handler NS_AVAILABLE_IOS(8_0);
 

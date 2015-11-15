@@ -6,7 +6,7 @@
  *
  *  See vImage/vImage.h for more on how to view the headerdoc documentation for functions declared herein.
  *
- *  @copyright Copyright (c) 2012-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2012-2015 by Apple Inc. All rights reserved.
  *
  *  @discussion These interfaces provide methods to help exchange data between CoreGraphics and vImage
  *              and provides conversion routines to convert nearly any image format to nearly any 

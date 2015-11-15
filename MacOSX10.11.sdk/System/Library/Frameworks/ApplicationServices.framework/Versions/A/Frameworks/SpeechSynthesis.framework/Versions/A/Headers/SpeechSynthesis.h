@@ -31,26 +31,25 @@
 #pragma once
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+CF_EXTERN_C_BEGIN
+CF_ASSUME_NONNULL_BEGIN
 
 #pragma pack(push, 2)
 
-enum {
+CF_ENUM(OSType) {
   kTextToSpeechSynthType        = 'ttsc',
   kTextToSpeechVoiceType        = 'ttvd',
   kTextToSpeechVoiceFileType    = 'ttvf',
   kTextToSpeechVoiceBundleType  = 'ttvb'
 };
 
-enum {
+CF_ENUM(SInt32) {
   kNoEndingProsody              = 1,
   kNoSpeechInterrupt            = 2,
   kPreflightThenPause           = 4
 };
 
-enum {
+CF_ENUM(SInt32) {
   kImmediate                    = 0,
   kEndOfWord                    = 1,
   kEndOfSentence                = 2
@@ -60,7 +59,7 @@ enum {
 /*------------------------------------------*/
 /* GetSpeechInfo & SetSpeechInfo selectors  */
 /*------------------------------------------*/
-enum {
+CF_ENUM(OSType) {
   soStatus                      = 'stat',
   soErrors                      = 'erro',
   soInputMode                   = 'inpt',
@@ -96,7 +95,7 @@ enum {
 /*------------------------------------------*/
 /* Speaking Mode Constants                  */
 /*------------------------------------------*/
-enum {
+CF_ENUM(OSType) {
   modeText                      = 'TEXT', /* input mode constants             */
   modePhonemes                  = 'PHON',
   modeTune                      = 'TUNE',
@@ -105,7 +104,7 @@ enum {
 };
 
 
-enum {
+CF_ENUM(OSType) {
   soVoiceDescription            = 'info',
   soVoiceFile                   = 'fref'
 };
@@ -113,7 +112,7 @@ enum {
 /*------------------------------------------*/
 /* Flags for phoneme generation.            */
 /*------------------------------------------*/
-enum {
+CF_ENUM(SInt32) {
   kSpeechGenerateTune           = 1,    /* Generate detailed "tune" instead of just phonemes  */
   kSpeechRelativePitch          = 2,    /* Pitch relative to voice baseline             */
   kSpeechRelativeDuration       = 4,    /* Duration relative to speech rate             */
@@ -123,7 +122,7 @@ enum {
 /*------------------------------------------*/
 /* AudioUnit constants - new in 10.5        */
 /*------------------------------------------*/
-enum {
+CF_ENUM(UInt32) {
   kAudioUnitSubType_SpeechSynthesis = 'ttsp', /* kAudioUnitType_Generator */
   kAudioUnitProperty_Voice      = 3330, /* Get/Set (VoiceSpec)      */
   kAudioUnitProperty_SpeechChannel = 3331 /* Get (SpeechChannel)      */
@@ -146,7 +145,7 @@ struct VoiceSpec {
 typedef struct VoiceSpec                VoiceSpec;
 typedef VoiceSpec *                     VoiceSpecPtr;
 
-enum {
+CF_ENUM(SInt16) {
   kNeuter                       = 0,
   kMale                         = 1,
   kFemale                       = 2
@@ -239,7 +238,7 @@ typedef struct DelimiterInfo            DelimiterInfo;
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechStatusProperty                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechStatusProperty                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechErrorsProperty
  *  
@@ -248,7 +247,7 @@ extern CFStringRef kSpeechStatusProperty                             AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorsProperty                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorsProperty                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechInputModeProperty
  *  
@@ -257,7 +256,7 @@ extern CFStringRef kSpeechErrorsProperty                             AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechInputModeProperty                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechInputModeProperty                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechCharacterModeProperty
  *  
@@ -266,7 +265,7 @@ extern CFStringRef kSpeechInputModeProperty                          AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechCharacterModeProperty                      AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechCharacterModeProperty                      AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechNumberModeProperty
  *  
@@ -275,7 +274,7 @@ extern CFStringRef kSpeechCharacterModeProperty                      AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechNumberModeProperty                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechNumberModeProperty                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechRateProperty
  *  
@@ -284,7 +283,7 @@ extern CFStringRef kSpeechNumberModeProperty                         AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechRateProperty                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechRateProperty                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPitchBaseProperty
  *  
@@ -293,7 +292,7 @@ extern CFStringRef kSpeechRateProperty                               AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPitchBaseProperty                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPitchBaseProperty                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPitchModProperty
  *  
@@ -302,7 +301,7 @@ extern CFStringRef kSpeechPitchBaseProperty                          AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPitchModProperty                           AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPitchModProperty                           AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechVolumeProperty
  *  
@@ -311,7 +310,7 @@ extern CFStringRef kSpeechPitchModProperty                           AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechVolumeProperty                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechVolumeProperty                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechSynthesizerInfoProperty
  *  
@@ -320,7 +319,7 @@ extern CFStringRef kSpeechVolumeProperty                             AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechSynthesizerInfoProperty                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechSynthesizerInfoProperty                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechRecentSyncProperty
  *  
@@ -329,7 +328,7 @@ extern CFStringRef kSpeechSynthesizerInfoProperty                    AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechRecentSyncProperty                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechRecentSyncProperty                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPhonemeSymbolsProperty
  *  
@@ -338,7 +337,7 @@ extern CFStringRef kSpeechRecentSyncProperty                         AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPhonemeSymbolsProperty                     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPhonemeSymbolsProperty                     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechCurrentVoiceProperty
  *  
@@ -347,7 +346,7 @@ extern CFStringRef kSpeechPhonemeSymbolsProperty                     AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechCurrentVoiceProperty                       AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechCurrentVoiceProperty                       AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechCommandDelimiterProperty
  *  
@@ -356,7 +355,7 @@ extern CFStringRef kSpeechCurrentVoiceProperty                       AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechCommandDelimiterProperty                   AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechCommandDelimiterProperty                   AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechResetProperty
  *  
@@ -365,7 +364,7 @@ extern CFStringRef kSpeechCommandDelimiterProperty                   AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechResetProperty                              AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechResetProperty                              AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechOutputToFileURLProperty
  *  
@@ -374,7 +373,7 @@ extern CFStringRef kSpeechResetProperty                              AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechOutputToFileURLProperty                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechOutputToFileURLProperty                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechOutputToExtAudioFileProperty
  *  
@@ -383,7 +382,7 @@ extern CFStringRef kSpeechOutputToFileURLProperty                    AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechOutputToExtAudioFileProperty               AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+extern CFStringRef const kSpeechOutputToExtAudioFileProperty               AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 /*
  *  kSpeechOutputToAudioDeviceProperty
  *  
@@ -392,21 +391,21 @@ extern CFStringRef kSpeechOutputToExtAudioFileProperty               AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechOutputToAudioDeviceProperty                AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+extern CFStringRef const kSpeechOutputToAudioDeviceProperty                AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 /*
  *  kSpeechOutputToFileDescriptorProperty
  *
  *  Availability:
  *    Mac OS X:         in version 10.9 and later in ApplicationServices.framework
  */
-extern CFStringRef kSpeechOutputToFileDescriptorProperty            AVAILABLE_MAC_OS_X_VERSION_10_9_AND_LATER;
+extern CFStringRef const kSpeechOutputToFileDescriptorProperty            AVAILABLE_MAC_OS_X_VERSION_10_9_AND_LATER;
 /*
  *  kSpeechAudioOutputFormatProperty
  *
  *  Availability:
  *    Mac OS X:         in version 10.9 and later in ApplicationServices.framework
  */ 
-extern CFStringRef kSpeechAudioOutputFormatProperty            AVAILABLE_MAC_OS_X_VERSION_10_9_AND_LATER;
+extern CFStringRef const kSpeechAudioOutputFormatProperty            AVAILABLE_MAC_OS_X_VERSION_10_9_AND_LATER;
 /*
  *
  *  kSpeechOutputChannelMapProperty
@@ -414,7 +413,7 @@ extern CFStringRef kSpeechAudioOutputFormatProperty            AVAILABLE_MAC_OS_
  *  Availability:
  *    Mac OS X:         in version 10.9 and later in ApplicationServices.framework
  */
-extern CFStringRef kSpeechOutputChannelMapProperty            AVAILABLE_MAC_OS_X_VERSION_10_9_AND_LATER; 
+extern CFStringRef const kSpeechOutputChannelMapProperty            AVAILABLE_MAC_OS_X_VERSION_10_9_AND_LATER; 
 /*
  *  kSpeechRefConProperty
  *  
@@ -423,7 +422,7 @@ extern CFStringRef kSpeechOutputChannelMapProperty            AVAILABLE_MAC_OS_X
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechRefConProperty                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechRefConProperty                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechTextDoneCallBack
  *  
@@ -432,7 +431,7 @@ extern CFStringRef kSpeechRefConProperty                             AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechTextDoneCallBack                           AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechTextDoneCallBack                           AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechSpeechDoneCallBack
  *  
@@ -441,7 +440,7 @@ extern CFStringRef kSpeechTextDoneCallBack                           AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechSpeechDoneCallBack                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechSpeechDoneCallBack                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechSyncCallBack
  *  
@@ -450,7 +449,7 @@ extern CFStringRef kSpeechSpeechDoneCallBack                         AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechSyncCallBack                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechSyncCallBack                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPhonemeCallBack
  *  
@@ -459,7 +458,7 @@ extern CFStringRef kSpeechSyncCallBack                               AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPhonemeCallBack                            AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPhonemeCallBack                            AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechErrorCFCallBack
  *  
@@ -468,7 +467,7 @@ extern CFStringRef kSpeechPhonemeCallBack                            AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorCFCallBack                            AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorCFCallBack                            AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechWordCFCallBack
  *  
@@ -477,7 +476,7 @@ extern CFStringRef kSpeechErrorCFCallBack                            AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechWordCFCallBack                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechWordCFCallBack                             AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPhonemeOptionsProperty
  *  
@@ -486,7 +485,7 @@ extern CFStringRef kSpeechWordCFCallBack                             AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPhonemeOptionsProperty                     AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+extern CFStringRef const kSpeechPhonemeOptionsProperty                     AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 /*
  *  kSpeechAudioUnitProperty
  *  
@@ -495,7 +494,7 @@ extern CFStringRef kSpeechPhonemeOptionsProperty                     AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechAudioUnitProperty                          AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+extern CFStringRef const kSpeechAudioUnitProperty                          AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 /*
  *  kSpeechAudioGraphProperty
  *  
@@ -504,7 +503,7 @@ extern CFStringRef kSpeechAudioUnitProperty                          AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechAudioGraphProperty                         AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+extern CFStringRef const kSpeechAudioGraphProperty                         AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 /*
  *  kSpeechSynthExtensionProperty
  *
@@ -513,7 +512,7 @@ extern CFStringRef kSpeechAudioGraphProperty                         AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechSynthExtensionProperty                    AVAILABLE_MAC_OS_X_VERSION_10_9_AND_LATER;
+extern CFStringRef const kSpeechSynthExtensionProperty                    AVAILABLE_MAC_OS_X_VERSION_10_9_AND_LATER;
     
 /* Speaking Modes*/
 /*
@@ -524,7 +523,7 @@ extern CFStringRef kSpeechSynthExtensionProperty                    AVAILABLE_MA
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechModeText                                   AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechModeText                                   AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechModePhoneme
  *  
@@ -533,7 +532,7 @@ extern CFStringRef kSpeechModeText                                   AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechModePhoneme                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechModePhoneme                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechModeTune
  *  
@@ -542,7 +541,7 @@ extern CFStringRef kSpeechModePhoneme                                AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechModeTune                                   AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
+extern CFStringRef const kSpeechModeTune                                   AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER;
 /*
  *  kSpeechModeNormal
  *  
@@ -551,7 +550,7 @@ extern CFStringRef kSpeechModeTune                                   AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechModeNormal                                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechModeNormal                                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechModeLiteral
  *  
@@ -560,7 +559,7 @@ extern CFStringRef kSpeechModeNormal                                 AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechModeLiteral                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechModeLiteral                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Dictionary keys for options parameter in SpeakCFString*/
 /*
  *  kSpeechNoEndingProsody
@@ -570,7 +569,7 @@ extern CFStringRef kSpeechModeLiteral                                AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechNoEndingProsody                            AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechNoEndingProsody                            AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechNoSpeechInterrupt
  *  
@@ -579,7 +578,7 @@ extern CFStringRef kSpeechNoEndingProsody                            AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechNoSpeechInterrupt                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechNoSpeechInterrupt                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPreflightThenPause
  *  
@@ -588,7 +587,7 @@ extern CFStringRef kSpeechNoSpeechInterrupt                          AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPreflightThenPause                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPreflightThenPause                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Dictionary keys returned by kSpeechStatusProperty*/
 /*
  *  kSpeechStatusOutputBusy
@@ -598,7 +597,7 @@ extern CFStringRef kSpeechPreflightThenPause                         AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechStatusOutputBusy                           AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechStatusOutputBusy                           AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechStatusOutputPaused
  *  
@@ -607,7 +606,7 @@ extern CFStringRef kSpeechStatusOutputBusy                           AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechStatusOutputPaused                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechStatusOutputPaused                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechStatusNumberOfCharactersLeft
  *  
@@ -616,7 +615,7 @@ extern CFStringRef kSpeechStatusOutputPaused                         AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechStatusNumberOfCharactersLeft               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechStatusNumberOfCharactersLeft               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechStatusPhonemeCode
  *  
@@ -625,7 +624,7 @@ extern CFStringRef kSpeechStatusNumberOfCharactersLeft               AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechStatusPhonemeCode                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechStatusPhonemeCode                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Dictionary keys returned by kSpeechErrorProperty*/
 /*
  *  kSpeechErrorCount
@@ -635,7 +634,7 @@ extern CFStringRef kSpeechStatusPhonemeCode                          AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorCount                                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorCount                                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechErrorOldest
  *  
@@ -644,7 +643,7 @@ extern CFStringRef kSpeechErrorCount                                 AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorOldest                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorOldest                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechErrorOldestCharacterOffset
  *  
@@ -653,7 +652,7 @@ extern CFStringRef kSpeechErrorOldest                                AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorOldestCharacterOffset                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorOldestCharacterOffset                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechErrorNewest
  *  
@@ -662,7 +661,7 @@ extern CFStringRef kSpeechErrorOldestCharacterOffset                 AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorNewest                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorNewest                                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechErrorNewestCharacterOffset
  *  
@@ -671,7 +670,7 @@ extern CFStringRef kSpeechErrorNewest                                AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorNewestCharacterOffset                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorNewestCharacterOffset                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Dictionary keys returned by kSpeechSynthesizerInfoProperty*/
 /*
  *  kSpeechSynthesizerInfoIdentifier
@@ -681,7 +680,7 @@ extern CFStringRef kSpeechErrorNewestCharacterOffset                 AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechSynthesizerInfoIdentifier                  AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechSynthesizerInfoIdentifier                  AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechSynthesizerInfoManufacturer
  *  
@@ -690,7 +689,7 @@ extern CFStringRef kSpeechSynthesizerInfoIdentifier                  AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechSynthesizerInfoManufacturer                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechSynthesizerInfoManufacturer                AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechSynthesizerInfoVersion
  *  
@@ -699,7 +698,7 @@ extern CFStringRef kSpeechSynthesizerInfoManufacturer                AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechSynthesizerInfoVersion                     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechSynthesizerInfoVersion                     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Dictionary keys returned by kSpeechPhonemeSymbolsProperty*/
 /*
  *  kSpeechPhonemeInfoOpcode
@@ -709,7 +708,7 @@ extern CFStringRef kSpeechSynthesizerInfoVersion                     AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPhonemeInfoOpcode                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPhonemeInfoOpcode                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPhonemeInfoSymbol
  *  
@@ -718,7 +717,7 @@ extern CFStringRef kSpeechPhonemeInfoOpcode                          AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPhonemeInfoSymbol                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPhonemeInfoSymbol                          AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPhonemeInfoExample
  *  
@@ -727,7 +726,7 @@ extern CFStringRef kSpeechPhonemeInfoSymbol                          AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPhonemeInfoExample                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPhonemeInfoExample                         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPhonemeInfoHiliteStart
  *  
@@ -736,7 +735,7 @@ extern CFStringRef kSpeechPhonemeInfoExample                         AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPhonemeInfoHiliteStart                     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPhonemeInfoHiliteStart                     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechPhonemeInfoHiliteEnd
  *  
@@ -745,7 +744,7 @@ extern CFStringRef kSpeechPhonemeInfoHiliteStart                     AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechPhonemeInfoHiliteEnd                       AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechPhonemeInfoHiliteEnd                       AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Dictionary keys returned by kSpeechCurrentVoiceProperty*/
 /*
  *  kSpeechVoiceCreator
@@ -755,7 +754,7 @@ extern CFStringRef kSpeechPhonemeInfoHiliteEnd                       AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechVoiceCreator                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechVoiceCreator                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechVoiceID
  *  
@@ -764,7 +763,7 @@ extern CFStringRef kSpeechVoiceCreator                               AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechVoiceID                                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechVoiceID                                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Dictionary keys returned by kSpeechCommandDelimiterProperty*/
 /*
  *  kSpeechCommandPrefix
@@ -774,7 +773,7 @@ extern CFStringRef kSpeechVoiceID                                    AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechCommandPrefix                              AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechCommandPrefix                              AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechCommandSuffix
  *  
@@ -783,7 +782,7 @@ extern CFStringRef kSpeechCommandPrefix                              AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechCommandSuffix                              AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechCommandSuffix                              AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Use with useSpeechDictionary:*/
 /*
  *  kSpeechDictionaryLocaleIdentifier
@@ -793,7 +792,7 @@ extern CFStringRef kSpeechCommandSuffix                              AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechDictionaryLocaleIdentifier                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechDictionaryLocaleIdentifier                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechDictionaryModificationDate
  *  
@@ -802,7 +801,7 @@ extern CFStringRef kSpeechDictionaryLocaleIdentifier                 AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechDictionaryModificationDate                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechDictionaryModificationDate                 AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechDictionaryPronunciations
  *  
@@ -811,7 +810,7 @@ extern CFStringRef kSpeechDictionaryModificationDate                 AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechDictionaryPronunciations                   AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechDictionaryPronunciations                   AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechDictionaryAbbreviations
  *  
@@ -820,7 +819,7 @@ extern CFStringRef kSpeechDictionaryPronunciations                   AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechDictionaryAbbreviations                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechDictionaryAbbreviations                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechDictionaryEntrySpelling
  *  
@@ -829,7 +828,7 @@ extern CFStringRef kSpeechDictionaryAbbreviations                    AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechDictionaryEntrySpelling                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechDictionaryEntrySpelling                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechDictionaryEntryPhonemes
  *  
@@ -838,7 +837,7 @@ extern CFStringRef kSpeechDictionaryEntrySpelling                    AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechDictionaryEntryPhonemes                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechDictionaryEntryPhonemes                    AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /* Error callback user info keys*/
 /*
  *  kSpeechErrorCallbackSpokenString
@@ -848,7 +847,7 @@ extern CFStringRef kSpeechDictionaryEntryPhonemes                    AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorCallbackSpokenString                  AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorCallbackSpokenString                  AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 /*
  *  kSpeechErrorCallbackCharacterOffset
  *  
@@ -857,9 +856,9 @@ extern CFStringRef kSpeechErrorCallbackSpokenString                  AVAILABLE_M
  *    CarbonLib:        not available
  *    Non-Carbon CFM:   not available
  */
-extern CFStringRef kSpeechErrorCallbackCharacterOffset               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+extern CFStringRef const kSpeechErrorCallbackCharacterOffset               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 
-typedef CALLBACK_API( void , SpeechTextDoneProcPtr )(SpeechChannel chan, SRefCon refCon, const void **nextBuf, unsigned long *byteLen, SInt32 *controlFlags);
+typedef CALLBACK_API( void , SpeechTextDoneProcPtr )(SpeechChannel chan, SRefCon refCon, const void * __nullable * __nullable nextBuf, unsigned long *byteLen, SInt32 *controlFlags);
 typedef CALLBACK_API( void , SpeechDoneProcPtr )(SpeechChannel chan, SRefCon refCon);
 typedef CALLBACK_API( void , SpeechSyncProcPtr )(SpeechChannel chan, SRefCon refCon, OSType syncMessage);
 typedef CALLBACK_API( void , SpeechErrorProcPtr )(SpeechChannel chan, SRefCon refCon, OSErr theError, long bytePos);
@@ -1013,12 +1012,12 @@ DisposeSpeechWordUPP(SpeechWordUPP userUPP)                   AVAILABLE_MAC_OS_X
  */
 extern void
 InvokeSpeechTextDoneUPP(
-  SpeechChannel      chan,
-  SRefCon            refCon,
-  const void **      nextBuf,
-  unsigned long *    byteLen,
-  SInt32 *           controlFlags,
-  SpeechTextDoneUPP  userUPP)                                 AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
+  SpeechChannel                         chan,
+  SRefCon                               refCon,
+  const void * __nullable * __nullable  nextBuf,
+  unsigned long *                       byteLen,
+  SInt32 *                              controlFlags,
+  SpeechTextDoneUPP                     userUPP)              AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
 
 /*
  *  InvokeSpeechDoneUPP()
@@ -1110,7 +1109,7 @@ InvokeSpeechWordUPP(
     inline void                                                 DisposeSpeechErrorUPP(SpeechErrorUPP) { }
     inline void                                                 DisposeSpeechPhonemeUPP(SpeechPhonemeUPP) { }
     inline void                                                 DisposeSpeechWordUPP(SpeechWordUPP) { }
-    inline void                                                 InvokeSpeechTextDoneUPP(SpeechChannel chan, SRefCon refCon, const void ** nextBuf, unsigned long * byteLen, SInt32 * controlFlags, SpeechTextDoneUPP userUPP) { (*userUPP)(chan, refCon, nextBuf, byteLen, controlFlags); }
+    inline void                                                 InvokeSpeechTextDoneUPP(SpeechChannel chan, SRefCon refCon, const void * __nullable * __nullable nextBuf, unsigned long * byteLen, SInt32 * controlFlags, SpeechTextDoneUPP userUPP) { (*userUPP)(chan, refCon, nextBuf, byteLen, controlFlags); }
     inline void                                                 InvokeSpeechDoneUPP(SpeechChannel chan, SRefCon refCon, SpeechDoneUPP userUPP) { (*userUPP)(chan, refCon); }
     inline void                                                 InvokeSpeechSyncUPP(SpeechChannel chan, SRefCon refCon, OSType syncMessage, SpeechSyncUPP userUPP) { (*userUPP)(chan, refCon, syncMessage); }
     inline void                                                 InvokeSpeechErrorUPP(SpeechChannel chan, SRefCon refCon, OSErr theError, long bytePos, SpeechErrorUPP userUPP) { (*userUPP)(chan, refCon, theError, bytePos); }
@@ -1204,9 +1203,9 @@ GetIndVoice(
  */
 extern OSErr 
 GetVoiceDescription(
-  const VoiceSpec *   voice,
-  VoiceDescription *  info,
-  long                infoLength)                             AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
+  const VoiceSpec * __nullable  voice,
+  VoiceDescription * __nullable info,
+  long                          infoLength)                   AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
 
 
 /*
@@ -1219,9 +1218,9 @@ GetVoiceDescription(
  */
 extern OSErr 
 GetVoiceInfo(
-  const VoiceSpec *  voice,
-  OSType             selector,
-  void *             voiceInfo)                               AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
+  const VoiceSpec * __nullable  voice,
+  OSType                        selector,
+  void *                        voiceInfo)                    AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
 
 
 /*
@@ -1234,8 +1233,8 @@ GetVoiceInfo(
  */
 extern OSErr 
 NewSpeechChannel(
-  VoiceSpec *      voice,       /* can be NULL */
-  SpeechChannel *  chan)                                      AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
+  VoiceSpec * __nullable                voice,
+  SpeechChannel __nullable * __nonnull  chan)                 AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER;
 
 
 /*
@@ -1447,9 +1446,9 @@ GetSpeechPitch(
  */
 extern OSErr 
 SetSpeechInfo(
-  SpeechChannel   chan,
-  OSType          selector,
-  const void *    speechInfo)                                 AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
+  SpeechChannel             chan,
+  OSType                    selector,
+  const void * __nullable   speechInfo)                       AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
 
 
 /*
@@ -1483,11 +1482,11 @@ GetSpeechInfo(
  */
 extern OSErr 
 TextToPhonemes(
-  SpeechChannel   chan,
-  const void *    textBuf,
-  unsigned long   textBytes,
-  Handle          phonemeBuf,
-  long *          phonemeBytes)                               AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
+  SpeechChannel     chan,
+  const void *      textBuf,
+  unsigned long     textBytes,
+  Handle __nonnull  phonemeBuf,
+  long *            phonemeBytes)                             AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
 
 
 /*
@@ -1503,8 +1502,8 @@ TextToPhonemes(
  */
 extern OSErr 
 UseDictionary(
-  SpeechChannel   chan,
-  Handle          dictionary)                                 AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
+  SpeechChannel     chan,
+  Handle __nonnull  dictionary)                               AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_8;
 
 
 /* Replaces SpeakBuffer*/
@@ -1518,9 +1517,9 @@ UseDictionary(
  */
 extern OSErr 
 SpeakCFString(
-  SpeechChannel     chan,
-  CFStringRef       aString,
-  CFDictionaryRef   options)                                  AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+  SpeechChannel               chan,
+  CFStringRef                 aString,
+  CFDictionaryRef __nullable  options)                        AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 
 
 /* Replaces UseDictionary*/
@@ -1549,9 +1548,9 @@ UseSpeechDictionary(
  */
 extern OSErr 
 CopyPhonemesFromText(
-  SpeechChannel   chan,
-  CFStringRef     text,
-  CFStringRef *   phonemes)                                   AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+  SpeechChannel                       chan,
+  CFStringRef                         text,
+  CFStringRef __nullable * __nonnull CF_RETURNS_RETAINED  phonemes)     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 
 
 /* Replaces GetSpeechInfo*/
@@ -1565,9 +1564,9 @@ CopyPhonemesFromText(
  */
 extern OSErr 
 CopySpeechProperty(
-  SpeechChannel   chan,
-  CFStringRef     property,
-  CFTypeRef *     object)                                     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+  SpeechChannel                     chan,
+  CFStringRef                       property,
+  CFTypeRef __nullable * __nonnull CF_RETURNS_RETAINED  object)         AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 
 
 /* Replaces SetSpeechInfo*/
@@ -1581,9 +1580,9 @@ CopySpeechProperty(
  */
 extern OSErr 
 SetSpeechProperty(
-  SpeechChannel   chan,
-  CFStringRef     property,
-  CFTypeRef       object)                                     AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
+  SpeechChannel         chan,
+  CFStringRef           property,
+  CFTypeRef __nullable  object)                               AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
 
 
 /* Support loading and unloading synthesizers and voices from locations other than the standard directories.*/
@@ -1615,9 +1614,8 @@ SpeechSynthesisUnregisterModuleURL(CFURLRef url)              AVAILABLE_MAC_OS_X
 
 #pragma pack(pop)
 
-#ifdef __cplusplus
-}
-#endif
+CF_ASSUME_NONNULL_END
+CF_EXTERN_C_END
 
 #endif /* __SPEECHSYNTHESIS__ */
 

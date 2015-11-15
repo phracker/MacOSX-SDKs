@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class AVB17221Entity;
 @class AVB17221EntityDiscovery;
 
@@ -216,3 +218,4 @@ typedef NS_OPTIONS(NSUInteger, AVB17221EntityPropertyChanged)
 
 @end
 
+NS_ASSUME_NONNULL_END

@@ -29,13 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * NEFilterFlow is part of NetworkExtension.framework
  */
-NS_CLASS_AVAILABLE(10_11, 9_0)
+NS_CLASS_AVAILABLE(NA, 9_0)
 @interface NEFilterFlow : NSObject <NSSecureCoding,NSCopying>
 /*!
  * @property URL
  * @discussion The flow's HTTP request URL. Will be nil if the flow did not originate from WebKit.
  */
-@property (readonly, nullable) NSURL *URL NS_AVAILABLE(10_11, 9_0);
+@property (readonly, nullable) NSURL *URL NS_AVAILABLE(NA, 9_0);
 @end
 
 /*!
@@ -44,13 +44,24 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  *
  * NEFilterBrowserFlow is part of NetworkExtension.framework
  */
-NS_CLASS_AVAILABLE(10_11, 9_0)
+NS_CLASS_AVAILABLE(NA, 9_0)
 @interface NEFilterBrowserFlow :  NEFilterFlow <NSSecureCoding,NSCopying>
+/*!
+ *	@property request
+ *	@discussion The NSURLRequest of the flow.
+ */
+@property (readonly) NSURLRequest *request NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ *	@property response
+ *	@discussion The NSURLResponse of the flow. This will be nil until the request is sent to the server and the response headers are received.
+ */
+@property (readonly, nullable) NSURLResponse *response NS_AVAILABLE(10_11, 9_0);
 /*!
  *	@property parentURL
  *	@discussion The parent URL for the current flow which is created to load the sub frames because the flow with the parent URL was allowed. Will be nil if the parent flow does not exist.
  */
-@property (readonly, nullable) NSURL *parentURL NS_AVAILABLE(10_11, 9_0);
+@property (readonly, nullable) NSURL *parentURL NS_AVAILABLE(NA, 9_0);
 @end
 
 /*!
@@ -59,37 +70,37 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
  *
  * NEFilterSocketFlow is part of NetworkExtension.framework
  */
-NS_CLASS_AVAILABLE(10_11, 9_0)
+NS_CLASS_AVAILABLE(NA, 9_0)
 @interface NEFilterSocketFlow : NEFilterFlow <NSSecureCoding,NSCopying>
 /*!
  * @property remoteEndpoint
  * @discussion The flow's remote endpoint.
  */
-@property (readonly) NWEndpoint *remoteEndpoint NS_AVAILABLE(10_11, 9_0);
+@property (readonly) NWEndpoint *remoteEndpoint NS_AVAILABLE(NA, 9_0);
 
 /*!
  * @property localEndpoint
  * @discussion The flow's local endpoint.
  */
-@property (readonly) NWEndpoint *localEndpoint NS_AVAILABLE(10_11, 9_0);
+@property (readonly) NWEndpoint *localEndpoint NS_AVAILABLE(NA, 9_0);
 
 /*!
  *	@property socketFamily
  *	@discussion Socket family of the socket flow, such as PF_INET.
  */
-@property int socketFamily NS_AVAILABLE(10_11, 9_0);
+@property int socketFamily NS_AVAILABLE(NA, 9_0);
 
 /*!
  *	@property socketType
  *	@discussion Socket type of the socket flow, such as SOCK_STREAM.
  */
-@property int socketType NS_AVAILABLE(10_11, 9_0);
+@property int socketType NS_AVAILABLE(NA, 9_0);
 
 /*!
  *	@property socketProtocol
  *	@discussion Socket protocol of the socket flow, such as IPPROTO_TCP.
  */
-@property int socketProtocol NS_AVAILABLE(10_11, 9_0);
+@property int socketProtocol NS_AVAILABLE(NA, 9_0);
 @end
 
 NS_ASSUME_NONNULL_END

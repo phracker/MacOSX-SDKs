@@ -151,6 +151,10 @@ NS_CLASS_AVAILABLE(NSURLSESSION_AVAILABLE, 7_0)
  *
  * -finishTasksAndInvalidate and -invalidateAndCancel do not
  * have any effect on the shared session singleton.
+ *
+ * When invalidating a background session, it is not safe to create another background
+ * session with the same identifier until URLSession:didBecomeInvalidWithError: has
+ * been issued.
  */
 - (void)finishTasksAndInvalidate;
 
@@ -174,37 +178,37 @@ NS_CLASS_AVAILABLE(NSURLSESSION_AVAILABLE, 7_0)
  */
 
 /* Creates a data task with the given request.  The request may have a body stream. */
-- (nullable NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request;
+- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request;
 
 /* Creates a data task to retrieve the contents of the given URL. */
-- (nullable NSURLSessionDataTask *)dataTaskWithURL:(NSURL *)url;
+- (NSURLSessionDataTask *)dataTaskWithURL:(NSURL *)url;
 
 /* Creates an upload task with the given request.  The body of the request will be created from the file referenced by fileURL */
-- (nullable NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromFile:(NSURL *)fileURL;
+- (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromFile:(NSURL *)fileURL;
 
 /* Creates an upload task with the given request.  The body of the request is provided from the bodyData. */
-- (nullable NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromData:(NSData *)bodyData;
+- (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromData:(NSData *)bodyData;
 
 /* Creates an upload task with the given request.  The previously set body stream of the request (if any) is ignored and the URLSession:task:needNewBodyStream: delegate will be called when the body payload is required. */
-- (nullable NSURLSessionUploadTask *)uploadTaskWithStreamedRequest:(NSURLRequest *)request;
+- (NSURLSessionUploadTask *)uploadTaskWithStreamedRequest:(NSURLRequest *)request;
 
 /* Creates a download task with the given request. */
-- (nullable NSURLSessionDownloadTask *)downloadTaskWithRequest:(NSURLRequest *)request;
+- (NSURLSessionDownloadTask *)downloadTaskWithRequest:(NSURLRequest *)request;
 
 /* Creates a download task to download the contents of the given URL. */
-- (nullable NSURLSessionDownloadTask *)downloadTaskWithURL:(NSURL *)url;
+- (NSURLSessionDownloadTask *)downloadTaskWithURL:(NSURL *)url;
 
 /* Creates a download task with the resume data.  If the download cannot be successfully resumed, URLSession:task:didCompleteWithError: will be called. */
-- (nullable NSURLSessionDownloadTask *)downloadTaskWithResumeData:(NSData *)resumeData;
+- (NSURLSessionDownloadTask *)downloadTaskWithResumeData:(NSData *)resumeData;
 
 /* Creates a bidirectional stream task to a given host and port.
  */
-- (nullable NSURLSessionStreamTask *)streamTaskWithHostName:(NSString *)hostname port:(NSInteger)port NS_AVAILABLE(10_11, 9_0);
+- (NSURLSessionStreamTask *)streamTaskWithHostName:(NSString *)hostname port:(NSInteger)port NS_AVAILABLE(10_11, 9_0);
 
 /* Creates a bidirectional stream task with an NSNetService to identify the endpoint.
  * The NSNetService will be resolved before any IO completes.
  */
-- (nullable NSURLSessionStreamTask *)streamTaskWithNetService:(NSNetService *)service NS_AVAILABLE(10_11, 9_0);
+- (NSURLSessionStreamTask *)streamTaskWithNetService:(NSNetService *)service NS_AVAILABLE(10_11, 9_0);
 
 @end
 
@@ -226,14 +230,14 @@ NS_CLASS_AVAILABLE(NSURLSESSION_AVAILABLE, 7_0)
  * see <Foundation/NSURLError.h>.  The delegate, if any, will still be
  * called for authentication challenges.
  */
-- (nullable NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request completionHandler:(void (^)(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
-- (nullable NSURLSessionDataTask *)dataTaskWithURL:(NSURL *)url completionHandler:(void (^)(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
+- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request completionHandler:(void (^)(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
+- (NSURLSessionDataTask *)dataTaskWithURL:(NSURL *)url completionHandler:(void (^)(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
 
 /*
  * upload convenience method.
  */
-- (nullable NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromFile:(NSURL *)fileURL completionHandler:(void (^)(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
-- (nullable NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromData:(nullable NSData *)bodyData completionHandler:(void (^)(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
+- (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromFile:(NSURL *)fileURL completionHandler:(void (^)(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
+- (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromData:(nullable NSData *)bodyData completionHandler:(void (^)(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
 
 /*
  * download task convenience methods.  When a download successfully
@@ -241,9 +245,9 @@ NS_CLASS_AVAILABLE(NSURLSESSION_AVAILABLE, 7_0)
  * copied during the invocation of the completion routine.  The file
  * will be removed automatically.
  */
-- (nullable NSURLSessionDownloadTask *)downloadTaskWithRequest:(NSURLRequest *)request completionHandler:(void (^)(NSURL * __nullable location, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
-- (nullable NSURLSessionDownloadTask *)downloadTaskWithURL:(NSURL *)url completionHandler:(void (^)(NSURL * __nullable location, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
-- (nullable NSURLSessionDownloadTask *)downloadTaskWithResumeData:(NSData *)resumeData completionHandler:(void (^)(NSURL * __nullable location, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
+- (NSURLSessionDownloadTask *)downloadTaskWithRequest:(NSURLRequest *)request completionHandler:(void (^)(NSURL * __nullable location, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
+- (NSURLSessionDownloadTask *)downloadTaskWithURL:(NSURL *)url completionHandler:(void (^)(NSURL * __nullable location, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
+- (NSURLSessionDownloadTask *)downloadTaskWithResumeData:(NSData *)resumeData completionHandler:(void (^)(NSURL * __nullable location, NSURLResponse * __nullable response, NSError * __nullable error))completionHandler;
 
 @end
 
@@ -498,7 +502,7 @@ NS_CLASS_AVAILABLE(NSURLSESSION_AVAILABLE, 7_0)
 
 /* The identifier of the shared data container into which files in background sessions should be downloaded.
  * App extensions wishing to use background sessions *must* set this property to a valid container identifier, or
- * the session will be invalidated upon creation.
+ * all transfers in that session will fail with NSURLErrorBackgroundSessionRequiresSharedContainer.
  */
 @property (nullable, copy) NSString *sharedContainerIdentifier NS_AVAILABLE(10_10, 8_0);
 

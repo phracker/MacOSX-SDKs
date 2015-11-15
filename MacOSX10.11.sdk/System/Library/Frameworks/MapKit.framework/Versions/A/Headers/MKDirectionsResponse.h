@@ -66,6 +66,7 @@ MK_CLASS_AVAILABLE(10_9, 7_0) __WATCHOS_PROHIBITED
 @property (nonatomic, readonly) MKMapItem *source;
 @property (nonatomic, readonly) MKMapItem *destination;
 @property (nonatomic, readonly) NSTimeInterval expectedTravelTime;
+@property (nonatomic, readonly) CLLocationDistance distance NS_AVAILABLE(10_11, 9_0); // overall route distance in meters
 @property (nonatomic, readonly) NSDate *expectedArrivalDate NS_AVAILABLE(10_11, 9_0);
 @property (nonatomic, readonly) NSDate *expectedDepartureDate NS_AVAILABLE(10_11, 9_0);
 @property (nonatomic, readonly) MKDirectionsTransportType transportType NS_AVAILABLE(10_11, 9_0);

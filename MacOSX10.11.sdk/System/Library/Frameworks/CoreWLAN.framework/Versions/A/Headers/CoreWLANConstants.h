@@ -7,6 +7,7 @@
 #define _CORE_WLAN_CONSTANTS_H_
 
 #import <Foundation/Foundation.h>
+NS_ASSUME_NONNULL_BEGIN
 
 /*! @group Error Domain */
 
@@ -137,5 +138,7 @@ FOUNDATION_EXTERN NSString * const CWLinkQualityNotificationRSSIKey NS_DEPRECATE
  * Found in the <i>userInfo</i> dictionary for the <i>CWLinkQualityChangedNotification</i>.
  */
 FOUNDATION_EXTERN NSString * const CWLinkQualityNotificationTransmitRateKey NS_DEPRECATED_MAC(10_6, 10_10, "Use -[CWWiFiClient startMonitoringEventWithType:error:] with the CWEventTypeLinkQualityDidChange event type");
+
+NS_ASSUME_NONNULL_END
 
 #endif /* _CORE_WLAN_CONSTANTS_H_ */

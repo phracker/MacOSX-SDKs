@@ -164,6 +164,13 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
  */
 @property (nonatomic, readonly) BOOL hasOnlySecureContent;
 
+/*! @abstract An array of SecCertificateRef objects forming the certificate
+ chain for the currently committed navigation.
+ @discussion The certificates are ordered from leaf (at index 0) to anchor.
+ @link WKWebView @/link is key-value observing (KVO) compliant for this property.
+ */
+@property (nonatomic, readonly, copy) NSArray *certificateChain NS_AVAILABLE(10_11, 9_0);
+
 /*! @abstract A Boolean value indicating whether there is a back item in
  the back-forward list that can be navigated to.
  @discussion @link WKWebView @/link is key-value observing (KVO) compliant
@@ -223,6 +230,12 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 /*! @abstract The custom user agent string or nil if no custom user agent string has been set.
 */
 @property (nullable, nonatomic, copy) NSString *customUserAgent NS_AVAILABLE(10_11, 9_0);
+
+/*! @abstract A Boolean value indicating whether link preview is allowed for any
+ links inside this WKWebView.
+ @discussion The default value is NO on iOS and YES on Mac.
+ */
+@property (nonatomic) BOOL allowsLinkPreview NS_AVAILABLE(10_11, 9_0);
 
 #if TARGET_OS_IPHONE
 /*! @abstract The scroll view associated with the web view.

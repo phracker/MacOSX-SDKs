@@ -29,6 +29,7 @@ NS_CLASS_AVAILABLE(10_8, 4_2)
     id _remoteViewController;
     id<GKFriendRequestComposeViewControllerDelegate> _composeViewDelegateWeak;
     id _initialState;
+    BOOL _internalFlag;
 }
 @end
 #endif

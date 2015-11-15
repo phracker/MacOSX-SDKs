@@ -27,7 +27,7 @@ NS_CLASS_AVAILABLE(10_8, 4_1)
 // Obtain the primary GKLocalPlayer object.
 // The player is only available for offline play until logged in.
 // A temporary player is created if no account is set up.
-+ (GKLocalPlayer *)localPlayer;
++ (GKLocalPlayer *)localPlayer NS_SWIFT_NAME(localPlayer());
 
 @property(readonly, getter=isAuthenticated, NS_NONATOMIC_IOSONLY)  BOOL authenticated; // Authentication state
 @property(readonly, getter=isUnderage, NS_NONATOMIC_IOSONLY)       BOOL underage;      // Underage state

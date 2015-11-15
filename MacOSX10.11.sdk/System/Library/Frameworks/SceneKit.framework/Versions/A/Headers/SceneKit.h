@@ -53,7 +53,6 @@
 #import <SceneKit/SCNAudioSource.h>
 
 //bridges
-#import <SceneKit/SceneKit_ModelIO.h>
 #import <SceneKit/SceneKit_simd.h>
 
 //scripting

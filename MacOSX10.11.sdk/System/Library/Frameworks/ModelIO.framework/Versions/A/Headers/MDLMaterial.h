@@ -44,6 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
  MDLMaterialSemanticSpecular
     Specular response to incident light
  
+ MDLMaterialSemanticSpecularExponent
+    Power of the specular exponent in the case that a Blinn/Phong BSDF is in use.
+ 
  MDLMaterialSemanticSpecularTint
     At zero, the specular highlight will use the hue, saturation, and intensity 
     of incoming light to color the specular response; at one, the material's 
@@ -58,6 +61,10 @@ NS_ASSUME_NONNULL_BEGIN
     The degree to which the specular highlight is elongated in the direction of 
     the local tangent basis. A mesh that does not have a tangent basis will not 
     respond to this parameter.
+ 
+ MDLMaterialSemanticAnisotropicRotation
+    The degree to which the anisotropy is rotated relative to the direction of the
+    local tangent basis. Values from zero to one are mapped to zero to two PI.
  
  MDLMaterialSemanticSheen
     A specular tint that appears at glancing angles on an object
@@ -123,9 +130,11 @@ typedef NS_ENUM(NSUInteger, MDLMaterialSemantic) {
     MDLMaterialSemanticSubsurface,
     MDLMaterialSemanticMetallic,
     MDLMaterialSemanticSpecular,
+    MDLMaterialSemanticSpecularExponent,
     MDLMaterialSemanticSpecularTint,
     MDLMaterialSemanticRoughness,
     MDLMaterialSemanticAnisotropic,
+    MDLMaterialSemanticAnisotropicRotation,
     MDLMaterialSemanticSheen,
     MDLMaterialSemanticSheenTint,
     MDLMaterialSemanticClearcoat,
@@ -219,9 +228,9 @@ MDL_EXPORT
 - (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic float3:(vector_float3)value;
 - (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic float4:(vector_float4)value;
 - (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic matrix4x4:(matrix_float4x4)value;
-- (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic URL:(NSURL __nullable*)URL;
+- (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic URL:(nullable NSURL*)URL;
 - (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic string:(nullable NSString *)string;
-- (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic textureSampler:(MDLTextureSampler __nullable*)textureSampler;
+- (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic textureSampler:(nullable MDLTextureSampler*)textureSampler;
 - (instancetype)initWithName:(NSString *)name semantic:(MDLMaterialSemantic)semantic color:(CGColorRef)color;
 
 - (void)setProperties:(MDLMaterialProperty *)property;
@@ -235,7 +244,7 @@ MDL_EXPORT
 @property (nonatomic, copy, nullable) NSString *stringValue;
 @property (nonatomic, copy, nullable) NSURL *URLValue;
 @property (nonatomic, retain, nullable) MDLTextureSampler *textureSamplerValue;
-@property (nonatomic) CGColorRef color;
+@property (nullable, nonatomic) CGColorRef color;
 @property (nonatomic, assign) float floatValue;
 @property (nonatomic, assign) vector_float2 float2Value;
 @property (nonatomic, assign) vector_float3 float3Value;
@@ -303,7 +312,7 @@ MDL_EXPORT
 @property (nonatomic, readonly, retain) MDLScatteringFunction *scatteringFunction;
 
 /** @see MDLNamed */
-@property (nonatomic, copy, nullable) NSString *name;
+@property (nonatomic, copy) NSString *name;
 
 // If a property is not found by propertyForKey and baseMaterial is not nil,
 // propertyForKey will invoke propertyForKey on baseMaterial.

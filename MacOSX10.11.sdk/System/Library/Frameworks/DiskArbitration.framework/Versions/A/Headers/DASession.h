@@ -94,14 +94,14 @@ extern void DASessionSetDispatchQueue( DASessionRef session, dispatch_queue_t __
  * Type of a reference to DAApprovalSession instances.
  */
 
-typedef struct __DASession * DAApprovalSessionRef CF_SWIFT_UNAVAILABLE( "Use DASessionRef instead" );
+typedef struct CF_BRIDGED_TYPE( id ) __DASession * DAApprovalSessionRef CF_SWIFT_UNAVAILABLE( "Use DASessionRef instead" );
 
 /*
  * @function   DAApprovalSessionGetTypeID
  * @abstract   Returns the type identifier of all DAApprovalSession instances.
  */
 
-extern CFTypeID DAApprovalSessionGetTypeID( void ) CF_SWIFT_UNAVAILABLE( "Use DASessionRef instead" );
+extern CFTypeID DAApprovalSessionGetTypeID( void ) CF_SWIFT_UNAVAILABLE( "Use DASessionGetTypeID instead" );
 
 /*
  * @function   DAApprovalSessionCreate
@@ -112,7 +112,7 @@ extern CFTypeID DAApprovalSessionGetTypeID( void ) CF_SWIFT_UNAVAILABLE( "Use DA
  * caller also implicitly retains the object and is responsible for releasing it.
  */
 
-extern DAApprovalSessionRef DAApprovalSessionCreate( CFAllocatorRef allocator ) CF_SWIFT_UNAVAILABLE( "Use DASessionRef instead" );
+extern DAApprovalSessionRef __nullable DAApprovalSessionCreate( CFAllocatorRef __nullable allocator ) CF_SWIFT_UNAVAILABLE( "Use DASessionCreate instead" );
 
 /*
  * @function   DAApprovalSessionScheduleWithRunLoop
@@ -122,7 +122,7 @@ extern DAApprovalSessionRef DAApprovalSessionCreate( CFAllocatorRef allocator ) 
  * @param      runLoopMode The run loop mode in which the approval session should be scheduled.
  */
 
-extern void DAApprovalSessionScheduleWithRunLoop( DAApprovalSessionRef session, CFRunLoopRef runLoop, CFStringRef runLoopMode ) CF_SWIFT_UNAVAILABLE( "Use DASessionRef instead" );
+extern void DAApprovalSessionScheduleWithRunLoop( DAApprovalSessionRef session, CFRunLoopRef runLoop, CFStringRef runLoopMode ) CF_SWIFT_UNAVAILABLE( "Use DASessionSetDispatchQueue instead" );
 
 /*
  * @function   DAApprovalSessionUnscheduleFromRunLoop
@@ -132,7 +132,7 @@ extern void DAApprovalSessionScheduleWithRunLoop( DAApprovalSessionRef session, 
  * @param      runLoopMode The run loop mode in which the approval session is scheduled.
  */
 
-extern void DAApprovalSessionUnscheduleFromRunLoop( DAApprovalSessionRef session, CFRunLoopRef runLoop, CFStringRef runLoopMode ) CF_SWIFT_UNAVAILABLE( "Use DASessionRef instead" );
+extern void DAApprovalSessionUnscheduleFromRunLoop( DAApprovalSessionRef session, CFRunLoopRef runLoop, CFStringRef runLoopMode ) CF_SWIFT_UNAVAILABLE( "Use DASessionSetDispatchQueue instead" );
 
 #endif /* !__DISKARBITRATIOND__ */
 

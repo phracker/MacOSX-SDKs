@@ -19,7 +19,7 @@ GK_BASE_AVAILABILITY @interface GKGraph : NSObject
 /**
  * The list of nodes in this graph
  */
-@property (nullable, nonatomic, readonly) NSArray<GKGraphNode*>* nodes;
+@property (nullable, nonatomic, readonly) NSArray<GKGraphNode *> *nodes;
 
 /**
  * Creates a graph with the provided array of nodes.
@@ -95,12 +95,17 @@ GK_BASE_AVAILABILITY @interface GKObstacleGraph : GKGraph
  * Same behavior as if this node had been present during initWithObstacles.
  * @param node the node to connect
  */
-- (void)connectNodeUsingObstacles:(GKGraphNode2D*)node;
+- (void)connectNodeUsingObstacles:(GKGraphNode2D *)node;
 
 /**
  * Same behavior as connectNodeUsingObstacles: except you can optionally ignore certain obstacles from being tested for intersection.
  */
 - (void)connectNodeUsingObstacles:(GKGraphNode2D *)node ignoringObstacles:(NSArray<GKPolygonObstacle *> *)obstaclesToIgnore;
+
+/**
+ * Same behavior as connectNodeUsingObstacles: except you can optionally ignore the bounding radius of certain obstacles from being tested for intersection
+ */
+- (void)connectNodeUsingObstacles:(GKGraphNode2D *)node ignoringBufferRadiusOfObstacles:(NSArray<GKPolygonObstacle *> *)obstaclesBufferRadiusToIgnore;
 
 /**
  * Adds obstacles to this graph.
@@ -130,7 +135,7 @@ GK_BASE_AVAILABILITY @interface GKObstacleGraph : GKGraph
  * Returns an array of the graph nodes associated with a given obstacle
  * @param obstacle the obstacle who's nodes are to be retrieved
  */
--(NSArray<GKGraphNode2D *> *)nodesForObstacle:(GKPolygonObstacle*)obstacle;
+-(NSArray<GKGraphNode2D *> *)nodesForObstacle:(GKPolygonObstacle *)obstacle;
 
 /**
  * Marks a connection as "locked", preventing this connection from being destroyed when you add obstacles that would intersect it

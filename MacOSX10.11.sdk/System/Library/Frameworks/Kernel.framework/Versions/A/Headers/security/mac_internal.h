@@ -173,11 +173,16 @@ static int mac_proc_check_enforce(proc_t p, int enforce_flags);
 static __inline__ int mac_proc_check_enforce(proc_t p, int enforce_flags)
 {
 #if CONFIG_MACF
-	return ((p->p_mac_enforce & enforce_flags) != 0);
+#if SECURITY_MAC_CHECK_ENFORCE // 21167099 - only check if we allow write
+    return ((p->p_mac_enforce & enforce_flags) != 0);
+#else
+#pragma unused(p,enforce_flags)
+    return 1;
+#endif // SECURITY_MAC_CHECK_ENFORCE
 #else
 #pragma unused(p,enforce_flags)
 	return 0;
-#endif
+#endif // CONFIG_MACF
 }
 
 static int mac_context_check_enforce(vfs_context_t ctx, int enforce_flags);

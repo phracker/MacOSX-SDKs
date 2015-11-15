@@ -574,13 +574,6 @@ struct kqueue_info {
 #define PROC_KQUEUE_64		0x10
 #define PROC_KQUEUE_QOS		0x20
 
-struct kevent_extinfo {
-	struct kevent_qos_s kqext_kev;
-	uint64_t kqext_sdata;
-	int kqext_status;
-	int kqext_sfflags;
-	uint64_t kqext_reserved[2];
-};
 
 struct kqueue_fdinfo {
 	struct proc_fileinfo	pfi;
@@ -696,8 +689,6 @@ struct proc_fileportinfo {
 #define PROC_PIDFDATALKINFO		8
 #define PROC_PIDFDATALKINFO_SIZE	(sizeof(struct appletalk_fdinfo))
 
-#define PROC_PIDFDKQUEUE_EXTINFO	9
-#define PROC_PIDFDKQUEUE_EXTINFO_SIZE	(sizeof(struct kevent_extinfo))
 
 /* Flavors for proc_pidfileportinfo */
 

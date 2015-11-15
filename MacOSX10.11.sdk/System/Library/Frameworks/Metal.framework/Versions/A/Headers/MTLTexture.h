@@ -24,7 +24,7 @@ typedef NS_ENUM(NSUInteger, MTLTextureType)
     MTLTextureType2DArray = 3,
     MTLTextureType2DMultisample = 4,
     MTLTextureTypeCube = 5,
-    MTLTextureTypeCubeArray = 6,
+    MTLTextureTypeCubeArray NS_AVAILABLE_MAC(10_11) = 6,
     MTLTextureType3D = 7,
 } NS_ENUM_AVAILABLE(10_11, 8_0);
 
@@ -39,7 +39,6 @@ typedef NS_OPTIONS(NSUInteger, MTLTextureUsage)
     MTLTextureUsageShaderRead      = 0x0001,
     MTLTextureUsageShaderWrite     = 0x0002,
     MTLTextureUsageRenderTarget    = 0x0004,
-    MTLTextureUsageBlit            = 0x0008,
     MTLTextureUsagePixelFormatView = 0x0010,
 } NS_ENUM_AVAILABLE(10_11, 9_0);
 
@@ -130,10 +129,10 @@ NS_CLASS_AVAILABLE(10_11, 8_0)
 @property (readwrite, nonatomic) MTLStorageMode storageMode NS_AVAILABLE(10_11, 9_0);
 
 /*!
- @property textureUsage
+ @property usage
  @abstract Description of texture usage
  */
-@property (readwrite, nonatomic) MTLTextureUsage textureUsage NS_AVAILABLE(10_11, 9_0);
+@property (readwrite, nonatomic) MTLTextureUsage usage NS_AVAILABLE(10_11, 9_0);
 
 @end
 
@@ -154,6 +153,45 @@ NS_AVAILABLE(10_11, 8_0)
  */
 @property (nullable, readonly) id <MTLResource> rootResource;
 
+
+/*!
+ @property parentTexture
+ @abstract The texture this texture view was created from, or nil if this is not a texture view or it was not created from a texture.
+ */
+@property (nullable, readonly) id <MTLTexture> parentTexture NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ @property parentRelativeLevel
+ @abstract The base level of the texture this texture view was created from, or 0 if this is not a texture view.
+ */
+@property (readonly) NSUInteger parentRelativeLevel NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ @property parentRelativeSlice
+ @abstract The base slice of the texture this texture view was created from, or 0 if this is not a texture view.
+ */
+@property (readonly) NSUInteger parentRelativeSlice NS_AVAILABLE(10_11, 9_0);
+
+/*!
+ @property buffer
+ @abstract The buffer this texture view was created from, or nil if this is not a texture view or it was not created from a buffer.
+ */
+@property (nullable, readonly) id <MTLBuffer> buffer NS_AVAILABLE_IOS(9_0);
+
+/*!
+ @property bufferOffset
+ @abstract The offset of the buffer this texture view was created from, or 0 if this is not a texture view.
+ */
+@property (readonly) NSUInteger bufferOffset NS_AVAILABLE_IOS(9_0);
+
+/*!
+ @property bufferBytesPerRow
+ @abstract The bytesPerRow of the buffer this texture view was created from, or 0 if this is not a texture view.
+ */
+@property (readonly) NSUInteger bufferBytesPerRow NS_AVAILABLE_IOS(9_0);
+
+
+
 /*!
  @property iosurface
  @abstract If this texture was created from an IOSurface, this returns a reference to that IOSurface. iosurface is nil if this texture was not created from an IOSurface.
@@ -172,20 +210,17 @@ NS_AVAILABLE(10_11, 8_0)
  */
 @property (readonly) MTLTextureType textureType;
 
-
 /*!
  @property pixelFormat
  @abstract The MTLPixelFormat that is used to interpret this texture's contents.
  */
 @property (readonly) MTLPixelFormat pixelFormat;
 
-
 /*!
  @property width
  @abstract The width of the MTLTexture instance in pixels.
  */
 @property (readonly) NSUInteger width;
-
 
 /*!
  @property height
@@ -194,7 +229,6 @@ NS_AVAILABLE(10_11, 8_0)
  */
 @property (readonly) NSUInteger height;
 
-
 /*!
  @property depth
  @abstract The depth of this MTLTexture instance in pixels.
@@ -202,13 +236,11 @@ NS_AVAILABLE(10_11, 8_0)
  */
 @property (readonly) NSUInteger depth;
 
-
 /*!
  @property mipmapLevelCount
  @abstract The number of mipmap levels in each slice of this MTLTexture.
  */
 @property (readonly) NSUInteger mipmapLevelCount;
-
 
 /*!
  @property sampleCount
@@ -217,7 +249,6 @@ NS_AVAILABLE(10_11, 8_0)
  */
 @property (readonly) NSUInteger sampleCount;
 
-
 /*!
  @property arrayLength
  @abstract The number of array elements in this MTLTexture.
@@ -225,6 +256,11 @@ NS_AVAILABLE(10_11, 8_0)
  */
 @property (readonly) NSUInteger arrayLength;
 
+/*!
+ @property usage
+ @abstract Description of texture usage.
+ */
+@property (readonly) MTLTextureUsage usage;
 
 /*!
  @property framebufferOnly
@@ -262,6 +298,13 @@ NS_AVAILABLE(10_11, 8_0)
  @abstract Create a new texture which shares the same storage as the source texture, but with a different (but compatible) pixel format.
  */
 - (id<MTLTexture>)newTextureViewWithPixelFormat:(MTLPixelFormat)pixelFormat;
+
+/*!
+ @method newTextureViewWithPixelFormat:textureType:levels:slices:
+ @abstract Create a new texture which shares the same storage as the source texture, but with a different (but compatible) pixel format, texture type, levels and slices.
+ */
+- (id<MTLTexture>)newTextureViewWithPixelFormat:(MTLPixelFormat)pixelFormat textureType:(MTLTextureType)textureType levels:(NSRange)levelRange slices:(NSRange)sliceRange;
+
 
 @end
 NS_ASSUME_NONNULL_END

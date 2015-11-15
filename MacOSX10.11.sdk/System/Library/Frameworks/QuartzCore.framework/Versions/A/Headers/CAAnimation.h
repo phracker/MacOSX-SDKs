@@ -280,7 +280,7 @@ CA_EXTERN NSString * const kCAAnimationRotateAutoReverse
  * the legal values are `fromLeft', `fromRight', `fromTop' and
  * `fromBottom'. */
 
-@property(copy) NSString *subtype;
+@property(nullable, copy) NSString *subtype;
 
 /* The amount of progress through to the transition at which to begin
  * and end execution. Legal values are numbers in the range [0,1].

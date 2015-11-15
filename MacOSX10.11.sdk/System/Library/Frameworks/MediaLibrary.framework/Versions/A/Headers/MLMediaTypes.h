@@ -62,11 +62,13 @@ extern NSString* const MLPhotosLastImportGroupTypeIdentifier;
 extern NSString* const MLPhotosMyPhotoStreamTypeIdentifier;
 extern NSString* const MLPhotosSharedPhotoStreamTypeIdentifier;
 extern NSString* const MLPhotosFavoritesGroupTypeIdentifier;
+extern NSString* const MLPhotosFrontCameraGroupTypeIdentifier;
 extern NSString* const MLPhotosPanoramasGroupTypeIdentifier;
 extern NSString* const MLPhotosVideosGroupTypeIdentifier;
 extern NSString* const MLPhotosSloMoGroupTypeIdentifier;
 extern NSString* const MLPhotosTimelapseGroupTypeIdentifier;
 extern NSString* const MLPhotosBurstGroupTypeIdentifier;
+extern NSString* const MLPhotosScreenshotGroupTypeIdentifier;
 extern NSString* const MLPhotosFacesAlbumTypeIdentifier;
 extern NSString* const MLPhotosAllPhotosAlbumTypeIdentifier;
 

@@ -12,6 +12,7 @@
 
 //Model class to define a payment for a particular product
 NS_CLASS_AVAILABLE(10_7, NA) 
+NS_ASSUME_NONNULL_BEGIN
 @interface SKPayment : NSObject <NSCopying, NSMutableCopying> {
 @private
     id _internal;
@@ -23,25 +24,28 @@ NS_CLASS_AVAILABLE(10_7, NA)
 @property(copy, readonly) NSString *productIdentifier;
 
 // Payment request data agreed upon with the store.  Optional.
-@property(copy, readonly) NSData *requestData;
+@property(nullable, copy, readonly) NSData *requestData;
 
 // default: 1.  Must be at least 1.
 @property(readonly) NSInteger quantity;
 
 // Application-specific user identifier.  Optional.
-@property(nonatomic, copy, readonly) NSString *applicationUsername;
+@property(nullable, nonatomic, copy, readonly) NSString *applicationUsername;
 
 @end
+NS_ASSUME_NONNULL_END
 
 
 NS_CLASS_AVAILABLE(10_7, NA)
+NS_ASSUME_NONNULL_BEGIN
 @interface SKMutablePayment : SKPayment {
 }
 
 @property(copy, readwrite) NSString *productIdentifier;
 @property(readwrite) NSInteger quantity;
-@property(copy, readwrite) NSData *requestData;
-@property(nonatomic, copy, readwrite) NSString *applicationUsername;
+@property(nullable, copy, readwrite) NSData *requestData;
+@property(nullable, nonatomic, copy, readwrite) NSString *applicationUsername;
 
 @end
+NS_ASSUME_NONNULL_END
 

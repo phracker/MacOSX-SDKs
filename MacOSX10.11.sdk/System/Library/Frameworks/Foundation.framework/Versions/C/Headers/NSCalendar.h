@@ -110,6 +110,7 @@ enum {
 */
 + (nullable NSCalendar *)calendarWithIdentifier:(NSString *)calendarIdentifierConstant NS_AVAILABLE(10_9, 8_0);
 
+- (instancetype)init NS_UNAVAILABLE;
 
 - (nullable id)initWithCalendarIdentifier:(NSString *)ident NS_DESIGNATED_INITIALIZER;
 

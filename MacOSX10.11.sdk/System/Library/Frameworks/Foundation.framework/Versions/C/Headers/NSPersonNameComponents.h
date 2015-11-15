@@ -13,26 +13,29 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
     id _private;
 }
 
-/* Name bestowed upon an individual by one's parents, e.g. Johann */
-@property (copy) NSString *givenName;
+/* The below examples all assume the full name Dr. Johnathan Maple Appleseed Esq., nickname "Johnny" */
 
-/* Inherited name shared with members of one's immediate family, e.g. Bach  */
-@property (copy) NSString *familyName;
+/* Pre-nominal letters denoting title, salutation, or honorific, e.g. Dr., Mr. */
+@property (copy, nullable) NSString *namePrefix;
 
-/* Secondary given name chosen to differentiate those with the same first name, e.g. Sebastian  */
-@property (copy) NSString *middleName;
+/* Name bestowed upon an individual by one's parents, e.g. Johnathan */
+@property (copy, nullable) NSString *givenName;
 
-/* Pre-nominal letters denoting title, salutation, or honorific, e.g. Dr., Mrs. */
-@property (copy) NSString *namePrefix;
+/* Secondary given name chosen to differentiate those with the same first name, e.g. Maple  */
+@property (copy, nullable) NSString *middleName;
 
-/* Post-nominal letters denoting degree, accreditation, or other honor, e.g. Jr., Ph.D. */
-@property (copy) NSString *nameSuffix;
+/* Name passed from one generation to another to indicate lineage, e.g. Appleseed  */
+@property (copy, nullable) NSString *familyName;
 
-/* Name substituted for full proper name for the purposes of familiarity, e.g. "A-Rod" for "Alex Rodriguez" */
-@property (copy) NSString *nickname;
+/* Post-nominal letters denoting degree, accreditation, or other honor, e.g. Esq., Jr., Ph.D. */
+@property (copy, nullable) NSString *nameSuffix;
 
-/* Each element of the phoneticRepresentation corresponds to an element of the original PersonNameComponents.
-   The phoneticRepresentation of the phoneticRepresentation object will be ignored */
+/* Name substituted for the purposes of familiarity, e.g. "Johnny"*/
+@property (copy, nullable) NSString *nickname;
+
+/* Each element of the phoneticRepresentation should correspond to an element of the original PersonNameComponents instance.
+   The phoneticRepresentation of the phoneticRepresentation object itself will be ignored. nil by default, must be instantiated.
+*/
 @property (copy, nullable) NSPersonNameComponents *phoneticRepresentation;
 
 @end

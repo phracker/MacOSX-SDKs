@@ -24,7 +24,7 @@ NS_CLASS_AVAILABLE(10_11, 9_0)
 MDL_EXPORT
 @interface MDLVertexAttributeData : NSObject
 
-@property (nonatomic, retain) NSData *mappedData;
+@property (nonatomic, retain) MDLMeshBufferMap *map;
 @property (nonatomic) void *dataStart;
 @property (nonatomic) NSUInteger stride;
 @property (nonatomic) MDLVertexFormat format;
@@ -106,9 +106,10 @@ MDL_EXPORT
              attribute will be deleted.  If the original vertexDescriptor does 
              not have an attribute in the new vertexDescriptor, the data for the 
              added attribute set as the added attribute's initializationValue 
-             property.  As this property implements the copy attribute, a copy
-             is always made on acces, thus change attributes and buffer layouts
-             from in property will have no affect.
+             property.
+ 
+             The allocator associated with each original meshbuffer is used to
+             reallocate the corresponding resultant meshbuffer.
  */
 @property (nonatomic, readwrite, copy) MDLVertexDescriptor *vertexDescriptor;
 
@@ -124,8 +125,9 @@ MDL_EXPORT
 /*!
  @property vertexBuffers
  @abstract Array of buffers containing vertex data
+ @discussion The vertex buffers in this array are indexed by the vertex descriptor.
  */
-@property (nonatomic, readonly, retain) NSMutableArray<id<MDLMeshBuffer>> *vertexBuffers;
+@property (nonatomic, readonly, retain) NSArray<id<MDLMeshBuffer>> *vertexBuffers;
 
 /*!
  @property submeshes
@@ -212,140 +214,168 @@ MDL_EXPORT
 
 
 
-
-
-
 @interface MDLMesh (Generators)
 
 /*!
- @method newBox:segments:inwardNormals:geometryType:allocator:
+ @method newBoxWithDimensions:segments:inwardNormals:geometryType:allocator:
  @abstract Factory method for generating a mesh with a cube shape
- @return Mesh with desired attributes.  nil if geometryType is not triangles or quads.
+ @return MDLMesh box with desired attributes
  @param dimensions Width, height, and depth of the box
  @param segments Number of slices in each dimension
  @param inwardNormals Generated Normal point inward
- @param geometryType Can be either quads or triangles
+ @param geometryType Can be MDLGeometryTypeLines, MDLGeometryTypeQuads, or MDLGeometryTypeTriangles
  @param allocator A mesh buffer allocator used to allocate memory to back buffers 
         for the returned mesh.  If nil, a default allocator will be used
  @discussion Assembled with triangle or quad primitives.  Specifying inward 
              normals is useful for generating a skybox. The center of the box 
-             is at 0, 0, 0.
+             is at(0, 0, 0).
+             Will raise an exception if an unsupported geometry type is passed in.
  */
-+ (instancetype)newBox:(vector_float3)dimensions
-              segments:(vector_uint3)segments
-         inwardNormals:(BOOL)inwardNormals
-          geometryType:(MDLGeometryKind)geometryType
-             allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
++ (instancetype)newBoxWithDimensions:(vector_float3)dimensions
+                            segments:(vector_uint3)segments
+                        geometryType:(MDLGeometryType)geometryType
+                       inwardNormals:(BOOL)inwardNormals
+                           allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
 
 /*!
- @method newEllipsoid:radialSegments:verticalSegments:inwardNormals:hemisphere:allocator:
+ @method newEllipsoidWithRadii:radialSegments:verticalSegments:inwardNormals:hemisphere:allocator:
  @abstract Factory method for generating a mesh with an ellipsoid shape
- @param radii Width, height, and depth of ellipsoid. To generate a sphere all
-        values should be equal.
+ @return MDLMesh epllipsoid with desired attributes
+ @param radii Width, height, and depth of ellipsoid.
  @param radialSegments Number of pie slices :)
  @param verticalSegments Number of slices in the vertical direction
- @param geometryType Must be MDLGeometryKindTriangles
+ @param geometryType Must be MDLGeometryTypeTriangles
  @param inwardNormals If true, generated normals will face inwards. Useful for 
         generating a skydome.
- @param geometryType Can be either quads or triangles
- @param hemisphere If true, only top half of elipsoid will be generated. The 
+ @param geometryType Must be  Must be MDLGeometryTypeTriangles
+ @param hemisphere If true, only top half of ellipsoid will be generated. The
         actual nubmer of vertical slices will be half of 'vertical' segments
  @param allocator A mesh buffer allocator used to allocate memory to back buffers 
         for the returned mesh.  If nil, a default allocator will be used
- @discussion Assembled with triangle primitives.  Specifying inward normals and 
-             hemisphere is useful for generating a skydome.  Will return nil if
-             radialSegments is < 3 and verticalSegments is < 3.
+ @discussion Specifying inward normals and hemisphere is useful for generating a skydome.
+             Specifying equal X, Y, and Z radii will generate a sphere.
+             Specifying a y radius of 0.0 will generate a disc.
+             Will raise an exception if radialSegments is < 3, verticalSegments is < 2,
+             or an unsupported geometry type is passed in.
  */
-+ (instancetype)newEllipsoid:(vector_float3)radii
-              radialSegments:(NSUInteger)radialSegments
-            verticalSegments:(NSUInteger)verticalSegments
-                geometryType:(MDLGeometryKind)geometryType
-               inwardNormals:(BOOL)inwardNormals
-                  hemisphere:(BOOL)hemisphere
-                   allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
++ (instancetype)newEllipsoidWithRadii:(vector_float3)radii
+                       radialSegments:(NSUInteger)radialSegments
+                     verticalSegments:(NSUInteger)verticalSegments
+                         geometryType:(MDLGeometryType)geometryType
+                        inwardNormals:(BOOL)inwardNormals
+                           hemisphere:(BOOL)hemisphere
+                            allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
 
 /*!
- @method generateCylindroid:radii:radialSegments:verticalSegments:inwardNormals:allocator:
- @abstract Factory method for generating a mesh with an cylindroid shape
+ @method newCylinderWithHeight:
+ @abstract Factory method for generating a mesh with a cylindrical shape
+ @return MDLMesh cylinder with desired attributes
  @param height Height of cylindoid.
- @param radii Radii of cylindroid in X and Z directions.  Values of vector should 
-        be equal to create a true cylinder
+ @param radii Radii of cylinder in X and Z directions.
  @param radialSegments Number of pie slices :)
  @param verticalSegments Number of slices along Y axis
- @param geometryType Must be MDLGeometryKindTriangles
- @param inwardNormals Normals point toward center of cylindroid
+ @param geometryType Must be MDLGeometryTypeTriangles
+ @param inwardNormals Normals point toward center of cylinder
  @param allocator A mesh buffer allocator used to allocate memory to back buffers 
         for the returned mesh.  If nil, a default allocator will be used
- @discussion Assembled with triangle primitives.  Center of cylindroid at (0, 0, 0) 
-             with a top at +Y and bottom at -Y.  Will return nil if 
-             radialSegments is < 3 and verticalSegments is < 1.
+ @discussion Center of cylinder at (0, 0, 0) with a top at +Y and bottom at -Y.
+             Specifying equal X and Z radia will generate a true cylinder.
+             Specifying a height of 0.0 and verticalSegments of 0 will generate
+             a disc.
+             Will raise and exceiption radialSegments is < 3 or an unsupported
+             geometry type is passed in.
+             Generated texture coordinates are laid out as follows:
+                                                      ___
+                                                     /   \   <- T texcoord = 0.0
+                 Texture for top of cylinder   ---> [     ]
+                                                     \___/
+                                                    [     ]  <- T texcoord = 0.3333
+                                                    [     ]
+                 Texture for sides of cylinder ---> [     ]
+                                                    [_____]  <- T texcoord = 0.6666
+                                                     /   \
+                 Texture for base of cylinder  ---> [     ]
+                                                     \___/   <- T texcoord = 1.0
  */
-+ (instancetype)newCylindroid:(float)height
-                        radii:(vector_float2)radii
-               radialSegments:(NSUInteger)radialSegments
-             verticalSegments:(NSUInteger)verticalSegments
-                 geometryType:(MDLGeometryKind)geometryType
-                inwardNormals:(BOOL)inwardNormals
-                    allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
++ (instancetype)newCylinderWithHeight:(float)height
+                                radii:(vector_float2)radii
+                       radialSegments:(NSUInteger)radialSegments
+                     verticalSegments:(NSUInteger)verticalSegments
+                         geometryType:(MDLGeometryType)geometryType
+                        inwardNormals:(BOOL)inwardNormals
+                            allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
 
 /*!
- @method generateEllipticalCone::radii:radialSegments:verticalSegments:inwardNormals:allocator:
- @abstract Factory method for generating a mesh with an elipticalCone shape.
- @param height Height of elipticalCone from point to base.
+ @method newEllipticalConeWithHeight:radii:radialSegments:verticalSegments:inwardNormals:allocator:
+ @abstract Factory method for generating a mesh with an ellipticalCone shape.
+ @return MDLMesh cone with desired attributes
+ @param height Height of ellipticalCone from point to base.
  @param radii Radii of base in X and Z directions.  Values of vector should be 
         equal to create a true cone.
  @param radialSegments Number of pie slices :)
  @param verticalSegments Number of slices along Y axis
- @param geometryType Must be MDLGeometryKindTriangles
- @param inwardNormals Normals point toward center of elipticalCone
+ @param geometryType Must be MDLGeometryTypeTriangles
+ @param inwardNormals Normals point toward center of ellipticalCone
  @param allocator A mesh buffer allocator used to allocate memory to back buffers 
         for the returned mesh.  If nil, a default allocator will be used
- @discussion Assembled with triangle primitives.  Point of cone at (0, 0, 0) 
-             while base of cone is -Y. Will return nil if radialSegments is < 3 
-             and verticalSegments is < 1.
+ @discussion Point of cone at (0, 0, 0) while base of cone is -Y. 
+             Will raise an exception if radialSegments is < 3, verticalSegments is < 1,
+             or an unsupported geometry type is passed in.
+             Generated texture coordinates are laid out as follows:
+                                                 _____
+                                                [     ]  <- T texcoord = 0.0
+                                                [     ]
+                 Texture for sides of cone ---> [     ]
+                                                [     ]
+                                                [_____]  <- T texcoord = 0.6666
+                                                 /   \
+                 Texture for base of cone  ---> [     ]
+                                                 \___/   <- T texcoord = 1.0
  */
-+ (instancetype)newEllipticalCone:(float)height
-                            radii:(vector_float2)radii
-                   radialSegments:(NSUInteger)radialSegments
-                 verticalSegments:(NSUInteger)verticalSegments
-                     geometryType:(MDLGeometryKind)geometryType
-                    inwardNormals:(BOOL)inwardNormals
-                        allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
++ (instancetype)newEllipticalConeWithHeight:(float)height
+                                      radii:(vector_float2)radii
+                             radialSegments:(NSUInteger)radialSegments
+                           verticalSegments:(NSUInteger)verticalSegments
+                               geometryType:(MDLGeometryType)geometryType
+                              inwardNormals:(BOOL)inwardNormals
+                                  allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
 
 /*!
- @method generatePlane:segments:geometryType:allocator:
+ @method newPlaneWithDimensions:segments:geometryType:allocator:
  @abstract Factory method for generating a mesh with an planar shape
- @return Mesh with desired attributes.  nil if geometryType is not triangles or quads
- @param dimensions Dimensions of  of elipticalCone in X and Z directions.
+ @return MDLMesh plane with desired attributes
+ @param dimensions Dimensions of the plane in X and Z directions.
  @param segments Number of segements in the X and Y dimensions
- @param geometryType Can be MDLGeometryKindQuads or MDLGeometryKindTriangles.
+ @param geometryType Can be MDLGeometryTypeLines, MDLGeometryTypeQuads, or MDLGeometryTypeTriangles
  @param allocator A mesh buffer allocator used to allocate memory to back buffers 
         for the returned mesh.  If nil, a default allocator will be used
  @discussion Assembled with triangle or quad primitives. Creates a plane along 
              the X/Z axis. Center of plane at (0, 0, 0). All normals point up,
              towards positive Y
+             Will raise an exception if an unsupported geometry type is passed in.
  */
-+ (instancetype)newPlane:(vector_float2)dimensions
-                segments:(vector_uint2)segments
-            geometryType:(MDLGeometryKind)geometryType
-               allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
++ (instancetype)newPlaneWithDimensions:(vector_float2)dimensions
+                              segments:(vector_uint2)segments
+                          geometryType:(MDLGeometryType)geometryType
+                             allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
 
 /*!
- @method generateIcosahedron:inwardNormals:allocator:
+ @method newIcosahedronWithRadius:inwardNormals:allocator:
  @abstract Factory method for generating a mesh icosahedron
+ @return MDLMesh icosahedron with desired attributes
  @param radius Distance from the center to the outermost point of the mesh
  @param inwardNormals Generated normals will face towards the center of the mesh
  @param allocator A mesh buffer allocator used to allocate memory to back buffers 
         for the returned mesh.  If nil, a default allocator will be used
- @discussion Assembled with triangles. Creates an icosahedron with center at 0,0,0
+ @discussion  Creates an icosahedron with center at (0, 0, 0).
  */
-+ (instancetype)newIcosahedron:(float)radius
-                 inwardNormals:(BOOL)inwardNormals
-                     allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
++ (instancetype)newIcosahedronWithRadius:(float)radius
+                           inwardNormals:(BOOL)inwardNormals
+                               allocator:(nullable id<MDLMeshBufferAllocator>)allocator;
 
 
 /*!
- @method generateSubdividedMesh:subdivisionLevels:allocator:
+ @method newSubdividedMesh:subdivisionLevels:allocator:
  @abstract Factory method that generates a subdivided mesh from a source mesh
  @param mesh Mesh from which to generate a subdivided mesh
  @param submeshIndex Index of submesh in Mesh's submesh array from which to
@@ -353,7 +383,9 @@ MDL_EXPORT
  @param subdivisionLevels The number of levels to subdivide mesh
  @discussion Subdivision levels over four are likely to generate more triangles 
              than can be reasonably displayed. Index and vertex data will use 
-             the same allocator used for the source mesh.
+             the same allocator used for the source mesh. Loading an asset 
+             using the topology preservation flag set to YES will result in the
+             best subdivision results.
  @return Returns a mesh subdividied to index level, unless subdivision is 
          impossible.  Only triangle and quadrilateral meshes can be subdivided.
  */

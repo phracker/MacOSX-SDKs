@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 				Each view must be returned with a retain count of 1 and autoreleased.
 				It is the client's responsibility to retain the returned view and to release the view when it's no longer needed.
 */
-- (__nullable NSView *)uiViewForAudioUnit:(AudioUnit)inAudioUnit withSize:(NSSize)inPreferredSize;
+- (NSView * __nullable)uiViewForAudioUnit:(AudioUnit)inAudioUnit withSize:(NSSize)inPreferredSize;
 
 @end
 

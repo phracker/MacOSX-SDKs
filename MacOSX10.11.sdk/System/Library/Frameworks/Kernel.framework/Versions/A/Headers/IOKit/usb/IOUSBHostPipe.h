@@ -79,6 +79,19 @@ protected:
     
     virtual IOReturn abortGated(IOOptionBits options, IOReturn withError, IOService* forClient);
 
+    // Protected pad slots for IOUSBHostIOSource overrides
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 0);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 1);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 2);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 3);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 4);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 5);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 6);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 7);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 8);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 9);
+    
+protected:
     UInt8               _speed;
     IOUSBHostInterface* _interface;
 
@@ -171,6 +184,18 @@ public:
      */
     virtual IOReturn clearStall(bool withRequest);
     
+    // Public pad slots for descriptors and policies
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 10);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 11);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 12);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 13);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 14);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 15);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 16);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 17);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 18);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 19);
+    
 protected:
     virtual IOReturn adjustPipeGated(const StandardUSB::EndpointDescriptor* endpointDescriptor, const StandardUSB::SuperSpeedEndpointCompanionDescriptor* companionDescriptor);
     
@@ -178,7 +203,20 @@ protected:
     virtual IOReturn getIdlePolicyGated(uint32_t& result);
     
     virtual IOReturn clearStallGated(bool withRequest);
+
+    // Protected pad slots for descriptors and policies
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 20);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 21);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 22);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 23);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 24);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 25);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 26);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 27);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 28);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 29);
     
+protected:
     const StandardUSB::EndpointDescriptor*                    _descriptor;
     const StandardUSB::SuperSpeedEndpointCompanionDescriptor* _companionDescriptor;
 
@@ -329,6 +367,18 @@ public:
      */
     virtual IOReturn controlRequest(IOService* forClient, StandardUSB::DeviceRequest& request, IOMemoryDescriptor* dataBuffer, uint32_t& bytesTransferred, uint32_t completionTimeoutMs);
 
+    // Public pad slots for control requests
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 30);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 31);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 32);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 33);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 34);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 35);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 36);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 37);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 38);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 39);
+
 protected:
     struct tInternalControlRequestParameters
     {
@@ -343,6 +393,18 @@ protected:
     virtual IOReturn controlRequestGated(tInternalControlRequestParameters& parameters);
 
     static void rawBufferControlRequestCompletion(void* target, void* parameter, IOReturn status, uint32_t bytesTransferred);
+
+    // Protected pad slots for control requests
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 40);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 41);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 42);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 43);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 44);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 45);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 46);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 47);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 48);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 49);
 
 #pragma mark IO
 public:
@@ -399,8 +461,32 @@ public:
      */
     virtual IOReturn io(IOMemoryDescriptor* dataBuffer, IOUSBHostIsochronousFrame* frameList, uint32_t frameListCount, uint64_t firstFrameNumber = 0, IOUSBHostIsochronousCompletion* completion = NULL);
     
+    // Public pad slots for IO
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 50);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 51);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 52);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 53);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 54);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 55);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 56);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 57);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 58);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 59);
+
 protected:
     virtual IOReturn isochronousIoGated(tInternalDataTransferParameters& parameters);
+    
+    // Protected pad slots for IO
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 60);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 61);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 62);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 63);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 64);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 65);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 66);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 67);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 68);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 69);
     
 #pragma mark Streams
 public:
@@ -447,6 +533,18 @@ public:
      */
     virtual IOUSBHostStream* copyStream(uint32_t streamID);
     
+    // Public pad slots for streams
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 70);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 71);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 72);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 73);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 74);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 75);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 76);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 77);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 78);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 79);
+
 protected:
     virtual IOReturn enableStreamsGated();
     
@@ -454,6 +552,19 @@ protected:
     
     virtual IOReturn copyStreamGated(uint32_t streamID, IOUSBHostStream*& result);
 
+    // Protected pad slots for streams
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 80);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 81);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 82);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 83);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 84);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 85);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 86);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 87);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 88);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 89);
+
+protected:
     IOUSBHostStream** _streamArray;
     bool              _streamsEnabled;
     
@@ -463,12 +574,36 @@ public:
     
     virtual tUSBHostDeviceAddress getDeviceAddress() const;
     
+    // Public pad slots for miscellaneous
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 90);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 91);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 92);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 93);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 94);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 95);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 96);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 97);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 98);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 99);
+    
 protected:
     struct tRawBufferControlRequestCompletionParameter
     {
         IOMemoryDescriptor* memoryDescriptor;
         IOUSBHostCompletion clientCompletion;
     };
+        
+    // Protected pad slots for miscellaneous
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 100);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 101);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 102);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 103);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 104);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 105);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 106);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 107);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 108);
+    OSMetaClassDeclareReservedUnused(IOUSBHostPipe, 109);
 
 #pragma mark Deprecated
 public:
@@ -485,23 +620,6 @@ public:
         kUSBPipeStateAborting,
         kUSBPipeStateInactive
     };
-
-    /*!
-     * @brief This method is deprecated. Please use copyStream instead.
-     * Return the stream associated with <code>streamID</code>
-     *
-     * @discussion This method will return the stream associated with <code>streamID</code>.  If the stream
-     * doesn't exist yet it will be created.  This method returns a <code>retain()</code>ed object that must
-     * be <code>release()</code>ed by the caller.  <code>IOUSBHostPipe::enableStreams</code> must be called before
-     * this method will return a stream object.
-     *
-     * @param streamID Stream ID in the range of 1 to <code>max</code>, where <code>max</code> can be retrieved
-     * by calling <code>StandardUSB::getEndpointMaxStreams</code> with the endpoint descriptors.
-     *
-     * @return Pointer to a retain()ed IOUSBHostStream object or NULL.  NULL may be returned if either the device
-     * or the underlying host controller do not support that stream ID.
-     */
-    virtual IOUSBHostStream* getStream(uint32_t streamID) __attribute__((deprecated));
     
     // IOUSBHostPipe::tUSBPipeState GetPipeState() __attribute__((deprecated));
     // Replacement: getState

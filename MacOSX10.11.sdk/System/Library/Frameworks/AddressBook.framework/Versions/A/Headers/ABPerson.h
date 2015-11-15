@@ -5,6 +5,9 @@
 //  Copyright (c) 2003-2007 Apple Inc.  All rights reserved.
 //
 
+#ifndef __ABPERSON__
+#define __ABPERSON__
+
 #import <AddressBook/ABRecord.h>
 #import <AddressBook/ABTypedefs.h>
 
@@ -89,3 +92,5 @@
 - (NSData *)vCardRepresentation;
     // Returns the vCard representation of a person
 @end
+
+#endif // __ABPERSON__

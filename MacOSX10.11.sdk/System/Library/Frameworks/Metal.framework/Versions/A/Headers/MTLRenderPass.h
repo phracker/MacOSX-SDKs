@@ -11,7 +11,6 @@
 NS_ASSUME_NONNULL_BEGIN
 @protocol MTLDevice;
 
-
 typedef NS_ENUM(NSUInteger, MTLLoadAction) {
     MTLLoadActionDontCare = 0,
     MTLLoadActionLoad = 1,
@@ -90,7 +89,6 @@ NS_CLASS_AVAILABLE(10_11, 8_0)
  */
 @property (nonatomic) NSUInteger resolveDepthPlane;
 
-
 /*!
  @property loadAction
  @abstract The action to be performed with this attachment at the beginning of a render pass.  Default is
@@ -165,15 +163,21 @@ NS_CLASS_AVAILABLE(10_11, 8_0)
 
 @property (readonly) MTLRenderPassColorAttachmentDescriptorArray *colorAttachments;
 
-@property (copy, nonatomic) MTLRenderPassDepthAttachmentDescriptor *depthAttachment;
+@property (copy, nonatomic, null_resettable) MTLRenderPassDepthAttachmentDescriptor *depthAttachment;
 
-@property (copy, nonatomic) MTLRenderPassStencilAttachmentDescriptor *stencilAttachment;
+@property (copy, nonatomic, null_resettable) MTLRenderPassStencilAttachmentDescriptor *stencilAttachment;
 
 /*!
  @property visibilityResultBuffer:
  @abstract Buffer into which samples passing the depth and stencil tests are counted.
  */
 @property (nullable, nonatomic, strong) id <MTLBuffer> visibilityResultBuffer;
+
+/*!
+ @property renderTargetArrayLength:
+ @abstract The number of active layers
+ */
+@property (nonatomic) NSUInteger renderTargetArrayLength NS_AVAILABLE_MAC(10_11);
 
 @end
 

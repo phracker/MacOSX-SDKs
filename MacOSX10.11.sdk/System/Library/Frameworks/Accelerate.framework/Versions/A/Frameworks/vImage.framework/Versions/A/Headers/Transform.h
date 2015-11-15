@@ -4,7 +4,7 @@
  *
  *  See vImage/vImage.h for more on how to better view the headerdoc documentation for functions declared herein.
  *
- *  @copyright Copyright (c) 2003-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2003-2015 by Apple Inc. All rights reserved.
  *
  *  @discussion   Transform.h defines a number of interfaces that do linear and nonlinear operations
  *                to images.  Matrix multiply operations treat each pixel as a short vector and 

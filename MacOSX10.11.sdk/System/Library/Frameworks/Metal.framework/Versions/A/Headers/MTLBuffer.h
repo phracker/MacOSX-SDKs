@@ -64,7 +64,7 @@ NS_AVAILABLE(10_11, 8_0)
  @method newTextureWithDescriptor:offset:bytesPerRow:
  @abstract Create a 2D texture that shares storage with this buffer.
 */
-- (id <MTLTexture>)newTextureWithDescriptor:(MTLTextureDescriptor*)descriptor offset:(NSUInteger)offset bytesPerRow:(NSUInteger)bytesPerRow NS_DEPRECATED_MAC(10_10, 10_10, "Buffer texture is not supported on Mac");
+- (id <MTLTexture>)newTextureWithDescriptor:(MTLTextureDescriptor*)descriptor offset:(NSUInteger)offset bytesPerRow:(NSUInteger)bytesPerRow NS_AVAILABLE_IOS(8_0);
 
 @end
 NS_ASSUME_NONNULL_END

@@ -30,7 +30,7 @@ NS_CLASS_AVAILABLE_MAC(10_10)
  */
 @property (readonly, nullable) AVCaptureSession *session;
 
-/*
+/*!
 	@method		setSession:allowVideoSourceSelection:allowAudioSourceSelection:
 	@abstract	Sets the session represented by this view.
 	@param		session

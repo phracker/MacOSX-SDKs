@@ -44,6 +44,7 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
 
 /*!
 	@function SecStaticCodeGetTypeID
@@ -92,10 +93,10 @@ extern const CFStringRef kSecCodeAttributeSubarchitecture;
 extern const CFStringRef kSecCodeAttributeUniversalFileOffset;
 extern const CFStringRef kSecCodeAttributeBundleVersion;
 
-OSStatus SecStaticCodeCreateWithPath(CFURLRef path, SecCSFlags flags, SecStaticCodeRef *staticCode);
+OSStatus SecStaticCodeCreateWithPath(CFURLRef path, SecCSFlags flags, SecStaticCodeRef * __nonnull CF_RETURNS_RETAINED staticCode);
 
 OSStatus SecStaticCodeCreateWithPathAndAttributes(CFURLRef path, SecCSFlags flags, CFDictionaryRef attributes,
-	SecStaticCodeRef *staticCode);
+	SecStaticCodeRef * __nonnull CF_RETURNS_RETAINED staticCode);
 
 
 /*!
@@ -140,7 +141,7 @@ OSStatus SecStaticCodeCreateWithPathAndAttributes(CFURLRef path, SecCSFlags flag
 	@result If validation succeeds, errSecSuccess. If validation fails, an OSStatus value
 	documented in CSCommon.h or certain other Security framework headers.
 */
-enum {
+CF_ENUM(uint32_t) {
 	kSecCSCheckAllArchitectures = 1 << 0,
 	kSecCSDoNotValidateExecutable = 1 << 1,
 	kSecCSDoNotValidateResources = 1 << 2,
@@ -153,11 +154,12 @@ enum {
 };
 
 OSStatus SecStaticCodeCheckValidity(SecStaticCodeRef staticCode, SecCSFlags flags,
-	SecRequirementRef requirement);
+	SecRequirementRef __nullable requirement);
 
 OSStatus SecStaticCodeCheckValidityWithErrors(SecStaticCodeRef staticCode, SecCSFlags flags,
-	SecRequirementRef requirement, CFErrorRef *errors);
+	SecRequirementRef __nullable requirement, CFErrorRef *errors);
 
+CF_ASSUME_NONNULL_END
 
 #ifdef __cplusplus
 }

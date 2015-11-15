@@ -2,7 +2,7 @@
  *  Geometry.h
  *  vImage_Framework
  *
- *  Copyright (c) 2002-2014 by Apple Inc. All rights reserved.
+ *  Copyright (c) 2002-2015 by Apple Inc. All rights reserved.
  *
  */
 

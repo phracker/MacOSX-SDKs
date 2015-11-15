@@ -13,11 +13,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, NSVisualEffectMaterial) {
-    // When NSVisualEffectMaterialAppearanceBased is set, the material color is determined by the current effectiveAppearance that is on the view
-    NSVisualEffectMaterialAppearanceBased,
-    NSVisualEffectMaterialLight,
-    NSVisualEffectMaterialDark,
-    NSVisualEffectMaterialTitlebar
+    // These first colors are abstract materials managed by AppKit and should be used when creating UI that needs to mimic these material types
+    // Many of these colors are dynamic and depend on the current NSAppearance set on the view (or its parent view)
+    NSVisualEffectMaterialAppearanceBased = 0, // Maps to Light or Dark, depending on the appearance set on the view
+    NSVisualEffectMaterialTitlebar = 3, // Mainly designed to be used for NSVisualEffectBlendingModeWithinWindow
+    NSVisualEffectMaterialMenu NS_ENUM_AVAILABLE_MAC(10_11) = 5,
+    NSVisualEffectMaterialPopover NS_ENUM_AVAILABLE_MAC(10_11) = 6,
+    NSVisualEffectMaterialSidebar NS_ENUM_AVAILABLE_MAC(10_11) = 7,
+    
+    // These next colors are specific palette colors that can be used to create a specific design or look that doesn’t fit into the above system defined materials
+    NSVisualEffectMaterialLight = 1,
+    NSVisualEffectMaterialDark = 2,
+    NSVisualEffectMaterialMediumLight NS_ENUM_AVAILABLE_MAC(10_11) = 8,
+    NSVisualEffectMaterialUltraDark NS_ENUM_AVAILABLE_MAC(10_11) = 9,
 } NS_ENUM_AVAILABLE_MAC(10_10);
                 
 /* How the view blends with things behind it.
@@ -43,9 +51,11 @@ NS_CLASS_AVAILABLE_MAC(10_10)
     __strong struct NSVisualEffectViewInternal *_NSVisualEffectViewInternal;
     
 #if !__LP64__
-    uint8_t _reserved[56];
+    uint8_t _reserved[48];
 #endif
     CALayer *_darkenLayer;
+    CALayer *_maskLayer;
+    CALayer *_clearCopyLayer;
     
     unsigned int _dirty:1;
     unsigned int _hasMask:1;
@@ -60,7 +70,8 @@ NS_CLASS_AVAILABLE_MAC(10_10)
     unsigned int _requiresBackdrop:1;
     unsigned int _appearsDarker:1;
     unsigned int _inheritsBlendGroup:1;
-    unsigned int _reservedFlags:19;
+    unsigned int _registeredForFrameChanges:1;
+    unsigned int _reservedFlags:18;
 }
 
 /* The default value is NSVisualEffectMaterialAppearanceBased; the material is updated to be the correct material based on the appearance set on this view.

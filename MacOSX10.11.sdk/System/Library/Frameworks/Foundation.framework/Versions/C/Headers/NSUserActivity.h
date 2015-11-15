@@ -57,14 +57,6 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 /* A set of NSString* keywords, representing words or phrases in the current user's language that might help the user to find this activity in the application history. */
 @property (copy) NSSet<NSString *> *keywords NS_AVAILABLE(10_11, 9_0);
 
-/* An optional universal type identifier, describing the type of information or item that this user activity represents. */
-@property (copy) NSString *contentType NS_AVAILABLE(10_11, 9_0);
-
-@property (copy) NSDictionary<NSString *, id> *contentAttributes NS_AVAILABLE(10_11, 9_0);
-
-/* Set to the appropriate constant if this activity is currently performing one of the defined activities. */
-@property (copy) NSString *contentUserAction NS_AVAILABLE(10_11, 9_0);
-
 /* When used for continuation, the user activity can allow the continuing side to connect back for more information using streams. This value is set to NO by default. It can be dynamically set to YES to selectively support continuation streams based on the state of the user activity.
 */
 @property BOOL supportsContinuationStreams;
@@ -123,14 +115,6 @@ NS_CLASS_AVAILABLE(10_10, 8_0)
 
 @end
 
-/* Supported NSUserActivityContentAction values */
-FOUNDATION_EXPORT const NSString *NSUserActivityContentUserActionPlay NS_AVAILABLE(10_11, 9_0);
-FOUNDATION_EXPORT const NSString *NSUserActivityContentUserActionRecord NS_AVAILABLE(10_11, 9_0);
-FOUNDATION_EXPORT const NSString *NSUserActivityContentUserActionCall NS_AVAILABLE(10_11, 9_0);
-FOUNDATION_EXPORT const NSString *NSUserActivityContentUserActionNavigate NS_AVAILABLE(10_11, 9_0);
-FOUNDATION_EXPORT const NSString *NSUserActivityContentUserActionMessage NS_AVAILABLE(10_11, 9_0);
-FOUNDATION_EXPORT const NSString *NSUserActivityContentUserActionFacetime NS_AVAILABLE(10_11, 9_0);
-FOUNDATION_EXPORT const NSString *NSUserActivityContentUserActionSchedule NS_AVAILABLE(10_11, 9_0);
 NS_ASSUME_NONNULL_END
 
 #endif

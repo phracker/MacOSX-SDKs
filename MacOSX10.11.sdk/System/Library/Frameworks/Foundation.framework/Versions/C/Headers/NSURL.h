@@ -130,7 +130,7 @@ FOUNDATION_EXPORT NSString *NSURLFileScheme;
 
 /* Returns whether the URL's resource exists and is reachable. This method synchronously checks if the resource's backing store is reachable. Checking reachability is appropriate when making decisions that do not require other immediate operations on the resource, e.g. periodic maintenance of UI state that depends on the existence of a specific document. When performing operations such as opening a file or copying resource properties, it is more efficient to simply try the operation and handle failures. If this method returns NO, the optional error is populated. This method is currently applicable only to URLs for file system resources. For other URL types, NO is returned. Symbol is present in iOS 4, but performs no operation.
  */
-- (BOOL)checkResourceIsReachableAndReturnError:(NSError **)error NS_AVAILABLE(10_6, 4_0);
+- (BOOL)checkResourceIsReachableAndReturnError:(NSError **)error NS_SWIFT_NOTHROW NS_AVAILABLE(10_6, 4_0);
 
 
 /* Working with file reference URLs
@@ -405,7 +405,7 @@ typedef NSUInteger NSURLBookmarkFileCreationOptions;
 */
 - (BOOL)getPromisedItemResourceValue:(id __nullable * __nonnull)value forKey:(NSString *)key error:(NSError **)error NS_AVAILABLE(10_10, 8_0);
 - (nullable NSDictionary<NSString *, id> *)promisedItemResourceValuesForKeys:(NSArray<NSString *> *)keys error:(NSError **)error NS_AVAILABLE(10_10, 8_0);
-- (BOOL)checkPromisedItemIsReachableAndReturnError:(NSError **)error NS_AVAILABLE(10_10, 8_0);
+- (BOOL)checkPromisedItemIsReachableAndReturnError:(NSError **)error NS_SWIFT_NOTHROW NS_AVAILABLE(10_10, 8_0);
 
 @end
 

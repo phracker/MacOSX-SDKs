@@ -1,4 +1,4 @@
-.TH "ZSHZLE" "1" "October 7, 2014" "zsh 5\&.0\&.7"
+.TH "ZSHZLE" "1" "May 31, 2015" "zsh 5\&.0\&.8"
 .SH "NAME"
 zshzle \- zsh command line editor
 .\" Yodl file: Zsh/zle.yo
@@ -17,11 +17,11 @@ is similar to \fBksh\fP, and uses no termcap sequences\&.  If \fBTERM\fP is
 "emacs", the \fBZLE\fP option will be unset by default\&.
 .PP
 The parameters \fBBAUD\fP, \fBCOLUMNS\fP, and \fBLINES\fP are also used by the
-line editor\&.
-See \fIParameters Used By The Shell\fP in \fIzshparam\fP(1)\&.
+line editor\&. See
+\fIParameters Used By The Shell\fP in \fIzshparam\fP(1)\&.
 .PP
-The parameter \fBzle_highlight\fP is also used by the line editor;
-see \fICharacter Highlighting\fP below\&.  Highlighting
+The parameter \fBzle_highlight\fP is also used by the line editor; see
+\fICharacter Highlighting\fP below\&.  Highlighting
 of special characters and the region between the cursor and the
 mark (as set with \fBset\-mark\-command\fP in Emacs mode) is enabled
 by default; consult this reference for more information\&.  Irascible
@@ -34,6 +34,15 @@ the following setting:
 .fi
 .RE
 .PP
+In many places, references are made to the \fBnumeric argument\fP\&.  This can
+by default be entered in emacs mode by holding the alt key and typing
+a number, or pressing escape before each number, and in vi command mode
+by typing the number before entering a command\&.  Generally the numeric
+argument causes the next command entered to be repeated the specified
+number of times, unless otherwise noted below\&. See also
+the \fIArguments\fP subsection of the \fIWidgets\fP section for some other ways the numeric argument can be modified\&. The default
+bindings mentioned here use the \fBdigit\-argument\fP widget\&.
+.PP
 .PP
 .SH "KEYMAPS"
 A keymap in ZLE contains a set of bindings between key sequences
@@ -43,7 +52,7 @@ There can be any number of keymaps at any time, and each keymap has one
 or more names\&.  If all of a keymap\&'s names are deleted, it disappears\&.
 \fBbindkey\fP can be used to manipulate keymap names\&.
 .PP
-Initially, there are six keymaps:
+Initially, there are eight keymaps:
 .PP
 .PD 0
 .TP
@@ -55,6 +64,12 @@ vi emulation \- insert mode
 .TP
 \fBvicmd\fP
 vi emulation \- command mode
+.TP
+\fBviopp\fP
+vi emulation \- operator pending
+.TP
+\fBvisual\fP
+vi emulation \- selection active
 .TP
 \fBisearch\fP
 incremental search mode
@@ -111,8 +126,22 @@ detect loops the process will be stopped if there are twenty such replacements
 without a real command being read\&.
 .PP
 A key sequence typed by the user can be turned into a command name for use
-in user\-defined widgets with the \fBread\-command\fP widget, described
-below\&.
+in user\-defined widgets with the \fBread\-command\fP widget, described in
+the subsection `Miscellaneous\&' of the section `Standard Widgets' below\&.
+.SS "Local Keymaps"
+While for normal editing a single keymap is used exclusively, in many
+modes a local keymap allows for some keys to be customised\&. For example,
+in an incremental search mode, a binding in the \fBisearch\fP keymap will
+override a binding in the \fBmain\fP keymap but all keys that are not
+overridden can still be used\&.
+.PP
+If a key sequence is defined in a local keymap, it will hide a key
+sequence in the global keymap that is a prefix of that sequence\&. An
+example of this occurs with the binding of \fBiw\fP in \fBviopp\fP as this
+hides the binding of \fBi\fP in \fBvicmd\fP\&. However, a longer sequence in
+the global keymap that shares the same prefix can still apply so for
+example the binding of \fB^Xa\fP in the global keymap will be unaffected
+by the binding of \fB^Xb\fP in the local keymap\&.
 .PP
 .SH "ZLE BUILTINS"
 The ZLE module contains three related builtin commands\&. The \fBbindkey\fP
@@ -336,6 +365,12 @@ character code in octal
 \fB\ex\fP\fINN\fP
 character code in hexadecimal
 .TP
+\fB\eu\fP\fINNNN\fP
+unicode character code in hexadecimal
+.TP
+\fB\eU\fP\fINNNNNNNN\fP
+unicode character code in hexadecimal
+.TP
 \fB\eM\fP[\fB\-\fP]\fIX\fP
 character with meta bit set
 .TP
@@ -352,18 +387,19 @@ and that (unlike emacs), the bindings `\fB\eM\-\fP\fIX\fP\&' and `\fB\ee\fP\fIX\
 are entirely distinct, although they are initialized to the same bindings
 by `\fBbindkey \-m\fP\&'\&.
 .RE
+
 .TP
 .PD 0
-\fBvared\fP [ \fB\-Aache\fP ] [ \fB\-p\fP \fIprompt\fP ] [ \fB\-r\fP \fIrprompt\fP ]
+\fBvared \fP[ \fB\-Aache\fP ] [ \fB\-p\fP \fIprompt\fP ] [ \fB\-r\fP \fIrprompt\fP ]
 .TP
 .PD 0
-  [ \fB\-M\fP \fImain\-keymap\fP ] [ \fB\-m\fP \fIvicmd\-keymap\fP ]
+\fB      \fP[ \fB\-M\fP \fImain\-keymap\fP ] [ \fB\-m\fP \fIvicmd\-keymap\fP ]
 .TP
 .PD 0
-  [ \fB\-i\fP \fIinit\-widget\fP ] [ \fB\-f\fP \fIfinish\-widget\fP ]
+\fB      \fP[ \fB\-i\fP \fIinit\-widget\fP ] [ \fB\-f\fP \fIfinish\-widget\fP ]
 .TP
 .PD
-  [ \fB\-t\fP \fItty\fP ] \fIname\fP
+\fB      \fP[ \fB\-t\fP \fItty\fP ] \fIname\fP
 The value of the parameter \fIname\fP is loaded into the edit
 buffer, and the line editor is invoked\&.  When the editor exits,
 \fIname\fP is set to the string value returned by the editor\&.
@@ -448,7 +484,7 @@ refer to a terminal an error is reported\&.
 \fBzle\fP \fB\-T\fP [ \fBtc\fP \fIfunction\fP | \fB\-r\fP \fBtc\fP | \fB\-L\fP ] 
 .TP
 .PD
-\fBzle\fP \fIwidget\fP \fB[ \-n\fP \fInum\fP \fB]\fP \fB[ \-Nw ] [ \-K\fP \fIkeymap\fP \fB]\fP \fIargs\fP \&.\&.\&.
+\fBzle\fP \fIwidget\fP [ \fB\-n\fP \fInum\fP ] [ \fB\-Nw\fP ] [ \fB\-K\fP \fIkeymap\fP ] \fIargs\fP \&.\&.\&.
 The \fBzle\fP builtin performs a number of different actions concerning
 ZLE\&.
 .RS
@@ -465,7 +501,7 @@ Otherwise, which operation it performs depends on its options:
 .PD 0
 .TP
 .PD
-\fB\-l\fP [ \fB\-L\fP | \fB\-a\fP ]
+\fB\-l\fP [ \fB\-L\fP | \fB\-a\fP ] [ \fIstring\fP ]
 List all existing user\-defined widgets\&.  If the \fB\-L\fP
 option is used, list in the form of \fBzle\fP
 commands to create the widgets\&.
@@ -500,9 +536,8 @@ Create a user\-defined widget\&.  If there is already a widget with the
 specified name, it is overwritten\&.  When the new
 widget is invoked from within the editor, the specified shell \fIfunction\fP
 is called\&.  If no function name is specified, it defaults to
-the same name as the widget\&.  For further information, see the section
-\fIWidgets\fP in
-\fIzshzle\fP(1)\&.
+the same name as the widget\&.  For further information, see
+the section `Widgets\&' below\&.
 .TP
 \fB\-C\fP \fIwidget\fP \fIcompletion\-widget\fP \fIfunction\fP
 Create a user\-defined completion widget named \fIwidget\fP\&. The 
@@ -660,9 +695,9 @@ disturb the line being edited:
 .RS
 .nf
 \fBTRAPUSR1() {
-    # Invalidate zle display
+  # Invalidate zle display
   [[ \-o zle ]] && zle \-I
-    # Show output
+  # Show output
   print Hello
 }\fP
 .fi
@@ -714,14 +749,14 @@ transformation is not applied to other non\-printing characters such as
 carriage returns and newlines\&.
 .RE
 .TP
-\fIwidget\fP \fB[ \-n\fP \fInum\fP \fB]\fP \fB[ \-Nw ] [ \-K\fP \fIkeymap\fP \fB]\fP \fIargs\fP \&.\&.\&.
-Invoke the specified widget\&.  This can only be done when ZLE is
+\fIwidget\fP [ \fB\-n\fP \fInum\fP ] [ \fB\-Nw\fP ] [ \fB\-K\fP \fIkeymap\fP ] \fIargs\fP \&.\&.\&.
+Invoke the specified \fIwidget\fP\&.  This can only be done when ZLE is
 active; normally this will be within a user\-defined widget\&.
 .RS
 .PP
-With the options \fB\-n\fP and \fB\-N\fP, the current numerical argument will be
-saved and then restored after the call to \fBwidget\fP; `\fB\-n\fP \fInum\fP\&'
-sets the numerical argument temporarily to \fInum\fP, while `\fB\-N\fP\&' sets it
+With the options \fB\-n\fP and \fB\-N\fP, the current numeric argument will be
+saved and then restored after the call to \fIwidget\fP; `\fB\-n\fP \fInum\fP\&'
+sets the numeric argument temporarily to \fInum\fP, while `\fB\-N\fP\&' sets it
 to the default, i\&.e\&. as if there were none\&.
 .PP
 With the option \fB\-K\fP, \fIkeymap\fP will be used as the current keymap
@@ -792,6 +827,25 @@ local scope, like parameters created in a function using \fBlocal\fP\&.
 .PP
 Inside completion widgets and traps called while ZLE is active, these
 parameters are available read\-only\&.
+.PP
+Note that the parameters appear as local to any ZLE widget in
+which they appear\&.  Hence if it is desired to override them this needs
+to be done within a nested function:
+.PP
+.RS
+.nf
+\fBwidget\-function() {
+  # $WIDGET here refers to the special variable
+  # that is local inside widget\-function
+  () {
+     # This anonymous nested function allows WIDGET
+     # to be used as a local variable\&.  The \-h
+     # removes the special status of the variable\&.
+     local \-h WIDGET
+  }
+}\fP
+.fi
+.RE
 .PP
 .PD 0
 .TP
@@ -889,7 +943,10 @@ If it is assigned to, only that part of the buffer is replaced, and the
 cursor remains between the new \fB$LBUFFER\fP and the old \fB$RBUFFER\fP\&.
 .TP
 \fBMARK\fP (integer)
-Like \fBCURSOR\fP, but for the mark\&.
+Like \fBCURSOR\fP, but for the mark\&. With vi\-mode operators that wait for
+a movement command to select a region of text, setting \fBMARK\fP allows
+the selection to extend in both directions from the the initial cursor
+position\&.
 .TP
 \fBNUMERIC\fP (integer)
 The numeric argument\&. If no numeric argument was given, this parameter
@@ -928,8 +985,10 @@ cursor remains between the old \fB$LBUFFER\fP and the new \fB$RBUFFER\fP\&.
 .TP
 \fBREGION_ACTIVE\fP (integer)
 Indicates if the region is currently active\&.  It can be assigned 0 or 1
-to deactivate and activate the region respectively;
-see \fICharacter Highlighting\fP below\&.
+to deactivate and activate the region respectively\&. A value of 2
+activates the region in line\-wise mode with the highlighted text
+extending for whole lines only; see
+\fICharacter Highlighting\fP below\&.
 .TP
 \fBregion_highlight\fP (array)
 Each element of this array may be set to a string that describes
@@ -961,8 +1020,8 @@ whitespace\&.
 .TP
 \(bu
 A highlight specification in the same format as
-used for contexts in the parameter \fBzle_highlight\fP,
-see Character Highlighting below;
+used for contexts in the parameter \fBzle_highlight\fP, see
+the section `Character Highlighting\&' below;
 for example, \fBstandout\fP or \fBfg=red,bold\fP
 .PP
 For example, 
@@ -1122,79 +1181,89 @@ the \fBKEYTIMEOUT\fP parameter, see \fIzshparam\fP(1)\&.
 .PD 0
 .TP
 .PD
-\fBvi\-backward\-blank\-word\fP (unbound) (B) (unbound)
+\fBvi\-backward\-blank\-word\fP (unbound) (\fBB\fP) (unbound)
 Move backward one word, where a word is defined as a series of
 non\-blank characters\&.
 .TP
-\fBbackward\-char\fP (^B ESC\-[D) (unbound) (unbound)
+\fBvi\-backward\-blank\-word\-end\fP (unbound) (\fBgE\fP) (unbound)
+Move to the end of the previous word, where a word is defined as a
+series of non\-blank characters\&.
+.TP
+\fBbackward\-char\fP (\fB^B ESC\-[D\fP) (unbound) (unbound)
 Move backward one character\&.
 .TP
-\fBvi\-backward\-char\fP (unbound) (^H h ^?) (ESC\-[D)
+\fBvi\-backward\-char\fP (unbound) (\fB^H h ^?\fP) (\fBESC\-[D\fP)
 Move backward one character, without changing lines\&.
 .TP
-\fBbackward\-word\fP (ESC\-B ESC\-b) (unbound) (unbound)
+\fBbackward\-word\fP (\fBESC\-B ESC\-b\fP) (unbound) (unbound)
 Move to the beginning of the previous word\&.
 .TP
 \fBemacs\-backward\-word\fP
 Move to the beginning of the previous word\&.
 .TP
-\fBvi\-backward\-word\fP (unbound) (b) (unbound)
+\fBvi\-backward\-word\fP (unbound) (\fBb\fP) (unbound)
 Move to the beginning of the previous word, vi\-style\&.
 .TP
-\fBbeginning\-of\-line\fP (^A) (unbound) (unbound)
+\fBvi\-backward\-word\-end\fP (unbound) (\fBge\fP) (unbound)
+Move to the end of the previous word, vi\-style\&.
+.TP
+\fBbeginning\-of\-line\fP (\fB^A\fP) (unbound) (unbound)
 Move to the beginning of the line\&.  If already at the beginning
 of the line, move to the beginning of the previous line, if any\&.
 .TP
 \fBvi\-beginning\-of\-line\fP
 Move to the beginning of the line, without changing lines\&.
 .TP
-\fBend\-of\-line\fP (^E) (unbound) (unbound)
+\fBdown\-line\fP (unbound) (unbound) (unbound)
+Move down a line in the buffer\&.
+.TP
+\fBend\-of\-line\fP (\fB^E\fP) (unbound) (unbound)
 Move to the end of the line\&.  If already at the end
 of the line, move to the end of the next line, if any\&.
 .TP
-\fBvi\-end\-of\-line\fP (unbound) ($) (unbound)
+\fBvi\-end\-of\-line\fP (unbound) (\fB$\fP) (unbound)
 Move to the end of the line\&.
 If an argument is given to this command, the cursor will be moved to
 the end of the line (argument \- 1) lines down\&.
 .TP
-\fBvi\-forward\-blank\-word\fP (unbound) (W) (unbound)
+\fBvi\-forward\-blank\-word\fP (unbound) (\fBW\fP) (unbound)
 Move forward one word, where a word is defined as a series of
 non\-blank characters\&.
 .TP
-\fBvi\-forward\-blank\-word\-end\fP (unbound) (E) (unbound)
+\fBvi\-forward\-blank\-word\-end\fP (unbound) (\fBE\fP) (unbound)
 Move to the end of the current word, or, if at the end of the current word,
 to the end of the next word,
 where a word is defined as a series of non\-blank characters\&.
 .TP
-\fBforward\-char\fP (^F ESC\-[C) (unbound) (unbound)
+\fBforward\-char\fP (\fB^F ESC\-[C\fP) (unbound) (unbound)
 Move forward one character\&.
 .TP
-\fBvi\-forward\-char\fP (unbound) (space l) (ESC\-[C)
+\fBvi\-forward\-char\fP (unbound) (\fBspace l\fP) (\fBESC\-[C\fP)
 Move forward one character\&.
 .TP
-\fBvi\-find\-next\-char\fP (^X^F) (f) (unbound)
+\fBvi\-find\-next\-char\fP (\fB^X^F\fP) (\fBf\fP) (unbound)
 Read a character from the keyboard, and move to
 the next occurrence of it in the line\&.
 .TP
-\fBvi\-find\-next\-char\-skip\fP (unbound) (t) (unbound)
+\fBvi\-find\-next\-char\-skip\fP (unbound) (\fBt\fP) (unbound)
 Read a character from the keyboard, and move to
 the position just before the next occurrence of it in the line\&.
 .TP
-\fBvi\-find\-prev\-char\fP (unbound) (F) (unbound)
+\fBvi\-find\-prev\-char\fP (unbound) (\fBF\fP) (unbound)
 Read a character from the keyboard, and move to
 the previous occurrence of it in the line\&.
 .TP
-\fBvi\-find\-prev\-char\-skip\fP (unbound) (T) (unbound)
+\fBvi\-find\-prev\-char\-skip\fP (unbound) (\fBT\fP) (unbound)
 Read a character from the keyboard, and move to
 the position just after the previous occurrence of it in the line\&.
 .TP
-\fBvi\-first\-non\-blank\fP (unbound) (^) (unbound)
+\fBvi\-first\-non\-blank\fP (unbound) (\fB^\fP) (unbound)
 Move to the first non\-blank character in the line\&.
 .TP
-\fBvi\-forward\-word\fP (unbound) (w) (unbound)
+\fBvi\-forward\-word\fP (unbound) (\fBw\fP) (unbound)
 Move forward one word, vi\-style\&.
 .TP
-\fBforward\-word\fP (ESC\-F ESC\-f) (unbound) (unbound)
+\fBforward\-word\fP (\fBESC\-F ESC\-f\fP) (unbound) (unbound)
 Move to the beginning of the next word\&.
 The editor\&'s idea of a word is specified with the \fBWORDCHARS\fP
 parameter\&.
@@ -1202,28 +1271,31 @@ parameter\&.
 \fBemacs\-forward\-word\fP
 Move to the end of the next word\&.
 .TP
-\fBvi\-forward\-word\-end\fP (unbound) (e) (unbound)
+\fBvi\-forward\-word\-end\fP (unbound) (\fBe\fP) (unbound)
 Move to the end of the next word\&.
 .TP
-\fBvi\-goto\-column\fP (ESC\-|) (|) (unbound)
+\fBvi\-goto\-column\fP (\fBESC\-|\fP) (\fB|\fP) (unbound)
 Move to the column specified by the numeric argument\&.
 .TP
-\fBvi\-goto\-mark\fP (unbound) (`) (unbound)
+\fBvi\-goto\-mark\fP (unbound) (\fB`\fP) (unbound)
 Move to the specified mark\&.
 .TP
-\fBvi\-goto\-mark\-line\fP (unbound) (\&') (unbound)
+\fBvi\-goto\-mark\-line\fP (unbound) (\fB\&'\fP) (unbound)
 Move to beginning of the line containing the specified mark\&.
 .TP
-\fBvi\-repeat\-find\fP (unbound) (;) (unbound)
+\fBvi\-repeat\-find\fP (unbound) (\fB;\fP) (unbound)
 Repeat the last \fBvi\-find\fP command\&.
 .TP
-\fBvi\-rev\-repeat\-find\fP (unbound) (,) (unbound)
+\fBvi\-rev\-repeat\-find\fP (unbound) (\fB,\fP) (unbound)
 Repeat the last \fBvi\-find\fP command in the opposite direction\&.
+.TP
+\fBup\-line\fP (unbound) (unbound) (unbound)
+Move up a line in the buffer\&.
 .SS "History Control"
 .PD 0
 .TP
 .PD
-\fBbeginning\-of\-buffer\-or\-history\fP (ESC\-<) (unbound) (unbound)
+\fBbeginning\-of\-buffer\-or\-history\fP (\fBESC\-<\fP) (\fBgg\fP) (unbound)
 Move to the beginning of the buffer, or if already there,
 move to the first event in the history list\&.
 .TP
@@ -1234,11 +1306,11 @@ beginning of the buffer, move to the previous history line\&.
 \fBbeginning\-of\-history\fP
 Move to the first event in the history list\&.
 .TP
-\fBdown\-line\-or\-history\fP (^N ESC\-[B) (j) (ESC\-[B)
+\fBdown\-line\-or\-history\fP (\fB^N ESC\-[B\fP) (\fBj\fP) (\fBESC\-[B\fP)
 Move down a line in the buffer, or if already at the bottom line,
 move to the next event in the history list\&.
 .TP
-\fBvi\-down\-line\-or\-history\fP (unbound) (+) (unbound)
+\fBvi\-down\-line\-or\-history\fP (unbound) (\fB+\fP) (unbound)
 Move down a line in the buffer, or if already at the bottom line,
 move to the next event in the history list\&.
 Then move to the first non\-blank character on the line\&.
@@ -1254,7 +1326,7 @@ argument is taken as the string for which to search, rather than the
 first word in the buffer\&.
 .RE
 .TP
-\fBdown\-history\fP (unbound) (^N) (unbound)
+\fBdown\-history\fP (unbound) (\fB^N\fP) (unbound)
 Move to the next event in the history list\&.
 .TP
 \fBhistory\-beginning\-search\-backward\fP
@@ -1262,7 +1334,7 @@ Search backward in the history for a line beginning with the current
 line up to the cursor\&.
 This leaves the cursor in its original position\&.
 .TP
-\fBend\-of\-buffer\-or\-history\fP (ESC\->) (unbound) (unbound)
+\fBend\-of\-buffer\-or\-history\fP (\fBESC\->\fP) (unbound) (unbound)
 Move to the end of the buffer, or if already there,
 move to the last event in the history list\&.
 .TP
@@ -1273,12 +1345,12 @@ the buffer, move to the next history line\&.
 \fBend\-of\-history\fP
 Move to the last event in the history list\&.
 .TP
-\fBvi\-fetch\-history\fP (unbound) (G) (unbound)
+\fBvi\-fetch\-history\fP (unbound) (\fBG\fP) (unbound)
 Fetch the history line specified by the numeric argument\&.
 This defaults to the current history line
 (i\&.e\&. the one that isn\&'t history yet)\&.
 .TP
-\fBhistory\-incremental\-search\-backward\fP (^R ^Xr) (unbound) (unbound)
+\fBhistory\-incremental\-search\-backward\fP (\fB^R ^Xr\fP) (unbound) (unbound)
 Search backward incrementally for a specified string\&.  The search is
 case\-insensitive if the search string does not have uppercase letters and no
 numeric argument was given\&.  The string may begin with `\fB^\fP\&' to anchor the
@@ -1403,7 +1475,7 @@ will search backwards for \fBforceps\fP, leaving the minibuffer containing
 the string `\fBforceps\fP\&'\&.
 .RE
 .TP
-\fBhistory\-incremental\-search\-forward\fP (^S ^Xs) (unbound) (unbound)
+\fBhistory\-incremental\-search\-forward\fP (\fB^S ^Xs\fP) (unbound) (unbound)
 Search forward incrementally for a specified string\&.  The search is
 case\-insensitive if the search string does not have uppercase letters and no
 numeric argument was given\&.  The string may begin with `\fB^\fP\&' to anchor the
@@ -1433,7 +1505,7 @@ with wildcards may return fewer matches on a line than are visible
 by inspection\&.
 .RE
 .TP
-\fBhistory\-search\-backward\fP (ESC\-P ESC\-p) (unbound) (unbound)
+\fBhistory\-search\-backward\fP (\fBESC\-P ESC\-p\fP) (unbound) (unbound)
 Search backward in the history for a line beginning with the first
 word in the buffer\&.
 .RS
@@ -1443,7 +1515,7 @@ argument is taken as the string for which to search, rather than the
 first word in the buffer\&.
 .RE
 .TP
-\fBvi\-history\-search\-backward\fP (unbound) (/) (unbound)
+\fBvi\-history\-search\-backward\fP (unbound) (\fB/\fP) (unbound)
 Search backward in the history for a specified string\&.
 The string may begin with `\fB^\fP\&' to anchor the search to the
 beginning of the line\&.
@@ -1475,7 +1547,7 @@ argument is taken as the string for which to search, rather than the
 first word in the buffer\&.
 .RE
 .TP
-\fBhistory\-search\-forward\fP (ESC\-N ESC\-n) (unbound) (unbound)
+\fBhistory\-search\-forward\fP (\fBESC\-N ESC\-n\fP) (unbound) (unbound)
 Search forward in the history for a line beginning with the first
 word in the buffer\&.
 .RS
@@ -1485,18 +1557,18 @@ argument is taken as the string for which to search, rather than the
 first word in the buffer\&.
 .RE
 .TP
-\fBvi\-history\-search\-forward\fP (unbound) (?) (unbound)
+\fBvi\-history\-search\-forward\fP (unbound) (\fB?\fP) (unbound)
 Search forward in the history for a specified string\&.
 The string may begin with `\fB^\fP\&' to anchor the search to the
 beginning of the line\&. The functions available in the mini\-buffer are the same
 as for \fBvi\-history\-search\-backward\fP\&.  Argument handling is also the same
 as for that command\&.
 .TP
-\fBinfer\-next\-history\fP (^X^N) (unbound) (unbound)
+\fBinfer\-next\-history\fP (\fB^X^N\fP) (unbound) (unbound)
 Search in the history list for a line matching the current one and
 fetch the event following it\&.
 .TP
-\fBinsert\-last\-word\fP (ESC\-_ ESC\-\&.) (unbound) (unbound)
+\fBinsert\-last\-word\fP (\fBESC\-_ ESC\-\&.\fP) (unbound) (unbound)
 Insert the last word from the previous history event at the
 cursor position\&.  If a positive numeric argument is given,
 insert that word from the end of the previous history event\&.
@@ -1518,7 +1590,7 @@ reexamined\&.  Note that negative numbers should be preceded by a
 .PP
 If two arguments are given, the second specifies the word on the command
 line in normal array index notation (as a more natural alternative to the
-prefix argument)\&.  Hence 1 is the first word, and \-1 (the default) is the
+numeric argument)\&.  Hence 1 is the first word, and \-1 (the default) is the
 last word\&.
 .PP
 If a third argument is given, its value is ignored, but it is used to
@@ -1547,17 +1619,17 @@ the line being edited\&.  This has the side effect that later invocations of
 the widget will be relative to that line\&.
 .RE
 .TP
-\fBvi\-repeat\-search\fP (unbound) (n) (unbound)
+\fBvi\-repeat\-search\fP (unbound) (\fBn\fP) (unbound)
 Repeat the last vi history search\&.
 .TP
-\fBvi\-rev\-repeat\-search\fP (unbound) (N) (unbound)
+\fBvi\-rev\-repeat\-search\fP (unbound) (\fBN\fP) (unbound)
 Repeat the last vi history search, but in reverse\&.
 .TP
-\fBup\-line\-or\-history\fP (^P ESC\-[A) (k) (ESC\-[A)
+\fBup\-line\-or\-history\fP (\fB^P ESC\-[A\fP) (\fBk\fP) (\fBESC\-[A\fP)
 Move up a line in the buffer, or if already at the top line,
 move to the previous event in the history list\&.
 .TP
-\fBvi\-up\-line\-or\-history\fP (unbound) (\-) (unbound)
+\fBvi\-up\-line\-or\-history\fP (unbound) (\fB\-\fP) (unbound)
 Move up a line in the buffer, or if already at the top line,
 move to the previous event in the history list\&.
 Then move to the first non\-blank character on the line\&.
@@ -1573,7 +1645,7 @@ argument is taken as the string for which to search, rather than the
 first word in the buffer\&.
 .RE
 .TP
-\fBup\-history\fP (unbound) (^P) (unbound)
+\fBup\-history\fP (unbound) (\fB^P\fP) (unbound)
 Move to the previous event in the history list\&.
 .TP
 \fBhistory\-beginning\-search\-forward\fP
@@ -1590,16 +1662,16 @@ only local lines\&.
 .PD 0
 .TP
 .PD
-\fBvi\-add\-eol\fP (unbound) (A) (unbound)
+\fBvi\-add\-eol\fP (unbound) (\fBA\fP) (unbound)
 Move to the end of the line and enter insert mode\&.
 .TP
-\fBvi\-add\-next\fP (unbound) (a) (unbound)
+\fBvi\-add\-next\fP (unbound) (\fBa\fP) (unbound)
 Enter insert mode after the current cursor position, without changing lines\&.
 .TP
-\fBbackward\-delete\-char\fP (^H ^?) (unbound) (unbound)
+\fBbackward\-delete\-char\fP (\fB^H ^?\fP) (unbound) (unbound)
 Delete the character behind the cursor\&.
 .TP
-\fBvi\-backward\-delete\-char\fP (unbound) (X) (^H)
+\fBvi\-backward\-delete\-char\fP (unbound) (\fBX\fP) (\fB^H\fP)
 Delete the character behind the cursor, without changing lines\&.
 If in insert mode, this won\&'t delete past the point where insert mode was
 last entered\&.
@@ -1610,29 +1682,42 @@ Delete the word behind the cursor\&.
 \fBbackward\-kill\-line\fP
 Kill from the beginning of the line to the cursor position\&.
 .TP
-\fBbackward\-kill\-word\fP (^W ESC\-^H ESC\-^?) (unbound) (unbound)
+\fBbackward\-kill\-word\fP (\fB^W ESC\-^H ESC\-^?\fP) (unbound) (unbound)
 Kill the word behind the cursor\&.
 .TP
-\fBvi\-backward\-kill\-word\fP (unbound) (unbound) (^W)
+\fBvi\-backward\-kill\-word\fP (unbound) (unbound) (\fB^W\fP)
 Kill the word behind the cursor, without going past the point where insert
 mode was last entered\&.
 .TP
-\fBcapitalize\-word\fP (ESC\-C ESC\-c) (unbound) (unbound)
+\fBcapitalize\-word\fP (\fBESC\-C ESC\-c\fP) (unbound) (unbound)
 Capitalize the current word and move past it\&.
 .TP
-\fBvi\-change\fP (unbound) (c) (unbound)
+\fBvi\-change\fP (unbound) (\fBc\fP) (unbound)
 Read a movement command from the keyboard, and kill
 from the cursor position to the endpoint of the movement\&.
 Then enter insert mode\&.
 If the command is \fBvi\-change\fP, change the current line\&.
+.RS
+.PP
+For compatibility with vi, if the command is \fBvi\-forward\-word\fP
+or \fBvi\-forward\-blank\-word\fP, the whitespace after the word is not
+included\&. If you prefer the more consistent behaviour with the
+whitespace included use the following key binding:
+.PP
+.RS
+.nf
+\fBbindkey \-a \-s cw dwi\fP
+.fi
+.RE
+.RE
 .TP
-\fBvi\-change\-eol\fP (unbound) (C) (unbound)
+\fBvi\-change\-eol\fP (unbound) (\fBC\fP) (unbound)
 Kill to the end of the line and enter insert mode\&.
 .TP
-\fBvi\-change\-whole\-line\fP (unbound) (S) (unbound)
+\fBvi\-change\-whole\-line\fP (unbound) (\fBS\fP) (unbound)
 Kill the current line and enter insert mode\&.
 .TP
-\fBcopy\-region\-as\-kill\fP (ESC\-W ESC\-w) (unbound) (unbound)
+\fBcopy\-region\-as\-kill\fP (\fBESC\-W ESC\-w\fP) (unbound) (unbound)
 Copy the area from the cursor to the mark to the kill buffer\&.
 .RS
 .PP
@@ -1642,7 +1727,7 @@ text to copy to the kill buffer\&.  The cursor, the mark and the text on the
 command line are not used in this case\&.
 .RE
 .TP
-\fBcopy\-prev\-word\fP (ESC\-^_) (unbound) (unbound)
+\fBcopy\-prev\-word\fP (\fBESC\-^_\fP) (unbound) (unbound)
 Duplicate the word to the left of the cursor\&.
 .TP
 \fBcopy\-prev\-shell\-word\fP
@@ -1650,7 +1735,7 @@ Like \fBcopy\-prev\-word\fP, but the word is found by using shell parsing,
 whereas \fBcopy\-prev\-word\fP looks for blanks\&. This makes a difference
 when the word is quoted and contains spaces\&.
 .TP
-\fBvi\-delete\fP (unbound) (d) (unbound)
+\fBvi\-delete\fP (unbound) (\fBd\fP) (unbound)
 Read a movement command from the keyboard, and kill
 from the cursor position to the endpoint of the movement\&.
 If the command is \fBvi\-delete\fP, kill the current line\&.
@@ -1658,159 +1743,165 @@ If the command is \fBvi\-delete\fP, kill the current line\&.
 \fBdelete\-char\fP
 Delete the character under the cursor\&.
 .TP
-\fBvi\-delete\-char\fP (unbound) (x) (unbound)
+\fBvi\-delete\-char\fP (unbound) (\fBx\fP) (unbound)
 Delete the character under the cursor,
 without going past the end of the line\&.
 .TP
 \fBdelete\-word\fP
 Delete the current word\&.
 .TP
-\fBdown\-case\-word\fP (ESC\-L ESC\-l) (unbound) (unbound)
+\fBdown\-case\-word\fP (\fBESC\-L ESC\-l\fP) (unbound) (unbound)
 Convert the current word to all lowercase and move past it\&.
 .TP
-\fBkill\-word\fP (ESC\-D ESC\-d) (unbound) (unbound)
+\fBkill\-word\fP (\fBESC\-D ESC\-d\fP) (unbound) (unbound)
 Kill the current word\&.
 .TP
 \fBgosmacs\-transpose\-chars\fP
 Exchange the two characters behind the cursor\&.
 .TP
-\fBvi\-indent\fP (unbound) (>) (unbound)
+\fBvi\-indent\fP (unbound) (\fB>\fP) (unbound)
 Indent a number of lines\&.
 .TP
-\fBvi\-insert\fP (unbound) (i) (unbound)
+\fBvi\-insert\fP (unbound) (\fBi\fP) (unbound)
 Enter insert mode\&.
 .TP
-\fBvi\-insert\-bol\fP (unbound) (I) (unbound)
+\fBvi\-insert\-bol\fP (unbound) (\fBI\fP) (unbound)
 Move to the first non\-blank character on the line and enter insert mode\&.
 .TP
-\fBvi\-join\fP (^X^J) (J) (unbound)
+\fBvi\-join\fP (\fB^X^J\fP) (\fBJ\fP) (unbound)
 Join the current line with the next one\&.
 .TP
-\fBkill\-line\fP (^K) (unbound) (unbound)
+\fBkill\-line\fP (\fB^K\fP) (unbound) (unbound)
 Kill from the cursor to the end of the line\&.
 If already on the end of the line, kill the newline character\&.
 .TP
-\fBvi\-kill\-line\fP (unbound) (unbound) (^U)
+\fBvi\-kill\-line\fP (unbound) (unbound) (\fB^U\fP)
 Kill from the cursor back to wherever insert mode was last entered\&.
 .TP
-\fBvi\-kill\-eol\fP (unbound) (D) (unbound)
+\fBvi\-kill\-eol\fP (unbound) (\fBD\fP) (unbound)
 Kill from the cursor to the end of the line\&.
 .TP
 \fBkill\-region\fP
 Kill from the cursor to the mark\&.
 .TP
-\fBkill\-buffer\fP (^X^K) (unbound) (unbound)
+\fBkill\-buffer\fP (\fB^X^K\fP) (unbound) (unbound)
 Kill the entire buffer\&.
 .TP
-\fBkill\-whole\-line\fP (^U) (unbound) (unbound)
+\fBkill\-whole\-line\fP (\fB^U\fP) (unbound) (unbound)
 Kill the current line\&.
 .TP
-\fBvi\-match\-bracket\fP (^X^B) (%) (unbound)
+\fBvi\-match\-bracket\fP (\fB^X^B\fP) (\fB%\fP) (unbound)
 Move to the bracket character (one of \fB{}\fP, \fB()\fP or \fB[]\fP) that
 matches the one under the cursor\&.
 If the cursor is not on a bracket character, move forward without going
 past the end of the line to find one, and then go to the matching bracket\&.
 .TP
-\fBvi\-open\-line\-above\fP (unbound) (O) (unbound)
+\fBvi\-open\-line\-above\fP (unbound) (\fBO\fP) (unbound)
 Open a line above the cursor and enter insert mode\&.
 .TP
-\fBvi\-open\-line\-below\fP (unbound) (o) (unbound)
+\fBvi\-open\-line\-below\fP (unbound) (\fBo\fP) (unbound)
 Open a line below the cursor and enter insert mode\&.
 .TP
-\fBvi\-oper\-swap\-case\fP
+\fBvi\-oper\-swap\-case\fP (unbound) (\fBg~\fP) (unbound)
 Read a movement command from the keyboard, and swap
 the case of all characters
 from the cursor position to the endpoint of the movement\&.
 If the movement command is \fBvi\-oper\-swap\-case\fP,
 swap the case of all characters on the current line\&.
 .TP
-\fBoverwrite\-mode\fP (^X^O) (unbound) (unbound)
+\fBoverwrite\-mode\fP (\fB^X^O\fP) (unbound) (unbound)
 Toggle between overwrite mode and insert mode\&.
 .TP
-\fBvi\-put\-before\fP (unbound) (P) (unbound)
+\fBvi\-put\-before\fP (unbound) (\fBP\fP) (unbound)
 Insert the contents of the kill buffer before the cursor\&.
 If the kill buffer contains a sequence of lines (as opposed to characters),
 paste it above the current line\&.
 .TP
-\fBvi\-put\-after\fP (unbound) (p) (unbound)
+\fBvi\-put\-after\fP (unbound) (\fBp\fP) (unbound)
 Insert the contents of the kill buffer after the cursor\&.
 If the kill buffer contains a sequence of lines (as opposed to characters),
 paste it below the current line\&.
 .TP
-\fBquoted\-insert\fP (^V) (unbound) (unbound)
+\fBput\-replace\-selection\fP (unbound) (unbound) (unbound)
+Replace the contents of the current region or selection with the
+contents of the kill buffer\&. If the kill buffer contains a sequence of
+lines (as opposed to characters), the current line will be split by the
+pasted lines\&.
+.TP
+\fBquoted\-insert\fP (\fB^V\fP) (unbound) (unbound)
 Insert the next character typed into the buffer literally\&.
 An interrupt character will not be inserted\&.
 .TP
-\fBvi\-quoted\-insert\fP (unbound) (unbound) (^Q ^V)
+\fBvi\-quoted\-insert\fP (unbound) (unbound) (\fB^Q ^V\fP)
 Display a `\fB^\fP\&' at the cursor position, and
 insert the next character typed into the buffer literally\&.
 An interrupt character will not be inserted\&.
 .TP
-\fBquote\-line\fP (ESC\-\&') (unbound) (unbound)
+\fBquote\-line\fP (\fBESC\-\&'\fP) (unbound) (unbound)
 Quote the current line; that is, put a `\fB\&'\fP' character at the
 beginning and the end, and convert all `\fB\&'\fP' characters
 to `\fB\&'\e''\fP'\&.
 .TP
-\fBquote\-region\fP (ESC\-") (unbound) (unbound)
+\fBquote\-region\fP (\fBESC\-"\fP) (unbound) (unbound)
 Quote the region from the cursor to the mark\&.
 .TP
-\fBvi\-replace\fP (unbound) (R) (unbound)
+\fBvi\-replace\fP (unbound) (\fBR\fP) (unbound)
 Enter overwrite mode\&.
 .TP
-\fBvi\-repeat\-change\fP (unbound) (\&.) (unbound)
+\fBvi\-repeat\-change\fP (unbound) (\fB\&.\fP) (unbound)
 Repeat the last vi mode text modification\&.
 If a count was used with the modification, it is remembered\&.
 If a count is given to this command, it overrides the remembered count,
 and is remembered for future uses of this command\&.
 The cut buffer specification is similarly remembered\&.
 .TP
-\fBvi\-replace\-chars\fP (unbound) (r) (unbound)
+\fBvi\-replace\-chars\fP (unbound) (\fBr\fP) (unbound)
 Replace the character under the cursor with a character
 read from the keyboard\&.
 .TP
 \fBself\-insert\fP (printable characters) (unbound) (printable characters and some control characters)
 Insert a character into the buffer at the cursor position\&.
 .TP
-\fBself\-insert\-unmeta\fP (ESC\-^I ESC\-^J ESC\-^M) (unbound) (unbound)
+\fBself\-insert\-unmeta\fP (\fBESC\-^I ESC\-^J ESC\-^M\fP) (unbound) (unbound)
 Insert a character into the buffer after stripping the meta bit
 and converting ^M to ^J\&.
 .TP
-\fBvi\-substitute\fP (unbound) (s) (unbound)
+\fBvi\-substitute\fP (unbound) (\fBs\fP) (unbound)
 Substitute the next character(s)\&.
 .TP
-\fBvi\-swap\-case\fP (unbound) (~) (unbound)
+\fBvi\-swap\-case\fP (unbound) (\fB~\fP) (unbound)
 Swap the case of the character under the cursor and move past it\&.
 .TP
-\fBtranspose\-chars\fP (^T) (unbound) (unbound)
+\fBtranspose\-chars\fP (\fB^T\fP) (unbound) (unbound)
 Exchange the two characters to the left of the
 cursor if at end of line, else exchange the
 character under the cursor with the character
 to the left\&.
 .TP
-\fBtranspose\-words\fP (ESC\-T ESC\-t) (unbound) (unbound)
+\fBtranspose\-words\fP (\fBESC\-T ESC\-t\fP) (unbound) (unbound)
 Exchange the current word with the one before it\&.
 .TP
-\fBvi\-unindent\fP (unbound) (<) (unbound)
+\fBvi\-unindent\fP (unbound) (\fB<\fP) (unbound)
 Unindent a number of lines\&.
 .TP
-\fBup\-case\-word\fP (ESC\-U ESC\-u) (unbound) (unbound)
+\fBup\-case\-word\fP (\fBESC\-U ESC\-u\fP) (unbound) (unbound)
 Convert the current word to all caps and move past it\&.
 .TP
-\fByank\fP (^Y) (unbound) (unbound)
+\fByank\fP (\fB^Y\fP) (unbound) (unbound)
 Insert the contents of the kill buffer at the cursor position\&.
 .TP
-\fByank\-pop\fP (ESC\-y) (unbound) (unbound)
+\fByank\-pop\fP (\fBESC\-y\fP) (unbound) (unbound)
 Remove the text just yanked, rotate the kill\-ring (the history of
 previously killed text) and yank the new top\&.  Only works following
-\fByank\fP or \fByank\-pop\fP\&.
+\fByank\fP, \fBvi\-put\-before\fP, \fBvi\-put\-after\fP or \fByank\-pop\fP\&.
 .TP
-\fBvi\-yank\fP (unbound) (y) (unbound)
+\fBvi\-yank\fP (unbound) (\fBy\fP) (unbound)
 Read a movement command from the keyboard, and copy the region
 from the cursor position to the endpoint of the movement
 into the kill buffer\&.
 If the command is \fBvi\-yank\fP, copy the current line\&.
 .TP
-\fBvi\-yank\-whole\-line\fP (unbound) (Y) (unbound)
+\fBvi\-yank\-whole\-line\fP (unbound) (\fBY\fP) (unbound)
 Copy the current line into the kill buffer\&.
 .TP
 \fBvi\-yank\-eol\fP
@@ -1821,7 +1912,7 @@ Arguably, this is what Y should do in vi, but it isn\&'t what it actually does\&
 .PD 0
 .TP
 .PD
-\fBdigit\-argument\fP (ESC\-0\&.\&.ESC\-9) (1\-9) (unbound)
+\fBdigit\-argument\fP (\fBESC\-0\fP\&.\&.\fBESC\-9\fP) (\fB1\fP\-\fB9\fP) (unbound)
 Start a new numeric argument, or add to the current one\&.
 See also \fBvi\-digit\-or\-beginning\-of\-line\fP\&.  This only works if bound to a
 key sequence ending in a decimal digit\&.
@@ -1831,7 +1922,7 @@ Inside a widget function, a call to this function treats the last key of
 the key sequence which called the widget as the digit\&.
 .RE
 .TP
-\fBneg\-argument\fP (ESC\-\-) (unbound) (unbound)
+\fBneg\-argument\fP (\fBESC\-\fP\fB\-\fP) (unbound) (unbound)
 Changes the sign of the following argument\&.
 .TP
 \fBuniversal\-argument\fP
@@ -1845,14 +1936,14 @@ move backward two spaces\&.
 .RS
 .PP
 Inside a widget function, if passed an argument, i\&.e\&. `\fBzle
-universal\-argument\fP \fInum\fP\&', the numerical argument will be set to
+universal\-argument\fP \fInum\fP\&', the numeric argument will be set to
 \fInum\fP; this is equivalent to `\fBNUMERIC=\fP\fInum\fP\&'\&.
 .RE
 .TP
 \fBargument\-base\fP
 Use the existing numeric argument as a numeric base, which must be in the
 range 2 to 36 inclusive\&.  Subsequent use of \fBdigit\-argument\fP and
-\fBuniversal\-argument\fP will input a new prefix in the given base\&.
+\fBuniversal\-argument\fP will input a new numeric argument in the given base\&.
 The usual hexadecimal convention is used: the letter \fBa\fP or \fBA\fP
 corresponds to 10, and so on\&.  Arguments in bases requiring digits from 10
 upwards are more conveniently input with \fBuniversal\-argument\fP, since
@@ -1881,7 +1972,7 @@ and advance to the next possible completion\&.
 \fBcomplete\-word\fP
 Attempt completion on the current word\&.
 .TP
-\fBdelete\-char\-or\-list\fP (^D) (unbound) (unbound)
+\fBdelete\-char\-or\-list\fP (\fB^D\fP) (unbound) (unbound)
 Delete the character under the cursor\&.  If the cursor
 is at the end of the line, list possible completions for the
 current word\&.
@@ -1889,7 +1980,7 @@ current word\&.
 \fBexpand\-cmd\-path\fP
 Expand the current command to its full pathname\&.
 .TP
-\fBexpand\-or\-complete\fP (TAB) (unbound) (TAB)
+\fBexpand\-or\-complete\fP (\fBTAB\fP) (unbound) (\fBTAB\fP)
 Attempt shell expansion on the current word\&.
 If that fails,
 attempt completion\&.
@@ -1897,16 +1988,16 @@ attempt completion\&.
 \fBexpand\-or\-complete\-prefix\fP
 Attempt shell expansion on the current word up to cursor\&.
 .TP
-\fBexpand\-history\fP (ESC\-space ESC\-!) (unbound) (unbound)
+\fBexpand\-history\fP (\fBESC\-space ESC\-!\fP) (unbound) (unbound)
 Perform history expansion on the edit buffer\&.
 .TP
-\fBexpand\-word\fP (^X*) (unbound) (unbound)
+\fBexpand\-word\fP (\fB^X*\fP) (unbound) (unbound)
 Attempt shell expansion on the current word\&.
 .TP
-\fBlist\-choices\fP (ESC\-^D) (^D =) (^D)
+\fBlist\-choices\fP (\fBESC\-^D\fP) (\fB^D =\fP) (\fB^D\fP)
 List possible completions for the current word\&.
 .TP
-\fBlist\-expand\fP (^Xg ^XG) (^G) (^G)
+\fBlist\-expand\fP (\fB^Xg ^XG\fP) (\fB^G\fP) (\fB^G\fP)
 List the expansion of the current word\&.
 .TP
 \fBmagic\-space\fP
@@ -1932,7 +2023,7 @@ widget can be used to move the prompt below the list\&.
 .PD 0
 .TP
 .PD
-\fBaccept\-and\-hold\fP (ESC\-A ESC\-a) (unbound) (unbound)
+\fBaccept\-and\-hold\fP (\fBESC\-A ESC\-a\fP) (unbound) (unbound)
 Push the contents of the buffer on the buffer stack
 and execute it\&.
 .TP
@@ -1941,11 +2032,11 @@ Execute the contents of the buffer\&.
 Then search the history list for a line matching the current one
 and push the event following onto the buffer stack\&.
 .TP
-\fBaccept\-line\fP (^J ^M) (^J ^M) (^J ^M)
+\fBaccept\-line\fP (\fB^J ^M\fP) (\fB^J ^M\fP) (\fB^J ^M\fP)
 Finish editing the buffer\&.  Normally this causes the buffer to be
 executed as a shell command\&.
 .TP
-\fBaccept\-line\-and\-down\-history\fP (^O) (unbound) (unbound)
+\fBaccept\-line\-and\-down\-history\fP (\fB^O\fP) (unbound) (unbound)
 Execute the current line, and push the next history
 event on the buffer stack\&.
 .TP
@@ -1972,7 +2063,7 @@ a desired suffix\-preservation behavior\&.
 \fBbeep\fP
 Beep, unless the \fBBEEP\fP option is unset\&.
 .TP
-\fBvi\-cmd\-mode\fP (^X^V) (unbound) (^[)
+\fBvi\-cmd\-mode\fP (\fB^X^V\fP) (unbound) (\fB^[\fP)
 Enter command mode; that is, select the `\fBvicmd\fP\&' keymap\&.
 Yes, this is bound by default in emacs mode\&.
 .TP
@@ -1981,20 +2072,20 @@ Hang until any lowercase key is pressed\&.
 This is for vi users without the mental capacity to keep
 track of their caps lock key (like the author)\&.
 .TP
-\fBclear\-screen\fP (^L ESC\-^L) (^L) (^L)
+\fBclear\-screen\fP (\fB^L ESC\-^L\fP) (\fB^L\fP) (\fB^L\fP)
 Clear the screen and redraw the prompt\&.
 .TP
 \fBdescribe\-key\-briefly\fP
 Reads a key sequence, then prints the function bound to that sequence\&.
 .TP
-\fBexchange\-point\-and\-mark\fP (^X^X) (unbound) (unbound)
+\fBexchange\-point\-and\-mark\fP (\fB^X^X\fP) (unbound) (unbound)
 Exchange the cursor position (point) with the position of the mark\&.
-Unless a negative prefix argument is given, the region between
+Unless a negative numeric argument is given, the region between
 point and mark is activated so that it can be highlighted\&.
-If a zero prefix argument is given, the region is activated but
+If a zero numeric argument is given, the region is activated but
 point and mark are not swapped\&.
 .TP
-\fBexecute\-named\-cmd\fP (ESC\-x) (:) (unbound)
+\fBexecute\-named\-cmd\fP (\fBESC\-x\fP) (\fB:\fP) (unbound)
 Read the name of an editor command and
 execute it\&.  A restricted set of editing functions is available in the
 mini\-buffer\&.  Keys are looked up in the special
@@ -2035,18 +2126,18 @@ The bindings of the current insert mode will be used\&.
 Currently this command may not be redefined or called by name\&.
 .RE
 .TP
-\fBexecute\-last\-named\-cmd\fP (ESC\-z) (unbound) (unbound)
+\fBexecute\-last\-named\-cmd\fP (\fBESC\-z\fP) (unbound) (unbound)
 Redo the last function executed with \fBexecute\-named\-cmd\fP\&.
 .RS
 .PP
 Currently this command may not be redefined or called by name\&.
 .RE
 .TP
-\fBget\-line\fP (ESC\-G ESC\-g) (unbound) (unbound)
+\fBget\-line\fP (\fBESC\-G ESC\-g\fP) (unbound) (unbound)
 Pop the top line off the buffer stack and insert it at the
 cursor position\&.
 .TP
-\fBpound\-insert\fP (unbound) (#) (unbound)
+\fBpound\-insert\fP (unbound) (\fB#\fP) (unbound)
 If there is no # character at the beginning of the buffer,
 add one to the beginning of each line\&.
 If there is one, remove a # from each line that has one\&.
@@ -2069,7 +2160,7 @@ Next time the editor starts up or is popped with \fBget\-line\fP, the
 construct will be popped off the top of the buffer stack and loaded
 into the editing buffer\&.
 .TP
-\fBpush\-line\fP (^Q ESC\-Q ESC\-q) (unbound) (unbound)
+\fBpush\-line\fP (\fB^Q ESC\-Q ESC\-q\fP) (unbound) (unbound)
 Push the current buffer onto the buffer stack and clear
 the buffer\&.
 Next time the editor starts up, the buffer will be popped
@@ -2137,7 +2228,7 @@ recursive edit is detected as a non\-zero return status and propagated by
 using the \fBsend\-break\fP widget\&.
 .RE
 .TP
-\fBredisplay\fP (unbound) (^R) (^R)
+\fBredisplay\fP (unbound) (\fB^R\fP) (\fB^R\fP)
 Redisplays the edit buffer\&.
 .TP
 \fBreset\-prompt\fP (unbound) (unbound) (unbound)
@@ -2155,45 +2246,60 @@ shell (such as a job notification) which causes the command line to be
 reprinted\&.
 .RE
 .TP
-\fBsend\-break\fP (^G ESC\-^G) (unbound) (unbound)
+\fBsend\-break\fP (\fB^G ESC\-^G\fP) (unbound) (unbound)
 Abort the current editor function, e\&.g\&. \fBexecute\-named\-command\fP, or the
 editor itself, e\&.g\&. if you are in \fBvared\fP\&. Otherwise abort the parsing of
 the current line; in this case the aborted line is available in the shell
-variable \fBZLE_LINE_ABORTED\fP\&.
+variable \fBZLE_LINE_ABORTED\fP\&.  If the editor is aborted from within
+\fBvared\fP, the variable \fBZLE_VARED_ABORTED\fP is set\&.
 .TP
-\fBrun\-help\fP (ESC\-H ESC\-h) (unbound) (unbound)
+\fBrun\-help\fP (\fBESC\-H ESC\-h\fP) (unbound) (unbound)
 Push the buffer onto the buffer stack, and execute the
 command `\fBrun\-help\fP \fIcmd\fP\&', where \fIcmd\fP is the current
 command\&.  \fBrun\-help\fP is normally aliased to \fBman\fP\&.
 .TP
-\fBvi\-set\-buffer\fP (unbound) (") (unbound)
+\fBvi\-set\-buffer\fP (unbound) (\fB"\fP) (unbound)
 Specify a buffer to be used in the following command\&.
-There are 35 buffers that can be specified:
-the 26 `named\&' buffers \fB"a\fP to \fB"z\fP
-and the nine `queued\&' buffers \fB"1\fP to \fB"9\fP\&.  The named buffers can also
-be specified as \fB"A\fP to \fB"Z\fP\&.
+There are 37 buffers that can be specified:
+the 26 `named\&' buffers \fB"a\fP to \fB"z\fP, the `yank' buffer \fB"0\fP,
+the nine `queued\&' buffers \fB"1\fP to \fB"9\fP and the `black hole' buffer
+\fB"_\fP\&.  The named buffers can also be specified as \fB"A\fP to \fB"Z\fP\&.
 .RS
 .PP
-When a buffer is specified for a cut command, the text being cut replaces
-the previous contents of the specified buffer\&.  If a named buffer
-is specified using a capital, the newly cut text is appended to the buffer
-instead of overwriting it\&.
+When a buffer is specified for a cut, change or yank command, the text
+concerned replaces the previous contents of the specified buffer\&. If
+a named buffer is specified using a capital, the newly cut text is
+appended to the buffer instead of overwriting it\&. When using the \fB"_\fP
+buffer, nothing happens\&. This can be useful for deleting text without
+affecting the normal registers\&.
 .PP
-If no buffer is specified for a cut command, \fB"1\fP is used, and the
-contents of \fB"1\fP to \fB"8\fP are each shifted along one buffer; the contents of
-\fB"9\fP is lost\&.
+If no buffer is specified for a cut or change command, \fB"1\fP is used, and
+the contents of \fB"1\fP to \fB"8\fP are each shifted along one buffer;
+the contents of \fB"9\fP is lost\&. If no buffer is specified for a yank
+command, \fB"0\fP is used\&. Finally, a paste command without a specified
+buffer will paste the text from the most recent command regardless of any
+buffer that might have been used with that command\&.
+.PP
+When called from a widget function by the \fBzle\fP command, the buffer
+can optionally be specified with an argument\&. For example,
+.PP
+.RS
+.nf
+\fBzle vi\-set\-buffer A\fP
+.fi
+.RE
 .RE
 .TP
-\fBvi\-set\-mark\fP (unbound) (m) (unbound)
+\fBvi\-set\-mark\fP (unbound) (\fBm\fP) (unbound)
 Set the specified mark at the cursor position\&.
 .TP
-\fBset\-mark\-command\fP (^@) (unbound) (unbound)
+\fBset\-mark\-command\fP (\fB^@\fP) (unbound) (unbound)
 Set the mark at the cursor position\&.  If called with a negative
-prefix argument, do not set the mark but deactivate the region so that
+numeric argument, do not set the mark but deactivate the region so that
 it is no longer highlighted (it is still usable for other purposes)\&.
 Otherwise the region is marked as active\&.
 .TP
-\fBspell\-word\fP (ESC\-$ ESC\-S ESC\-s) (unbound) (unbound)
+\fBspell\-word\fP (\fBESC\-$ ESC\-S ESC\-s\fP) (unbound) (unbound)
 Attempt spelling correction on the current word\&.
 .TP
 \fBsplit\-undo\fP
@@ -2206,7 +2312,7 @@ widget\&.
 This command is executed when a key sequence that is not bound to any
 command is typed\&.  By default it beeps\&.
 .TP
-\fBundo\fP (^_ ^Xu ^X^U) (unbound) (unbound)
+\fBundo\fP (\fB^_ ^Xu ^X^U\fP) (\fBu\fP) (unbound)
 Incrementally undo the last text modification\&.  When called from a
 user\-defined widget, takes an optional argument indicating a previous state
 of the undo history as returned by the \fBUNDO_CHANGE_NO\fP variable;
@@ -2218,14 +2324,26 @@ insert mode is reverted, the changes having been merged when command mode was
 selected\&.
 .RE
 .TP
-\fBredo\fP
+\fBredo\fP (unbound) (\fB^R\fP) (unbound)
 Incrementally redo undone text modifications\&.
 .TP
-\fBvi\-undo\-change\fP (unbound) (u) (unbound)
+\fBvi\-undo\-change\fP (unbound) (unbound) (unbound)
 Undo the last text modification\&.
 If repeated, redo the modification\&.
 .TP
-\fBwhat\-cursor\-position\fP (^X=) (unbound) (unbound)
+\fBvisual\-mode\fP (unbound) (\fBv\fP) (unbound)
+Toggle vim\-style visual selection mode\&. If line\-wise visual mode is
+currently enabled then it is changed to being character\-wise\&. If used
+following an operator, it forces the subsequent movement command to be
+treated as a character\-wise movement\&.
+.TP
+\fBvisual\-line\-mode\fP (unbound) (\fBV\fP) (unbound)
+Toggle vim\-style line\-wise visual selection mode\&. If character\-wise
+visual mode is currently enabled then it is changed to being line\-wise\&. If used
+following an operator, it forces the subsequent movement command to be
+treated as a line\-wise movement\&.
+.TP
+\fBwhat\-cursor\-position\fP (\fB^X=\fP) (\fBga\fP) (unbound)
 Print the character under the cursor, its code as an octal, decimal and
 hexadecimal number, the current cursor position within the buffer and the
 column of the cursor in the current line\&.
@@ -2237,14 +2355,50 @@ A restricted set of editing functions is available in the
 mini\-buffer\&.  Keys are looked up in the special
 \fBcommand\fP keymap, and if not found there in the main keymap\&.
 .TP
-\fBwhich\-command\fP (ESC\-?) (unbound) (unbound)
+\fBwhich\-command\fP (\fBESC\-?\fP) (unbound) (unbound)
 Push the buffer onto the buffer stack, and execute the
 command `\fBwhich\-command\fP \fIcmd\fP\&'\&. where \fIcmd\fP is the current
-command\&.  \fBwhich\-command\fP is normally aliased to \fIwhence\fP\&.
+command\&.  \fBwhich\-command\fP is normally aliased to \fBwhence\fP\&.
 .TP
-\fBvi\-digit\-or\-beginning\-of\-line\fP (unbound) (0) (unbound)
+\fBvi\-digit\-or\-beginning\-of\-line\fP (unbound) (\fB0\fP) (unbound)
 If the last command executed was a digit as part of an argument,
 continue the argument\&.  Otherwise, execute vi\-beginning\-of\-line\&.
+.SS "Text Objects"
+Text objects are commands that can be used to select a block of text
+according to some criteria\&. They are a feature of the vim text editor
+and so are primarily intended for use with vi operators or from visual
+selection mode\&. However, they can also be used from vi\-insert or emacs
+mode\&. Key bindings listed below apply to the \fBviopp\fP and \fBvisual\fP
+keymaps\&.
+.PP
+.PD 0
+.TP
+.PD
+\fBselect\-a\-blank\-word\fP (\fBaW\fP)
+Select a word including adjacent blanks, where a word is defined as a
+series of non\-blank characters\&. With a numeric argument, multiple words
+will be selected\&.
+.TP
+\fBselect\-a\-shell\-word\fP (\fBaa\fP)
+Select the current command argument applying the normal rules for
+quoting\&.
+.TP
+\fBselect\-a\-word\fP (\fBaw\fP)
+Select a word including adjacent blanks, using the normal vi\-style word
+definition\&. With a numeric argument, multiple words will be selected\&.
+.TP
+\fBselect\-in\-blank\-word\fP (\fBiW\fP)
+Select a word, where a word is defined as a series of non\-blank
+characters\&. With a numeric argument, multiple words will be selected\&.
+.TP
+\fBselect\-in\-shell\-word\fP (\fBia\fP)
+Select the current command argument applying the normal rules for
+quoting\&. If the argument begins and ends with matching quote characters,
+these are not included in the selection\&.
+.TP
+\fBselect\-in\-word\fP (\fBiw\fP)
+Select a word, using the normal vi\-style word definition\&. With a numeric
+argument, multiple words will be selected\&.
 .PP
 .SH "CHARACTER HIGHLIGHTING"
 .PP
@@ -2278,8 +2432,8 @@ The region between the cursor (point) and the mark as set with
 which is the case if \fBset\-mark\-command\fP or \fBexchange\-point\-and\-mark\fP
 has been called and the line has not been subsequently modified\&.  The
 region can be deactivated by calling \fBset\-mark\-command\fP with a
-negative prefix argument, or reactivated by calling
-\fBexchange\-point\-and\-mark\fP with a zero prefix argument\&.  Note
+negative numeric argument, or reactivated by calling
+\fBexchange\-point\-and\-mark\fP with a zero numeric argument\&.  Note
 that whether or not the region is active has no effect on its
 use within widgets, it simply determines whether it is highlighted\&.
 .TP

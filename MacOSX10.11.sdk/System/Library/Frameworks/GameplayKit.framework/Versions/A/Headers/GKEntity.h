@@ -14,11 +14,13 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * An entity is the general purpose object in an entity-component system.
  * Entites have many components but components are associated with only a single entity.
+ * 
+ * Note: GKEntity supports NSCopying, but your custom GKComponent's must also support NSCopying
  *
  * @see GKComponent
  * @see GKComponentSystem
  */
-GK_BASE_AVAILABILITY @interface GKEntity : NSObject
+GK_BASE_AVAILABILITY @interface GKEntity : NSObject <NSCopying>
 
 /**
  * Creates a new entity ready to have components added to it.
@@ -68,6 +70,7 @@ GK_BASE_AVAILABILITY @interface GKEntity : NSObject
  * @param componentClass the class of the component you want to get
  */
  - (nullable GKComponent *)componentForClass:(Class)componentClass NS_SWIFT_UNAVAILABLE("Exposed in Swift as componentForClass<ComponentType: GKComponent>(componentClass: ComponentType.Type) -> ComponentType?");
+
 
 @end
 

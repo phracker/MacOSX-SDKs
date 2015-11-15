@@ -37,11 +37,13 @@
 extern "C" {
 #endif
 
+CF_ASSUME_NONNULL_BEGIN
+
 /*!
 	@typedef SecPolicySearchRef
 	@abstract A reference to an opaque policy search structure.
 */
-typedef struct OpaquePolicySearchRef *SecPolicySearchRef;
+typedef struct CF_BRIDGED_TYPE(id) OpaquePolicySearchRef *SecPolicySearchRef;
 
 /*!
 	@function SecPolicySearchGetTypeID
@@ -62,7 +64,7 @@ CFTypeID SecPolicySearchGetTypeID(void)
     @result A result code.  See "Security Error Codes" (SecBase.h).
 	@discussion This function is deprecated in 10.7. To create a SecPolicyRef, use one of the SecPolicyCreate functions in SecPolicy.h.
 */
-OSStatus SecPolicySearchCreate(CSSM_CERT_TYPE certType, const CSSM_OID *policyOID, const CSSM_DATA *value, SecPolicySearchRef *searchRef)
+OSStatus SecPolicySearchCreate(CSSM_CERT_TYPE certType, const CSSM_OID *policyOID, const CSSM_DATA * __nullable value, SecPolicySearchRef * __nonnull CF_RETURNS_RETAINED searchRef)
 		DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -73,8 +75,10 @@ OSStatus SecPolicySearchCreate(CSSM_CERT_TYPE certType, const CSSM_OID *policyOI
 	@result A result code.  When there are no more policies that match the parameters specified to SecPolicySearchCreate, errSecPolicyNotFound is returned. See "Security Error Codes" (SecBase.h).
 	@discussion This function is deprecated in 10.7. To create a SecPolicyRef, use one of the SecPolicyCreate functions in SecPolicy.h.
 */
-OSStatus SecPolicySearchCopyNext(SecPolicySearchRef searchRef, SecPolicyRef *policyRef)
+OSStatus SecPolicySearchCopyNext(SecPolicySearchRef searchRef, SecPolicyRef * __nonnull CF_RETURNS_RETAINED policyRef)
 		DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

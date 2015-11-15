@@ -73,6 +73,11 @@ int pthread_mutexattr_setpolicy_np(pthread_mutexattr_t *, int );
 
 #endif /* (!_POSIX_C_SOURCE && !_XOPEN_SOURCE) || _DARWIN_C_SOURCE */
 
+#ifndef __OPEN_SOURCE__
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_NA)
+void _pthread_mutex_enable_legacy_mode(void);
+#endif
+
 __END_DECLS
 
 #endif /* _PTHREAD_SPIS_H */

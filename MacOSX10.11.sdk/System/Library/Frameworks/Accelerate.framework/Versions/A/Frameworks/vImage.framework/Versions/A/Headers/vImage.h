@@ -9,10 +9,12 @@
  *  However, that resource, generously provided by ADC, is updated infrequently. In order to provide more timely documentation for newer vImage API, these      *
  *  headers contain additional headerdoc documentation in the comments.  The vImage headerdoc documentation can be viewed in lovely HTML as follows:            *
  *                                                                                                                                                              *
- *      /usr/bin/headerdoc2html -o ~/vImage_docs /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers                            *
- *            (or instead from the SDK: /Applications/Xcode.app/Contents/Developer/Platforms/<platform>/Developer/SDKs/<sdk>/System/Library/Frameworks/...)     *
- *      /usr/bin/gatherheaderdoc ~/vImage_docs                                                                                                                  *
- *      open ~/vImage_docs/masterTOC.html                                                                                                                       *
+ *    /usr/bin/headerdoc2html -o ~/vImage_docs \                                                                                                                *
+ *            `xcrun --sdk {iphoneos|macosx} --show-sdk-path`/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers                *
+ *        # Select the single platform for the SDK you are working with. vImage APIs generally stay in sync between platforms.                                  *
+ *        # (or using system headers from command line tools: /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers)              *
+ *    /usr/bin/gatherheaderdoc ~/vImage_docs                                                                                                                    *
+ *    open ~/vImage_docs/masterTOC.html                                                                                                                         *
  *                                                                                                                                                              *
  *  For more on using headerdoc:                                                                                                                                *
  *    https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/HeaderDoc/usage/usage.html#//apple_ref/doc/uid/TP40001215-CH337-CDEBBJJA  *
@@ -30,7 +32,7 @@
 
 /*!
  *  @header vImage.h
- *  @copyright Copyright (c) 2002-2014 by Apple Inc. All rights reserved.
+ *  @copyright Copyright (c) 2002-2015 by Apple Inc. All rights reserved.
  *  @compilerflag  -framework Accelerate
  *  @charset utf-8
  *

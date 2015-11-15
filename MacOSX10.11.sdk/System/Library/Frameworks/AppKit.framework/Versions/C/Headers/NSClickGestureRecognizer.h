@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/NSGestureRecognizer.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 NS_CLASS_AVAILABLE(10_10, NA)
 @interface NSClickGestureRecognizer : NSGestureRecognizer <NSCoding> {
 @private
@@ -33,3 +35,5 @@ NS_CLASS_AVAILABLE(10_10, NA)
 @property NSInteger numberOfClicksRequired; // Defaults to 1
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -405,21 +405,6 @@
  */
 @property (readonly) int64_t secondsUntilAuthenticationsExpire __OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_NA);
 
-/*!
-    @method     passwordContentSummaryAndReturnError:
-    @abstract   Returns the localized summary of the password content
-                requirements.
-    @discussion Returns the localized summary of the password content
-                requirements for the current locale.  Returns an empty string if
-                the account policies do not contain a summary.  Returns nil on
-                error. Both global and record policies are examined for content
-                requirements; record takes precedence over global.
-    @param      outError Optional parameter that contains error details.
-    @result     Localized string containing the password content requirements,
-                or nil if an error occurred.  Caller must release.
- */
-- (NSString *)passwordContentSummaryAndReturnError:(NSError **)outError NS_AVAILABLE(10_11, NA);
-
 @end
 
 /*!

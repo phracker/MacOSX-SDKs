@@ -39,11 +39,7 @@
 extern "C" {
 #endif
 
-/*!
-	@typedef SecItemClass
-	@abstract Represents a keychain item's class.
-*/
-typedef FourCharCode 	SecItemClass;
+CF_ASSUME_NONNULL_BEGIN
 
 /*!
 	@enum ItemClassConstants
@@ -58,7 +54,7 @@ typedef FourCharCode 	SecItemClass;
 	@constant kSecSymmetricKeyItemClass Indicates that the item is a symmetric key.
 	@discussion The SecItemClass enumeration defines constants your application can use to specify the type of the keychain item you wish to create, dispose, add, delete, update, copy, or locate. You can also use these constants with the tag constant SecItemAttr.
 */
-enum
+typedef CF_ENUM(FourCharCode, SecItemClass)
 {
     kSecInternetPasswordItemClass   = 'inet',
     kSecGenericPasswordItemClass    = 'genp',
@@ -68,13 +64,6 @@ enum
     kSecPrivateKeyItemClass         = 0x00000010,
     kSecSymmetricKeyItemClass       = 0x00000011
 };
-
-/*!
-	@typedef SecItemAttr
-	@abstract Represents a keychain item's attributes.
-
-*/
-typedef FourCharCode SecItemAttr;
 
 /*!
 	@enum ItemAttributeConstants
@@ -109,7 +98,7 @@ typedef FourCharCode SecItemAttr;
 	@constant kSecAlias Indicates an alias.
 	@discussion To obtain information about a certificate, use the CDSA Certificate Library (CL) API. To obtain information about a key, use the SecKeyGetCSSMKey function and the CDSA Cryptographic Service Provider (CSP) API.
 */
-enum
+typedef CF_ENUM(FourCharCode, SecItemAttr)
 {
     kSecCreationDateItemAttr		= 'cdat',
     kSecModDateItemAttr				= 'mdat',
@@ -171,7 +160,7 @@ CFTypeID SecKeychainItemGetTypeID(void);
     @result A result code. See "Security Error Codes" (SecBase.h).
 	@discussion The keychain item is written to the keychain's permanent data store. If the keychain item has not previously been added to a keychain, a call to the SecKeychainItemModifyContent function does nothing and returns errSecSuccess.
 */
-OSStatus SecKeychainItemModifyAttributesAndData(SecKeychainItemRef itemRef, const SecKeychainAttributeList *attrList, UInt32 length, const void *data);
+OSStatus SecKeychainItemModifyAttributesAndData(SecKeychainItemRef itemRef, const SecKeychainAttributeList * __nullable attrList, UInt32 length, const void * __nullable data);
 
 /*!
 	@function SecKeychainItemCreateFromContent
@@ -186,8 +175,8 @@ OSStatus SecKeychainItemModifyAttributesAndData(SecKeychainItemRef itemRef, cons
     @result A result code. See "Security Error Codes" (SecBase.h). In addition, errSecParam (-50) may be returned if not enough valid parameters are supplied, or errSecAllocate (-108) if there is not enough memory in the current heap zone to create the object.
 */
 OSStatus SecKeychainItemCreateFromContent(SecItemClass itemClass, SecKeychainAttributeList *attrList,
-		UInt32 length, const void *data, SecKeychainRef keychainRef,
-		SecAccessRef initialAccess, SecKeychainItemRef *itemRef);
+		UInt32 length, const void * __nullable data, SecKeychainRef __nullable keychainRef,
+		SecAccessRef __nullable initialAccess, SecKeychainItemRef * __nullable CF_RETURNS_RETAINED itemRef);
 
 /*!
 	@function SecKeychainItemModifyContent
@@ -198,7 +187,7 @@ OSStatus SecKeychainItemCreateFromContent(SecItemClass itemClass, SecKeychainAtt
 	@param data A pointer to a buffer containing the data to store. Pass NULL if you don't need to modify the data.
     @result A result code.  See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainItemModifyContent(SecKeychainItemRef itemRef, const SecKeychainAttributeList *attrList, UInt32 length, const void *data);
+OSStatus SecKeychainItemModifyContent(SecKeychainItemRef itemRef, const SecKeychainAttributeList * __nullable attrList, UInt32 length, const void * __nullable data);
 
 /*!
 	@function SecKeychainItemCopyContent
@@ -210,7 +199,7 @@ OSStatus SecKeychainItemModifyContent(SecKeychainItemRef itemRef, const SecKeych
 	@param outData On return, a pointer to a buffer containing the data in this item. Pass NULL if you don't need to retrieve the data. You must call SecKeychainItemFreeContent when you no longer need the data.
     @result A result code. See "Security Error Codes" (SecBase.h). In addition, errSecParam (-50) may be returned if not enough valid parameters are supplied.
 */
-OSStatus SecKeychainItemCopyContent(SecKeychainItemRef itemRef, SecItemClass *itemClass, SecKeychainAttributeList *attrList, UInt32 *length, void **outData);
+OSStatus SecKeychainItemCopyContent(SecKeychainItemRef itemRef, SecItemClass * __nullable itemClass, SecKeychainAttributeList * __nullable attrList, UInt32 * __nullable length, void * __nullable * __nullable outData);
 
 /*!
 	@function SecKeychainItemFreeContent
@@ -218,7 +207,7 @@ OSStatus SecKeychainItemCopyContent(SecKeychainItemRef itemRef, SecItemClass *it
 	@param attrList A pointer to the attribute list to release. Pass NULL to ignore this parameter.
     @param data A pointer to the data buffer to release. Pass NULL to ignore this parameter.
 */
-OSStatus SecKeychainItemFreeContent(SecKeychainAttributeList *attrList, void *data);
+OSStatus SecKeychainItemFreeContent(SecKeychainAttributeList * __nullable attrList, void * __nullable data);
 
 /*!
 	@function SecKeychainItemCopyAttributesAndData
@@ -231,7 +220,7 @@ OSStatus SecKeychainItemFreeContent(SecKeychainAttributeList *attrList, void *da
 	@param outData On return, a pointer to a buffer containing the data in this item. Pass NULL if you don't need to retrieve the data. You must call SecKeychainItemFreeAttributesAndData when you no longer need the data.
     @result A result code. See "Security Error Codes" (SecBase.h). In addition, errSecParam (-50) may be returned if not enough valid parameters are supplied.
 */
-OSStatus SecKeychainItemCopyAttributesAndData(SecKeychainItemRef itemRef, SecKeychainAttributeInfo *info, SecItemClass *itemClass, SecKeychainAttributeList **attrList, UInt32 *length, void **outData);
+OSStatus SecKeychainItemCopyAttributesAndData(SecKeychainItemRef itemRef, SecKeychainAttributeInfo * __nullable info, SecItemClass * __nullable itemClass, SecKeychainAttributeList * __nullable * __nullable attrList, UInt32 * __nullable length, void * __nullable * __nullable outData);
 
 /*!
 	@function SecKeychainItemFreeAttributesAndData
@@ -240,7 +229,7 @@ OSStatus SecKeychainItemCopyAttributesAndData(SecKeychainItemRef itemRef, SecKey
     @param data A pointer to the data buffer to release. Pass NULL to ignore this parameter.
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainItemFreeAttributesAndData(SecKeychainAttributeList *attrList, void *data);
+OSStatus SecKeychainItemFreeAttributesAndData(SecKeychainAttributeList * __nullable attrList, void * __nullable data);
 
 /*!
 	@function SecKeychainItemDelete
@@ -258,7 +247,7 @@ OSStatus SecKeychainItemDelete(SecKeychainItemRef itemRef);
 	@param keychainRef On return, the keychain reference for the specified item. Release this reference by calling the CFRelease function.
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainItemCopyKeychain(SecKeychainItemRef itemRef, SecKeychainRef *keychainRef);
+OSStatus SecKeychainItemCopyKeychain(SecKeychainItemRef itemRef, SecKeychainRef * __nonnull CF_RETURNS_RETAINED keychainRef);
 
 /*!
 	@function SecKeychainItemCreateCopy
@@ -269,8 +258,8 @@ OSStatus SecKeychainItemCopyKeychain(SecKeychainItemRef itemRef, SecKeychainRef 
 	@param itemCopy On return, a reference to the copied keychain item.
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainItemCreateCopy(SecKeychainItemRef itemRef, SecKeychainRef destKeychainRef,
-	SecAccessRef initialAccess, SecKeychainItemRef *itemCopy);
+OSStatus SecKeychainItemCreateCopy(SecKeychainItemRef itemRef, SecKeychainRef __nullable destKeychainRef,
+	SecAccessRef initialAccess, SecKeychainItemRef * __nonnull CF_RETURNS_RETAINED itemCopy);
 
 /*!
     @function SecKeychainItemCreatePersistentReference
@@ -279,7 +268,7 @@ OSStatus SecKeychainItemCreateCopy(SecKeychainItemRef itemRef, SecKeychainRef de
     @param persistentItemRef On return, a CFDataRef containing a persistent reference. You must release this data reference by calling the CFRelease function.
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainItemCreatePersistentReference(SecKeychainItemRef itemRef, CFDataRef *persistentItemRef);
+OSStatus SecKeychainItemCreatePersistentReference(SecKeychainItemRef itemRef, CFDataRef * __nonnull CF_RETURNS_RETAINED persistentItemRef);
 
 
 /*!
@@ -289,7 +278,7 @@ OSStatus SecKeychainItemCreatePersistentReference(SecKeychainItemRef itemRef, CF
     @param itemRef On return, a SecKeychainItemRef for the keychain item described by the persistent reference. You must release this item reference by calling the CFRelease function.
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainItemCopyFromPersistentReference(CFDataRef persistentItemRef, SecKeychainItemRef *itemRef);
+OSStatus SecKeychainItemCopyFromPersistentReference(CFDataRef persistentItemRef, SecKeychainItemRef * __nonnull CF_RETURNS_RETAINED itemRef);
 
 
 #pragma mark ---- CSSM Bridge Functions ----
@@ -301,7 +290,7 @@ OSStatus SecKeychainItemCopyFromPersistentReference(CFDataRef persistentItemRef,
     @result A result code. See "Security Error Codes" (SecBase.h).
 	@discussion This API is deprecated for 10.7. It should no longer be needed.
 */
-OSStatus SecKeychainItemGetDLDBHandle(SecKeychainItemRef keyItemRef, CSSM_DL_DB_HANDLE *dldbHandle)
+OSStatus SecKeychainItemGetDLDBHandle(SecKeychainItemRef keyItemRef, CSSM_DL_DB_HANDLE * __nonnull dldbHandle)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 /*!
@@ -312,7 +301,7 @@ OSStatus SecKeychainItemGetDLDBHandle(SecKeychainItemRef keyItemRef, CSSM_DL_DB_
     @result A result code. See "Security Error Codes" (SecBase.h).
 	@discussion This API is deprecated for 10.7. It should no longer be needed.
 */
-OSStatus SecKeychainItemGetUniqueRecordID(SecKeychainItemRef itemRef, const CSSM_DB_UNIQUE_RECORD **uniqueRecordID)
+OSStatus SecKeychainItemGetUniqueRecordID(SecKeychainItemRef itemRef, const CSSM_DB_UNIQUE_RECORD * __nullable * __nonnull uniqueRecordID)
 	DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
 
 #pragma mark ---- Keychain Item Access Management ----
@@ -323,7 +312,7 @@ OSStatus SecKeychainItemGetUniqueRecordID(SecKeychainItemRef itemRef, const CSSM
     @param access On return, a reference to the keychain item's access.
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
-OSStatus SecKeychainItemCopyAccess(SecKeychainItemRef itemRef, SecAccessRef *access);
+OSStatus SecKeychainItemCopyAccess(SecKeychainItemRef itemRef, SecAccessRef * __nonnull CF_RETURNS_RETAINED access);
 
 /*!
 	@function SecKeychainItemSetAccess
@@ -333,6 +322,8 @@ OSStatus SecKeychainItemCopyAccess(SecKeychainItemRef itemRef, SecAccessRef *acc
     @result A result code. See "Security Error Codes" (SecBase.h).
 */
 OSStatus SecKeychainItemSetAccess(SecKeychainItemRef itemRef, SecAccessRef access);
+
+CF_ASSUME_NONNULL_END
 
 #if defined(__cplusplus)
 }

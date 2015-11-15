@@ -70,14 +70,27 @@ struct IOUSBHostIsochronousCompletion
 class IOUSBHostIOSource : public OSObject
 {
     friend class AppleUSBIORequest;
+    friend class IOUSBHostInterface;
 
     OSDeclareAbstractStructors(IOUSBHostIOSource)
 
 protected:
+    virtual void free();
+    
     virtual bool initWithOwners(AppleUSBHostController* controller, IOUSBHostDevice* device);
     
-    virtual void free();
-
+    // Pad slots for future expansion
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 0);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 1);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 2);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 3);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 4);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 5);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 6);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 7);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 8);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 9);
+    
 public:
     /*!
      * @brief Return value for <code>getState()</code>
@@ -131,18 +144,32 @@ public:
      * @return IOReturn result code
      */
     virtual IOReturn abort(IOOptionBits options = kAbortAsynchronous, IOReturn withError = kIOReturnAborted, IOService* forClient = NULL);
-
-    /*!
-     * @brief Close the I/O source.
-     *
-     * @discussion This method will mark the I/O source as <code>kStateInactive</code> and synchronously abort all
-     * pending I/O requests.  If this I/O source is not of type <code>kEndpointTypeControl</code> then the CLEAR_FEATURE::ENDPOINT_HALT
-     * for this pipe will be issued as well.  Once this call returns, any future I/O requests will fail.
-     *
-     * @return IOReturn result code
-     */
-    virtual IOReturn close();
     
+    // Public pad slots for future expansion
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 10);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 11);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 12);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 13);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 14);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 15);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 16);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 17);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 18);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 19);
+    
+protected:
+    // Protected pad slots for future expansion
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 20);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 21);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 22);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 23);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 24);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 25);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 26);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 27);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 28);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 29);
+        
 protected:
     struct tSynchronousParameter
     {
@@ -153,7 +180,9 @@ protected:
     virtual void synchronousCompletion(void* parameter, IOReturn status, uint32_t bytesTransferred);
     virtual void synchronousIsochronousCompletion(void* parameter, IOReturn status, IOUSBHostIsochronousFrame* pFrames);
 
-    IOReturn getStateGated(tState& state);
+    virtual IOReturn getStateGated(tState& state);
+
+    virtual IOReturn close();
 
     virtual IOReturn closeGated();
 
@@ -216,6 +245,31 @@ public:
      */
     virtual IOReturn io(IOMemoryDescriptor* dataBuffer, uint32_t dataBufferLength, uint32_t& bytesTransferred, uint32_t completionTimeoutMs = 0);
     
+    // Public pad slots for IO
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 30);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 31);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 32);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 33);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 34);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 35);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 36);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 37);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 38);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 39);
+
+protected:
+    // Protected pad slots for IO
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 40);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 41);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 42);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 43);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 44);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 45);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 46);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 47);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 48);
+    OSMetaClassDeclareReservedUnused(IOUSBHostIOSource, 49);
+    
 protected:
     struct tInternalDataTransferParameters
     {
@@ -231,6 +285,12 @@ protected:
     };
     
     virtual IOReturn ioGated(tInternalDataTransferParameters& parameters);
+    
+    struct tExpansionData
+    {
+    };
+    
+    tExpansionData* _expansionData;
     
 #pragma mark Debug
     uint32_t                _debugLoggingMask;

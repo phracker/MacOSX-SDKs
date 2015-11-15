@@ -42,7 +42,7 @@ typedef NS_ENUM(NSUInteger, NSProgressIndicatorStyle) {
 @interface NSProgressIndicator : NSView <NSAccessibilityProgressIndicator>
 {
 @private
-    /* Persitent properties */
+    /* Persistent properties */
     BOOL		_isBezeled;		// has or not a 3D bezel around the progress indicator (invariant)
     BOOL		_isIndeterminate;	// YES by default
     BOOL		_threadedAnimation;
@@ -50,7 +50,7 @@ typedef NS_ENUM(NSUInteger, NSProgressIndicatorStyle) {
     double		_minimum;		// 0 by default
     double		_maximum;		// 100 by default
     
-    /* Non-persitent properties */
+    /* Non-persistent properties */
     double		_value;			// _minimum by default
     
     unsigned int        _animationIndex;

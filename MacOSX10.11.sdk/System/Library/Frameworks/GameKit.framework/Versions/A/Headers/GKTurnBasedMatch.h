@@ -302,8 +302,8 @@ NS_DEPRECATED(10_8, 10_10, 5_0, 7_0, "Use registerListener on GKLocalPlayer with
 - (void)handleTurnEventForMatch:(GKTurnBasedMatch *)match didBecomeActive:(BOOL)didBecomeActive NS_DEPRECATED(10_9, 10_10, 6_0, 7_0);
 
 @optional
-- (void)handleTurnEventForMatch:(GKTurnBasedMatch *)match NS_DEPRECATED(10_8, 10_9, 5_0, 6_0);
-- (void)handleMatchEnded:(GKTurnBasedMatch *)match NS_DEPRECATED(10_8, 10_10, 6_0, 6_0);
+- (void)handleTurnEventForMatch:(GKTurnBasedMatch *)match NS_DEPRECATED(10_8, 10_9, 5_0, 7_0);
+- (void)handleMatchEnded:(GKTurnBasedMatch *)match NS_DEPRECATED(10_8, 10_10, 6_0, 7_0);
 
 @end
 

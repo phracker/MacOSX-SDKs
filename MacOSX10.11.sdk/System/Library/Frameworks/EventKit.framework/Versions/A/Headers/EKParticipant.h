@@ -8,7 +8,10 @@
 #import <EventKit/EventKitDefines.h>
 #import <EventKit/EKObject.h>
 #import <EventKit/EKTypes.h>
+
+#if !TARGET_OS_WATCH
 #import <AddressBook/AddressBook.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -64,7 +67,17 @@ NS_CLASS_AVAILABLE(10_8, 4_0)
  */
 @property(nonatomic, readonly, getter=isCurrentUser) BOOL currentUser NS_AVAILABLE(10_9, 6_0);
 
+/*!
+    @method     contactPredicate
+    @abstract   Returns a predicate to use with Contacts.framework to retrieve the corresponding
+                CNContact instance.
+    @discussion This method returns a predicate that can be used with a CNContactStore to fetch
+                a CNContact instance for this participant, if one exists.
+ */
+@property(nonatomic, readonly) NSPredicate *contactPredicate NS_AVAILABLE(10_11, 9_0);
+
 #if TARGET_OS_IPHONE
+#if !TARGET_OS_WATCH
 /*!
     @method     ABRecordWithAddressBook
     @abstract   Returns the ABRecordRef that represents this participant.
@@ -72,7 +85,8 @@ NS_CLASS_AVAILABLE(10_8, 4_0)
                 if a match can be found based on email address in the address book
                 passed. If we cannot find the participant, nil is returned.
 */
-- (nullable ABRecordRef)ABRecordWithAddressBook:(ABAddressBookRef)addressBook NS_AVAILABLE(NA, 4_0) CF_RETURNS_NOT_RETAINED;
+- (nullable ABRecordRef)ABRecordWithAddressBook:(ABAddressBookRef)addressBook NS_DEPRECATED_IOS(4_0, 9_0, "Use contactPredicate instead") CF_RETURNS_NOT_RETAINED;
+#endif
 #else
 /*!
     @method     ABPersonInAddressBook
@@ -81,7 +95,7 @@ NS_CLASS_AVAILABLE(10_8, 4_0)
                 if a match can be found based on email address in the address book
                 passed. If we cannot find the participant, nil is returned.
  */
-- (nullable ABPerson *)ABPersonInAddressBook:(ABAddressBook *)addressBook NS_AVAILABLE(10_8, NA);
+- (nullable ABPerson *)ABPersonInAddressBook:(ABAddressBook *)addressBook NS_DEPRECATED_MAC(10_8, 10_11, "Use contactPredicate instead");
 #endif
 
 @end

@@ -4,12 +4,9 @@
 #define __SPARSE_BLAS_H
 
 /*!
- @header BLAS.h
+ @header Sparse/BLAS.h
  @discussion
- Sparse BLAS routines.
- 
- @copyright Copyright (c) 2014 Apple Inc. All rights reserved.
- 
+
  These sparse BLAS routines provide access to sparse computation while hiding
  the details of the sparse matrix storage formats.
  
@@ -81,6 +78,18 @@
  // Clean up
  sparse_matrix_destroy( A );
  </pre>
+ 
+ Since data insertion into the internal storage is very expensive, caused by data
+ movement and possible memory allocation, data insertion functions do not update
+ the internal storage immediately. Rather, all data insertions are put into a pending
+ queue. The internal storage is then updated automatically when required by the BLAS
+ operations, or explicitly triggered by calling sparse_commit().
+ 
+ When commit is triggered automatically by the BLAS operation, expect the operation
+ to take longer time. If this is undesirable, consider calling sparse_commit() in a
+ less time-sensitive code segment.
+
+ @copyright Copyright (c) 2015 Apple Inc. All rights reserved.
  */
 
 #ifdef __cplusplus
@@ -100,7 +109,7 @@ extern "C" {
   /* Level 1 Computational Routines */
 /*!
  @functiongroup Level 1
- @abstract Level 1 routines consisting of vector operations
+ @abstract Level 1 routines consisting of vector-vector operations
  */
 
 /*!
@@ -628,8 +637,8 @@ double sparse_elementwise_norm_double( sparse_matrix_double A, sparse_norm norm 
  Compute the specified norm of the sparse matrix A.  This is the norm of the
  matrix treated as an linear operator, not the elementwise norm.  Specify one of:
  1) SPARSE_NORM_ONE : max over j ( sum over i ( | A[i,j] | ) )
- 2) SPARSE_NORM_TWO : Maximum singular value. This is way more expensive to compute
-                   than the other two norms.
+ 2) SPARSE_NORM_TWO : Maximum singular value. This is significantly more
+                      expensive to compute than the other norms.
  3) SPARSE_NORM_INF : max over i ( sum over j ( | A[i,j] | ) )
  4) SPARSE_NORM_R1  : Not supported, undefined.
  
@@ -864,7 +873,7 @@ sparse_matrix_double sparse_matrix_create_double( sparse_dimension M, sparse_dim
  Use to build a sparse matrix by inserting one scalar entry at a time.  Update
  A[i,j] = val.  A must have been created with one of sparse_matrix_create_float or
  sparse_matrix_create_double.
- 
+
  @param A
  The sparse matrix.  A must have been created with one of sparse_matrix_create_float
  or sparse_matrix_create_double.  SPARSE_ILLEGAL_PARAMETER is returned if not met.
