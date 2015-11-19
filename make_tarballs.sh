@@ -4,6 +4,7 @@
 
 TARGET="$(pwd)";
 LOGFILE="$(mktemp)";
+SDKS="";
 
 log() {
   echo "$@" 2>&1 | tee "$LOGFILE";
@@ -38,10 +39,11 @@ else
     mkdir "$TARGET/release/";
   fi
 fi
-
+SDKS="";
 for sdk_directory in *.sdk; do
   log "Compressing $sdk_directory to $sdk_directory.tar.xz...";
   tar -cpJf "release/$sdk_directory.tar.xz" "$sdk_directory";
+  SDKS="${SDKS} $sdk_directory"
 done
 
 log "Done. Contents of $TARGET/release/:";
