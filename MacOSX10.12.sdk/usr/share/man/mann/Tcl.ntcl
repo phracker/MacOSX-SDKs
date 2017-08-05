@@ -1,0 +1,504 @@
+'\"
+'\" Copyright (c) 1993 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: Tcl.n,v 1.18.2.2 2010/09/01 15:06:38 dkf Exp $
+'\"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tcl n "8.5" Tcl "Tcl Built-In Commands"
+.BS
+.SH NAME
+Tcl \- Tool Command Language
+.SH SYNOPSIS
+Summary of Tcl language syntax.
+.BE
+.SH DESCRIPTION
+.PP
+The following rules define the syntax and semantics of the Tcl language:
+.IP "[1] \fBCommands.\fR"
+A Tcl script is a string containing one or more commands.
+Semi-colons and newlines are command separators unless quoted as
+described below.
+Close brackets are command terminators during command substitution
+(see below) unless quoted.
+.IP "[2] \fBEvaluation.\fR"
+A command is evaluated in two steps.
+First, the Tcl interpreter breaks the command into \fIwords\fR
+and performs substitutions as described below.
+These substitutions are performed in the same way for all
+commands.
+The first word is used to locate a command procedure to
+carry out the command, then all of the words of the command are
+passed to the command procedure.
+The command procedure is free to interpret each of its words
+in any way it likes, such as an integer, variable name, list,
+or Tcl script.
+Different commands interpret their words differently.
+.IP "[3] \fBWords.\fR"
+Words of a command are separated by white space (except for
+newlines, which are command separators).
+.IP "[4] \fBDouble quotes.\fR"
+If the first character of a word is double-quote
+.PQ \N'34'
+then the word is terminated by the next double-quote character.
+If semi-colons, close brackets, or white space characters
+(including newlines) appear between the quotes then they are treated
+as ordinary characters and included in the word.
+Command substitution, variable substitution, and backslash substitution
+are performed on the characters between the quotes as described below.
+The double-quotes are not retained as part of the word.
+.VS 8.5 br
+.IP "[5] \fBArgument expansion.\fR"
+If a word starts with the string
+.QW {*}
+followed by a non-whitespace character, then the leading
+.QW {*}
+is removed and the rest of the word is parsed and substituted as any other
+word. After substitution, the word is parsed as a list (without command or
+variable substitutions; backslash substitutions are performed as is normal for
+a list and individual internal words may be surrounded by either braces or
+double-quote characters), and its words are added to the command being
+substituted. For instance,
+.QW "cmd a {*}{b [c]} d {*}{$e f \N'34'g h\N'34'}"
+is equivalent to
+.QW "cmd a b {[c]} d {$e} f \N'34'g h\N'34'" .
+.VE 8.5
+.IP "[6] \fBBraces.\fR"
+If the first character of a word is an open brace
+.PQ {
+and rule [5] does not apply, then
+the word is terminated by the matching close brace
+.PQ } "" .
+Braces nest within the word: for each additional open
+brace there must be an additional close brace (however,
+if an open brace or close brace within the word is
+quoted with a backslash then it is not counted in locating the
+matching close brace).
+No substitutions are performed on the characters between the
+braces except for backslash-newline substitutions described
+below, nor do semi-colons, newlines, close brackets,
+or white space receive any special interpretation.
+The word will consist of exactly the characters between the
+outer braces, not including the braces themselves.
+.IP "[7] \fBCommand substitution.\fR"
+If a word contains an open bracket
+.PQ [
+then Tcl performs \fIcommand substitution\fR.
+To do this it invokes the Tcl interpreter recursively to process
+the characters following the open bracket as a Tcl script.
+The script may contain any number of commands and must be terminated
+by a close bracket
+.PQ ] "" .
+The result of the script (i.e. the result of its last command) is
+substituted into the word in place of the brackets and all of the
+characters between them.
+There may be any number of command substitutions in a single word.
+Command substitution is not performed on words enclosed in braces.
+.IP "[8] \fBVariable substitution.\fR"
+If a word contains a dollar-sign
+.PQ $
+followed by one of the forms
+described below, then Tcl performs \fIvariable
+substitution\fR:  the dollar-sign and the following characters are
+replaced in the word by the value of a variable.
+Variable substitution may take any of the following forms:
+.RS
+.TP 15
+\fB$\fIname\fR
+\fIName\fR is the name of a scalar variable;  the name is a sequence
+of one or more characters that are a letter, digit, underscore,
+or namespace separators (two or more colons).
+.TP 15
+\fB$\fIname\fB(\fIindex\fB)\fR
+\fIName\fR gives the name of an array variable and \fIindex\fR gives
+the name of an element within that array.
+\fIName\fR must contain only letters, digits, underscores, and
+namespace separators, and may be an empty string.
+Command substitutions, variable substitutions, and backslash
+substitutions are performed on the characters of \fIindex\fR.
+.TP 15
+\fB${\fIname\fB}\fR
+\fIName\fR is the name of a scalar variable.  It may contain any
+characters whatsoever except for close braces.
+.LP
+There may be any number of variable substitutions in a single word.
+Variable substitution is not performed on words enclosed in braces.
+.RE
+.IP "[9] \fBBackslash substitution.\fR"
+If a backslash
+.PQ \e
+appears within a word then \fIbackslash substitution\fR occurs.
+In all cases but those described below the backslash is dropped and
+the following character is treated as an ordinary
+character and included in the word.
+This allows characters such as double quotes, close brackets,
+and dollar signs to be included in words without triggering
+special processing.
+The following table lists the backslash sequences that are
+handled specially, along with the value that replaces each sequence.
+.RS
+.TP 7
+\e\fBa\fR
+Audible alert (bell) (0x7).
+.TP 7
+\e\fBb\fR
+Backspace (0x8).
+.TP 7
+\e\fBf\fR
+Form feed (0xc).
+.TP 7
+\e\fBn\fR
+Newline (0xa).
+.TP 7
+\e\fBr\fR
+Carriage-return (0xd).
+.TP 7
+\e\fBt\fR
+Tab (0x9).
+.TP 7
+\e\fBv\fR
+Vertical tab (0xb).
+.TP 7
+\e\fB<newline>\fIwhiteSpace\fR
+.
+A single space character replaces the backslash, newline, and all spaces
+and tabs after the newline.  This backslash sequence is unique in that it
+is replaced in a separate pre-pass before the command is actually parsed.
+This means that it will be replaced even when it occurs between braces,
+and the resulting space will be treated as a word separator if it is not
+in braces or quotes.
+.TP 7
+\e\e
+Backslash
+.PQ \e "" .
+.TP 7
+\e\fIooo\fR 
+.
+The digits \fIooo\fR (one, two, or three of them) give an eight-bit octal 
+value for the Unicode character that will be inserted.  The upper bits of the
+Unicode character will be 0.
+.TP 7
+\e\fBx\fIhh\fR 
+.
+The hexadecimal digits \fIhh\fR give an eight-bit hexadecimal value for the
+Unicode character that will be inserted.  Any number of hexadecimal digits
+may be present; however, all but the last two are ignored (the result is
+always a one-byte quantity).  The upper bits of the Unicode character will
+be 0.
+.TP 7
+\e\fBu\fIhhhh\fR 
+.
+The hexadecimal digits \fIhhhh\fR (one, two, three, or four of them) give a
+sixteen-bit hexadecimal value for the Unicode character that will be
+inserted.
+.LP
+Backslash substitution is not performed on words enclosed in braces,
+except for backslash-newline as described above.
+.RE
+.IP "[10] \fBComments.\fR"
+If a hash character
+.PQ #
+appears at a point where Tcl is
+expecting the first character of the first word of a command,
+then the hash character and the characters that follow it, up
+through the next newline, are treated as a comment and ignored.
+The comment character only has significance when it appears
+at the beginning of a command.
+.IP "[11] \fBOrder of substitution.\fR"
+Each character is processed exactly once by the Tcl interpreter
+as part of creating the words of a command.
+For example, if variable substitution occurs then no further
+substitutions are performed on the value of the variable;  the
+value is inserted into the word verbatim.
+If command substitution occurs then the nested command is
+processed entirely by the recursive call to the Tcl interpreter;
+no substitutions are performed before making the recursive
+call and no additional substitutions are performed on the result
+of the nested script.
+.RS
+.LP
+Substitutions take place from left to right, and each substitution is
+evaluated completely before attempting to evaluate the next.  Thus, a
+sequence like
+.CS
+set y [set x 0][incr x][incr x]
+.CE
+will always set the variable \fIy\fR to the value, \fI012\fR.
+.RE
+.IP "[12] \fBSubstitution and word boundaries.\fR"
+Substitutions do not affect the word boundaries of a command,
+except for argument expansion as specified in rule [5].
+For example, during variable substitution the entire value of
+the variable becomes part of a single word, even if the variable's
+value contains spaces.

@@ -1,0 +1,298 @@
+.ig
+Copyright (c) 2010 Apple Inc.  All rights reserved.
+@APPLE_BSD_LICENSE_HEADER_START@
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1.  Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+2.  Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+    its contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@APPLE_BSD_LICENSE_HEADER_END@
+..
+.Dd 7 Mar, 2015
+.Dt darwinup 1
+.Os Darwin
+.Sh NAME
+.Nm darwinup
+.Nd Install, uninstall, and manage roots
+.Sh SYNOPSIS
+.Nm
+.Op Fl dfnv
+.Op Fl p Ar path
+.Ar subcommand 
+.Op Ar arguments ...
+.Sh DESCRIPTION
+.Nm 
+allows you to manage roots, or
+archives, of files that replace parts of your system. This is useful
+for installing a new version of a library or tool on your system while 
+allowing you to uninstall the files and revert back to the originals 
+safely and easily.
+.Sh OPTIONS
+.Bl -tag -width -indent
+.It \-d
+Do not run helpful automation. See HELPFUL AUTOMATION below.
+.It \-f
+Force. Some operations will fail gracefully due to potentially unsafe 
+situations, such as a root that installs a file where a directory is.
+In order to have darwinup continue through such a situation, you can
+pass the -f option.
+.It \-n
+Dry run. Darwinup will go through an operation, including analyzing
+the root(s) and printing the state/change symbol, but no files will
+be modified on your system and no records will be added to the depot.
+This option implies -d.
+.It \-p Op Ar path
+Prefix path. Normally, darwinup will operate on the boot partition. You
+can use the -p option to have darwinup work on another partition. You
+can provide any arbitrary path, it does not need to be a mount point.
+.It \-r
+Restart. Gracefully restart after all operations are complete by telling
+Finder to restart. 
+.It \-v
+Verbose. This option causes darwinup to print extra information. You can
+pass 2 or 3 v's for even more information, but that is usually only needed
+for development and debugging of darwinup itself.
+.El
+.Sh SUBCOMMANDS
+Note that the
+.Ar path
+and
+.Ar archive
+options listed below support globbing and multiple items. See the EXAMPLES 
+section below for more details.
+.Bl -tag -width -indent
+.It files Ar archives
+List the files and directories in the 
+.Ar archive .
+.It install Ar path
+Install the root at 
+.Ar path .
+.It list Op Ar archive
+List archives that are installed. You may optionally provide an
+archive specification to limit which archives get listed. 
+.It rename Ar archive Ar name
+Rename an archive.
+.It uninstall Ar archives
+Uninstall the specified archive.
+.It forget Ar archives
+Forgets the specified archive. The archive must have been installed on 
+an older base system.
+.It upgrade Ar path
+Find the last archive that was installed with the same name (basename of 
+path), and replace it with the root at 
+.Ar path .
+.It verify Ar archive
+List all of the information about 
+.Ar archive .
+This includes status letters
+detailing how the archive differs from whats on disk
+.El
+.Sh STATE/CHANGE SYMBOLS
+.Bl -tag -width -indent
+.It ? 
+Unknown state. Probably a bug.
+.It !
+Missing file during uninstall. Darwinup expected a file or directory to 
+exist, but it did not. This could be a bug in darwinup, but most likely 
+another tool or software update removed a file that darwinup had been 
+tracking. It can also be caused by an installation failing due to an
+object changing type (see FORCING OPERATIONS below), and the subsequent 
+rollback finding the root only partially installed. Since these all 
+happen during uninstall, they are typically safe to ignore, since darwinup 
+was going to delete the object anyway.
+.It A
+Added. No previous file or directory existed so the file or directory was
+added to your system.
+.It E
+External change. The file you are installing is different than the 
+last file you installed, but it is identical to what was actually found
+on disk. This probably means something manually installed a root or software
+update without darwinup knowing about it. This is usually harmless. 
+.It M 
+Mode change. Only changes to permission or ownership were needed to
+uninstall the file or directory. 
+.It R
+Removed. No previous file or directory existed, so the uninstall process
+removed the file. 
+.It U
+Updated. During installation, the file or directory replaces an existing 
+object at the same path. During uninstallation, the previous version of
+the file was restored.
+.It I
+Ignored. A file specified in the removal list was not removed. This usually
+indicates that the file was a directory and the path in the removal list lacked
+a trailing
+.Pa /
+character.
+.El
+.Sh SUPPORTED PATHS
+.Bl -tag -width -indent
+.It /path/to/file-or-directory
+You can install archive files or directories by specifying a relative or 
+absolute path. If the path is a directory, all files below it will be 
+installed as a single root. If the path points to a file, it must be one of
+the suported archive file types as described in the usage statement. 
+.It user@host:/path/to/file-or-directory
+You can install files or directories from another host via rsync/ssh. 
+The files/directories will be downloaded to your machine and then installed 
+like any other root.
+.It http[s]://host/path/to/file
+You can install files from an archive hosted on an HTTP/HTTPS server. The
+archive file will be downloaded using curl to your machine and then
+installed like any other archive file. You can not point darwinup at a
+directory hosted via HTTP or HTTPS, only archive files such as tarballs.  
+.El
+.Sh ARCHIVE SPECIFICATIONS
+When running a subcommand which takes an 
+.Ar archive
+argument, you can use one or more of the following items to specify which
+archive to operate on. You can mix and match any of them as needed. 
+You can use the list subcommand with these specifications to see what will 
+match.
+.Bl -tag -width -indent
+.It Ar serial
+You can specify an archive with its serial number, which can be found using
+the list subcommand.
+.It Ar uuid
+You can specify an archive with its UUID, which can be found using the
+list subcommand.
+.It Ar name
+You can specify an archive with its name, which can be found using the
+list subcommand.
+.It newest
+The newest keyword will match the one archive which was most recently
+installed. This should always be the first archive listed.
+.It oldest
+The oldest keyword will match the one archive which was installed the
+longest time ago. This should always be the last archive listed. 
+.It superseded
+The superseded keyword will match zero or more archives. An archive is
+superseded if every file it contains is contained in an archive that was
+(and still is) installed after it. A file in an archive can also be superseded
+by external changes, such as operating system updates. When uninstalling a
+superseded archive, you should never see any status symbols, since being
+superseded means there is a newer file on disk. 
+.It all
+The all keyword will match all archives. If you specify extra verbosity 
+with -vv, then rollback archives will also be matched by the all keyword. This
+means that 
+.Nm darwinup -vv uninstall all
+will attempt to uninstall rollback archives, which will print a message
+about not being able to uninstall rollback archives. This is normal and
+not a problem. 
+.El
+.Sh FORCING OPERATIONS
+There are 2 cases where darwinup will require you to pass the force (-f)
+option before proceeding with an operation.
+.Bl -tag -width -indent
+.It Object Type Change
+If you install an archive which contains a file with the same path as a 
+directory on your system, or vice versa, darwinup will give you a error
+about not doing that unless you really want to force it. If you do force
+the operation, darwinup will delete the existing object and replace it with
+the object from the root. This can happen when a directory full of files
+gets packaged up in some opaque file, like xibs/nibs. If you expect this
+"type change", then it is probably safe to force the operation. 
+.It Uninstall a root from an older base system
+Darwinup remembers the version (build) of the operating system when a root
+is installed. The reason for this is darwinup saves the old (replaced)
+files during the installation procedure. Those backups may have come from
+the older operating system, and thus are not necessarily compatible with
+the current build of the operating system. So if you try to uninstall an
+archive that had been installed on a different version of the operating
+system, darwinup will stop and provide a message asking you to force the
+operation if you really want to. If the files you are uninstalling are all
+superseded, then you should not get this error as the backup copies will
+not be used anyway. 
+.El
+.Sh HELPFUL AUTOMATION
+Darwinup tries to detect common situations and run external tools that you
+would otherwise have to remember to run yourself. The "dry run" (-n) and 
+"disable automation" (-d) options prevent any of the following from 
+happening.
+.Bl -tag -width -indent
+.It Dyld Cache
+If a root modifies any file, then darwinup will run 
+update_dyld_shared_cache unless the -d option is specified.
+.It Kernel Extensions
+If a root modifies a file under /System/Library/Extensions, then darwinup
+will update the mtime of /System/Library/Extensions to ensure that the 
+kext cache is updated during the next boot. 
+.El
+.Sh REMOVING FILES
+.Nm
+supports removing files from disk as part of installing a root. These files must
+be enumerated in a list that is included in the root at the path
+.Pa /.DarwinMetadata/removals .
+The list is a simple text file consisting of paths to remove, separated by new
+lines. Directories may be present in this list. If a directory is to be removed,
+its path must include a trailing '/' character, and all of its descendants will
+be removed. When files are removed as part of root installation, they will be
+restored when the root is uninstalled with the
+.Ar uninstall
+command.
+.Pp
+It is permissible for the root to contain files that are specified in its
+removal list. This is primarily useful for replacing entire directory
+hierarchies as singular entities.
+.Pp
+.Em IMPORTANT :
+Replacing a directory hierarchy can only be done safely is the root creator has
+full knowledge of the contents of a given directory hierarchy and knows how to
+completely populate it such that all dependencies will be satisfied. For
+example, a project which installs content into
+.Pa /usr/include
+should
+.Em not
+specify that path in its removal list since many other projects populate that
+directory. The result of the removal operation in such a case would be the only
+the contents of the root would exist in
+.Pa /usr/include
+after the installation completes.
+.Nm
+cannot and does not protect against this scenario, so exercise extreme caution
+when constructing roots with removal lists.
+.Pp
+.Em NOTE :
+Neither the
+.Pa .DarwinMetadata
+directory nor its contents will be installed into the destination path.
+.Sh EXAMPLES
+.Bl -tag -width -indent
+.It Install files from a tarball
+$ darwinup install library-1.2.3.tar.gz
+.It Install several directories from /tmp/
+$ darwinup install /tmp/*/*~dst/
+.It Uninstall everything
+$ darwinup uninstall all
+.It See what archives have been superseded and then uninstall them
+$ darwinup list superseded
+$ darwinup uninstall superseded
+.It Uninstall several archives by serial, the oldest one, and one named myroot
+$ darwinup uninstall 9 16 myroot oldest
+.It Install a root from src.macosforge.org
+$ darwinup install http://src.macosforge.org/Roots/10D573/zlib.root.tar.gz
+.El
+.Sh SEE ALSO
+.Xr rsync 1 ,
+.Xr curl 1 ,
+.Xr tar 1 ,
+.Xr gzip 1 ,
+.Xr ditto 1 ,
+.Xr update_dyld_shared_cache 1

@@ -1,0 +1,155 @@
+.TH "MPSCNNKernel" 3 "Wed Jul 20 2016" "Version MetalPerformanceShaders-60" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNKernel \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNN\&.h>\fP
+.PP
+Inherits \fBMPSKernel\fP\&.
+.PP
+Inherited by \fBMPSCNNConvolution\fP, \fBMPSCNNCrossChannelNormalization\fP, \fBMPSCNNLocalContrastNormalization\fP, \fBMPSCNNLogSoftMax\fP, \fBMPSCNNNeuron\fP, \fBMPSCNNPooling\fP, \fBMPSCNNSoftMax\fP, and \fBMPSCNNSpatialNormalization\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceImage:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSRegion\fP) \- \fBsourceRegionForDestinationSize:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "\fBMPSOffset\fP \fBoffset\fP"
+.br
+.ti -1c
+.RI "MTLRegion \fBclipRect\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBdestinationFeatureChannelOffset\fP"
+.br
+.ti -1c
+.RI "MPSImageEdgeMode \fBedgeMode\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+\fBMPSCNN\&.h\fP  MetalPerformanceShaders\&.framework
+.PP
+\fBCopyright:\fP
+.RS 4
+Copyright (c) 2015 Apple Inc\&. All rights reserved\&.  Metal Performance Shaders CNN kernels
+.RE
+.PP
+This depends on Metal\&.framework  Describes a convolution neural network kernel\&.  A \fBMPSCNNKernel\fP consumes one \fBMPSImage\fP and produces one \fBMPSImage\fP\&. 
+.PP
+.nf
+        The region overwritten in the destination MPSImage is described 
+        by the clipRect.  The top left corner of the region consumed (ignoring
+        adjustments for filter size -- e.g. convolution filter size) is given
+        by the offset. The size of the region consumed is a function of the 
+        clipRect size and any subsampling caused by pixel strides at work,
+        e.g. MPSCNNPooling.strideInPixelsX/Y.  Where the offset + clipRect
+        would cause a {x,y} pixel address not in the image to be read, the
+        edgeMode is used to determine what value to read there.
+
+        The Z/depth component of the offset, clipRect.origin and clipRect.size
+        indexes which images to use. If the MPSImage contains only a single image
+        then these should be offset.z = 0, clipRect.origin.z = 0
+        and clipRect.size.depth = 1. If the MPSImage contains multiple images,
+        clipRect.size.depth refers to number of images to process. Both source 
+        and destination MPSImages must have at least this many images. offset.z 
+        refers to starting source image index. Thus offset.z + clipRect.size.depth must
+        be <= source.numberOfImages. Similarly, clipRect.origin.z refers to starting 
+        image index in destination. So clipRect.origin.z + clipRect.size.depth must be
+        <= destination.numberOfImage.
+
+        destinationFeatureChannelOffset property can be used to control where the MPSKernel will
+        start writing in feature channel dimension. For example, if the destination image has
+        64 channels, and MPSKernel outputs 32 channels, by default channels 0-31 of destination
+        will be populated by MPSKernel. But if we want this MPSKernel to populate channel 32-63
+        of the destination, we can set destinationFeatureChannelOffset = 32.
+        A good example of this is concat (concatenation) operation in Tensor Flow. Suppose
+        we have a src = w x h x Ni which goes through CNNConvolution_0 which produces
+        output O0 = w x h x N0 and CNNConvolution_1 which produces output O1 = w x h x N1 followed
+        by concatenation which produces O = w x h x (N0 + N1). We can achieve this by creating
+        an MPSImage with dimensions O = w x h x (N0 + N1) and using this as destination of
+        both convolutions as follows
+            CNNConvolution0: destinationFeatureChannelOffset = 0, this will output N0 channels starting at
+                             channel 0 of destination thus populating [0,N0-1] channels.
+            CNNConvolution1: destinationFeatureChannelOffset = N0, this will output N1 channels starting at
+                             channel N0 of destination thus populating [N0,N0+N1-1] channels.
+.fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceImage(encode(commandBuffer:sourceImage:destinationImage:)) MPS_SWIFT_NAME"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. The operation shall proceed out-of-place\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP A valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceImage\fP A valid \fBMPSImage\fP object containing the source image\&. 
+.br
+\fIdestinationImage\fP A valid \fBMPSImage\fP to be overwritten by result image\&. destinationImage may not alias sourceImage\&. 
+.RE
+.PP
+
+.SS "\- (\fBMPSRegion\fP) sourceRegionForDestinationSize: (sourceRegion(destinationSize:)) MPS_SWIFT_NAME"
+sourceRegionForDestinationSize: is used to determine which region of the sourceTexture will be read by encodeToCommandBuffer:sourceImage:destinationImage (and similar) when the filter runs\&. This information may be needed if the source image is broken into multiple textures\&. The size of the full (untiled) destination image is provided\&. The region of the full (untiled) source image that will be read is returned\&. You can then piece together an appropriate texture containing that information for use in your tiled context\&.
+.PP
+The function will consult the \fBMPSCNNKernel\fP offset and clipRect parameters, to determine the full region read by the function\&. Other parameters such as sourceClipRect, kernelHeight and kernelWidth will be consulted as necessary\&. All properties should be set to intended values prior to calling sourceRegionForDestinationSize:\&. 
+.PP
+.nf
+Caution: This function operates using global image coordinates, but
+-encodeToCommandBuffer:... uses coordinates local to the source and
+destination image textures. Consequently, the offset and clipRect
+attached to this object will need to be updated using a global to
+local coordinate transform before -encodeToCommandBuffer:... is
+called.
+
+.fi
+.PP
+.PP
+Determine the region of the source texture that will be read for a encode operation 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdestinationSize\fP The size of the full virtual destination image\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The area in the virtual source image that will be read\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- clipRect\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+An optional clip rectangle to use when writing data\&. Only the pixels in the rectangle will be overwritten\&.  A MTLRegion that indicates which part of the destination to overwrite\&. If the clipRect does not lie completely within the destination image, the intersection between clip rectangle and destination bounds is used\&. Default: MPSRectNoClip (\fBMPSKernel::MPSRectNoClip\fP) indicating the entire image\&. clipRect\&.origin\&.z is the index of starting destination image in batch processing mode\&. clipRect\&.size\&.depth is the number of images to process in batch processing mode\&.
+.PP
+See Also: \fBMPSKernel clipRect\fP 
+.SS "\- destinationFeatureChannelOffset\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of channels in the destination \fBMPSImage\fP to skip before writing output\&.  This is the starting offset into the destination image in the feature channel dimension at which destination data is written\&. This allows an application to pass a subset of all the channels in \fBMPSImage\fP as output of \fBMPSKernel\fP\&. E\&.g\&. Suppose \fBMPSImage\fP has 24 channels and a \fBMPSKernel\fP outputs 8 channels\&. If we want channels 8 to 15 of this \fBMPSImage\fP to be used as output, we can set destinationFeatureChannelOffset = 8\&. Note that this offset applies independently to each image when the \fBMPSImage\fP is a container for multiple images and the \fBMPSCNNKernel\fP is processing multiple images (clipRect\&.size\&.depth > 1)\&. The default value is 0 and any value specifed shall be a multiple of 4\&. If \fBMPSKernel\fP outputs N channels, destination image MUST have at least destinationFeatureChannelOffset + N channels\&. Using a destination image with insufficient number of feature channels result in an error\&. E\&.g\&. if the \fBMPSCNNConvolution\fP outputs 32 channels, and destination has 64 channels, then it is an error to set destinationFeatureChannelOffset > 32\&. 
+.SS "\- edgeMode\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The MPSImageEdgeMode to use when texture reads stray off the edge of an image  Most \fBMPSKernel\fP objects can read off the edge of the source image\&. This can happen because of a negative offset property, because the offset + clipRect\&.size is larger than the source image or because the filter looks at neighboring pixels, such as a Convolution filter\&. Default: MPSImageEdgeModeZero\&.
+.PP
+See Also: \fBMPSKernelEdgeMode\fP Note: For \fBMPSCNNPoolingAverage\fP specifying edge mode \fBMPSImageEdgeModeClamp\fP is interpreted as a 'shrink-to-edge' operation, which shrinks the effective filtering window to remain within the source image borders\&. 
+.SS "\- offset\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The position of the destination clip rectangle origin relative to the source buffer\&.  The offset is defined to be the position of clipRect\&.origin in source coordinates\&. Default: {0,0,0}, indicating that the top left corners of the clipRect and source image align\&. offset\&.z is the index of starting source image in batch processing mode\&.
+.PP
+See Also: \fBsubsubsection_mpsoffset\fP 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

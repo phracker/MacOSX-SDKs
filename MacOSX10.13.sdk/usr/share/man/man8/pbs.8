@@ -1,0 +1,48 @@
+.\""Copyright (c) 2005 Apple Computer, Inc. All Rights Reserved.
+.Dd June 1, 2006
+.Dt PBS 8  
+.Os "macOS"       
+.Sh NAME
+.Nm pbs
+.Nd general helper tool
+.Sh SYNOPSIS
+.Nm
+.Op Fl debug
+.Op Fl dump_pboard
+.Op Fl dump_userdefs
+.Op Fl flush_pboard
+.Op Fl flush_userdefs
+.Op Fl existing_languages
+language1 language2 ...
+.Sh DESCRIPTION
+.Nm
+is an agent for the Services menu.  It scans for and vends available Services, to populate the Services menu.
+.Pp
+.Nm
+is NOT related to the pasteboard.  The pasteboard is managed by the pboard agent.
+.Pp
+.Nm
+normally runs the first time Services are needed in any login session.  You may run it manually for debugging Services. If run without any options, pbs will scan for changed Services, cache them along with their English localization on a private pasteboard, and immediately update the Services menu in all running apps. It will also log about any invalid Services declarations in Info.plist. This is useful when developing or testing Services, because it immediately applies any changes.
+.Pp
+ServicesMenu.strings files for a localization are loaded only when an app running under that localization shows the Services menu.  You may pass pbs language codes (e.g. "fr") to cause it to load that localization immediately.  You may also pass the flag
+. Fl existing_languages
+to reload already loaded localizations.
+.Pp
+.Nm
+has additional options that are useful for debugging, in particular the -dump_pboard option. The complete list of options is:
+.Bl -tag -width "-e"
+.It Fl debug
+Output debugging information regarding what pbs is doing.
+.It Fl dump_pboard
+Prints the private pasteboard containing the current Services information.  You can use this to determine which apps are providing Services and where they are located on the filesystem.
+.It Fl dump_userdefs
+Prints the userdef cache of Services information.  pbs caches Services information in its userdefs to avoid scanning the entire system every boot.  Changed apps are still detected via FSEvents, so there is no need to flush the userdef cache when installing a new Service.
+.It Fl flush_pboard
+Erases the private pasteboard containing Services information.  The next time the Services menu is shown, pbs will scan for changed Services and update the pasteboard.
+.It Fl flush_userdefs
+Erases the userdef cache.
+.It Fl flush
+Equivalent to -flush_pboard and -flush_userdefs, entirely resetting pbs. The next time Services information is needed, pbs will do a complete rescan for apps vending Services, and read their plist.  Note: this rescan may be very expensive!
+.El
+.Sh HISTORY
+First appeared in NextStep.  pbs has historically had responsibilities that ranged from pasteboard management to Unicode glyph generation, but now it only does Services.

@@ -1,0 +1,287 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "XCODE-SELECT" "1" "March 08, 2016" "Mac OS X" "BSD General Commands Manual"
+.SH NAME
+xcode-select \- Manages the active developer directory for Xcode and BSD tools.
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH SYNOPSIS
+.sp
+\fBxcode\-select\fP [\-h|\-\-help] [\-s|\-\-switch <path>] [\-p|\-\-print\-path]
+[\-v|\-\-version]
+.SH DESCRIPTION
+.sp
+\fBxcode\-select\fP controls the location of the developer directory used by
+\fIxcrun(1)\fP, \fIxcodebuild(1)\fP, \fIcc(1)\fP, and other Xcode
+and BSD development tools. This also controls the locations that are searched
+for by \fIman(1)\fP for developer tool manpages.
+.sp
+This allows you to easily switch between different versions of the Xcode tools
+and can be used to update the path to the Xcode if it is moved after
+installation.
+.SS Usage
+.sp
+When multiple Xcode applications are installed on a system
+(e.g. \fB/Applications/Xcode.app\fP, containing the latest Xcode, and
+\fB/Applications/Xcode\-beta.app\fP containing a beta) use \fBxcode\-select
+\-\-switch path/to/Xcode.app\fP to specify the Xcode that you wish to use for
+command line developer tools.
+.sp
+After setting a developer directory, all of the \fBxcode\-select\fP provided
+developer tool shims (see \fI\%FILES\fP) will automatically invoke the version of
+the tool inside the selected developer directory. Your own scripts, makefiles,
+and other tools can also use \fIxcrun(1)\fP to easily lookup tools inside
+the active developer directory, making it easy to switch them between different
+versions of the Xcode tools and allowing them to function properly on systems
+where the Xcode application has been installed to a non\-default location.
+.SH OPTIONS
+.INDENT 0.0
+.TP
+.B \-h, \-\-help
+Prints the usage message.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-s <path>, \-\-switch <path>
+Sets the active developer directory to the given path, for example
+\fB/Applications/Xcode\-beta.app\fP\&. This command must be run with superuser
+permissions (see \fIsudo(8)\fP), and will affect all users on the
+system. To set the path without superuser permissions or only for the current
+shell session, use the DEVELOPER_DIR environment variable instead (see
+\fI\%ENVIRONMENT\fP).
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-p, \-\-print\-path
+Prints the path to the currently selected developer directory. This is useful
+for inspection, but scripts and other tools should use \fIxcrun(1)\fP to
+locate tool inside the active developer directory.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-r, \-\-reset
+Unsets any user\-specified developer directory, so that the developer directory
+will be found via the default search mechanism. This command must be run with
+superuser permissions (see \fIsudo(8)\fP), and will affect all users on
+the system.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-v, \-\-version
+Prints \fBxcode\-select\fP version information.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-install
+Opens a user interface dialog to request automatic installation of the command
+line developer tools.
+.UNINDENT
+.SH ENVIRONMENT
+.sp
+DEVELOPER_DIR
+.INDENT 0.0
+.INDENT 3.5
+Overrides the active developer directory. When DEVELOPER_DIR is set, its value
+will be used instead of the system\-wide active developer directory.
+.sp
+Note that for historical reason, the developer directory is considered to be
+the Developer content directory inside the Xcode application (for example
+\fB/Applications/Xcode.app/Contents/Developer\fP). You can set the environment
+variable to either the actual Developer contents directory, or the Xcode
+application directory \-\- the \fBxcode\-select\fP provided shims will
+automatically convert the environment variable into the full Developer content
+path.
+.UNINDENT
+.UNINDENT
+.SH EXAMPLES
+.sp
+\fBxcode\-select \-\-switch /Applications/Xcode.app/Contents/Developer\fP
+.INDENT 0.0
+.INDENT 3.5
+Select \fB/Applications/Xcode.app/Contents/Developer\fP as the active developer
+directory.
+.UNINDENT
+.UNINDENT
+.sp
+\fBxcode\-select \-\-switch /Applications/Xcode.app\fP
+.INDENT 0.0
+.INDENT 3.5
+As above, selects \fB/Applications/Xcode.app/Contents/Developer\fP as the active
+developer directory. The Developer content directory is automatically inferred
+by \fBxcode\-select\fP\&.
+.UNINDENT
+.UNINDENT
+.sp
+\fB/usr/bin/xcodebuild\fP
+.INDENT 0.0
+.INDENT 3.5
+Runs \fBxcodebuild\fP out of the active developer directory.
+.UNINDENT
+.UNINDENT
+.sp
+\fB/usr/bin/xcrun \-\-find xcodebuild\fP
+.INDENT 0.0
+.INDENT 3.5
+Use \fBxcrun\fP to locate \fBxcodebuild\fP inside the active
+developer directory.
+.UNINDENT
+.UNINDENT
+.sp
+\fBenv DEVELOPER_DIR="/Applications/Xcode\-beta.app" /usr/bin/xcodebuild\fP
+.INDENT 0.0
+.INDENT 3.5
+Execute \fBxcodebuild\fP using an alternate developer directory.
+.UNINDENT
+.UNINDENT
+.SH FILES
+.sp
+\fB/usr/bin/xcrun\fP
+.INDENT 0.0
+.INDENT 3.5
+Used to find or run arbitrary commands from the active developer directory. See
+\fIxcrun(1)\fP for more information.
+.UNINDENT
+.UNINDENT
+.sp
+\fB/usr/bin/agvtool\fP
+\fB/usr/bin/desdp\fP
+\fB/usr/bin/genstrings\fP
+\fB/usr/bin/ibtool\fP
+\fB/usr/bin/ictool\fP
+\fB/usr/bin/instruments\fP
+\fB/usr/bin/iprofiler\fP
+\fB/usr/bin/opendiff\fP
+\fB/usr/bin/sdef\fP
+\fB/usr/bin/sdp\fP
+\fB/usr/bin/xcodebuild\fP
+\fB/usr/bin/xed\fP
+.INDENT 0.0
+.INDENT 3.5
+Runs the matching Xcode tool from with the active developer directory.
+.UNINDENT
+.UNINDENT
+.sp
+\fB/usr/bin/BuildStrings\fP
+\fB/usr/bin/CpMac\fP
+\fB/usr/bin/DeRez\fP
+\fB/usr/bin/GetFileInfo\fP
+\fB/usr/bin/MergePef\fP
+\fB/usr/bin/MvMac\fP
+\fB/usr/bin/ResMerger\fP
+\fB/usr/bin/RezDet\fP
+\fB/usr/bin/RezWack\fP
+\fB/usr/bin/Rez\fP
+\fB/usr/bin/SetFile\fP
+\fB/usr/bin/SplitForks\fP
+\fB/usr/bin/UnRezWack\fP
+\fB/usr/bin/ar\fP
+\fB/usr/bin/as\fP
+\fB/usr/bin/asa\fP
+\fB/usr/bin/bison\fP
+\fB/usr/bin/c89\fP
+\fB/usr/bin/c99\fP
+\fB/usr/bin/clang++\fP
+\fB/usr/bin/clang\fP
+\fB/usr/bin/cmpdylib\fP
+\fB/usr/bin/codesign_allocate\fP
+\fB/usr/bin/cpp\fP
+\fB/usr/bin/ctags\fP
+\fB/usr/bin/ctf_insert\fP
+\fB/usr/bin/dsymutil\fP
+\fB/usr/bin/dwarfdump\fP
+\fB/usr/bin/flex++\fP
+\fB/usr/bin/flex\fP
+\fB/usr/bin/g++\fP
+\fB/usr/bin/gatherheaderdoc\fP
+\fB/usr/bin/gcc\fP
+\fB/usr/bin/gcov\fP
+\fB/usr/bin/git\-cvsserver\fP
+\fB/usr/bin/git\-receive\-pack\fP
+\fB/usr/bin/git\-shell\fP
+\fB/usr/bin/git\-upload\-archive\fP
+\fB/usr/bin/git\-upload\-pack\fP
+\fB/usr/bin/git\fP
+\fB/usr/bin/gm4\fP
+\fB/usr/bin/gnumake\fP
+\fB/usr/bin/gperf\fP
+\fB/usr/bin/hdxml2manxml\fP
+\fB/usr/bin/headerdoc2html\fP
+\fB/usr/bin/indent\fP
+\fB/usr/bin/install_name_tool\fP
+\fB/usr/bin/ld\fP
+\fB/usr/bin/lex\fP
+\fB/usr/bin/libtool\fP
+\fB/usr/bin/lipo\fP
+\fB/usr/bin/lldb\fP
+\fB/usr/bin/lorder\fP
+\fB/usr/bin/m4\fP
+\fB/usr/bin/make\fP
+\fB/usr/bin/mig\fP
+\fB/usr/bin/mkdep\fP
+\fB/usr/bin/nasm\fP
+\fB/usr/bin/ndisasm\fP
+\fB/usr/bin/nm\fP
+\fB/usr/bin/nmedit\fP
+\fB/usr/bin/objdump\fP
+\fB/usr/bin/otool\fP
+\fB/usr/bin/pagestuff\fP
+\fB/usr/bin/ranlib\fP
+\fB/usr/bin/rebase\fP
+\fB/usr/bin/redo_prebinding\fP
+\fB/usr/bin/resolveLinks\fP
+\fB/usr/bin/rpcgen\fP
+\fB/usr/bin/segedit\fP
+\fB/usr/bin/size\fP
+\fB/usr/bin/strings\fP
+\fB/usr/bin/strip\fP
+\fB/usr/bin/svn\fP
+\fB/usr/bin/svnadmin\fP
+\fB/usr/bin/svndumpfilter\fP
+\fB/usr/bin/svnlook\fP
+\fB/usr/bin/svnserve\fP
+\fB/usr/bin/svnsync\fP
+\fB/usr/bin/svnversion\fP
+\fB/usr/bin/swift\fP
+\fB/usr/bin/swiftc\fP
+\fB/usr/bin/unifdef\fP
+\fB/usr/bin/unifdefall\fP
+\fB/usr/bin/xml2man\fP
+\fB/usr/bin/yacc\fP
+.INDENT 0.0
+.INDENT 3.5
+Runs the matching BSD tool from with the active developer directory.
+.UNINDENT
+.UNINDENT
+.SH SEE ALSO
+.sp
+\fIxcrun(1)\fP, \fIxcodebuild(1)\fP
+.SH HISTORY
+.sp
+The \fBxcode\-select\fP command first appeared in Xcode 3.0.
+.\" Generated by docutils manpage writer.
+.

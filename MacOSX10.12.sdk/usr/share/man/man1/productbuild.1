@@ -1,0 +1,596 @@
+.Dd September 15, 2010 
+.Dt productbuild 1 
+.Os Mac OS X
+.\"																				NAME 
+.Sh NAME
+.Nm productbuild
+.Nd Build a product archive for the OS X Installer or the Mac App Store
+.\"																				SYNOPSIS
+.Sh SYNOPSIS
+.Nm
+.Op --product Ar requirements-plist
+.Brq Cm --component Ar component-path Op Ar install-path
+.Ar product-output-path
+.Nm
+.Brq Cm --content Ar content-path
+.Ar product-output-path
+.Nm
+.Op --product Ar requirements-plist
+.Brq Cm --root Ar root-path Ar install-path
+.Ar product-output-path
+.Nm
+.Op options
+.Cm --distribution Ar dist-path
+.Op Cm --package-path Ar search-path
+.Ar product-output-path
+.Nm
+.Cm --synthesize
+.Op --product Ar requirements-plist
+.Brq Cm --package Ar pkg-path
+.Ar distribution-output-path
+.\"																				DESCRIPTION
+.Sh DESCRIPTION
+A product archive is a flat file with a
+.Pa .pkg
+extension.
+.Nm
+creates a deployable product archive, which can be used with the OS X Installer,
+or submitted to the Mac App Store. It has 5 different modes, as shown in the 
+.Sx SYNOPSIS
+above:
+.Bl -enum
+.\"                                                                             Mode 1
+.It
+.Em Create a product archive from a bundle (e.g. for the Mac App Store).
+If you have a self-contained bundle (e.g. an app) that always gets installed to the
+same location (e.g.
+.Pa /Applications ) ,
+specify the bundle and install path using the
+.Cm --component
+option. You can specify additional requirements using a
+.Sx PRE-INSTALL REQUIREMENTS PROPERTY LIST .
+When you specify a bundle,
+.Nm
+automatically creates a component package, much like
+.Xr pkgbuild 1 ,
+and synthesizes a distribution file.
+.\"                                                                             Mode 2
+.It
+.Em Create a product archive for in-app content.
+Specify in-app content using the
+.Cm --content
+option.
+.\"                                                                             Mode 3
+.It
+.Em Create a product archive from a destination root.
+When you use
+.Xr xcodebuild 1
+with the
+.Em install
+action, the result is a destination root, either under
+.Pa /tmp ,
+or in whatever location you specify with the Xcode
+.Ev DSTROOT
+setting. Use the
+.Nm
+.Cm --root
+option to specify that destination root directory and its install path.
+You can specify additional requirements using a
+.Sx PRE-INSTALL REQUIREMENTS PROPERTY LIST .
+When you specify a root,
+.Nm
+automatically creates a component package, much like
+.Xr pkgbuild 1 ,
+and synthesizes a distribution file.
+.\"                                                                             Mode 4
+.It
+.Em Create a product archive using a distribution file.
+If you have a distribution file, use the
+.Cm --distribution
+option to specify the path to it, and the
+.Cm --package-path
+option to specify the directory where the component packages are found (if they
+are not in the current working directory). All packages referenced by the
+distribution will be incorporated into the resulting product archive.
+.\"                                                                             Mode 5
+.It
+.Em Synthesize a distribution for one or more component packages.
+This also synthesizes a distribution (also using an optional
+.Sx PRE-INSTALL REQUIREMENTS PROPERTY LIST ) ,
+but writes out the resulting distribution instead of incorporating it into a product archive.
+This can serve as a starting point if a more sophisticated distribution is required.
+.El
+.Pp
+.Em When creating product archives for submission to the Mac App Store,
+use only the 
+.Cm --component
+mode of
+.Nm .
+The other modes will create product archives that are compatible with the OS X Installer, but
+are not necessarily acceptable for the Mac App Store.
+.\"																				OPTIONS 
+.Sh ARGUMENTS AND OPTIONS
+.Bl -tag
+.\"                                                                             --distribution
+.It Cm --distribution Ar dist-path
+Use the distribution file at
+.Ar dist-path
+to define the presentation, choices and packages to be installed by the
+product. Each of the package names referenced in the given distribution file
+must be found in a path specified with the
+.Cm --package-path
+flag.
+.Pp
+If 
+.Cm --distribution
+is omitted, a distribution will be synthesized to install all of the bundles given by
+.Cm --component
+flags, or all of the packages given by
+.Cm --package
+flags.
+.\"                                                                             --package-path
+.It Cm --package-path Ar search-path
+.Nm
+will search in 
+.Ar search-path
+for component packages named in the distribution. You can use multiple
+.Cm --package-path
+flags if necessary. The current working directory is searched automatically.
+.\"                                                                             --resources
+.It Cm --resources Ar rsrc-dir
+.Nm
+will copy the resources from 
+.Ar rsrc-dir
+into the resulting product archive.
+.Ar rsrc-dir
+can contain unlocalized resources (such as image files) and/or standard lproj directories (e.g. 
+.Pa English.lproj )
+containing localized resources (such as strings files).
+.\"                                                                             --ui
+.It Cm --ui Ar interface-type
+If the distribution has multiple choices-outline elements, you can use
+.Cm --ui
+to select one for building the product archive: this controls which package
+references are used. The
+.Ar interface-type
+should match the value of the
+.Dq ui
+attribute on the desired choices-outline. The default is to use the choices-outline with no ui attribute.
+.Pp
+If used without
+.Cm --distribution ,
+the given
+.Ar interface-type
+will be used for the choices-outline of the synthesized distribution.
+.\"                                                                             --identifier
+.It Cm --identifier Ar product-identifier
+The given unique (non-localized)
+.Ar product-identifier
+will be associated with the product.
+.\"                                                                             --version
+.It Cm --version Ar product-version
+The given
+.Ar product-version
+string will be associated with the product.
+.\"                                                                             --component
+.It Cm --component Ar component-path Op Ar install-path
+The bundle at
+.Ar component-path
+is added to the product archive (as its own component package) and to the synthesized distribution. If
+.Ar install-path
+is specified, it is used as the default install location for the bundle. (If you omit
+.Ar install-path,
+a location is inferred from the given
+.Ar component-path . )
+.Pp
+Valid only if
+.Cm --distribution
+is not specified.
+.\"                                                                             --component-compression
+.It Cm --component-compression Ar compression-mode
+Allows control of compression used for storing any components added via the
+.Cm --component
+option. This option does not affect the compression used for plugins or scripts. Three
+.Ar compression-mode
+arguments are supported:
+.El
+.Bl -bullet -offset indent-two
+.It
+.Sy legacy
+forces a 10.5-compatible compression algorithm for all components.
+.It
+.Sy auto
+enables
+.Nm
+to automatically select newer, more efficient compression algorithms based on properties of the component,
+such as supported operating system versions. (See
+.Sy os
+in the
+.Sx PRE-INSTALL REQUIREMENTS PROPERTY LIST
+section for more details on specifying operating system requirements.)
+.It
+.Sy default
+provides identical behavior to omitting
+.Cm --component-compression
+entirely. It is currently equivalent to
+.Sy legacy
+but may change in future releases of OS X.
+.Bl -tag
+.El
+.Pp
+Note that the Mac App Store may override the specified
+.Ar compression-mode
+for submitted product archives.
+.Pp
+Valid with
+.Cm --component
+only. To control compression of component packages with
+.Cm --distribution
+or
+.Cm --root
+use
+.Xr pkgbuild 1
+and reference each component package in a distribution file.
+.El
+.Bl -tag
+.\"                                                                             --content
+.It Cm --content Ar content-path
+The contents of the directory at
+.Ar content-path
+are added to the product archive (as its own component package) and to the synthesized distribution.
+.Pp
+Valid only if
+.Cm --distribution
+is not specified.
+.\"                                                                             --root
+.It Cm --root Ar root-path Ar install-path
+The entire directory tree at
+.Ar root-path
+is added to the product archive (as its own component package) and to the synthesized distribution.
+This is typically used for a destination root created by
+.Xr xcodebuild 1 .
+.Pp
+Valid only if
+.Cm --distribution
+is not specified.
+.\"                                                                             --package
+.It Cm --package Ar pkg-path Op Ar install-path
+The component package at
+.Ar pkg-path
+is added to the product archive and to the synthesized distribution. If
+.Ar install-path
+is specified, it is used as the default install location for the package, overriding any default
+location specified by the component package itself.
+.Pp
+Valid only if
+.Cm --distribution
+is not specified.
+.\"                                                                             --synthesize
+.It Cm --synthesize
+Write the synthesized distribution directly instead of incorporating it into a product archive.
+.\"                                                                             --product
+.It Cm --product Ar requirements-plist
+When synthesizing a distribution, use the requirements from
+.Ar requirements-plist .
+See 
+.Sx PRE-INSTALL REQUIREMENTS PROPERTY LIST 
+(this was formerly called the 
+.Qq product definition property list ) .
+.\"                                                                             --scripts
+.It Cm --scripts Ar scripts-path
+The contents of
+.Ar scripts-path
+is added to the product archive for use by system.run() commands in the distribution.
+This is valid only for product archives targeted to the OS X Installer application.
+.\"                                                                             --plugins
+.It Cm --plugins Ar plugins-path
+The contents of
+.Ar plugins-path
+is added to the product archive for use by the OS X Installer application's plugin mechanism.
+It will normally contain a
+.Pa InstallerSections.plist
+file, and one or more plugin bundles.
+.\"                                                                             --sign
+.It Cm --sign Ar identity-name
+Adds a digital signature to the resulting package. See
+.Sx SIGNED PRODUCT ARCHIVES
+.\"                                                                             --keychain
+.It Cm --keychain Ar keychain-path
+Specify a specific keychain to search for the signing identity. See
+.Sx SIGNED PRODUCT ARCHIVES
+.\"                                                                             --cert
+.It Cm --cert Ar certificate-name
+Specify an intermediate certificate to be embedded in the package. See
+.Sx SIGNED PRODUCT ARCHIVES
+.\"                                                                             --quiet
+.It Cm --timestamp
+Include a trusted timestamp with the signature. See
+.Sx SIGNED PRODUCT ARCHIVES
+.It Cm --timestamp=none
+Disable trusted timestamp, regardless of identity. See
+.Sx SIGNED PRODUCT ARCHIVES
+.It Cm --quiet
+Inhibits status messages on stdout. Any error messages are still sent to stderr.
+.\"                                                                             product-output-path
+.It Ar product-output-path
+The path to which the product archive will be written.
+.\"                                                                             distribution-output-path
+.It Ar distribution-output-path
+When
+.Cm --synthesize
+is used, the path to which the synthesized distribution will be written.
+.El
+.\"																				PRE-INSTALL REQUIREMENTS PROPERTY LIST 
+.Sh PRE-INSTALL REQUIREMENTS PROPERTY LIST
+When you use
+.Nm
+to synthesize a distribution (e.g. with the
+.Cm --component
+option), you can specify pre-install requirements in a separate property list file, specified with the
+.Cm --product
+option. (When you use Xcode to create a package for the Mac App Store, you can specify this file using the
+.Qq Pre-install Requirements Property List
+build setting.)
+.Pp
+At the top level, this property list is a dictionary, with the following keys:
+.Bl -column ".Sy single-graphics-device" A012345678901234567890123456789012345678901234567890123456789
+.It Sy Key Ta Sy Description
+.It Sy os Ta "Minimum allowable OS versions (array of strings)"
+.It Sy arch Ta "Supported architectures (array of strings)"
+.It Sy ram Ta "Minimum required RAM in gigabytes (real)"
+.It Sy bundle Ta "Specific bundles that must exist on the system (array of dictionaries)"
+.It Sy all-bundles Ta "Are all of the bundles specified required? (Boolean)" 
+.It Sy gl-renderer Ta "Required OpenGL capabilities (string)"
+.It Sy cl-device Ta "Required OpenCL capabilities (string)"
+.It Sy single-graphics-device Ta "Must OpenGL and OpenCL requirements be met by a single device? (Boolean)"
+.It Sy sysctl-requirements Ta "Additional required hardware properties (string)"
+.It Sy home Ta "Should installation be allowed in user home directory? (Boolean)"
+.El
+.Pp
+.Bl -bullet
+.It
+The
+.Sy os
+key defines one or more minimum system versions. You might have multiple versions if a certain
+OS update is required for a given major OS version. For example, if you specify 10.5.4 and 10.6.2,
+Leopard would be allowed from 10.5.4 up, and Snow Leopard from 10.6.2 up, but 10.6 and 10.6.1 would
+be rejected. There is no upper-bound associated with the highest value given.
+.Pp
+.Em NOTE:
+Some of the other requirements imply their own minimum system versions, which may override the values
+set here. This is noted below where applicable.
+.It
+The
+.Sy arch
+key specifies the supported architectures, e.g. i386 and/or x86_64. Note that i386 allows both
+32- and 64-bit systems, but if you specify only x86_64, a 64-bit system is required.
+.It
+The
+.Sy ram
+key specifies the minimum amount of RAM required, in gigabytes.
+.It
+The
+.Sy gl-renderer
+key specifies a predicate, against which each of the OpenGL hardware renderers will be checked. For the
+product to be installed, at least one of the renderers must match the requirements of the predicate.
+The given predicate string must be convertible to an NSPredicate, and can use the following key paths:
+.Bl -column ".Sy limits.param<value>" A012345678901234567890123456789012345678901234567890123456789
+.It Sy "Key Path" Ta Sy Description
+.It Sy version Ta "The supported OpenGL version as a double (e.g. major.minor)."
+.It Sy extensions Ta "An array of OpenGL extension strings supported."
+.It Sy limits.<gl-parameter> Ta "The integer value of the named GL parameter (see below)."
+.It Sy limits.param<value> Ta "The integer value of the GL parameter named by enum <value> (see below)."
+.El
+.Pp
+Note that arbitrary GL parameters can be checked via the
+.Sy limits
+key, using the same symbolic name #defined by the GL headers. For example:
+.Bd -literal
+   ( version >= 2.0
+     OR ( ( 'GL_ARB_texture_float' IN extensions OR 'GL_ATI_texture_float' IN extensions )
+          AND 'GL_ARB_vertex_blend' IN extensions ) )
+   AND ( limits.GL_MAX_TEXTURE_SIZE >= 1024 AND limits.GL_MAX_TEXTURE_STACK_DEPTH > 8 )
+.Ed
+.Pp
+Note that recently-introduced GL parameters may not be recognized by their symbolic names, in which case
+you can use the alternate form of
+.Sy param<value> ,
+where <value> is the enum (integer) value of the parameter. For example:
+.Bd -literal
+   limits.param0x0D33 >= 1024
+.Ed
+.Pp
+.Em NOTE:
+The
+.Sy gl-renderer
+requirement is ignored on versions of Mac OS X before 10.6.8. For this reason, specifying
+.Sy gl-renderer
+will cause the minimum system version to be raised to 10.6.8. This may override the values set via the
+.Sy os
+key.
+.It
+The
+.Sy cl-device
+key specifies a predicate, against which each of the OpenCL GPU devices will be checked. For the
+product to be installed, at least one of the devices must match the requirements of the predicate.
+The given predicate string must be convertible to an NSPredicate, and can use the following key paths:
+.Bl -column ".Sy limits.param<value>" A012345678901234567890123456789012345678901234567890123456789
+.It Sy "Key Path" Ta Sy Description
+.It Sy version Ta "The supported OpenCL version as a double (e.g. major.minor)."
+.It Sy extensions Ta "An array of OpenCL extension strings supported."
+.It Sy limits.<cl-parameter> Ta "The integer value of the named CL deviceInfo parameter."
+.It Sy limits.param<value> Ta "The integer value of the CL parameter named by enum <value>."
+.El
+.Pp
+If both 
+.Sy cl-device
+and
+.Sy gl-renderer
+are specified, both must be satisfied. By default, the requirements are considered met even if one
+graphics device satisfies the OpenGL requirement and a different one satisfies the OpenCL one.
+If you want to require that a single device satisfies both, add the
+.Sy single-graphics-device
+key with a value of true.
+.Pp
+.Em NOTE:
+The
+.Sy cl-device
+requirement is ignored on versions of Mac OS X before 10.7. For this reason, specifying
+.Sy cl-device
+will cause the minimum system version to be raised to 10.7. This may override the values set via the
+.Sy os
+key.
+.It
+The
+.Sy sysctl-requirements
+key specifies a predicate, against which additional hardware requirements will be checked. The predicate
+uses the
+.Xr sysctl 2
+facility to obtain hardware properties for the system in use. Note that only a subset of
+.Xr sysctl 2
+variables are available, including most of the hw.* tree and kern.ostype, kern.osrelease, kern.osrevision,
+and kern.version from the kern.* tree. For example:
+.Bd -literal
+   hw.physicalcpu > 1
+.Ed
+.Pp
+Or:
+.Bd -literal
+   ( hw.optional.aes == 1 AND hw.memsize >= 4294967296 )
+.Ed
+.Pp
+.Em NOTE:
+The
+.Sy sysctl-requirements
+predicate is ignored on versions of OS X before 10.10. For this reason, specifying
+.Sy sysctl-requirements
+will cause the minimum system version to be raised to 10.10. This may override the values set via the
+.Sy os
+key.
+.It
+The
+.Sy bundle
+key specifies one or more bundles that must already exist on the system (possibly at some minimum version)
+for the product to be installed. For example, this might be appropriate if the product installs
+a plugin, and you need to ensure that a compatible version of the host application is available.
+Each object in this array is a dictionary with the following keys:
+.Bl -column ".Sy CFBundleShortVersionString" A012345678901234567890123456789012345678901234567890123456789
+.It Sy Key Ta Sy Description
+.It Sy id Ta "The CFBundleIdentifier of the bundle (required)"
+.It Sy path Ta "The default path of the bundle (required)"
+.It Sy CFBundleShortVersionString Ta "The minimum short version string of the bundle (optional)"
+.It Sy search Ta "Search for bundle if not found at default path? (Boolean, optional)"
+.El
+.Pp
+The given default
+.Sy path
+will be checked first. Only if the bundle does not exist at that path, and
+.Sy search
+is given as true, the bundle identifier
+.Sy ( id )
+will be used to find the bundle (this is appropriate for applications which the user might move).
+If the bundle is found through either method, and its version is greater than or equal to the given
+.Sy CFBundleShortVersionString ,
+the requirement is met. (If CFBundleShortVersionString is omitted, the bundle need only exist.)
+.Pp
+If you specify multiple bundles, all must exist, unless you specify the
+.Sy all-bundles
+key with a value of false, in which case only one of the bundles must exist.
+.Pp
+If the bundle requirement is not met, the Installer must have a localized explanation to display
+to the user. This should be provided in the
+.Pa InfoPlist.strings
+resource of your top-level bundle (as specified with 
+.Cm --component ) ,
+under the
+.Em RequiredBundlesDescription
+key.
+.It
+The
+.Sy home
+key, if set to true, designates that the product can be installed under the user's home directory,
+as an alternative to installing on the system for all users. This should be enabled only if the
+entire product can be installed in the home directory and be functional. (Home directory installation
+is disabled by default.) Note that home directory installation is not supported for the Mac App Store.
+.El
+.\"																				SIGNED PRODUCT ARCHIVES 
+.Sh SIGNED PRODUCT ARCHIVES
+When creating a product archive, you can optionally add a digital signature to the archive.
+You will need to have a certificate and corresponding private key -- together called an
+.Dq identity
+-- in one of your accessible keychains. To add a signature, specify the name of the identity using the
+.Cm --sign
+option. The identity's name is the same as the
+.Dq Common Name
+of the certificate.
+.Pp
+If you want to search for the identity in a specific keychain, specify the path to the
+keychain file using the 
+.Cm --keychain
+option. Otherwise, the default keychain search path is used.
+.Pp
+.Nm
+will embed the signing certificate in the product archive, as well as any intermediate
+certificates that are found in the keychain. If you need to embed additional certificates
+to form a chain of trust between the signing certificate and a trusted root certificate
+on the system, use the
+.Cm --cert
+option to give the Common Name of the intermediate certificate. Multiple
+.Cm --cert
+options may be used to embed multiple intermediate certificates.
+.Pp
+The signature can optionally include a trusted timestamp. This is enabled by default when signing with
+a Developer ID identity, but it can be enabled explicitly using the
+.Cm --timestamp 
+option. A timestamp server must be contacted to embed a trusted timestamp. If you aren't
+connected to the Internet, you can use
+.Cm --timestamp=none
+to disable timestamps, even for a Developer ID identity.
+.Pp
+Note that component packages do
+.Em not
+need to be signed (e.g. with
+.Xr pkgbuild 1 )
+before adding them to a signed product archive. The signature on the product archive protects
+the entire product, including the added packages.
+.Pp
+If you want to postpone signing the product archive until it has been tested and is
+ready to deploy, you can use
+.Xr productsign 1
+when you are ready to add the signature.
+.\"																				EXAMPLES 
+.Sh EXAMPLES
+.Bl -tag -width indent
+.It Li "productbuild --component build/Release/Sample.app /Applications Product.pkg"
+.Pp
+Build the archive Product.pkg to install Sample.app under /Applications,
+synthesizing a distribution. This is typical for building a Mac App Store archive.
+.It Li "productbuild --product def.plist --component build/Release/Sample.app /Applications Product.pkg"
+.Pp
+Build the archive Product.pkg to install Sample.app under /Applications,
+synthesizing a distribution with the requirements from def.plist.
+This is typical for building a Mac App Store archive with pre-install requirements.
+.It Li "productbuild --distribution Product.dist --package-path /tmp/Packages Product.pkg"
+.Pp
+Build the archive Product.pkg using Product.dist, searching for packages
+referenced by that distribution in /tmp/Packages (as well as in CWD).
+.It Li "productbuild --distribution Product.dist --resources Resources Product.pkg"
+.Pp
+Build the archive Product.pkg using Product.dist, incorporating the resources found
+under the Resources directory.
+.It Li "productbuild --distribution Product.dist --sign sample-identity Product.pkg"
+.Pp
+Build the archive Product.pkg using Product.dist, and sign the
+resulting archive using the identity sample-identity. You will be prompted to allow
+.Nm
+to access the keychain item, unless Always Allow was chosen previously.
+.It Li "productbuild --package /tmp/a.pkg --package /tmp/b.pkg Product.pkg"
+.Pp
+Build the archive Product.pkg with the component packages /tmp/a.pkg and /tmp/b.pkg,
+synthesizing a distribution.
+.El
+.\"																				SEE ALSO 
+.Sh SEE ALSO 
+.Xr pkgbuild 1 ,
+.Xr productsign 1 ,
+.Xr xcodebuild 1

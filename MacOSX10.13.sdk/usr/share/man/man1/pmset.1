@@ -1,0 +1,461 @@
+.\"
+.\" Copyright (c) 2002-2012 Apple Computer, Inc.  All rights reserved.
+.\"
+.Dd November 9, 2012
+.Dt PMSET 1
+.Os Darwin
+.Sh NAME
+.Nm pmset
+.Nd manipulate power management settings
+.Sh SYNOPSIS
+.Nm
+.Op Fl a | b | c | u
+.Op Ar setting Ar value
+.Op ...
+.Nm
+.Fl u
+.Op haltlevel Ar percent
+.Op haltafter Ar minutes
+.Op haltremain Ar minutes
+.Nm
+.Fl g
+.Op Ar option
+.Nm
+schedule
+.Op cancel | cancelall
+type date+time
+.Op owner
+.Nm
+repeat cancel
+.Nm
+repeat type weekdays time
+.Nm
+relative
+.Op wake | poweron
+seconds
+.Nm
+.Op touch | sleepnow | displaysleepnow | boot
+.\.Nm
+.\.Op Fl a b c u
+.\.Op dim
+.\.Op spindown
+.\.Op sleep
+.\.Op womp
+.\.Op ring
+.\.Op autorestart
+.\.Op acwake
+.Sh DESCRIPTION
+.Nm
+manages power management settings such as idle sleep timing, wake on administrative access, automatic restart on power loss, etc.
+.Pp
+Note that processes may dynamically override these power management settings by using
+I/O Kit power assertions.
+Whenever processes override any system power settings,
+.Nm
+will list those processes and their power assertions in
+.Fl g
+and
+.Fl g 
+assertions. See 
+.Xr caffeinate 8 .
+.Sh SETTING
+.Nm
+can modify the values of any of the power management settings defined below. You may specify one or more setting & value pairs on the command-line invocation of pmset.
+The
+.Fl a,
+.Fl b,
+.Fl c,
+.Fl u
+flags determine whether the settings apply to battery (
+.Fl b
+),
+charger (wall power) (
+.Fl c
+), UPS (
+.Fl u
+) or all (
+.Fl a
+).
+.Pp
+Use a minutes argument of 0 to set the idle time to never for
+.Ar sleep
+.Ar disksleep
+and
+.Ar displaysleep
+.
+.Pp
+.Nm
+must be run as root in order to modify any settings.
+.Sh SETTINGS
+.Ar displaysleep
+- display sleep timer; replaces 'dim' argument in 10.4 (value in minutes, or 0 to disable)
+.br
+.Ar disksleep 
+- disk spindown timer; replaces 'spindown' argument in 10.4 (value in minutes, or 0 to disable)
+.br
+.Ar sleep
+- system sleep timer (value in minutes, or 0 to disable)
+.br
+.Ar womp
+- wake on ethernet magic packet (value = 0/1). Same as "Wake for network access" in the Energy Saver preferences.
+.br
+.Ar ring
+- wake on modem ring (value = 0/1)
+.br
+.Ar powernap
+- enable/disable Power Nap on supported machines (value = 0/1)
+.br
+.Ar autorestart
+- automatic restart on power loss (value = 0/1)
+.br
+.Ar lidwake
+- wake the machine when the laptop lid (or clamshell) is opened (value = 0/1)
+.br
+.Ar acwake 
+- wake the machine when power source (AC/battery) is changed (value = 0/1)
+.br
+.Ar lessbright
+- slightly turn down display brightness when switching to this power source (value = 0/1)
+.br
+.Ar halfdim
+- display sleep will use an intermediate half-brightness state between full brightness and fully off  (value = 0/1)
+.br
+.Ar sms
+- use Sudden Motion Sensor to park disk heads on sudden changes in G force (value = 0/1)
+.br
+.Ar hibernatemode
+- change hibernation mode. Please use caution. (value = integer)
+.br
+.Ar hibernatefile
+- change hibernation image file location. Image may only be located on the root volume. Please use caution. (value = path)
+.br
+.Ar ttyskeepawake
+- prevent idle system sleep when any tty (e.g. remote login session) is 'active'. A tty is 'inactive' only when its idle time exceeds the system sleep timer. (value = 0/1)
+.br
+.Ar networkoversleep
+- this setting affects how OS X networking presents shared network services during system sleep. This setting is not used by all platforms; changing its value is unsupported.
+.br
+.Ar destroyfvkeyonstandby
+- Destroy File Vault Key when going to standby mode. By default File vault keys are retained even when system goes to standby. If the keys are destroyed, user will be prompted to enter the password while coming out of standby mode.(value: 1 - Destroy, 0 - Retain)
+.Sh GETTING
+.Fl g
+(with no argument) will display the settings currently in use.
+.br
+.Fl g
+.Ar live
+displays the settings currently in use.
+.br
+.Fl g
+.Ar custom
+displays custom settings for all power sources.
+.br
+.Fl g
+.Ar cap
+displays which power management features the machine supports.
+.br
+.Fl g
+.Ar sched 
+displays scheduled startup/wake and shutdown/sleep events.
+.br
+.Fl g
+.Ar ups
+displays UPS emergency thresholds.
+.br
+.Fl g
+.Ar ps
+/
+.Ar batt
+displays status of batteries and UPSs.
+.br
+.Fl g
+.Ar pslog
+displays an ongoing log of power source (battery and UPS) state.
+.br
+.Fl g
+.Ar rawlog
+displays an ongoing log of battery state as read directly from battery.
+.br
+.Fl g
+.Ar therm
+shows thermal conditions that affect CPU speed. Not available on all platforms.
+.br
+.Fl g
+.Ar thermlog
+shows a log of thermal notifications that affect CPU speed. Not available on all platforms.
+.br
+.Fl g
+.Ar assertions
+displays a summary of power assertions. Assertions may prevent system sleep or display sleep. Available 10.6 and later.
+.br
+.Fl g
+.Ar assertionslog
+shows a log of assertion creations and releases. Available 10.6 and later.
+.br
+.Fl g
+.Ar sysload
+displays the "system load advisory" - a summary of system activity available from the IOGetSystemLoadAdvisory API. Available 10.6 and later.
+.br
+.Fl g
+.Ar sysloadlog
+displays an ongoing log of lives changes to the system load advisory. Available 10.6 and later.
+.br
+.Fl g
+.Ar ac
+/
+.Ar adapter
+will display details about an attached AC power adapter. Only supported for MacBook and MacBook Pro.
+.br
+.Fl g
+.Ar log
+displays a history of sleeps, wakes, and other power management events. This log is for admin & debugging purposes.
+.br
+.Fl g
+.Ar uuid
+displays the currently active sleep/wake UUID; used within OS X to correlate sleep/wake activity within one sleep cycle.
+.Ar history
+.br
+.Fl g
+.Ar uuidlog 
+displays the currently active sleep/wake UUID, and prints a new UUID as they're set by the system.
+.br
+.Fl g
+.Ar history
+is a debugging tool. Prints a timeline of system sleeplwake UUIDs, when enabled with boot-arg io=0x3000000.
+.br
+.Fl g
+.Ar historydetailed
+Prints driver-level timings for a sleep/wake. Pass a UUID as an argument.
+.br
+.Fl g
+.Ar powerstate
+[class names]
+Prints the current power states for I/O Kit drivers. Caller may provide one or more I/O Kit class names (separated by spaces) as an argument. If no classes are provided, it will print all drivers' power states.
+.br
+.Fl g
+.Ar powerstatelog
+[-i interval] [class names]
+Periodically prints the power state residency times for some drivers. Caller may provide one or more I/O Kit class names (separated by spaces). If no classes are provided, it will log the IOPower plane's root registry entry. Caller may specify a polling interval, in seconds with -i <polling interval>; otherwise it defaults to 5 seconds.
+.br
+.Fl g
+.Ar stats
+Prints the counts for number sleeps and wakes system has gone thru since boot.
+.br
+.Fl g
+.Ar systemstate
+Prints the current power state of the system and available capabilites.
+.br
+.Fl g
+.Ar everything
+Prints output from every argument under the GETTING header. This is useful for quickly collecting all the output that pmset provides. Available in 10.8.
+.Sh SAFE SLEEP ARGUMENTS
+.Ar hibernatemode
+supports values of 0, 3, or 25. Whether or not a hibernation image gets written is also dependent on the values of
+.Ar standby
+and
+.Ar autopoweroff
+.Pp
+For example, on desktops that support
+.Ar standby
+a hibernation image will be written after the specified
+.Ar standbydelay
+time. To disable hibernation images completely, ensure
+.Ar hibernatemode
+.Ar standby
+and
+.Ar autopoweroff
+are all set to 0.
+.Pp
+.Ar hibernatemode 
+= 0 by default on desktops. The system will not back memory up to persistent storage. The system must wake from the contents of memory; the system will lose context on power loss. This is, historically, plain old sleep.
+.Pp
+.Ar hibernatemode 
+= 3 by default on portables. The system will store a copy of memory to persistent storage (the disk), and will power memory during sleep. The system will wake from memory, unless a power loss forces it to restore from hibernate image.
+.Pp
+.Ar hibernatemode
+= 25 is only settable via pmset. The system will store a copy of memory to persistent storage (the disk), and will remove power to memory. The system will restore from disk image. If you want "hibernation" - slower sleeps, slower wakes, and better battery life, you should use this setting.
+.Pp
+Please note that
+.Ar hibernatefile
+may only point to a file located on the root volume.
+.Sh STANDBY ARGUMENTS
+.Ar standby
+causes kernel power management to automatically hibernate a machine after it has slept for a specified time period. This saves power while asleep. This setting defaults to
+.Ar ON
+for supported hardware. The setting
+.Ar standby
+will be visible in
+.Nm
+.Fl g
+if the feature is supported on this machine.
+.Pp
+.Ar standbydelay
+specifies the delay, in seconds, before writing the hibernation image to disk and powering off memory for Standby.
+
+.Ar autopoweroff
+is enabled by default on supported platforms as an implementation of Lot 6 to the European Energy-related Products Directive. After sleeping for <autopoweroffdelay> seconds, the system will write a hibernation image and go into a lower power chipset sleep. Wakeups from this state will take longer than wakeups from regular sleep.
+.Pp
+.Ar autopoweroffdelay
+specifies the delay, in seconds, before entering autopoweroff mode.
+.Sh UPS SPECIFIC ARGUMENTS
+.br
+UPS-specific arguments are only valid following the 
+.Fl u 
+option. UPS settings also have an on/off value. Use a -1 argument instead of percent 
+or minutes to turn any of these settings off. If multiple halt conditions are specified,
+the system will halt on the first condition that occurs in a low power situation.
+.Pp
+.Ar haltlevel
+- when draining UPS battery, battery level at which to trigger an emergency shutdown (value in %)
+.br
+.Ar haltafter
+- when draining UPS battery, trigger emergency shutdown after this long running on UPS power (value in minutes, or 0 to disable)
+.br
+.Ar haltremain
+- when draining UPS battery, trigger emergency shutdown when this much time remaining on UPS power is estimated (value in minutes, or 0 to disable)
+.Pp
+Note: None of these settings are observed on a system with support for an internal battery, such as a laptop. UPS emergency shutdown settings are for desktop and server only.
+.Sh SCHEDULED EVENT ARGUMENTS
+.br
+pmset allows you to schedule system sleep, shutdown, wakeup and/or power on. "schedule"
+is for setting up one-time power events, and "repeat" is for setting up daily/weekly 
+power on and power off events. Note that you may only have one pair of repeating events
+scheduled - a "power on" event and a "power off" event. For sleep cycling applications,
+pmset can schedule a "relative" wakeup or poweron to occur in seconds from the end of system sleep/shutdown,
+but this event cannot be cancelled and is inherently imprecise.
+.Pp
+.Ar type 
+- one of sleep, wake, poweron, shutdown, wakeorpoweron
+.br
+.Ar date/time
+- "MM/dd/yy HH:mm:ss" (in 24 hour format; must be in quotes)
+.br
+.Ar time 
+- HH:mm:ss
+.br
+.Ar weekdays
+- a subset of MTWRFSU ("M" and "MTWRF" are valid strings)
+.br
+.Ar owner 
+- a string describing the person or program who is scheduling this one-time power event (optional)
+.Sh POWER SOURCE ARGUMENTS
+.Fl g 
+with a 'batt' or 'ps' argument will show the state of all attached power sources.
+.Pp
+.Fl g 
+with a 'pslog' or 'rawlog' argument is normally used for debugging, such as isolating
+a problem with an aging battery.
+.Sh OTHER ARGUMENTS
+.Ar boot 
+- tell the kernel that system boot is complete (normally LoginWindow does this). May be useful to Darwin users.
+.br
+.Ar touch
+- PM re-reads existing settings from disk.
+.br
+.Ar noidle
+- pmset prevents idle sleep by creating a PM assertion to prevent idle sleep(while running; hit ctrl-c to cancel). This argument is deprecated in favor of 
+.Xr caffeinate 8 . Please use 
+.Xr caffeinate 8 instead.
+.br
+.Ar sleepnow
+- causes an immediate system sleep.
+.br
+.Ar restoredefaults
+- Restores Energy Saver settings to their default values. (Like clicking "Restore Defaults" in Energy Saver GUI).
+.br
+.Ar displaysleepnow
+- causes display to go to sleep immediately.
+.br
+.Ar resetdisplayambientparams
+- resets the ambient light parameters for certain Apple displays.
+.br
+.Ar dim 
+- deprecated in 10.4 in favor of 'displaysleep'. 'dim' will continue to work.
+.br
+.Ar spindown 
+- deprecated in 10.4 in favor of 'disksleep'. 'spindown' will continue to work.
+.Sh EXAMPLES
+This command sets displaysleep to a 5 minute timer on battery power, leaving
+other settings on battery power and other power sources unperturbed.
+.Pp
+.Nm
+.Fl b
+displaysleep 5
+.Pp
+Sets displaysleep to 10, disksleep to 10, system sleep to 30, and
+turns on WakeOnMagicPacket for ALL power sources (AC, Battery, and UPS) as appropriate
+.Pp
+.Nm
+.Fl a
+displaysleep 10 disksleep 10 sleep 30 womp 1
+.Pp
+Restores the system's energy settings to their default values.
+.Pp
+For a system with an attached and supported UPS, this instructs the system to
+perform an emergency shutdown when UPS battery drains to below 40%.
+.Pp
+.Nm
+.Fl u
+haltlevel 40
+.Pp
+For a system with an attached and supported UPS, this instructs the system to
+perform an emergency shutdown when UPS battery drains to below 25%, or when the
+UPS estimates it has less than 30 minutes remaining runtime. The system shuts down
+as soon as either of these conditions is met.
+.Pp
+.Nm
+.Fl u
+haltlevel 25 haltremain 30
+.Pp
+For a system with an attached and supported UPS, this instructs the system to
+perform an emergency shutdown after 2 minutes of running on UPS battery power.
+.Pp
+.Nm
+.Fl u
+haltafter 2
+.Pp
+Schedules the system to automatically wake from sleep on July 4, 2016, at 8PM.
+.Pp
+.Nm
+schedule wake "07/04/16 20:00:00"
+.Pp
+Schedules a repeating shutdown to occur each day, Tuesday through Saturday, at 11AM.
+.Pp
+.Nm
+repeat shutdown TWRFS 11:00:00
+.Pp
+Schedules a repeating wake or power on event every tuesday at 12:00 noon, and a repeating sleep event every night at 8:00 PM.
+.Pp
+.Nm
+repeat wakeorpoweron T 12:00:00 sleep MTWRFSU 20:00:00
+.Pp
+Prints the power management settings in use by the system.
+.Pp
+.Nm
+.Fl g
+.Pp
+Prints a snapshot of battery/power source state at the moment. 
+.Pp
+.Nm
+.Fl g
+batt
+.Pp
+If your system suddenly sleeps on battery power with 20-50% of capacity remaining, leave this command running in a Terminal window. When you see the problem and later power and wake the
+computer, you'll be able to detect sudden discontinuities (like a jump from 30% to 0%) indicative of an aging battery.
+.Pp
+.Nm
+.Fl g
+pslog
+.Pp
+.Sh SEE ALSO
+.Xr caffeinate 8 
+.Sh FILES
+All changes made through
+.Nm
+are saved in a persistent preferences file (per-system, not per-user) at
+.Pa /Library/Preferences/SystemConfiguration/com.apple.PowerManagement.plist
+.Pp
+Scheduled power on/off events are stored separately in
+.Pa /Library/Preferences/SystemConfiguration/com.apple.AutoWake.plist
+.Pp
+.Nm
+modifies the same file that System Preferences Energy Saver modifies.

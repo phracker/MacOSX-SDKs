@@ -1,0 +1,607 @@
+'\"
+
+'\" 
+'\" RCS: @(#) $Id: nroff.xsl,v 1.3 2002/11/11 22:45:19 balls Exp $
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: nroff.xsl,v 1.3 2002/11/11 22:45:19 balls Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH TclDOM n  Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+::dom::DOMImplementation \- Tcl language binding for the W3C Document Object Model
+.SH SYNOPSIS
+\fBpackage require dom\fP
+.sp
+\fBdom\fR\fB2.5\fR\fP
+.sp
+\fB::dom\fR\fB::dom::tcl\fR\fB::dom::libxml2\fR\fP
+.sp
+\fB::dom::DOMImplementation\fI \fImethod\fR ?\fI args ... ?\fP
+.sp
+\fB::dom::create\fI \fIelement\fR\fP
+.sp
+\fB::dom::parse\fI \fIxml\fR ?\fI option\fI value ... ?\fP
+.sp
+\fB::dom::serialize\fI \fItoken\fR ?\fI option\fI value ... ?\fP
+.sp
+\fB::dom::document\fI \fImethod\fR\fI \fItoken\fR ?\fI args ... ?\fP
+.sp
+\fB::dom::node\fI \fImethod\fR\fI \fItoken\fR ?\fI args ... ?\fP
+.sp
+\fB::dom::element\fI \fImethod\fR\fI \fItoken\fR ?\fI args ... ?\fP
+.sp
+\fB::dom::event\fI \fImethod\fR\fI \fItoken\fR ?\fI args ... ?\fP
+.sp
+\fB::dom::selectNode\fI \fItoken\fR\fI \fIxpath\fR ?\fI option value ... ?\fP
+.BE
+
+.SH DESCRIPTION
+
+.PP
+TclDOM is a Tcl language binding for the  (DOM).  DOM provides a view of a XML (or HTML) document as a tree structure.  Currently, TclDOM only supports XML documents.
+
+.PP
+The package implements most of the DOM Level 1 interfaces and also some Level 2 and Level 3 interfaces.  There are also a number of non-standard commands and methods provided for the convenience of application developers (these are documented).
+
+.PP
+The DOM specification should be read in conjunction with this reference manual, as it explains the meaning and purpose of the various interfaces.  This manual is not a tutorial on how to use the DOM.
+
+.PP
+TclDOM also provides several implementations of the API, with a layered architecture.  A generic layer provides a stable API to the application, and specific implementations may register themselves.  Currently, three implementations exists: a pure-Tcl implementation, a C implementation (based on TclDOMPro) and another C implementation based on the Gnome libxml2 & gdome2 libraries.
+
+.SH PACKAGES AND NAMESPACES
+
+.PP
+The TclDOM generic layer defines the  package and also a Tcl namespace using that name.  The generic layer also uses the package name .
+
+.PP
+Implementations define their own package name and Tcl namespace within the generic layer:
+
+.TP
+.RS
+.TP
+\fI\fBTcl implementation\fR\fP 
+.PP
+Package , Tcl namespace \fB::dom::tcl\fR.
+
+.TP
+\fI\fBTclDOMPro\fR\fP 
+.PP
+Package , Tcl namespace \fB::dom::c\fR.
+
+.TP
+\fI\fBlibxml2\fR\fP 
+.PP
+Package , Tcl namespace \fB::dom::libxml2\fR.
+
+.RE
+
+.SH TOKENS
+
+.PP
+The TclDOM API uses  as identifiers for nodes within the document tree.  This technique has been used to allow alternate implementations of TclDOM to be efficient, while retaining compatibility with the pure-Tcl implementation.
+
+.PP
+The format of the token itself as well as the data structure referred to by the token are  public and an application should not rely on these.  Instead, an application should use the accessor methods provided by the API.
+
+.SH DOM INTERFACES
+
+.PP
+Each  in the DOM specification is implemented with a Tcl command in the \fBdom\fR namespace.  A few interfaces have not been mapped to Tcl commands because Tcl already provides the required functionality, for example the  interface.
+
+.PP
+s for interfaces are methods (subcommands) of the corresponding Tcl command.
+
+.PP
+Each  of an interface is a configuration option for an object in the document tree.
+
+.SH CONVENIENCE COMMANDS AND METHODS
+
+.PP
+DOM doesn't always provide an interface, method or attribute for every function required.  For example, until DOM Level 3 for was no standard for creating, parsing and serializing a document.  Sometimes using the standard DOM interface is awkward.  TclDOM provides a number of non-standard features to overcome these problems.
+
+.PP
+A major convenience is that each method of the  interface is also defined as a command.  For example, rather than using \fBdom::DOMImplementation create\fR to create a new document, the shorter command \fBdom::create\fR may be used.
+
+.PP
+Implementations may also provide direct access to specific features.  Refer to the documentation for a DOM implementation.
+
+.SH COMMANDS
+.TP
+\fB::dom::DOMImplementation\fR
+
+.PP
+The \fB::dom::DOMImplementation\fR command implements the  DOM interface.  It is used to provide implementation-specific features not explicitly defined in the DOM specification.
+
+.RS
+.TP
+Command Options
+
+.PP
+The following command options may be used.  These are also available as commands.
+
+.TP
+.RS
+.TP
+\fI\fB\fBhasFeature\fR\fR\fP \fI hasFeature\fI \fIfeature\fR\fP
+.PP
+Provides a test for existence of a feature.  Returns  if a feature is implemented,  otherwise.  Uses the default DOM implementation.
+
+.TP
+\fI\fB\fBcreate\fR\fR\fP \fI create\fI \fItype\fR\fP
+.PP
+Creates the root node of a new DOM document, using the default DOM implementation.  The document element type may be specified as an argument, in which case that element is created.  The return value is a token referring to the root node of the newly created document.
+
+.TP
+\fI\fB\fBcreateDocument\fR\fR\fP \fI createDocument\fI \fInsURI\fR\fI \fItype\fR\fI \fIdoctype\fR\fP
+.PP
+Creates the root node of a new DOM document, using the default DOM implementation.  The document element namespace URI and local-name (element type) may be specified as an argument, in which case that element is created.  If the document type is given then the newly created document is configured to use that document type.  The return value is a token referring to the root node of the newly created document.
+
+.TP
+\fI\fB\fBcreateDocumentType\fR\fR\fP \fI createDocumentType\fI \fItoken\fR\fI \fIname\fR\fI \fIpublicid\fR\fI \fIsystemid\fR\fI \fIinternaldtd\fR\fP
+.PP
+Creates a Document Type Declaration, using the default DOM implementation.  The return value is a token for the newly created document type declaration.
+
+.TP
+\fI\fB\fBcreateNode\fR\fR\fP \fI createNode\fI \fItoken\fR\fI \fIxpath\fR\fP
+.PP
+May create a node in the document.  \fI \fItoken\fR\fR specifies a context for the XPath expression given by \fI \fIxpath\fR\fR.  The expression must resolve to a node.  If the node exists then no further action is taken.  Otherwise the node is created.  The token of the matched or newly created node is returned.
+
+.TP
+\fI\fB\fBdestroy\fR\fR\fP \fI destroy\fI \fItoken\fR\fP
+.PP
+This method frees all data structures associated with a DOM node.  The \fI \fItoken\fR\fR argument must refer to a valid token for any node in the document tree.  The node is removed from the tree before it is destroyed.  If the node has children, they will also be destroyed.
+
+.TP
+\fI\fB\fBisNode\fR\fR\fP \fI isNode\fI \fItoken\fR\fP
+.PP
+Tests whether the given token is a valid token for some DOM node in the default DOM implementation.
+
+.TP
+\fI\fB\fBparse\fR\fR\fP \fI parse\fI \fIxml\fR ?\fI \fIoption\fR\fI \fIvalue\fR?\fP
+.PP
+This method parses XML formatted text given by the \fI \fIxml\fR\fR argument and constructs a DOM tree for the document.  The return result is the token of the root node of the newly created document.
+
+.PP
+This method requires an event-based XML parser to be loaded to perform the parsing operation.  The  package itself does not include an XML parser.  Support for the use of  is provided.  Any other Tcl event-based XML parser
+implementing the TclXML API may also be used.  The \fI -parser\fR may be used to specify which XML parser to use.
+
+.PP
+In some circumstances, a DOM implementation may parse the XML document directly, for example libxml2.  In this case, it may not be possible to interpose on the parsing operation.
+
+.PP
+Valid configuration options are:
+
+.TP
+.RS
+.TP
+\fI\fB\fI -parser\fI  ?\fI {}\fI expat\fI tcl?\fR\fP 
+.PP
+This option specifies which XML parser to use to parse the XML data.  If an empty string is given then the default behaviour described above is used.  The value \fI expat\fR specifies that the Expat parser must be used.  The value \fI tcl\fR specifies that the Tcl-only parser must be used.  If an explicit value is given and that parser cannot be loaded then the command will fail, despite the fact that another parser may be available.
+
+.TP
+\fI\fB\fI -progresscommand\fI \fIscript\fR\fR\fP 
+.PP
+This option specifies a Tcl command to be invoked from time to time while the DOM tree is being constructed.  The script will be invoked after a certain number of element start tags have been processed, given by the \fI -chunksize\fR option.
+
+.TP
+\fI\fB\fI -chunksize\fI \fIinteger\fR\fR\fP 
+.PP
+This option specifies how many element start tags to process before invoking the script given by the \fI -progresscommand\fR option.
+
+.RE
+
+.TP
+\fI\fB\fBselectNode\fR\fR\fP \fI selectNode\fI \fItoken\fR\fI \fIxpath\fR ?\fI option value ... ?\fP
+.PP
+Resolves the XPath location path given by \fI \fIxpath\fR\fR.  \fI \fItoken\fR\fR is the initial context for the location path.  Returns the resulting nodeset as a Tcl list.
+
+.PP
+The following options may be specified:
+
+.TP
+.RS
+.TP
+\fI\fB\fI -namespaces\fR\fR\fP 
+.PP
+The value for this option is a list of prefix-URI pairs.  Each of these pairs defines an XML Namespace and its prefix for the purposes of evaluating the XPath expression.  The document itself may use a different prefix for the same XML Namespace.
+
+.PP
+This option may be repeated, in which case the lists of namespace pairs are merged and all of the XML Namespaces registered.
+
+.RE
+
+.TP
+\fI\fB\fBserialize\fR\fR\fP \fI serialize\fI \fItoken\fR ?\fI \fIoption\fR\fI \fIvalue\fR?\fP
+.PP
+This method returns the XML formatted text corresponding to the node given by \fI token\fR.  The text is guaranteed to be a well-formed XML document, unless the \fI -method\fR option specifies a non-XML output method.
+
+.PP
+Valid configuration options are:
+
+.TP
+.RS
+.TP
+\fI\fB\fI -newline\fI \fIelementlist\fR\fR\fP 
+.PP
+This option specifies a list of element types for which newline characters will be added before and after the start and end tags for those elements upon serialization.
+
+.PP
+White space is significant in XML, so the  package never adds extra white spacefor purposes of "pretty-printing" the XML source document.  On some platforms, such as VMS, this can actually cause serious problems due to line length limitations.  This option provides the convenience of adding newlines to certain nominated element types for formatting the source into lines.
+
+.PP
+Examples:
+
+.PP
+Suppose the following DOM document is constructed:
+.PP
+.CS
+
+set doc [::dom::DOMImplementation create]
+set top [::dom::document createElement $doc Root]
+set node [::dom::document createElement $top First]
+::dom::document createElement $node Second
+::dom::document createElement $top First
+
+.CE
+
+.PP
+Without the \fI -newline\fR option the serialized document would be:
+.PP
+.CS
+
+::dom::DOMImplementation serialize $doc
+
+.CE
+
+.PP
+With the \fI -newline\fR option the serialized document would be:
+.PP
+.CS
+
+::dom::DOMImplementation serialize $doc -newline First
+
+.CE
+
+.RE
+
+.TP
+\fI\fB\fBtrim\fR\fR\fP \fI trim\fI \fItoken\fR\fP
+.PP
+This method removes any node containing only white space from the document tree of the node given by \fI \fItoken\fR\fR.
+
+.RE
+
+.RE
+.TP
+\fB::dom::document\fR
+
+.PP
+This command implements the Document interface in the DOM specification.  The most important aspect of this command are its factory methods for creating nodes.
+
+.PP
+The methods accepted by this command are as follows:
+
+.RS
+
+.RE
+.TP
+\fBdom::node\fR
+
+.PP
+This command implements generic functions for DOM nodes.
+
+.PP
+The methods accepted by this command are as follows:
+
+.RS
+
+.RE
+.TP
+\fBdom::element\fR
+
+.PP
+This command provides functions for element type nodes.
+
+.PP
+Valid methods for this command are as follows:
+
+.RS
+
+.RE
+.TP
+\fBdom::processinginstruction\fR
+
+.PP
+This command provides functions for processingInstruction type nodes.
+
+.PP
+Valid methods for this command are as follows:
+
+.RS
+
+.RE
+.TP
+\fBdom::event\fR
+
+.PP
+This command provides functions for event type nodes.
+
+.PP
+Valid methods for this command are as follows:
+
+.RS
+
+.RE
+
+.SH IMPLEMENTATIONS
+
+.PP
+This section documents the various implmentations of the TclDOM API.
+.TP
+Tcl Implementation
+
+.PP
+The Tcl implementation is provided by the  package.
+
+.PP
+It is a reference implementation, and implements the TclDOM API as described above.
+
+.PP
+A DOM tree using this implementation may be created using the \fBdom::tcl::create\fR command.
+
+.RS
+
+.RE
+.TP
+libxml2 Implementation
+
+.PP
+The TclDOM/libxml2 implementation is a wrapper for the .  It is provided by the  package.  It is a high-performance library, making use of Tcl objects for fast access to tree nodes.
+
+.PP
+A DOM tree using this implementation may be created using the \fBdom::libxml2::create\fR command.
+
+.PP
+
+
+.RS
+.TP
+Notes
+
+.RE

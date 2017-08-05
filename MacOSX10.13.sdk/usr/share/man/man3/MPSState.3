@@ -1,0 +1,59 @@
+.TH "MPSState" 3 "Sun Jul 2 2017" "Version MetalPerformanceShaders-84.1" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSState
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSState\&.h>\fP
+.PP
+Inherits NSObject\&.
+.PP
+Inherited by \fBMPSCNNConvolutionState\fP, \fBMPSRNNRecurrentImageState\fP, and \fBMPSRNNRecurrentMatrixState\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nullable instancetype) \- \fBinit\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBreadCount\fP"
+.br
+.ti -1c
+.RI "BOOL \fBisTemporary\fP"
+.br
+.ti -1c
+.RI "NSString * \fBlabel\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+This depends on Metal Framework  An opaque data container for large storage in MPS CNN filters  Some MPS CNN kernels produce additional information beyond a \fBMPSImage\fP\&. These may be pooling indices where the result came from, convolution weights, or other information not contained in the usual \fBMPSImage\fP result from a \fBMPSCNNKernel\fP\&. A \fBMPSState\fP object typically contains one or more expensive MTLResources such as textures or buffers to store this information\&. It provides a base class with interfaces for managing this storage\&. Child classes may add additional functionality specific to their contents\&.
+.PP
+Some \fBMPSState\fP objects are temporary\&. Temporary state objects, like MPSTemporaryImages and Matrices, are for very short lived storage, perhaps just a few lines of code within the scope of a single MTLCommandBuffer\&. They are very efficient for storage, as several temporary objects can share the same memory over the course of a MTLCommandBuffer\&. This can improve both memory usage and time spent in the kernel wiring down memory and such\&. You may find that some large CNN tasks can not be computed without them, as non-temporary storage would simply take up too much memory\&.
+.PP
+In exchange, the lifetime of the underlying storage in temporary \fBMPSState\fP objects needs to be carefully managed\&. ARC often waits until the end of scope to release objects\&. Temporary storage often needs to be released sooner than that\&. Consequently the lifetime of the data in the underlying MTLResources is managed by a readCount property\&. Each time a \fBMPSCNNKernel\fP reads a temporary \fBMPSState\fP object the readCount is automatically decremented\&. When it reaches zero, the underlying storage is recycled for use by other MPS temporary objects, and the data is becomes undefined\&. If you need to consume the data multiple times, you should set the readCount to a larger number to prevent the data from becomming undefined\&. You may set the readCount to 0 yourself to return the storage to MPS, if for any reason, you realize that the \fBMPSState\fP object will no longer be used\&.
+.PP
+The contents of a temporary \fBMPSState\fP object are only valid from creation to the time the readCount reaches 0\&. The data is only valid for the MTLCommandBuffer on which it was created\&. Non-temporary \fBMPSState\fP objects are valid on any MTLCommandBuffer on the same device until they are released\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nullable instancetype) init "
+
+.SH "Property Documentation"
+.PP 
+.SS "\- (BOOL) isTemporary\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- label\fC [read]\fP, \fC [write]\fP, \fC [atomic]\fP, \fC [copy]\fP"
+A string to help identify this object\&. 
+.SS "\- (NSUInteger) readCount\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

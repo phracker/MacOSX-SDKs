@@ -1,0 +1,68 @@
+.\"Copyright (c) 2013 Apple Computer, Inc. All Rights Reserved.
+.Dd 6/22/12
+.Dt qtmodernizer 1
+.Os "Mac OS X"
+.Sh NAME 
+.Nm qtmodernizer
+
+.Nd Tool to convert legacy movies to modern format with minimal changes.
+.Sh SYNOPSIS
+.Nm
+.Op options ...
+.Ar pathToSource
+.Ar [pathToDestination]
+.Sh DESCRIPTION
+.Nm
+is a command line tool to examine a media file which may be in a legacy format or may contain legacy media tracks. In this case a legacy format is one which cannot be read directly by CoreMedia or AVFoundation frameworks.
+.Pp
+.Nm 
+examines all the tracks to determine if they are all in a form that can currently be played. If all tracks are playable and the format is readable, 
+.Nm
+does returns and does nothing. If any of the audio or video tracks are encoded with a codec that CoreMedia does not support, that track will be converted to a modern format, usually H.264 for video and AAC for audio (see --useprores for other choices).
+.Pp
+.It pathToSource must be a file path to a source media file or a directory. The file can be almost any modern or legacy media format. If pathToSource is a directory, then all files in the directory will be modernized.
+.It [pathToDestination] must be directory path or a full file path. If pathToDirectory is not specified, the directory of the source file will be used. If the path is to a directory, the name of created file will be the same as the source with "-modernized" added to the name. The created file will be a QuickTime movie (.mov) file. If no output file is specified, a file will be created in the same directory as the source with "-modernized" appended to the title.
+.Pp
+Command line options of qtmodernizer:
+.Bl -tag -width -indent
+.It Fl h | \-help
+.It Fl p | \-useprores
+If -p or --useprores is specified,
+.Nm
+will use the ProRes video codec and LPCM audio codec instead of H.264 and AAC-LC. For video tracks it will produce AppleProRes422. For audio it will produce uncompressed output (lpcm). Tracks outher than audio or video are not re-encoded and will not be affected. Either AppleProRes422 may be chosen or the AppleProRes4444 option may be chosen but not both.
+.It Fl p4 | \-useprores4444
+If -p4 or --useprores4444 is specified,
+.Nm
+will use the ProRes4444 video codec and LPCM audio codec instead of H.264 and AAC-LC. For video tracks it will produce AppleProRes4444. For audio it will produce uncompressed output (lpcm). Tracks outher than audio or video are not re-encoded and will not be affected. Either AppleProRes4444 may be chosen or the AppleProRes422 option may be chosen but not both.
+.It Fl r | \-replace
+Normally
+.Nm 
+will not replace any existing files. If --replace is specified, a file already existing at the destination path will be replaced by the new output. 
+.Nm
+will not replace the file at original source path used in the command.
+.It Fl v | \-verbose
+Normally 
+.Nm
+only displays important error or warning messages. Specifying --verbose causes other information about the modernization to be displayed on the command line. --infoonly implies --verbose.
+.It Fl i | \-infoonly
+Causes
+.Nm 
+to display information about the tracks contained in the source file and what the modernization process would be for each track (if any) but does not actually produce an output file.
+.El
+.Pp
+.Sh EXAMPLES
+.Pp
+	qtmodernizer legacy_movie.mov modern_movie.mov
+.Pp
+Each legacy audio and video track would be re-encoded to a modern (H.264 or AAC) track with other tracks passed through. The resulting movie is saved as modern_movie.mov
+.Pp
+	qtmodernizer -p legacy_movie.mov modern_movie.mov
+.Pp
+Legacy audio and video tracks would be re-encoded like in the above example but the resulting codecs would be ProRes for video and LPCM for audio
+.Pp
+	qtmodernizer ~/Movies/legacy_movie.mov
+.Pp
+This command will create a modernized movie in the ~/Movies directory named "legacy_movie-modernized.mov"
+.Sh HISTORY
+.Nm
+command first appeared in Mac OS X 10.9.

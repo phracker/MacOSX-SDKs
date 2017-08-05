@@ -1,0 +1,135 @@
+.TH "MPSTemporaryImage" 3 "Wed Jul 20 2016" "Version MetalPerformanceShaders-60" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSTemporaryImage \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSImage\&.h>\fP
+.PP
+Inherits \fBMPSImage\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithTexture:featureChannels:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:imageDescriptor:\fP"
+.br
+.in -1c
+.SS "Class Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) + \fBtemporaryImageWithCommandBuffer:imageDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) + \fBtemporaryImageWithCommandBuffer:textureDescriptor:\fP"
+.br
+.ti -1c
+.RI "(void) + \fBprefetchStorageWithCommandBuffer:imageDescriptorList:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBreadCount\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+\fBMPSImage\fP  MPSTemporaryImages are provided as a fast way to store transient data that will be used promptly and discarded\&.
+.PP
+MPSTemporaryImages can provide for profound reduction in the aggregate texture memory and associated CPU-side allocation cost in your application\&. MPS achieves this by automatically identifying MPSTemporaryImages that do not overlap in time over the course of a MTLCommandBuffer and so can reuse the same memory\&. MPSTemporaryImages leverage MPS's internal cache of preallocated reusable memory to hold pixel data to avoid typical memory allocation performance penalties common to ordinary MPSImages and MTLTextures\&.
+.PP
+To avoid data corruption due to aliasing, MPSTemporaryImages impose some important restrictions:
+.PP
+.IP "\(bu" 2
+The textures are MTLStorageModePrivate\&. You can not, for example, use [MTLTexture getBytes\&.\&.\&.] or [MTLTexture replaceRegion\&.\&.\&.] with them\&. MPSTemporaryImages are strictly read and written by the GPU\&.
+.IP "\(bu" 2
+The temporary image may be used only on a single MTLCommandBuffer\&. This limits the chronology to a single linear time stream\&.
+.IP "\(bu" 2
+The readCount property must be managed correctly\&. Please see the description of the readCount property for full details\&.
+.IP "\(bu" 2
+see also pixel format restrictions for MPSImages in general\&.
+.PP
+.PP
+Since MPSTemporaryImages can only be used with a single MTLCommandBuffer, and can not be used off the GPU, they generally should not be kept around past the completion of the MTLCommandBuffer\&. The lifetime of MPSTemporaryImages is expected to be typically extremely short, perhaps only a few lines of code\&.
+.PP
+To keep the lifetime of the underlying texture allocation as short as possible, the underlying texture is not allocated until the first time the \fBMPSTemporaryImage\fP is used by a \fBMPSCNNKernel\fP or the \&.texture property is read\&. The readCount property serves to limit the lifetime on the other end\&.
+.PP
+You may use the \fBMPSTemporaryImage\&.texture\fP with \fBMPSUnaryImageKernel\fP -encode\&.\&.\&. methods, iff featureChannels <= 4 and the MTLTexture conforms to requirements of that \fBMPSKernel\fP\&. In such cases, the readCount is not modified, since the enclosing object is not available\&. There is no locking mechanism provided to prevent a MTLTexture returned from the \&.texture property from becoming invalid when the readCount reaches 0\&.
+.PP
+MPSTemporaryImages can otherwise be used wherever MPSImages are used\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device(const \fBMPSImageDescriptor\fP *__nonnull) NS_UNAVAILABLE"
+Unavailable\&. Use itemporaryImageForCommandBuffer:textureDescriptor: instead\&. 
+.PP
+Reimplemented from \fBMPSImage\fP\&.
+.SS "\- (nonnull instancetype) initWithTexture: (nonnull id< MTLTexture >) texture(NSUInteger) NS_UNAVAILABLE"
+Unavailable\&. Use temporaryImageForCommandBuffer:textureDescriptor: or -temporaryImageForCommandBuffer:imageDescriptor: instead\&. 
+.PP
+Reimplemented from \fBMPSImage\fP\&.
+.SS "+ (void) prefetchStorageWithCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSImageDescriptor\fP * > *__nonnull) descriptorList"
+Help MPS decide which allocations to make ahead of time  The texture cache that underlies the \fBMPSTemporaryImage\fP can automatically allocate new storage as needed as you create new temporary images\&. However, sometimes a more global view of what you plan to make is useful for maximizing memory reuse to get the most efficient operation\&. This class method hints to the cache what the list of images will be\&.
+.PP
+It is never necessary to call this method\&. It is purely a performance and memory optimization\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer on which the MPSTemporaryImages will be used 
+.br
+\fIdescriptorList\fP A NSArray of MPSImageDescriptors, indicating images that will be created 
+.RE
+.PP
+
+.SS "+ (nonnull instancetype) temporaryImageWithCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(const \fBMPSImageDescriptor\fP *__nonnull) imageDescriptor"
+Initialize a \fBMPSTemporaryImage\fP for use on a MTLCommandBuffer
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The MTLCommandBuffer on which the \fBMPSTemporaryImage\fP will be exclusively used
+.br
+\fIimageDescriptor\fP A valid imageDescriptor describing the \fBMPSImage\fP format to create\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A valid \fBMPSTemporaryImage\fP\&. The object will be released when the command buffer is committed\&. The underlying texture will become invalid before this time due to the action of the readCount property\&. 
+.RE
+.PP
+
+.SS "+ (nonnull instancetype) temporaryImageWithCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(const MTLTextureDescriptor *__nonnull) textureDescriptor"
+Low level interface for creating a \fBMPSTemporaryImage\fP using a MTLTextureDescriptor  This function provides access to MTLPixelFormats not typically covered by -initForCommandBuffer:imageDescriptor: The feature channels will be inferred from the MTLPixelFormat without changing the width\&. The following restrictions apply: 
+.PP
+.nf
+MTLTextureType must be MTLTextureType2D or MTLTextureType2DArray
+MTLTextureUsage must contain at least one of MTLTextureUsageShaderRead, MTLTextureUsageShaderWrite
+MTLStorageMode must be MTLStorageModePrivate
+depth must be 1
+
+.fi
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer on which the \fBMPSTemporaryImage\fP may be used 
+.br
+\fItextureDescriptor\fP A texture descriptor describing the \fBMPSTemporaryImage\fP texture
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A valid \fBMPSTemporaryImage\fP\&. The object will be released when the command buffer is committed\&. The underlying texture will become invalid before this time due to the action of the readCount property\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

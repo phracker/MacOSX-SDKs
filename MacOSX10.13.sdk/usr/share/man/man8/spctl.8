@@ -1,0 +1,169 @@
+.Dd January 19, 2012
+.Dt SPCTL 8
+.Os
+.Sh NAME
+.Nm spctl
+.Nd SecAssessment system policy security
+.Sh SYNOPSIS
+.Nm
+.Ar --assess
+.Op Fl t Ar type
+.Op Fl Dv
+.Ar
+.Nm
+.Ar --master-enable | --master-disable
+.Nm
+.Ar --enable | --disable | --remove
+.Op Fl t Ar type
+.Op Fl -path Ar path
+.Op Fl -requirement Ar requirement
+.Op Fl -anchor Ar hash
+.Op Fl -hash Ar hash
+.Nm
+.Ar --status
+.Sh DESCRIPTION
+.Nm
+manages the security assessment policy subsystem.
+.Pp
+This subsystem maintains and evaluates rules that determine whether
+the system allows the installation, execution, and other operations on
+files on the system.
+.Pp
+.Nm
+requires one command option that determines its principal operation:
+.Bl -tag -width -indent
+.It Fl -add
+Add rule(s) to the system-wide assessment rule database.
+.It Fl a, -assess
+Requests that
+.Nm
+perform an assessment on the
+.Ar files
+given.
+.It Fl -disable
+Disable one or more rules in the assessment rule database.
+Disabled rules are not considered when performing assessment, but
+remain in the database and can be re-enabled later.
+.It Fl -enable
+Enable rule(s) in the assessment rule database, counteracting earlier disabling.
+.It Fl -disable
+.It Fl -master-disable
+Disable the assessment subsystem altogether.
+Operations that would be denied by system policy will be allowed to
+proceed; assessment APIs always report success.
+Requires root access.
+.It Fl -master-enable
+Enable the assessment subsystem.
+Operations that are denied by system policy will fail;
+assessment APIs report the truth.
+Requires root access.
+.It Fl -remove
+Remove rule(s) from the assessment rule database.
+.It Fl -status
+Query whether the assessment subsystem is enabled or disabled.
+.El
+.Pp
+In addition, the following options are recognized:
+.Bl -tag -width -indent
+.It Fl -anchor
+In rule update operations, indicates that the arguments are hashes of anchor certificates.
+.It Fl -continue
+If the assessment of a file fails, continue assessing additional file arguments.
+Without this option, the first failed assessment terminates operation.
+.It Fl -hash
+In rule update operations, indicates that the arguments are code directory hashes.
+.It Fl -ignore-cache
+Do not query or use the assessment object cache.
+This may significantly slow down operation.
+Newly generated assessments may still be stored in the cache.
+.It Fl -label Ar label
+Specifies a string label to attach to new rules, or find in existing rules.
+Labels are arbitrary strings that are assigned by convention.
+Rule labels are optional.
+.It Fl -no-cache
+Do not place the outcome of any assessments into the assessment object cache.
+No other assessment may reuse this outcome.
+This option not prohibit the use of existing cache entries.
+.It Fl -path
+In rule update operations, indicates that the argument(s) denote paths to files on disk.
+.It Fl -priority Ar priority
+In rule update operations, specifies the priority of the rule(s) created or changed.
+Priorities are floating-point numbers.
+Higher numeric values indicate higher priority.
+.It Fl -raw
+When displaying the outcome of an assessment, write it as a \&"raw\&" XML plist instead of parsing it
+in somewhat more friendly form.
+This is useful when used in scripts, or to access newly invented assessment aspects that
+.Nm
+does not yet know about.
+.It Fl -requirement
+In rule update operations, indicates that the argument(s) are code requirement source.
+.It Fl -reset-default
+Unconditionally reset the system policy database to its default value. This discards all changes
+made by administrators. It also heals any corruption to the database. It does not implicitly either
+enable or disable the facility. This must be done as the super user. Reboot after use.
+.It Fl -rule
+In rule update operations, indicates that the argument(s) are the index numbers of existing rules.
+.It Fl t, -type
+Specify which type of assessment is desired:
+.Ar execute
+to assess code execution,
+.Ar install
+to assess installation of an installer package, and
+.Ar open
+to assess the opening of documents.
+The default is to assess execution.
+.It Fl v, -verbose
+Requests more verbose output.
+Repeat the option or give it a higher numeric value to increase verbosity.
+.El
+.Sh RULE SUBJECTS
+The system assessement rule database contains entries that match candidates based on
+Code Requirements.
+.Nm
+allows you to specify these requirements directly using the
+.Fl -requirement
+option.
+In addition, individual programs on disk can be addressed with the --path option (which uses their Designated Requirement).
+The
+.Fl -anchor
+option takes the hash of a (full) certificate and turns it into a requirement matching any
+signature based on that anchor certificate.
+Alternatively, it can take the absolute path of a certificate file on disk, containing the DER form of an anchor certificate.
+Finally, the
+.Fl -hash
+option generates a code requirement that
+denotes only and exactly one program whose CodeDirectory hash is given.
+The means of specifying subjects does not affect the remaining processing.
+.Sh FILES
+.Bl -tag -width "/var/db/SystemPolicy" -compact
+.It Pa /var/db/SystemPolicy
+The system policy database.
+.It Pa /var/db/.SystemPolicy-default
+A copy of the initial distribution version of the system policy database.
+Useful for starting over
+if the database gets messed up beyond recognition.
+.El
+.Sh EXAMPLES
+To check whether Mail.app is allowed to run on the local system:
+.Dl spctl -a /Applications/Mail.app
+.Pp
+To allow Frobozz.app to run on the local system:
+.Dl spctl --add --label \&"My Stuff\&" /Applications/Frobozz.app
+.Pp
+To forbid all code obtained from the Mac App Store from running:
+.Dl spctl --disable --label \&"Mac App Store\&"
+.Sh DIAGNOSTICS
+.Nm
+exits zero on success, or one if an operation has failed.
+Exit code two indicates unrecognized or unsuitable arguments.
+If an assessment operation results in denial but no other problem has
+occurred, the exit code is three.
+.Sh SEE ALSO
+.Xr codesign 1 ,
+.Xr syspolicyd 1
+.\" .Sh BUGS
+.Sh HISTORY
+The system policy facility and
+.Nm
+command first appeared in Mac OS X Lion 10.7.3 as a limited developer preview.

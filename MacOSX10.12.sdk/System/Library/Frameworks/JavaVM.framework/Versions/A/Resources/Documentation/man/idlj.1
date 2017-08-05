@@ -1,0 +1,793 @@
+'\" t
+.\" @(#)idlj.1 1.20 01/03/10 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits riservis.
+.\" 
+.TH idlj 1 "10 March 2001"
+.SH NAME
+idlj - The IDL-to-Java Compiler (RMI-IIOP version)
+.LP
+.B idlj
+generates Java bindings from a given IDL file.
+.SH SYNOPSIS
+.B idlj
+[
+.IB options
+]
+.I idl-file
+.LP
+where
+.I idl-file
+is the name of a file containing Interface Definition Language (IDL)
+definitions.
+.I Options
+may appear in any order, but must precede the
+.IR idl-file .
+.SH DESCRIPTION
+The IDL-to-Java Compiler generates the Java bindings for a
+given IDL file.  For binding details, see the OMG IDL to Java
+Language Mapping Specification. Some previous releases of the
+IDL-to-Java compiler were named 
+.BR idltojava . 
+.SH Emitting Client and Server Bindings
+To generate Java bindings for an IDL file named 
+.BR My.idl : 
+.LP
+.RS
+.ft 3
+.nf
+idlj My.idl
+.fi
+.ft 1
+.RE
+.LP
+This generates the client-side bindings and is equivalent to:
+.LP
+.RS
+.ft 3
+.nf
+idlj -fclient My.idl
+.fi
+.ft 1
+.RE
+.LP
+The client-side bindings do not include the server-side
+skeleton. If you want to generate the server-side bindings for
+the interfaces: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -fserver My.idl
+.fi
+.ft 1
+.RE
+.LP
+Server-side bindings include the client-side bindings plus the
+skeleton, all of which are POA (that is, Inheritance Model) classes.
+If you want to generate both client and server-side bindings,
+use one of the following (equivalent) commands:
+.LP
+.RS
+.ft 3
+.nf
+idlj -fclient -fserver My.idl
+.br
+idlj -fall My.idl
+.fi
+.ft 1
+.RE
+.LP
+There are two possible server-side models: the Inneritance Model and
+the Tie Model.
+.LP
+The default server-side model is the 
+.B Portable Servant Inheritance 
+.BR Model . 
+Given an interface My defined in
+.BR My.idl , 
+the file 
+.BR MyPOA.java 
+is generated. You must provide the
+implementation for 
+.BR My 
+and it must inherit from 
+.BR MyPOA .
+.LP
+.BR MyPOA.java 
+is a stream-based skeleton that extends
+.BR org.omg.PortableServer.Servant 
+and implements the
+.BR InvokeHandler 
+interface and the operations interface associated
+with the IDL interface the skeleton implements. 
+.LP
+The 
+.BR PortableServer 
+module for the 
+.B Portable Object Adapter (POA) 
+defines the native Servant type. In the Java programming
+language, the 
+.BR Servant 
+type is mapped to the Java
+.BR org.omg.PortableServer.Servant 
+class. It serves as the base
+class for all POA servant implementations and provides a
+number of methods that may be invoked by the application
+programmer, as well as methods which are invoked by the POA
+itself and may be overridden by the user to control aspects of
+servant behavior. 
+.LP
+Another option for the Inheritance Model is to use the
+.BR -oldImplBase 
+flag in order to generate server-side bindings that
+are compatible with older version of the Java programming
+language (prior to J2SE 1.4). To generate server-side bindings
+that are backwards compatible: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -fclient -fserver -oldImplBase My.idl
+.br
+idlj -fall -oldImplBase My.idl
+.fi
+.ft 1
+.RE
+.LP
+Given an interface
+.BR My
+defined in
+.BR My.idl ,
+the file
+.BR _MyImpleBase.java
+is generated. You must provide the implementation for
+.BR My
+and it must inherit from
+.BR _MyImplBase .
+.LP
+The other server-side model is called the Tie Model. This is a
+delegation model. Because it is not possible to generate ties and
+skeletons at the same time, they must be generated separately.
+The following commands generate the bindings for the Tie
+Model: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -fall My.idl
+.br
+idlj -fallTIE My.idl
+.fi
+.ft 1
+.RE
+.LP
+For the interface 
+.BR My , 
+the second command generates
+.BR MyPOATie.java .
+The constructor to 
+.BR MyPOATie
+takes a delegate.
+You must provide the implementation for delegate, but it does
+not have to inherit from any other class, only the interface
+.BR MyOperations .
+But to use it with the ORB, you must wrap your
+implementation within
+.BR MyPOATie .
+For instance: 
+.LP
+.RS
+.ft 3
+.nf
+MyImpl myImpl = new MyImpl ();
+.br
+My POATie tie = new MyPOATie (myImpl);
+.br
+orb.connect (tie);
+.fi
+.ft 1
+.RE
+.LP
+You might want to use the Tie model instead of the typical
+Inheritance model if your implementation must inherit from
+some other implementation. Java allows any number of interface
+inheritance, but there is only one slot for class inheritance. If you
+the inheritance model, that slot is used up . By using the Tie
+Model, that slot is freed up for your own use. The drawback is
+that it introduces a level of indirection: one extra method call
+occurs when invoking a method. 
+.LP
+To generate server-side, Tie model bindings that are compatible
+with older version of the IDL to Java language mapping in
+versions of J2SE before 1.4.
+.LP
+.RS
+.ft 3
+.nf
+idlj -oldImplBase -fall My.idl
+.br
+idlj -oldImplBase -fallTIE My.idl
+.fi
+.ft 1
+.RE
+.LP
+For the interface 
+.BR My ,
+this will generate 
+.BR My_Tie.java .
+The constructor to 
+.BR My_Tie 
+takes a 
+.BR impl .
+You must provide the
+implementation for 
+.BR impl ,
+but it does not have to inherit from
+any other class, only the interface 
+.BR HelloOperations .
+But to use it
+with the ORB, you must wrap your implementation within
+.BR My_Tie .
+For instance: 
+.LP
+.RS
+.ft 3
+.nf
+MyImpl myImpl = new MyImpl ();
+.br
+My_Tie tie = new My_Tie (myImpl);
+.br
+orb.connect (tie);
+.fi
+.ft 1
+.RE
+.LP
+.SH Specifying Alternate Locations for Emitted Files
+.br
+If you want to direct the emitted files to a directory other than
+the current directory, invoke the compiler as: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -td /altdir My.idl
+.fi
+.ft 1
+.RE
+.LP
+For the interface 
+.BR My ,
+the bindings will be emitted to
+.BR /altdir/My.java ,
+etc., instead of 
+.BR ./My.java. 
+.SH
+Specifying Alternate Locations for Include Files
+If 
+.BR My.idl 
+included another idl file, 
+.BR MyOther.idl ,
+the compiler
+assumes that 
+.BR MyOther.idl 
+resides in the local directory. If it
+resides in 
+.BR /includes ,
+for example, then you would invoke the
+compiler with the following command: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -i /includes My.idl
+.fi
+.ft 1 
+.RE
+.LP
+If 
+.BR My.idl
+also included 
+.BR Another.idl 
+that resided in
+.BR /moreIncludes ,
+for example, then you would invoke the
+compiler with the following command: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -i /includes -i /moreIncludes My.idl
+.fi
+.ft 1 
+.RE
+.LP
+Since this form of include can become irritatingly long, another
+means of indicating to the compiler where to search for included
+files is provided. This technique is similar to the idea of an
+environment variable. Create a file named 
+.BR idl.config 
+in a
+directory that is listed in your CLASSPATH. Inside of 
+.BR idl.config ,
+provide a line with the following form: 
+.LP
+.RS
+.ft 3
+.nf
+includes=/includes;/moreIncludes
+.fi
+.ft 1 
+.RE
+.LP
+The compiler will find this file and read in the includes list. Note
+that in this example the separator character between the two
+directories is a semicolon (;). This separator character is platform
+dependent. On NT it is a semicolon, on Solaris it is a colon, etc.
+For more information on includes, read the CLASSPATH 
+documentation. 
+.SH Emitting Bindings for Include Files
+By default, only those interfaces, structs, etc, that are defined in
+the idl file on the command line have Java bindings generated
+for them. The types defined in included files are not generated.
+For example, assume the following two idl files: 
+.TP
+.B My.idl
+.LP
+.RS
+#include <MyOther.idl> 
+.br
+interface My 
+.br
+{ 
+.br
+}; 
+.RE
+.TP
+.B MyOther.idl
+.LP
+.RS
+interface MyOther 
+.br
+{ 
+.br
+};
+.RE
+.LP
+The following command will only generate the java bindings for
+.BR My :
+.LP
+.RS
+.ft 3
+.nf
+idlj My.idl
+.fi
+.ft 1
+.RE
+.LP
+To generate all of the types in 
+.BR My.idl 
+and all of the types in the
+files that 
+.BR My.idl 
+includes (in this example, 
+.BR MyOther.idl ), 
+use
+the following command: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -emitAll My.idl 
+.fi
+.ft 1
+.RE
+.LP
+There is a caveat to the default rule. 
+.BR #include 
+statements which
+appear at global scope are treated as described. These 
+.BR #include 
+statements can be thought of as import statements. 
+.BR #include
+statements which appear within some enclosing scope are
+treated as true 
+.BR #include 
+statements, meaning that the code
+within the included file is treated as if it appeared in the
+original file and, therefore, Java bindings are emitted for it. Here
+is an example: 
+.TP
+.B My.idl
+.LP
+.RS
+#include <MyOther.idl> 
+.br
+interface My 
+.br
+{ 
+.br
+  #include <Embedded.idl> 
+.br
+}; 
+.RE
+.TP
+.B MyOther.idl
+.LP
+.RS
+interface MyOther 
+.br
+{ 
+.br
+}; 
+.RE
+.TP
+.B Embedded.idl
+.LP
+.RS
+enum E {one, two, three};
+.RE
+.LP
+Running the following command:
+.LP
+.RS
+.ft 3
+.nf
+idlj My.idl
+.fi
+.ft 1
+.RE
+.LP
+will generate the following list of Java files:
+.LP
+.RS
+.ft 3
+.nf
+./MyHolder.java 
+./MyHelper.java 
+./_MyStub.java 
+./MyPackage 
+./MyPackage/EHolder.java 
+./MyPackage/EHelper.java 
+./MyPackage/E.java 
+./My.java
+.fi
+.ft 1
+.RE
+.LP
+Notice that 
+.BR MyOther.java 
+was not generated because it is
+defined in an import-like 
+.BR #include . 
+But 
+.BR E.java 
+was generated
+because it was defined in a true 
+.BR #include . 
+Also notice that since
+.BR Embedded.idl 
+was included within the scope of the interface 
+.BR My ,
+it appears within the scope of 
+.BR My 
+(that is,in 
+.BR MyPackage ).
+.LP
+If the 
+.BI -emitAll 
+flag had been used in the previous example, then
+all types in all included files would be emitted. 
+.SH Inserting Package Prefixes
+Suppose that you work for a company named ABC that has
+constructed the following IDL file: 
+.TP
+.B Widgets. idl
+module Widgets 
+.br
+{ 
+.br
+  interface W1 {...}; 
+.br
+  interface W2 {...}; 
+.br
+}; 
+.LP
+Running this file through the IDL-to-Java compiler will place the
+Java bindings for W1 and W2 within the package Widgets. But
+there is an industry convention that states that a company's
+packages should reside within a package named 
+.BR com.<company name> . 
+The 
+.BR Widgets 
+package is not good enough. To follow
+convention, it should be 
+.BR com.abc.Widgets . 
+To place this package
+prefix onto the 
+.BR Widgets 
+module, execute the following: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -pkgPrefix Widgets com.abc Widgets.idl
+.fi
+.ft 1
+.RE
+.LP
+If you have an IDL file which includes 
+.BR Widgets.idl , 
+the
+.BI \-pkgPrefix 
+flag must appear in that command also. If it does
+not, then your IDL file will be looking for a 
+.BR Widgets 
+package
+rather than a 
+.BR com.abc.Widgets 
+package. 
+.LP
+If you have a number of these packages that require prefixes, it
+might be easier to place them into the 
+.BR idl.config 
+file described
+above. Each package prefix line should be of the form: 
+.LP
+.RS
+.ft 3
+.nf
+PkgPrefix.<type>=<prefix>
+.fi
+.ft 1
+.RE
+.LP
+So the line for the above example would be:
+.LP
+.RS
+.ft 3
+.nf
+PkgPrefix.Widgets=com.abc
+.fi
+.ft 1
+.RE
+.LP
+The use of this options does not affect the Repository ID.
+.SH Defining Symbols Before Compilation
+You may need to define a symbol for compilation that is not
+defined within the IDL file, perhaps to include debugging code
+in the bindings. The command 
+.LP
+.RS
+.ft 3
+.nf
+idlj -d MYDEF My.idl
+.fi
+.ft 1
+.RE
+.LP
+is the equivalent of putting the line 
+.BR #define 
+.BR MYDEF 
+inside
+.BR My.idl .
+.SH
+Preserving Pre-Existing Bindings
+If the Java binding files already exist, the 
+.BI \-keep 
+flag will keep
+the compiler from overwriting them. The default is to generate
+all files without considering if they already exist. If you've
+customized those files (which you should not do unless you are
+very comfortable with their contents), then the 
+.BI \-keep 
+option is
+very useful. The command 
+.LP
+.RS
+.ft 3
+.nf
+idlj -keep My.idl
+.fi
+.ft 1
+.RE
+.LP
+emit all client-side bindings that do not already exist.
+.SH Viewing Progress of Compilation
+The IDL-to-Java compiler will generate status messages as it
+progresses through its phases of execution. Use the 
+.BR -v 
+option to
+activate this "verbose" mode: 
+.LP
+.RS
+.ft 3
+.nf
+idlj -v My.idl
+.fi
+.ft 1
+.RE
+.LP
+By default the compiler does not operate in verbose mode.
+.SH Displaying Version Information
+To display the build version of the IDL-to-Java compiler, specify
+the 
+.BI \-version 
+option on the command-line:
+.LP
+.RS
+.ft 3
+.nf
+idlj -version 
+.fi
+.ft 1
+.RE
+.LP
+Version information also appears within the bindings generated
+by the compiler. Any additional options appearing on the
+command-line are ignored. 
+.SH OPTIONS
+.TP
+.BI \-d " symbol"
+This is equivalent to the following line in an IDL file:
+.LP
+.RS
+.ft 3
+.nf
+#define symbol
+.fi
+.ft 1
+.RE
+.TP
+.BI \-emitAll
+Emit all types, including those found in
+.BR #include
+files.
+.TP
+.BI \-fside
+Defines what bindings to emit. 
+.BI side 
+is one of 
+.BR client,
+.BR server, 
+.BR serverTIE, 
+.BR all, 
+or 
+.BR allTIE. The 
+.BR \-fserverTIE and
+.BR \-fallTIE 
+options cause delegate model skeletons to be
+emitted. Assumes 
+.BR \-fclient 
+if the flag is not specified. 
+.TP
+.BI \-i " include-path"
+By default, the current directory is scanned for included
+files. This option adds another directory. 
+.TP
+.BI \-keep
+If a file to be generated already exists, do not overwrite it.
+By default it is overwritten. 
+.TP
+.BI \-noWarn
+Supresses warning messages.
+.TP
+.BI \-oldImplBase
+Generates skeletons compatible with old (pre-1.4) JDK
+ORBs. By default, the POA Inheritance Model server-side
+bindings are generated. This option provides
+backward-compatibility with older versions of the Java
+programming language by generating server-side
+bindings that are 
+.BR ImplBase 
+Inheritance Model classes. 
+.TP
+.BI \-pkgPrefix " type prefix"
+Wherever 
+.BI type 
+is encountered at file scope, prefix the
+generated Java package name with 
+.BI prefix 
+for all files
+generated for that type. The 
+.BI type 
+is the simple name of
+either a top-level module, or an IDL type defined outside
+of any module. 
+.TP
+.BI \-pkgTranslate " type package"
+Wherever the type or module name 
+.BI type 
+is encountered,
+replace it in the with 
+.BI package 
+for all files in the
+generated Java package. Note that 
+.BR pkgPrefix 
+changes are
+made first. 
+.BI type 
+is the simple name of either a top-level
+module, or an IDL type defined outside of any module,
+and must match the full package name exactly. Also note
+that the following package names cannot be translated: 
+.LP
+.RS
+.TP 2
+\(bu org
+.TP 2
+\(bu org.omg or any subpackages of org.omg
+.LP
+Any attempt to translate these packages will result in
+uncompilable code, and the use of these packages as the
+first argument after 
+.BR \-pkgTranslate 
+will be treated as an error. 
+.RE
+.TP
+.BI \-skeletonName " xxx%yyy"
+Use
+.BI xxx%yyy
+as the pattern for naming the skeleton. The defaults are
+.LP
+.RS
+.TP 2
+\(bu %POA for the POA base class (
+.BR \-fserver
+or
+.BR \-fall )
+.TP 2
+\(bu %ImplBase for the oldImplBase class (
+.BR \-oldImplBase
+and (
+.BR \-fserver
+or
+.BR \-fall ))
+.RE
+.TP
+.BI \-td " dir"
+Use
+.BI dir
+for the output directory instead of the current directory.
+.TP
+.BI \-tieName " xxx%yyy"
+Name the tie according to the pattern. The defaults are:
+.LP
+.RS
+.TP 2
+\(bu %POATie for the POA tie base class (
+.BR \-fserverTie
+or
+.BR \-fallTie )
+.TP 2
+\(bu %_Tie for the 
+.BR oldImplBase 
+tie class (
+.BR \-oldImplBase
+and (
+.BR \-fserverTie
+or
+.BR \-fallTie ))
+.RE
+.TP
+.BR \-nowarn , \-verbose
+Verbose mode.
+.TP
+.BI \-version
+Display version information and terminate.
+.LP
+See the Description section for more option information.
+.SH Restrictions
+.LP
+.TP 2
+\(bu Escaped identifiers in the global scope may not have the
+same spelling as IDL primitive types, 
+.BR Object , 
+or
+.BR ValueBase . 
+This is because the symbol table is pre-loaded
+with these identifiers; allowing them to be redefined
+would overwrite their original definitions. (Possible
+permanent restriction). 
+.TP 2
+\(bu The fixed IDL type is not supported.

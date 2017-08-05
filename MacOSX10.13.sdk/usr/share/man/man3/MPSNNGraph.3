@@ -1,0 +1,207 @@
+.TH "MPSNNGraph" 3 "Sun Jul 2 2017" "Version MetalPerformanceShaders-84.1" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSNNGraph
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSNNGraph\&.h>\fP
+.PP
+Inherits \fBMPSKernel\fP, <NSCopying>, and <NSSecureCoding>\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithDevice:resultImage:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBencodeToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBencodeToCommandBuffer:sourceImages:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBexecuteAsyncWithSourceImages:completionHandler:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSArray< id< \fBMPSHandle\fP > > * \fBsourceImageHandles\fP"
+.br
+.ti -1c
+.RI "NSArray< id< \fBMPSHandle\fP > > * \fBsourceStateHandles\fP"
+.br
+.ti -1c
+.RI "NSArray< id< \fBMPSHandle\fP > > * \fBintermediateImageHandles\fP"
+.br
+.ti -1c
+.RI "NSArray< id< \fBMPSHandle\fP > > * \fBresultStateHandles\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSHandle\fP > \fBresultHandle\fP"
+.br
+.ti -1c
+.RI "BOOL \fBoutputStateIsTemporary\fP"
+.br
+.ti -1c
+.RI "id< MPSImageAllocator > \fBdestinationImageAllocator\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+Optimized representation of a graph of MPSNNImageNodes and MPSNNFilterNodes  Once you have prepared a graph of MPSNNImageNodes and MPSNNFilterNodes (and if needed MPSNNStateNodes), you may initialize a \fBMPSNNGraph\fP using the \fBMPSNNImageNode\fP that you wish to appear as the result\&. The \fBMPSNNGraph\fP object will introspect the graph representation and determine which nodes are needed for inputs, and which nodes are produced as output state (if any)\&. Nodes which are not needed to calculate the result image node are ignored\&. Some nodes may be internally concatenated with other nodes for better performance\&.
+.PP
+Note: the \fBMPSNNImageNode\fP that you choose as the result node may be interior to a graph\&. This feature is provided as a means to examine intermediate computations in the full graph for debugging purposes\&.
+.PP
+During \fBMPSNNGraph\fP construction, the graph attached to the result node will be parsed and reduced to an optimized representation\&. This representation may be saved using the \fBNSSecureCoding\fP protocol for later recall\&.
+.PP
+When decoding a \fBMPSNNGraph\fP using a NSCoder, it will be created against the system default MTLDevice\&. If you would like to set the MTLDevice, your NSCoder should conform to the <MPSDeviceProvider> protocol\&.
+.PP
+You may find it helpful to set MPSKernelOptionsVerbose on the graph when debugging\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (\fBMPSImage\fP * __nonnull) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSImage\fP * > *__nonnull) sourceImages"
+Encode the graph to a MTLCommandBuffer
+.PP
+IMPORTANT: Please use [MTLCommandBuffer addCompletedHandler:] to determine when this work is done\&. Use CPU time that would have been spent waiting for the GPU to encode the next command buffer and commit it too\&. That way, the work for the next command buffer is ready to go the moment the GPU is done\&. This will keep the GPU busy and running at top speed\&.
+.PP
+Those who ignore this advice and use [MTLCommandBuffer waitUntilCompleted] instead will likely cause their code to slow down by a factor of two or more\&. The CPU clock spins down while it waits for the GPU\&. When the GPU completes, the CPU runs slowly for a while until it spins up\&. The GPU has to wait for the CPU to encode more work (at low clock), giving it plenty of time to spin its own clock down\&. In typical CNN graph usage, neither may ever reach maximum clock frequency, causing slow down far beyond what otherwise would be expected from simple failure to schedule CPU and GPU work concurrently\&. Regrattably, it is probable that every performance benchmark you see on the net will be based on [MTLCommandBuffer waitUntilCompleted]\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer 
+.br
+\fIsourceImages\fP A list of MPSImages to use as the source images for the graph\&. These should be in the same order as the list returned from \fBMPSNNGraph\&.sourceImageHandles\fP\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A \fBMPSImage\fP or \fBMPSTemporaryImage\fP allocated per the destinationImageAllocator containing the output of the graph\&. It will be automatically released when commandBuffer completes\&. 
+.RE
+.PP
+
+.SS "\- (\fBMPSImage\fP * __nonnull) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSImage\fP * > *__nonnull) sourceImages(NSArray< \fBMPSState\fP * > *__nullable) sourceStates(NSMutableArray< \fBMPSImage\fP * > *__nullable) intermediateImages(NSMutableArray< \fBMPSState\fP * > *__nullable) destinationStates"
+Encode the graph to a MTLCommandBuffer 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer 
+.br
+\fIsourceImages\fP A list of MPSImages to use as the source images for the graph\&. These should be in the same order as the list returned from \fBMPSNNGraph\&.sourceImageHandles\fP\&. The images may be image arrays\&. Typically, this is only one or two images such as a \&.JPG decoded into a MPSImage*\&. If the sourceImages are MPSTemporaryImages, the graph will decrement the readCount by 1, even if the graph actually reads an image multiple times\&. 
+.br
+\fIsourceStates\fP A list of \fBMPSState\fP objects to use as state for a graph\&. These should be in the same order as the list returned from \fBMPSNNGraph\&.sourceStateHandles\fP\&. May be nil, if there is no source state\&. If the sourceStates are temporary, the graph will decrement the readCount by 1, even if the graph actually reads the state multiple times\&. 
+.br
+\fIintermediateImages\fP An optional NSMutableArray to receive any \fBMPSImage\fP objects exported as part of its operation\&. These are only the images that were tagged with \fBMPSNNImageNode\&.exportFromGraph\fP = YES\&. The identity of the states is given by -resultStateHandles\&. If temporary, each intermediateImage will have a readCount of 1\&. If the result was tagged exportFromGraph = YES, it will be here too, with a readCount of 2\&. 
+.br
+\fIdestinationStates\fP An optional NSMutableArray to receive any \fBMPSState\fP objects created as part of its operation\&. The identity of the states is given by -resultStateHandles\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A \fBMPSImage\fP or \fBMPSTemporaryImage\fP allocated per the destinationImageAllocator containing the output of the graph\&. It will be automatically released when commandBuffer completes\&. 
+.RE
+.PP
+
+.SS "\- (\fBMPSImage\fP * __nonnull) executeAsyncWithSourceImages: (NSArray< \fBMPSImage\fP * > *__nonnull) sourceImages(\fBMPSNNGraphCompletionHandler\fP __nonnull) handler"
+Convenience method to execute a graph without having to manage many Metal details  This function will synchronously encode the graph on a private command buffer, commit it to a MPS internal command queue and return\&. The GPU will start working\&. When the GPU is done, the completion handler will be called\&. You should use the intervening time to encode other work for execution on the GPU, so that the GPU stays busy and doesn't clock down\&.
+.PP
+The work will be performed on the MTLDevice that hosts the source images\&.
+.PP
+This is a convenience API\&. There are a few situations it does not handle optimally\&. These may be better handled using [encodeToCommandBuffer:sourceImages:]\&. Specifically: 
+.PP
+.nf
+o     If the graph needs to be run multiple times for different images,
+      it would be better to encode the graph multiple times on the same
+      command buffer using [encodeToCommandBuffer:sourceImages:]  This
+      will allow the multiple graphs to share memory for intermediate
+      storage, dramatically reducing memory usage\&.
+
+o     If preprocessing or post-processing of the MPSImage is required,
+      such as resizing or normalization outside of a convolution, it would
+      be better to encode those things on the same command buffer\&.
+      Memory may be saved here too for intermediate storage\&. (MPSTemporaryImage
+      lifetime does not span multiple command buffers\&.)
+
+.fi
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsourceImages\fP A list of MPSImages to use as the source images for the graph\&. These should be in the same order as the list returned from \fBMPSNNGraph\&.sourceImageHandles\fP\&. They should be allocated against the same MTLDevice\&. There must be at least one source image\&. Note: this array is intended to handle the case where multiple input images are required to generate a single graph result\&. That is, the graph itself has multiple inputs\&. If you need to execute the graph multiple times, then call this API multiple times, or better yet use [encodeToCommandBuffer:sourceImages:] multiple times\&. (See discussion)
+.br
+\fIhandler\fP A block to receive any errors generated\&. This block may run on any thread and may be called before this method returns\&. The image, if any, passed to this callback is the same image as that returned from the left hand side\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A \fBMPSImage\fP to receive the result\&. The data in the image will not be valid until the completionHandler is called\&. 
+.RE
+.PP
+
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use initWithCoder:device instead\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A new \fBMPSKernel\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (__nonnull id< MTLDevice >) device"
+Use initWithDevice:resultImage: instead 
+.SS "\- (nullable instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(\fBMPSNNImageNode\fP *__nonnull) resultImage"
+Initialize a \fBMPSNNGraph\fP object on a device starting with resultImage working backward  The \fBMPSNNGraph\fP constructor will start with the indicated result image, and look to see what \fBMPSNNFilterNode\fP produced it, then look to its dependencies and so forth to reveal the subsection of the graph necessary to compute the image\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which to run the graph 
+.br
+\fIresultImage\fP The \fBMPSNNImageNode\fP corresponding to the last image in the graph\&. This is the image that will be returned\&. Note: the imageAllocator for this node is ignored and the \fBMPSNNGraph\&.destinationImageAllocator\fP is used for this node instead\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A new \fBMPSNNGraph\fP\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- (id<MPSImageAllocator>) destinationImageAllocator\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Method to allocate the result image from -encodeToCommandBuffer\&.\&.\&.  This property overrides the allocator for the final result image in the graph\&. Default: \fBdefaultAllocator (MPSImage)\fP 
+.SS "\- (NSArray<id <\fBMPSHandle\fP> >*) intermediateImageHandles\fC [read]\fP, \fC [nonatomic]\fP, \fC [copy]\fP"
+Get a list of identifiers for intermediate images objects produced by the graph 
+.SS "\- (BOOL) outputStateIsTemporary\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Should \fBMPSState\fP objects produced by -encodeToCommandBuffer\&.\&.\&. be temporary objects\&.  See \fBMPSState\fP description\&. Default: YES 
+.SS "\- (id<\fBMPSHandle\fP>) resultHandle\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Get a handle for the graph result image 
+.SS "\- (NSArray<id <\fBMPSHandle\fP> >*) resultStateHandles\fC [read]\fP, \fC [nonatomic]\fP, \fC [copy]\fP"
+Get a list of identifiers for result state objects produced by the graph  Not guaranteed to be in the same order as sourceStateHandles 
+.SS "\- (NSArray<id <\fBMPSHandle\fP> >*) sourceImageHandles\fC [read]\fP, \fC [nonatomic]\fP, \fC [copy]\fP"
+Get a list of identifiers for source images needed to calculate the result image 
+.SS "\- (NSArray<id <\fBMPSHandle\fP> >*) sourceStateHandles\fC [read]\fP, \fC [nonatomic]\fP, \fC [copy]\fP"
+Get a list of identifiers for source state objects needed to calculate the result image  Not guaranteed to be in the same order as resultStateHandles 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

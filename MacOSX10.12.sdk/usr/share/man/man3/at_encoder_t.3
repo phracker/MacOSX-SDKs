@@ -1,0 +1,295 @@
+.TH "at_encoder_t" 3 "Thu Jul 14 2016" "Version AppleTextureEncoder-1.12.12" "AppleTextureEncoder" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+at_encoder_t \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <AppleTextureEncoder\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBat_encoder_t\fP __nullable OS_OBJECT_RETURNS_RETAINED \fBat_encoder_create\fP (at_texel_format_t texelType, at_alpha_t texelAlphaType, at_block_format_t blockType, at_alpha_t blockAlphaType, const float *__nullable backgroundColor) AT_AVAILABILITY_v1"
+.br
+.ti -1c
+.RI "float \fBat_encoder_compress_texels\fP (const \fBat_encoder_t\fP __nonnull encoder, const \fBat_texel_region_t\fP *__nonnull src, const \fBat_block_buffer_t\fP *__nonnull dest, float errorThreshold, at_flags_t flags) AT_AVAILABILITY_v1"
+.br
+.ti -1c
+.RI "at_error_t \fBat_encoder_decompress_texels\fP (const \fBat_encoder_t\fP __nonnull encoder, const \fBat_block_buffer_t\fP *__nonnull src, const \fBat_texel_region_t\fP *__nonnull dest, at_flags_t flags) AT_AVAILABILITY_v1"
+.br
+.ti -1c
+.RI "\fBat_size_t\fP \fBat_encoder_get_block_counts\fP (\fBat_encoder_t\fP __nonnull encoder, \fBat_size_t\fP imageSize) AT_AVAILABILITY_v1"
+.br
+.ti -1c
+.RI "\fBat_size_t\fP \fBat_encoder_get_block_dimensions\fP (const \fBat_encoder_t\fP __nonnull encoder) AT_AVAILABILITY_v1"
+.br
+.ti -1c
+.RI "size_t \fBat_encoder_get_block_size\fP (const \fBat_encoder_t\fP __nonnull encoder) AT_AVAILABILITY_v1"
+.br
+.ti -1c
+.RI "at_block_format_t \fBat_encoder_get_block_format\fP (const \fBat_encoder_t\fP __nonnull encoder) AT_AVAILABILITY_v1"
+.br
+.ti -1c
+.RI "at_alpha_t \fBat_encoder_get_block_alpha\fP (const \fBat_encoder_t\fP __nonnull encoder) AT_AVAILABILITY_v1"
+.br
+.ti -1c
+.RI "void *__nullable \fBat_encoder_get_block_address\fP (const \fBat_encoder_t\fP __nonnull encoder, \fBat_size_t\fP texelPosition, \fBat_size_t\fP imageSize, const \fBat_block_buffer_t\fP *__nonnull blockInfo) AT_AVAILABILITY_v1"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+An encoder for compressing and decompressing textures into formats such as ASTC\&.  The \fBat_encoder_t\fP defines an interface for an opaque object that can both compress and decompress common texture formats, such as ASTC\&. These formats generally comsume texels (pixels) in a small rectangular region and produce a single block of compressed data\&. For example, for the at_texel_format_astc_4x4_ldr (MTLPixelFormatASTC_4x4_LDR) compressed texture type, the image is segmented in 4x4 rectangles\&. Each of these is encoded by a variety of means to a 128-bit block\&. When compressing an image texels are consumed and blocks are produced\&. When decompressing an image blocks are consumed and texels are produced\&. Not all encoder types are capable of both encoding and decoding\&.
+.PP
+When working with such formats, it is important to know the block size, since you generally need to stride through the image in multiples of the block size to avoid encoding artifacts at the block seams\&. For texel coordinates, this is given by \fBat_encoder_get_block_dimensions()\fP\&. For block coordinates, this is given by \fBat_encoder_get_block_size()\fP\&.
+.PP
+In some cases, the \fBat_encoder_t\fP can work with subregions of an image\&. In these cases, it is said to be not monolithic\&. In other cases, the entire image is needed to get the right answer\&. Such at_encoder_ts will be tagged as monolithic\&. Please check at_encoder_is_compression_monolithic or at_encoder_is_decompression_monolithic as appropriate before attempting to encode or decode subregions of an image\&.
+.PP
+The \fBat_encoder_t\fP is an os_object\&. It should be released with os_release when you are done using it\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "float at_encoder_compress_texels (const \fBat_encoder_t\fP __nonnull encoder, const \fBat_texel_region_t\fP *__nonnull src, const \fBat_block_buffer_t\fP *__nonnull dest, float errorThreshold, at_flags_t flags)"
+at_encoder_compress_texels  Encode raw texel data to a rectangular region of a block based compressed texture  Some compressed texture formats such as ASTC are encoded as a grid of fixed-sized block, each encoding for a region of {MxNxO} texels\&. The number of texels in the block is given by the output at_texel_format used when creating the \fBat_encoder_t\fP\&.
+.PP
+The blocks are ordered with the x dimension increasing most rapidly, then y dimension, then z dimension\&. There is no padding between rows of blocks in any dimension\&. The position of the texel in the region of interest of the input image corresponding to the top,left corner of each block is given by: 
+.PP
+.nf
+texel_position.x = block_position.x * block_size_in_texels.x
+texel_position.y = block_position.y * block_size_in_texels.y
+texel_position.z = block_position.z * block_size_in_texels.z
+
+.fi
+.PP
+.PP
+Each block is encoded using one of a large variety of encoding methods\&. Some methods are more likely to work than others\&. These are tried first\&. If the accuracy of the encoding is not good enough, as determined by comparing its mean square error per normalized texel against the errorThreshold, then additional methods are tried\&. Some blocks may not meet the errorThreshold by any encoding method, in which case the encoding method that produced the best results is used\&.
+.PP
+If the src->validSize is not a multiple of the block size, some texels are undefined\&. For such texels, the nearest texel is used instead\&. All blocks must contain at least one valid texel or else behavior is undefined\&.
+.PP
+This function may be called from multiple threads on the same encoder concurrently\&.
+.PP
+Currently supported input formats are: 
+.PP
+.nf
+all
+
+.fi
+.PP
+.PP
+Currently supported output formats are: 
+.PP
+.nf
+at_texel_format_astc_4x4_ldr
+at_texel_format_astc_8x8_ldr
+
+.fi
+.PP
+.PP
+Per the LDR subset of the ASTC specification, only 2D textures are supported\&. sRGB textures (e\&.g\&. MTLPixelFormatASTC_4x4_sRGB) should be encoded using the LDR formats, and decoded with the at_flags_srgb_linear_texels flag\&. There is currently no support for reading linear gamma textures with at_flags_srgb_linear_texels during encode\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIencoder\fP A valid \fBat_encoder_t\fP 
+.br
+\fIsrc\fP Pointer to a valid \fBat_texel_region_t\fP describing which texels to encode 
+.br
+\fIdest\fP Pointer to a valid \fBat_block_buffer_t\fP describing which ASTC blocks to overwrite 
+.br
+\fIerrorThreshold\fP Mean square error per normalized texel (range [0,1]) below which to skip additional encoding attempts\&. Since it is square error, the minimum sensible value is 0\&. A value of 0 will cause the encoder to attempt all the available encodings it knows about unless one succeeds in encoding the block without loss of precision\&.
+.RE
+.PP
+Common error thresholds are in the 2**-10 (fast) to 2**-15 (best quality) range\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIflags\fP Options to control operation of the encode filter\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+If >= 0, Success\&. The mean square error per normalized texel (range [0,1]) in the encode region is returned\&. Peak signal to noise ratio can be calculated from this number as PSNR = -10 * log10(result)\&.
+.RE
+.PP
+If < 0, then an error occurred and no encoding was done\&. All error codes are negative and have integer value\&. Please see at_error_t for a description of negative error codes\&. 
+.SS "\fBat_encoder_t\fP __nullable OS_OBJECT_RETURNS_RETAINED at_encoder_create (at_texel_format_t texelType, at_alpha_t texelAlphaType, at_block_format_t blockType, at_alpha_t blockAlphaType, const float *__nullable backgroundColor)"
+Create an \fBat_encoder_t\fP  An \fBat_encoder_t\fP can produce convert between compressed texture blocks and raw texel data\&. An \fBat_encoder_t\fP is thread safe\&. A single \fBat_encoder_t\fP may be used from multiple threads concurrently\&. Use os_retain / os_release to manage the lifetime of the encoder\&. The \fBat_encoder_t\fP type supports automatic reference counting (ARC)\&. While most operation is through its C interface, it also implements some common NSObject methods: 
+.PP
+.nf
+-debugDescription       (lldb po)
+-isEqual:
+-copy
+-hash
+
+.fi
+.PP
+.PP
+The encoder can do basic transformations to image alpha as part of the operation\&. In some cases, this can help prevent another pass on the data\&. In other cases, knowledge of the alpha in the image, particularly if it is at_alpha_opaque, can help improve compression speed and image fidelity\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fItexelType\fP The encoding of the uncompressed texel data, described by a \fBat_texel_region_t\fP\&. See description for supported types\&. 
+.br
+\fItexelAlphaType\fP The encoding of the alpha infomation in the uncompressed texel data 
+.br
+\fIblockType\fP The format of the compressed blocks\&. Indicates block size\&. See description for supported types\&. 
+.br
+\fIblockAlphaType\fP The encoding of the alpha in the compressed blocks\&. 
+.br
+\fIbackgroundColor\fP If the input image is not opaque and the output image is opaque (outAlpha = at_alpha_opaque), then the image will be made opaque by compositing it against a opaque background color prior to encoding\&. If NULL, then {0} is used\&. Memory pointed to by backgroundColor is copied by the function and may be released immediately after the function returns\&. The length of the background color array is the number of color (not alpha) channels in the input image\&. The order of the colors matches the color space\&. So for BGRA data, the order is R,G,B\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A valid \fBat_encoder_t\fP or NULL if an error occurred\&. Retain/release with os_retain / os_release 
+.RE
+.PP
+
+.SS "at_error_t at_encoder_decompress_texels (const \fBat_encoder_t\fP __nonnull encoder, const \fBat_block_buffer_t\fP *__nonnull src, const \fBat_texel_region_t\fP *__nonnull dest, at_flags_t flags)"
+at_encoder_decompress_texels  Decompress a sequence of iamge blocks to texel data  Some compressed texture formats such as ASTC are encoded as a grid of fixed-sized block, each encoding for a region of {MxNxO} texels\&. The number of texels in the block is given by the output at_texel_format used when creating the \fBat_encoder_t\fP\&.
+.PP
+The blocks are ordered with the x dimension increasing most rapidly, then y dimension, then z dimension\&. There is no padding between rows of blocks in any dimension\&. The position of the texel in the region of interest of the input image corresponding to the top,left corner of each block is given by: 
+.PP
+.nf
+texel_position.x = block_position.x * block_size_in_texels.x
+texel_position.y = block_position.y * block_size_in_texels.y
+texel_position.z = block_position.z * block_size_in_texels.z
+
+.fi
+.PP
+.PP
+If dest->validSize is not a multiple of the block size, Only the region covered by the dest->validSize will be overwritten\&.
+.PP
+This function may be called from multiple threads on the same encoder concurrently\&.
+.PP
+Currently supported input formats are: 
+.PP
+.nf
+all ASTC
+
+.fi
+.PP
+.PP
+Currently supported output formats are: 
+.PP
+.nf
+all
+
+.fi
+.PP
+.PP
+Per the LDR subset of the ASTC specification, only 2D textures are supported\&. sRGB textures (e\&.g\&. MTLPixelFormatASTC_4x4_sRGB) should be decoded using the LDR formats in conjunction with the at_flags_srgb_linear_texels flag\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIencoder\fP A valid \fBat_encoder_t\fP 
+.br
+\fIsrc\fP Pointer to a valid \fBat_block_buffer_t\fP describing which blocks to read 
+.br
+\fIdest\fP Pointer to a valid \fBat_texel_region_t\fP describing which texels to overwrite
+.br
+\fIflags\fP Options to control operation of the decode filter\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+If >= 0, Success\&. The mean square error per normalized texel (range [0,1]) in the encode region is returned\&. Peak signal to noise ratio can be calculated from this number as PSNR = -10 * log10(result)\&.
+.RE
+.PP
+If < 0, then an error occurred and no encoding was done\&. All error codes are negative and have integer value\&. Please see at_error_t for a description of each negative error code\&. 
+.SS "void *__nullable at_encoder_get_block_address (const \fBat_encoder_t\fP __nonnull encoder, \fBat_size_t\fP texelPosition, \fBat_size_t\fP imageSize, const \fBat_block_buffer_t\fP *__nonnull blockInfo)"
+Convenience method to find the position of an encoded block based on texel position 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIencoder\fP The \fBat_encoder_t\fP 
+.br
+\fItexelPosition\fP An offset into the source image, in texels\&. If offset is not a multiple of the block size, it will be rounded down\&. 
+.br
+\fIimageSize\fP The size of the image in texels 
+.br
+\fIblockInfo\fP A valid pointer to the storage where the ASTC blocks are kept 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A pointer to the block containing the texel\&. 
+.RE
+.PP
+
+.SS "at_alpha_t at_encoder_get_block_alpha (const \fBat_encoder_t\fP __nonnull encoder)"
+at_encoder_get_block_alpha  Get the alpha type of the compressed blocks 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIencoder\fP The \fBat_encoder_t\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The alpha type of the compressed blocks 
+.RE
+.PP
+
+.SS "\fBat_size_t\fP at_encoder_get_block_counts (\fBat_encoder_t\fP __nonnull encoder, \fBat_size_t\fP imageSize)"
+at_encoder_get_block_counts  Return the number of blocks needed to hold the encoded image size\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIencoder\fP The \fBat_encoder_t\fP 
+.br
+\fIimageSize\fP A pointer to a valid \fBat_size_t\fP giving the size of the input image in texels 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The size of the raw encoded ASTC image data in ATEASTCBlocks in each dimension\&. In a ASTC file, there is no padding between consecutive rows or slices\&. 
+.RE
+.PP
+
+.SS "\fBat_size_t\fP at_encoder_get_block_dimensions (const \fBat_encoder_t\fP __nonnull encoder)"
+at_encoder_get_block_dimensions  Get the size of block in the encoded image 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIencoder\fP The \fBat_encoder_t\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The size {x,y,z} in texels of each block in the encoded image\&. 
+.RE
+.PP
+
+.SS "at_block_format_t at_encoder_get_block_format (const \fBat_encoder_t\fP __nonnull encoder)"
+at_encoder_get_block_format  Get the image type of the encoded blocks 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIencoder\fP The \fBat_encoder_t\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The image type of the output image\&. See also: at_block_format_to_MTLPixelFormat 
+.RE
+.PP
+
+.SS "size_t at_encoder_get_block_size (const \fBat_encoder_t\fP __nonnull encoder)"
+at_encoder_get_block_size  Get the size of block in the encoded image in bytes 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIencoder\fP The \fBat_encoder_t\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The size in bytes of each block in the encoded image\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for AppleTextureEncoder from the source code\&.

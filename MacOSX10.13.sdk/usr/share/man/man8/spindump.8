@@ -1,0 +1,199 @@
+.Dd April 19, 2016
+.Dt spindump 8
+.Os Darwin
+.Sh NAME
+.Nm spindump 
+.Nd Profile entire system during a time interval
+.Sh SYNOPSIS
+.Nm spindump
+.Op pid | partial-name Op duration Op interval
+.Op <options>
+.Sh DESCRIPTION
+.Nm spindump 
+is used by various system components to create reports when an unresponsive application is force quit. Reports are stored at:
+.Pp
+/Library/Logs/DiagnosticReports/
+.Pp
+For normal application force quits spindump will display a dialog to offer the choice to view more details and/or send a report to Apple.
+.Pp
+-------------------------------------
+.Pp
+When run manually, spindump samples user and kernel stacks for every process in the system. Spindump supports two display formats for stacks, heavy and timeline, and includes a binary representation of its data at the end of reports for re-reporting with different options (see
+.Fl i
+). Spindump can also parse reports in timeline format even without a binary representation to re-report them in heavy format.
+.Pp
+When displayed in
+.Nm heavy
+format, stacks are sorted by count and each unique stack is displayed once. In this snippet:
+.Pp
+84  __CFRunLoopRun + 1161 (CoreFoundation + 460665) [0x7fff8d662779]
+.Pp
+Address 0x7fff8d662779 was sampled 84 times in total, not necessarily consecutively. The address corresponds __CFRunLoopRun in CoreFoundation.
+.Pp
+When displayed in
+.Nm timeline
+format, samples are sorted so that the leaf frames in the sample tree are presented in chronological order. Each frame includes a time range of consecutive samples in which the frame was seen, which can be compared with the range of other frames to determine concurrency. If multiple samples of the same stack were not consecutive, the stack will be displayed multiple times. In this snippet:
+.Pp
+23  __CFRunLoopRun + 1161 (CoreFoundation + 460665) [0x7fff8d662779] 50-72
+.Pp
+Address 0x7fff8d662779 was sampled 23 times consecutively from the 50th to 72nd sample.
+.Pp
+In timeline format, spindump notes state changes for threads, e.g.:
+.Pp
+<darwinbg, timers coalesced>
+.Pp
+which indicates the change in state for the samples that follow. Any state not mentioned is unchanged from previous samples. The state information spindump reports includes thread QoS, darwinbg, importance inheritance boost, suppression for App Nap, latency QoS (timers), I/O throttling tier, and cpu priority.
+.Pp
+Leaf frames will indicate whether the thread was running/runnable or suspended.
+.Pp
+A leading star (*) indicates a kernel frame or library.
+.Sh ARGUMENTS
+.Nm pid
+or
+.Nm partial-name
+the process to be sorted topmost in the report. "-notarget" may be used to avoid providing a target process when specifying a duration and interval.
+.Pp
+.Nm duration
+the duration of the sampling in seconds. If not specified, the default of 10 seconds is used.
+.Pp
+.Nm interval
+the number of miliseconds between samples. If not specified, the default of 10 miliseconds is used.
+.Pp
+.Fl i Ar path
+Read in the binary format stored in the spindump file at
+.Ar path
+and re-report that data rather than sampling the live system. Spindump can also parse the stacks of a timeline formatted report without a binary format in order to re-report them in heavy format, in which case only stacks will be updated; summary information will not change.
+.Pp
+.Fl indexRange Ar s-e
+Only include samples in the given range
+.Pp
+.Fl startIndex Ar s
+Omit frames before sample number
+.Ar s
+.Pp
+.Fl endIndex Ar e
+Omit frames after sample number
+.Ar e
+.Pp
+.Fl heavy
+Sort stacks by count (default)
+.Pp
+.Fl timeline
+Sort stacks chronologically
+.Pp
+.Fl file Ar path
+Specifies where the report should be written. If
+.Ar path
+is a file, it will be overwritten. If
+.Ar path
+is a directory, a file will be created inside that directory with the name following the format <appname>_<pid>.spindump.txt. If a file by that name already exists, spindump will add a unique number to the filename. If not specified, spindump will output reports to files inside /tmp.
+.Pp
+.Fl wait
+Wait for the process to exist before sampling. If the process already exists, spindump will begin sampling immediately.
+.Pp
+.Fl onlyrunnable
+Only display runnable stacks
+.Pp
+.Fl onlyblocked
+Only display non-runnable stacks
+.Pp
+.Fl onlytarget
+Only sample the target process (allows faster sampling rates)
+.Pp
+.Fl proc <proc>
+If onlytarget is provided, sample
+.Ar proc
+as well. This option may be specified multiple times
+.Pp
+.Fl sampleWithoutTarget
+Keep sampling for the entire sampling duration even if the target process exits
+.Pp
+.Fl timelimit Ar t
+Exit after
+.Ar t
+seconds even if the report hasn't been saved
+.Pp
+.Fl stdout
+Print the report to stdout
+.Pp
+.Fl nofile
+Do not output to a file. Implies -stdout and will include the binary format in the stdout output
+.Pp
+.Fl open Ar appname
+Specifies an app in which to open the resulting report
+.Pp
+.Fl reveal
+Reveal the resulting report in Finder
+.Pp
+.Fl siginfo
+After sampling, wait for SIGINFO before generating the report
+.Pp
+.Fl delayonsignal Ar d
+Stop sampling
+.Ar d
+seconds after receiving a signal to stop sampling instead of stopping immediately
+.Pp
+.Fl threadprioritythreshold Ar t
+Filter out any threads that have a priority below the given threshold. Pass a negative number to filter out threads that have a priority above the given threshold's absolute value
+.Pp
+.Fl nothrottle
+Do not throttle sampling rate on excessive memory growth
+.Pp
+.Fl noProcessingWhileSampling
+Do not parse stackshots until done sampling
+.Pp
+.Fl displayIdleWorkQueueThreads
+Display idle work queue threads in the textual report (by default they are omitted)
+.Pp
+.Fl aggregateStacksByThread
+Group stacks by thread ID rather than by dispatch queue
+.Pp
+.Fl aggregateStacksByProcess
+Each process gets one stack for all threads
+.Pp
+
+.Sh MICROSTACKSHOTS
+.Pp
+Microstackshots are gathered by the kernel to provide extremely lightweight sampling of single threads at a time. They can be viewed in spindump via the microstackshot command line options:
+.Pp
+.Fl microstackshots
+Report on interrupt microstackshots, which provide a sampling of where cpu time is spent. This is the default mode if
+.Fl microstackshots_io
+is not provided
+.Pp
+.Fl microstackshots_io
+Report on I/O microstackshots, which provide a sampling of where file backed memory is dirtied
+.Pp
+.Fl microstackshots_datastore Ar path
+When reporting microstackshots, read from this location rather than using the live system's microstackshots. When saving with
+.Fl microstackshots_save,
+write to this location
+.Pp
+.Fl microstackshots_save
+Save microstackshot from the live system to the path specified by
+.Fl microstackshots_datastore
+instead of generating a textual report
+.Pp
+.Fl microstackshots_starttime Ar date
+Only report microstackshots after this time. The date can be a string like "11/14/12 12:00am" or a single number representing a unix timestamp in seconds
+.Pp
+.Fl microstackshots_endtime Ar date
+Only report microstackshots before this time. The date can be a string like "11/14/12 12:00am" or a single number representing a unix timestamp in seconds
+.Pp
+.Fl microstackshots_pid Ar pid
+Only report microstackshots for the given process id
+.Pp
+.Fl microstackshots_threadid Ar thread_id
+Only report microstackshots for the given thread id
+.Pp
+.Fl microstackshots_dsc_path Ar path
+Path to a directory containing dyld shared cache layout files. If not specified, spindump uses the historical information for the current machine
+.Pp
+.Fl batteryonly
+Only include microstackshots taken while the machine was running on battery power
+.Pp
+.Fl aconly
+Only include microstackshots taken while the machine was running on AC power
+.Sh SEE ALSO
+.Xr SubmitDiagInfo 8 ,
+.Xr sample 1 

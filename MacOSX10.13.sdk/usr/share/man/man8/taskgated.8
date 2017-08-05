@@ -1,0 +1,87 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.Dd 2/27/07               \" DATE 
+.Dt taskgated 8      \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm taskgated
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.Nd task_for_pid access control daemon
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl s                 \" [-abcd]
+.Op Fl t Ar timeout      \" [-t timeout]
+.Op Fl i Ar pid          \" [-i pid]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is a system daemon that implements a policy for the task_for_pid system service.
+When the kernel is asked for the task port of a process, and preliminary access control
+checks pass, it invokes this daemon (via launchd) to make the decision.
+.Sh OPTIONS
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl s
+Allow signed applications marked as "safe" to have free access to
+task ports, without having to pass an authorization check. Note that such callers
+must be marked both allowed and safe.
+.It Fl t Ar timeout
+The daemon will quit after that many seconds of inactivity. It will be relaunched
+by launchd as needed. A timeout of zero can be specified to make the daemon quit
+after servicing each request, but a small positive timeout is better for performance.
+.It Fl i Ar pid
+Inject the service port of
+.Nm
+into the process with the given pid, rather than relying on launchd to install it
+system-wide. This is for testing only, and requires the launchd configuration for
+.Nm
+to be removed.
+.El                      \" Ends the list
+.Pp
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El 
+.Sh AUTHORIZATION RIGHTS
+.Bl -tag -width system.privilege.taskport -compact
+.It Pa system.privilege.taskport
+Authorization right used to check access of allowed (but not safe) callers.
+.El
+.Sh INFO KEYS
+.Bl -tag -width SecTaskAccess
+.It Pa SecTaskAccess
+A value of "allowed" is required for any program that wants
+access to task ports. A value of "safe" bypasses authorization checks if so configured.
+Code must be signed by any system-trusted signing authority.
+.El
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "/etc/authorization" -compact
+.It Pa /etc/authorization
+to configure the authorization used.
+.It Pa /System/Library/LaunchDaemons/com.apple.taskgated
+startup configuration file for
+.Nm
+.
+.El                      \" Ends the list
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.Xr security 1 , 
+.Xr launchd 8
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.Sh HISTORY
+.Nm
+was first introduced in Mac OS 10.5 (Leopard).
+.Pp
+Procmod and procview support (-p) was removed in 10.11.
+.Pp
+Certain software updates of Mac OS 10.4 (Tiger) introduced the convention
+requiring membership in the procmod or procview groups to control task port
+access. Before that, any process could obtain the task port of any other process
+with the same user-id.

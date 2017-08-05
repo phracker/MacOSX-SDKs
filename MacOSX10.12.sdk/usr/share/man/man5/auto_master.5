@@ -1,0 +1,487 @@
+.Dd April 20, 2007
+.Dt AUTO_MASTER 5
+.Os Darwin
+.Sh NAME
+.Nm auto_master
+.Nd
+automounter master map
+.Sh DESCRIPTION
+The
+.Nm
+file contains a list of the directories that are to be automounted.
+Associated with each directory is the name of a map that lists the
+locations of the filesystems to be automounted there.
+The default map looks like this:
+.Bd -literal -offset indent
+#
+# Automounter master map
+#
++auto_master		# Use directory service
+/net			-hosts		-nobrowse,hidefromfinder,nosuid
+/home			auto_home	-nobrowse,hidefromfinder
+/Network/Servers	-fstab
+/-			-static
+.Ed
+.Pp
+A
+.Dq #
+is the comment character. All characters from it to the end of
+line are ignored.
+A line beginning with
+.Dq +
+and followed by a name, indicates the name of a file or map accessible
+from a Directory Service source such as NIS or LDAP;
+the master map entries in that file or map are included at this point
+in the master map.
+A line that specifies a map to be mounted has the format:
+.Pp
+.Dl Va mountpoint map -options
+.Pp
+where
+.Va mountpoint
+is the directory on which the map is to be mounted,
+.Va map
+is the name of the map to be mounted, and
+.Va options
+is an optional, comma-separated list of default
+mount options to be used by any entries in the map
+that do not have their own mount options.
+The
+.Cm nobrowse
+option is used on maps that have the potential to
+produce entries too numerous for browsing to
+be practical. This option as used in the master
+map is distinct from nobrowse used as a Mac OS X
+mount option, which affects the visibility of the
+mount to the Finder.
+The
+.Cm hidefromfinder
+option is used on maps that shouldn't show up as folders in the Finder;
+it causes the
+.Dv UF_HIDDEN
+flag to be set on the root directory of the map.
+.Pp
+A
+.Va map
+name beginning with / is
+the pathname of a file containing the map, otherwise
+the name represents a map to be found as a file in
+.Pa /etc
+or to be read from Directory Service (and thus from whatever sources
+Directory Service uses, such as NIS or LDAP servers).
+.Pp
+Note that, in order to get automounter maps from NIS, the "BSD Flat File
+and NIS" plugin must, in the Directory Utility application, be enabled
+and configured to "Use NIS domain for authentication".
+.Pp
+If more than one entry in the master map has the same
+.Va mountpoint
+then all but the first are ignored.
+For instance, in the following master map:
+.Bd -literal -offset indent
+/shared		my_auto_shared
++auto_master
+.Ed
+.Pp
+The
+.Pa /shared
+entry overrides any
+.Pa /shared
+specification imported from the network
+.Nm .
+.Sh AUTOMOUNTER MAPS
+Automounter maps associate directories with the locations of
+filesystems that are to be mounted when the directory is accessed.
+Map entries have the general form:
+.Pp
+.Dl Va key location
+.Pp
+These map entries may be represented by lines in a file,
+NIS or LDAP tables indexed by the key, or from output of
+an executable map.
+Most commonly, the
+.Va location
+is simply the name of an NFS
+server and the path to an exported file system, e.g.
+.Bd -literal -offset indent
+local	mynfs:/export/local
+.Ed
+.Pp
+A
+.Va location
+can also represent multiple mounts, where each
+is associated with a relative path, for example:
+.Bd -literal -offset indent
+pkg	\\
+	/data	mynfs:/export/pkg/data \\
+	/bin	mynfs:/export/pkg/bin  \\
+	/man	mynfs:/export/pkg/man
+.Ed
+.Pp
+Reference to this entry will provide access to any
+of three exported file systems from the server, each via
+its own subdirectory.
+Each of these sub-mounts will be done only when referenced.
+Note the use of a backslash to escape the newline so that
+the automounter will read these lines as a single map entry.
+.Pp
+The
+.Va location
+can be preceded by a comma-separated list of mount options
+with a prepended
+.Dq - .
+For example:
+.Bd -literal -offset indent
+bin	-ro,nosuid  mynfs:/export/bin
+.Ed
+.Pp
+For file system types other than NFS, the mount option
+.Cm -fstype Ns = Ns Aq Ar type
+can be used to specify the file system type.  The
+.Va location
+would be in the form expected by the mount command for that file system
+type.
+For example:
+.Bd -literal -offset indent
+smb	-fstype=smb //guest@smbserver/share
+afp	-fstype=afp afp://;AUTH=NO%20USER%20AUTHENT@afpserver/share
+.Ed
+.Pp
+If the
+.Va location
+is a URL, with a scheme specifying AFP, NFS, or SMB, then,
+if no file system type is specified,
+the directory referred to by that URL will be mounted using
+.Xr mount_url 8 .
+For example:
+.Bd -literal -offset indent
+nfsurl	nfs://nfsserver/path/to/mount
+smburl	smb://guest@smbserver/share
+afpurl	afp://;AUTH=NO%20USER%20AUTHENT@afpserver/share
+.Ed
+.Sh Replicated mounts
+More than one
+.Va location
+can be specified in a map entry.  At the time the mount is done, the
+automounter will choose one of those
+.Va locations
+to mount.  Locations not responding to an NFS null request at that time
+will not be considered, so that servers that are unavailable will not be
+chosen.  Servers that are on the same subnet as the client will be
+chosen in preference to servers on different subnets.
+.Pp
+By default, in each of those sets of servers, the server with the
+shortest response time to the aforementioned NFS null request will be
+chosen.  A
+.Va location
+can be given a weighting factor; the higher the weighting factor, the
+lower the preference for that server.  For example, with an entry such
+as
+.Bd -literal -offset indent
+data	net1a:/data net1b:/data net1c(1):/otherdata
+.Ed
+.Pp
+if either host net1a or net1b is available, the one with the shortest
+response time will be chosen; host net1c will be chosen only if it is
+available and neither hosts net1a nor net1b are available.
+.Pp
+If all
+.Va locations
+have the same path, a comma-separated list of hosts followed by the path
+can be used:
+.Bd -literal -offset indent
+data	net1a,net1b,net1c(1):/data
+.Ed
+.Pp
+If a server that has been mounted becomes unavailable, the NFS client
+will not automatically fail over to another server; the mount must be
+unmounted and remounted in order for failover to occur.
+.Sh Direct Map
+A
+.Em direct
+map associates filesystem locations directly with directories.
+The entry key is the full path name of a directory.
+For example:
+.Bd -literal -offset indent
+/usr/local	eng4:/export/local
+/src		eng4:/export/src
+.Ed
+.Pp
+Since the direct map as a whole isn't associated with a single
+directory, it is specified in the master map with a dummy
+directory name of
+.Pa /- .
+.Sh Indirect Map
+An
+.Em indirect
+map is used where a large number of entries are to be associated
+with a single directory.  Each map entry key is the simple name of a
+directory entry.  A good example of this is the
+.Pa auto_home
+map which determines the entries under the
+.Pa /home
+directory.
+For example:
+.Bd -literal -offset indent
+bill	argon:/export/home/bill
+brent	depot:/export/home/brent
+guy	depot:/export/home/guy
+.Ed
+.Pp
+.Sh Executable Map
+An
+.Em executable
+map is an indirect map represented by a file that has its execute bit set.
+Instead of reading entries from the file directly, the automounter
+executes the program or script passing the
+.Va key
+as an argument and receiving the
+.Va location
+string on stdout.
+If the automounter needs to enumerate map keys for a directory listing,
+it invokes the map with no arguments and expects a newline-separated
+list of keys on stdout.
+.Pp
+If an error occurs, the executable map must return a non-zero
+exit status and no output.
+.Pp
+For example, a map that, when bound to an Open
+Directory server, has one entry for every user, with the key being the
+user's login name and the entry being the URL of the user's home
+directory, could be implemented as
+.Bd -literal -offset indent
+#!/bin/sh
+if [ $# = 0 ]; then # List keys
+	dscl /Search -list Users
+	exit
+fi
+# Return location
+homedirloc=`dscl /Search -read Users/$1 HomeDirectory`
+case "$homedirloc" in
+
+"No such key: HomeDirectory"*)
+	homedirloc=`dscl /Search -read Users/$1 NFSHomeDirectory`
+	case "$homedirloc" in
+
+	"NFSHomeDirectory: /Network/Servers/"*)
+		#
+		# NFS home directory
+		#
+		echo "$homedirloc" | sed 's;NFSHomeDirectory: /Network/Servers/\([^/]*\)/\(.*\);\1:/\2;'
+		;;
+
+	*)
+		#
+		# Unknown
+		#
+		exit 1
+		;;
+	esac
+	;;
+
+"HomeDirectory: <home_dir><url>smb://"*)
+	#
+	# SMB home directory
+	#
+	echo "$homedirloc" | sed -e 's;HomeDirectory: <home_dir><url>;;' -e 's;</url><path>;/;' -e 's;</path></home_dir>;;'
+	;;
+
+*)
+	#
+	# Unknown
+	#
+	exit 1
+	;;
+esac
+.Ed
+.Pp
+(this is a simplified example; it does not handle users who do not have
+a network home directory, but includes them in the directory listing).
+.Sh Substituting the map key entry
+If a
+.Va location
+in a map entry contains an ampersand (&), the ampersand will be replaced
+by the value of the key for the map entry.  For example, a map entry of
+.Bd -literal -offset indent
+bill	argon:/export/home/&
+.Ed
+.Pp
+is equivalent to a map entry of
+.Bd -literal -offset indent
+bill	argon:/export/home/bill
+.Ed
+.Sh Wildcards
+If the key in an indirect map entry is an asterisk (*), that entry will
+match any name that isn't matched by any other entry.  For example, a
+map with
+.Bd -literal -offset indent
+bill	argon:/export/home/bill
+*	depot:/export/home/&
+.Ed
+.Pp
+as entries will mount
+.Pa argon:/export/home/bill
+on
+.Pa bill
+and will mount
+.Pa depot:/export/home/{user}
+on
+.Pa {user}
+for all other values of
+.Pa {user} .
+.Sh Variables
+A
+.Va location
+string in a map can contain references to variables.  A reference to a
+variable consists of dollar sign ($) followed by the name of the
+variable.  A variable name is a sequence of alphanumeric characters and
+underscores; the name of the variable can be contained in
+curly braces to separate the variable reference from any alphanumeric
+characters or underscores following it.
+There are some predefined variables:
+.Bl -tag -width "OSNAME" -offset indent
+.It Sy ARCH
+System architecture ("macintosh" on Macintoshes).
+.It Sy CPU
+Processor type, as reported by
+.Ic "uname -p"
+("powerpc" on PowerPC Macintoshes, "i386" on Intel Macintoshes).
+.It Sy HOST
+This machine's host name.
+.It Sy OSNAME
+Operating system name, as reported by
+.Ic "uname -s"
+("Darwin" in OS X).
+.It Sy OSREL
+Operating system release, as reported by
+.Ic "uname -r"
+(for example, 9.3.0 in Mac OS X 10.5.3).
+.It Sy OSVERS
+Operating system version, as reported by
+.Ic "uname -v"
+(this string is a long string with spaces in Mac OS X, and is not very
+useful in automounter maps).
+.El
+.Pp
+For example, a direct map entry such as
+.Bd -literal -offset indent
+/usr/local/bin	-ro	server:/export/bin/$OSNAME/$CPU
+.Ed
+.Pp
+would mount on
+.Pa /usr/local/bin
+a directory from the specified server containing executable images
+appropriate to the operating system and CPU type of the machine.
+.Pp
+In addition, any environment variable set in the environment of
+.Xr automountd 8
+can be used as a variable name; those variables can be set
+with the
+.Dv AUTOMOUNTD_ENV
+parameter in the
+.Xr autofs.conf 5
+file.
+.Sh Quoting
+Special characters, such as white space characters, a dollar sign, or an
+ampersand can be quoted by escaping them with a backslash (\e); this
+prevents white space from being interpreted as a field separator,
+prevents a dollar sign from being interpreted as the beginning of a
+variable name, and prevents an ampersand from being interpreted as the
+key field for the entry in which it occurs.  A sequence of characters
+can also be quoted by enclosing it in double-quotes (").
+.Sh Special Maps
+The special maps have reserved names and are built into the automounter.
+.Bl -tag
+.It Dv -fstab
+This map would normally be mounted on
+.Pa /Network/Servers .
+The key is the host name of a server; the contents of the map entry are
+generated from corresponding entries in
+.Xr fstab 5
+data (as provided by
+.Xr getfsent 3 Ns )
+that have the
+.Li net
+option and that specify mounts from that server.  An entry of the form
+.Bd -literal -offset indent
+server:/path mountpoint fstype options 0 0
+.Ed
+.Pp
+will be mounted in
+.Va server Ns / Ns Va path
+under the mount point of the
+.Dv -fstab
+map, using the specified
+.Va fstype
+file system type and the specified
+.Va options .
+The
+.Va mountpoint
+is ignored.
+.It Dv -hosts
+This map would normally be mounted on
+.Pa /net .
+The key is the host name of an NFS server; the contents of the map are
+generated from the list of file systems exported by that server.
+For example, a server that exports three NFS filesystems might have
+an equivalent map entry of:
+.Bd -literal -offset indent
+myserv	\\
+	/export/home	myserv:/export/home \\
+	/export/local	myserv:/export/local \\
+	/export/pkg	myserv:/export/pkg
+.Ed
+.Pp
+To access the first mount, the path would be
+.Pa /net/myserv/export/home
+if the map was associated with
+.Pa /net .
+.It Dv -null
+This map has no entries.
+It is used to disable entries that occur later in the
+.Nm
+file.
+For example:
+.Bd -literal -offset indent
+/shared		-null
++auto_master
+.Ed
+.Pp
+The -null entry disables any
+.Pa /shared
+entry in +auto_master.
+.It Dv -static
+This map is a direct map, so the mount point must be specified as
+.Pa /- Ns .
+The contents are generated from all entries in
+.Xr fstab 5
+data (as provided by
+.Xr getfsent 3 Ns )
+that do not have the
+.Li net
+option.  An
+.Xr fstab 5
+entry of the form
+.Bd -literal -offset indent
+server:/path mountpoint fstype options rw 0 0
+.Ed
+.Pp
+will generate a direct map entry of the form
+.Bd -literal -offset indent
+mountpoint options server:/path
+.Ed
+.Pp
+.El
+.Sh FILES
+.Bl -tag -width /etc/auto_master -compact
+.It Pa /etc/auto_master
+The master map file.
+.El
+.Sh SEE ALSO
+.Xr automount 8 ,
+.Xr automountd 8 ,
+.Xr autofsd 8 ,
+.Xr autofs.conf 5 ,
+.Xr fstab 5 ,
+.Xr getfsent 3 ,
+.Xr DirectoryService 8

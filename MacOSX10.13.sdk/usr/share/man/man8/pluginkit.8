@@ -1,0 +1,131 @@
+.Dd 1/22/14               \" DATE
+.Dt pluginkit 8      \" Program name and manual section number
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm pluginkit
+.Nd plugin plug-in extension pluginkit
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Fl m
+.Op Fl ADv
+.Op Fl p protocol
+.Op Fl i identifier
+.Op Ar key=value
+.Op Ar ...
+.br
+.Nm
+.Op Fl ar
+.Op Fl v
+.Op Ar
+.br
+.Nm
+.Fl e
+.Ar election
+.Op Fl p protocol
+.Op Fl i identifier
+.Op Ar key=value
+.Op Ar ...
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+manages the
+.Ar PlugInKit
+subsystem for the current user. It can query the plug-in database and make limited interventions
+for debugging and development.
+.Pp
+A list of flags and their descriptions:
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl A, -all-versions
+Matches find all versions of a given plug-in known to the system.
+By default, only the latest (highest) version is returned.
+.It Fl a
+Explicitly adds plugins at the file location(s) given, even if they are not normally eligible for automatic discovery.
+Note that database clean-ups may eventually remove them in that case.
+.It Fl e Ar election
+Perform a matching operation (see -m) and apply the given user election setting to all matching plug-ins.
+Elections can be "use", "ignore", and "default". Elections are applied to all plug-ins with given identifier.
+.It Fl D, -duplicates
+Matches find all physical instances of a given plug-in known to the system, even multiple copies with the
+same version.
+.It Fl i, -identifier Ar identifier
+Specifies a plug-in identifier to match, a short-hand for NSExtensionIdentifier=identifier.
+.It Fl m -match
+Requests
+.Nm
+to scan all registered plug-ins for those matching the given search criteria (see DISCOVERY MATCHING below).
+All matching plug-ins are returned, one per line. Add the
+.Fl v
+option to get more detailed output. This is exactly reproducing the functionality of PlugInKit discovery,
+except that no host-specific restrictions are imposed. The
+.Fl A
+and
+.Fl D
+options affect the outcome.
+.It Fl p -protocol Ar protocol
+Specifies a plug-in protocol to  match, a short-hand for NSExtensionPointName=protocol.
+.It Fl r
+Explicitly removes plugins at the file location(s) given. Note that automatic discovery
+procedures may add them back if they are still present.
+.It Fl -raw
+Present replies from the management daemon (pkd) in raw XML form. This is primarily useful for debugging
+and for reporting full state in bug reports.
+.It Fl v
+Asks for more verbose operation. For matching requests, more detail is printed about each matched plug-in.
+This option can be given more than once.
+.El                      \" Ends the list
+
+.Sh DISCOVERY MATCHING
+During plug-in discovery, PlugInKit matches plug-ins against match criteria and delivers matching plug-ins.
+Only plug-ins that match all given criteria are eligible. Criteria are expressed as "key" (must be present)
+or "key=value" (key must be present and have the given value). The -i and -p arguments are shorthands for the
+conventional identifier and protocol matching keys.
+.p
+All matching plug-ins are reduced according to the
+.Fl A
+and
+.Fl D
+options given. With
+.Fl D,
+all eligible plug-ins are
+returned. With
+.Fl A,
+the last-registered (by timestamp) instance of each version is returned. By default, only
+the last instance of the highest version is returned. Note that this reduction is applied after matching.
+.Sh EXPLICIT CHANGES
+The
+.Fl a
+and
+.Fl r
+options make changes to the system's plug-in registry. The registry is designed to operate automatically,
+and will update on its own as applications are installed, removed, and discovered. The options available through
+.Nm
+are intended only for limited manipulation during plug-in development and for certain maintenance tasks.
+They cannot make permanent alterations of the automatic registry state.
+.Pp
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.\".Sh FILES                \" File used or created by the topic of the man page
+.\".Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.\".It Pa /usr/share/file_name
+.\"FILE_1 description
+.\".It Pa /Users/joeuser/Library/really_long_file_name
+.\".El                      \" Ends the list
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.Xr pkd 8 ,
+.Xr launchd 8
+.\" .Sh BUGS              \" Document known, unremedied bugs
+.Sh HISTORY           \" Document history if command behaves in a unique manner
+The
+.Nm
+command first appeared in OS X 10.9.

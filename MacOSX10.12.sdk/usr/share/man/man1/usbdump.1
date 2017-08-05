@@ -1,0 +1,167 @@
+.\"
+.\" Copyright (c) 2016 Apple, Inc.
+.\" All rights reserved.
+.\"
+.\" Copyright (c) 2010 Weongyo Jeong.
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd May 4, 2016
+.Dt USBDUMP 1
+.Os
+.Sh NAME
+.Nm usbdump
+.Nd "dump traffic on USB host controller"
+.Sh SYNOPSIS
+.Nm
+.Op Fl i Ar ifname
+.Op Fl r Ar file
+.Op Fl s Ar snaplen
+.Op Fl v
+.Op Fl w Ar file
+.Op Fl f Ar filter
+.Op Fl l Ar location
+.Op Fl b Ar file
+.Op Fl h
+.Sh DESCRIPTION
+The
+.Nm
+utility provides a way to dump USB packets on host controllers.
+.Pp
+The following options are accepted:
+.Bl -tag -width ".Fl f Ar file"
+.It Fl b Ar file
+Store data part of the USB trace in binary format to the given
+.Ar file .
+This option also works with the -r and -f options.
+.It Fl i Ar ifname
+Listen on USB bus interface
+.Ar ifname .
+This is specified by controller type prefix and location.  The controller type prefix must
+be one of: \fIUHC\fR, \fIOHC\fR, \fIEHC\fR, \fIXHC\fR.
+The location is the most significant byte of the controller's \fIlocation\fR as shown in the IORegistry.
+For example: the ifname of \fIEHC\fR1@\fI1d\fR000000 would be EHC29.
+.It Fl r Ar file
+Read the raw packets from
+.Ar file .
+This option also works with the -f option.
+.It Fl s Ar snaplen
+Snapshot
+.Ar snaplen
+bytes from each packet.
+.It Fl v
+Enable debugging messages.
+When defined multiple times the verbosity level increases.
+.It Fl w Ar file
+Write the raw packets to
+.Ar file .
+This option also works with the -s and -v options.
+.It Fl f Ar filter
+The filter argument consists of either one or two numbers separated by a dot.
+The first indicates the device address which should be traced.
+The second number, which is optional, indicates the endpoint address which should be traced.
+A device address or endpoint value of -1 means ignore this field.
+If no filters are specified, all packets are passed through using the default -1,-1 filter.
+This option can be specified multiple times.
+.It Fl l Ar location
+The filter argument consists of either one or two numbers separated by a dot.
+The first indicates the locationID which should be traced and must be provided in hexidecimal.
+The second number, which is optional, indicates the endpoint address which should be traced.
+This option can be specified multiple times.
+.It Fl h
+This option displays a summary of the command line options.
+.El
+.Sh EXAMPLES
+Capture the USB raw packets on XHC1:
+.Pp
+.Dl "usbdump -i XHC1 -s 256 -v"
+.Pp
+Dump the USB raw packets of EHC1 into the file without packet
+size limit:
+.Pp
+.Dl "usbdump -i EHC1 -s 0 -w /tmp/dump_pkts"
+.Pp
+Dump the USB raw packets of OHC1, but only the control endpoint traffic
+of device at address 3, endpoint 0x81:
+.Pp
+.Dl "usbdump -i OHC1 -s 0 -f 3.129 -w /tmp/dump_pkts"
+.Pp
+Read and display the USB raw packets from previous file:
+.Pp
+.Dl "usbdump -r /tmp/dump_pkts -v"
+.Sh OUTPUT FORMAT
+The output format of
+.Nm
+is as follows:
+.Pp
+.Dl "<time> <controller> <device> <endpoint> <type> <speed> <state> <id> <frames> <length> <status>"
+.Pp
+The meaning of the output format elements is as follows:
+.Bl -tag -width "<controller>"
+.It <time>
+A timestamp preceding all output lines.
+The timestamp has the format "hh:mm:ss.frac" and is as accurate as
+the kernel's clock.
+.It <controller>
+The USB host controller's name.
+.It <device>
+The address of the USB device as allocated by the host controller driver.
+.It <endpoint>
+The USB endpoint address that indicates whether the address is
+.Dv OUT
+or
+.Dv IN .
+.It <type>
+The USB transfer type.
+Can be
+.Dv control ,
+.Dv isoc ,
+.Dv bulk
+or
+.Dv interrupt .
+.It <speed>
+The operating speed of the device.
+Can be
+.DV low ,
+.Dv full ,
+.Dv high ,
+.Dv super ,
+or
+.Dv super+ .
+.It <state>
+The state of the I/O.
+.Dv `submitted' indicates the I/O has been submitted.
+.Dv `completed' indicates a USB transfer done.
+.It <id>
+The unique ID of this I/O request.
+.It <frames>
+Numbers of frames in this packets.
+Only applicable to isoc transfers.q
+.It <length>
+Total amount of data that was transferred.
+.It <status>
+IOReturn status for the request
+.El
+.Sh AUTHORS
+.An Based on work from Weongyo Jeong Aq Mt weongyo@FreeBSD.org

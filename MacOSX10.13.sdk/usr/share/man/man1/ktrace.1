@@ -1,0 +1,302 @@
+.\" Copyright (c) 2016, Apple Inc.  All rights reserved.
+.\"
+.Dd 15 April 2016
+.Dt KTRACE 1
+.Os "Darwin"
+.Sh NAME
+.Nm ktrace
+.Nd configure, record, and print events from kernel trace
+.Sh SYNOPSIS
+.Bl -hang -compact -width "ktrace -"
+.\"
+.It Nm Cm info
+.\"
+.It Nm Cm trace
+.Op Fl Nnstu
+.Op Fl R Ar path | Fl E
+.Op Fl c Ar codes-path Op Ar ...
+.Op Fl T Ar timeout
+.Op Fl f Ar filter-desc
+.Op Fl x Ar pid-or-name Oo Ar ... Oc | Fl p Ar pid-or-name Oo Ar ... Oc
+.\"
+.It Nm Cm dump
+.Op Fl E
+.Op Fl f Ar filter-desc
+.Op Fl l Ar compression-level
+.Op Fl T Ar timeout
+.Op Ar path
+.\"
+.It Nm Cm init
+.Fl b Ar buffer-size-mb
+.\"
+.It Nm Cm setopt
+.Op Fl f Ar filter-desc
+.Op Fl w
+.Op Fl x Ar pid-or-name Oo Ar ... Oc | Fl p Ar pid-or-name Oo Ar ... Oc
+.\"
+.It Nm Cm enable
+.\"
+.It Nm Cm disable
+.\"
+.It Nm Cm remove
+.\"
+.It Nm Cm emit Ar debugid Op arg1 Op arg2 Op arg3 Op arg4
+.\"
+.It Nm Cm symbolicate Ar path
+.\"
+.It Nm Cm compress Oo Fl l No fast|balanced|small Oc Ar path
+.\"
+.It Nm Cm artrace Oo Fl n Oc Oo Fl t Ar timeout Oc Oo Fl i Ar interval Oc Oo Fl o Ar filename Oc Oo Fl b Ar buffer-size-mb Oc Oo Fl f Ar filter-desc Oc
+.\"
+.El
+.Sh DESCRIPTION
+.Nm
+can configure the system to trace events, or record them to a file, and print a
+human-readable representation of the events.
+.Pp
+.Sh SUBCOMMANDS
+.Nm
+uses a subcommand syntax to separate different functionality into logical
+groups.  Each subcommand takes its own set of options, though a few options may
+be used in multiple subcommands.
+.Bl -tag -width "disable -"
+.\" INFO
+.It Cm info
+Print information about the current configuration of kernel trace.
+.Pp
+.\" TRACE
+.It Cm trace Oo Fl Nnstu Oc Oo Fl R Ar path | Fl E Oc Oo Fl T Ar timeout Oc Oo Fl c Ar codes-path Op Ar ... Oc Oo Fl f Ar filter-desc Oc Oo Fl x Ar pid-or-name Oo Ar ... Oc | Fl p Ar pid-or-name Oo Ar ... Oc Oc
+.Pp
+Print events to
+.Xr stdout 4
+in a human-readable format, automatically providing wall clock time, process
+names, and event names for each event.  Without the
+.Fl R
+or
+.Fl E
+options,
+.Nm
+initializes the trace buffers to a reasonable size and enables tracing until it
+terminates.
+.Bl -tag -width Ds
+.It Fl R Ar path
+Print events from the trace file at
+.Ar path .
+.Pp
+.It Fl E
+Use an existing configuration, instead of creating a new configuration.  This is
+necessary to use the
+.Cm trace
+subcommand with other
+.Nm
+subcommands, like
+.Cm init
+and
+.Cm setopt .
+.It Fl N
+Don't display names of events.
+.It Fl n
+Display thread names.
+.It Fl s
+Attempt to symbolicate addresses found in arguments to symbols.
+.It Fl t
+Print times as Mach absolute timestamps, instead of the default local wall clock
+time.
+.It Fl u
+Attempt to symbolicate addressess to uuid-offset tuples.
+.It Fl c Ar codes-path
+Use a custom codes file to provide event ID to name mappings.  See
+.Xr trace 1
+for more details on the format of codes files.
+.It Fl f Ar filter-desc
+Apply a filter description to the trace session, controlling which events are
+traced.  See
+.Sx FILTER DESCRIPTIONS
+for details on the syntax of a filter.  If no filter description is provided,
+all events will be traced.
+.It Fl T Ar timeout
+End tracing after
+.Ar timeout
+has elapsed.  Suffixes like
+.Li ns
+or
+.Li ms
+are supported, but seconds are the default if just a number is supplied.
+.Pp
+.It Fl x Ar pid-or-name Oo Ar ... Oc | Fl p Ar pid-or-name Oo Ar ... Oc
+Restrict the processes that can trace events.  Either exclude
+.Pq Fl x
+or only trace events
+.Pq Fl p
+from the provided processes by name or pid.  These options are mutually
+exlusive.  Processes that cannot be attached to are always excluded on release
+kernels.  Similarly, events in the Mach scheduling subclass are included,
+regardless of the this option, to allow tools to maintain thread scheduling
+state machines.
+.El
+.\" DUMP
+.It Cm dump Oo Fl E Oc Oo Fl f Ar filter-desc Oc Oo Fl l Ar compression-level Oc Oo Fl T Ar timeout Oc Oo Ar path Oc
+.Pp
+Write trace to a file at
+.Ar path
+for later inspection with
+.Nm
+.Cm trace Fl R .
+If no
+.Ar path
+is specified, the tool writes to a new, numbered file in the working directory,
+starting with
+.Li trace001.ktrace .
+The command continues to write events until
+.Nm
+is terminated, the optional timeout triggers, or the trace buffers fill up when
+using an existing configuration with wrapping disabled.  If a compression level
+is specified, the file is compressed as it is written.  Using non-default
+values for this option may increase the overhead of collecting events.
+.Bl -tag -width Ds
+.It Fl E
+Use an existing configuration, instead of creating a new configuration.
+.It Fl f Ar filter-desc
+Apply a filter description to events written to the file, controlling which
+events are traced.  See
+.Sx FILTER DESCRIPTIONS
+for details on the syntax of a filter.  If no filter description is provided,
+all events will be traced.
+.It Fl p
+Enable kperf sampling.
+.It Fl T Ar timeout
+End tracing after
+.Ar timeout
+has elapsed.  Suffixes like
+.Li ns
+or
+.Li ms
+are supported, but seconds are the default if just a number is supplied.
+.El
+.\" INIT
+.It Cm init Fl b Ar buffer-size-mb
+.Pp
+Initialize trace to allocate
+.Ar buffer-size-mb
+megabytes of space for its trace buffers.  This subcommand must be provided
+before using the
+.Cm setopt ,
+.Cm enable ,
+or
+.Cm disable
+subcommands initially or after using the
+.Cm remove
+subcommand.
+.Pp
+.\" SETOPT
+.It Cm setopt Oo Fl f Ar filter-desc Oc Oo Fl w Oc Oo Fl x Ar pid-or-name Oo Ar ... Oc | Fl p Ar pid-or-name Oo Ar ... Oc Oc
+.Pp
+Set options on the existing trace configuration.  The trace configuration must
+already be initialized.
+.Bl -tag -width Ds
+.It Fl f Ar filter-desc
+Apply a filter description to the current configuration, controlling which
+events are traced.  See
+.Sx FILTER DESCRIPTIONS
+for details on the syntax of a filter.  If no filter description is provided,
+all events will be traced.
+.Pp
+.It Fl w
+Configure trace to operate in
+.Dq windowed
+mode, where the trace buffer acts as a ring buffer, removing old events to make
+room for new ones.  By default, tracing ends when the buffer runs out of space
+for new events.
+.Pp
+.It Fl x Ar pid-or-name Oo Ar ... Oc | Fl p Ar pid-or-name Oo Ar ... Oc
+Restrict the processes that can trace events.  Either exclude
+.Pq Fl x
+or only trace events
+.Pq Fl p
+from the provided processes by name or pid.  These options are mutually
+exlusive.  Processes that cannot be attached to are always excluded on release
+kernels.  Similarly, events in the Mach scheduling subclass are included,
+regardless of the this option, to allow tools to maintain thread scheduling
+state machines.
+.El
+.Pp
+.\" ENABLE
+.It Cm enable
+Start tracing events.
+.Pp
+.\" DISABLE
+.It Cm disable
+Stop tracing events.  Tracing can be started again after it has been disabled,
+using the same configuration.
+.Pp
+.It Cm remove
+Remove the current trace configuration and free the memory associated with
+tracing.
+.Pp
+.\" EMIT
+.It Cm emit Ar debugid Op arg1 Op arg2 Op arg3 Op arg4
+.Pp
+Emit an event into the trace stream with the provided
+.Ar debugid
+and arguments.
+.\" SYMBOLICATE
+.It Nm Cm symbolicate Ar path
+Symbolicate the trace file located at
+.Ar path .
+.\" COMPRESS
+.It Nm Cm compress Oo Fl l No fast|balanced|small Oc Ar path
+Compress the tsrace file located at
+.Ar path
+using the small compression level, unless otherwise specified with the
+.Fl l
+option.
+.\" ARTRACE
+.It Nm Cm artrace Oo Fl n Oc Oo Fl t Ar timeout Oc Oo Fl i Ar interval Oc Oo Fl o Ar filename Oc Oo Fl b Ar buffer-size-mb Oc Oo Fl f Ar filter-desc Oc
+Profile the system and write output to an automatically named file, unless
+otherwise specified with the
+.Fl o
+option.  If the
+.Fl t
+option is provided, stop tracing and exit after
+.Ar timeout
+has elapsed.  The timeout value may have
+.Li us ,
+.Li ms ,
+or
+.Li s
+appended to indicate the time units.  The
+.Fl i
+option controls the interval that the profiling timer fires.
+Set
+.Fl n
+to disable the profiling timer entirely.
+.El
+.Sh FILTER DESCRIPTIONS
+A filter description is a comma-separated list of class and subclass specifiers
+that indicate which events should be traced.  A class specifier starts with
+.Ql C
+and contains a single byte, specified in either decimal or hex.  A subclass
+specifier starts with
+.Ql S
+and takes two bytes.  The high byte is the class and the low byte is the
+subclass of that class.
+.Pp
+For example, this filter description would enable classes 1 and 37 and the
+subclasses 33 and 35 of class 5:
+.Ql C1,C0x25,S0x0521,S0x0523 .
+The
+.Ql ALL
+filter description enables events from all classes.
+.Sh CAVEATS
+Once trace has been initialized with the
+.Cm init
+subcommand, it remains in use until the space is reclaimed with the
+.Cm remove
+subcommand.  This prevents background diagnostic tools from making use of trace.
+.Sh DIAGNOSTICS
+.Ex -std
+.Sh SEE ALSO
+.Xr trace 1 ,
+.Xr fs_usage 1 ,
+.Xr ktfile 1 ,
+.Xr ktrace 5

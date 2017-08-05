@@ -1,0 +1,177 @@
+.\" Copyright (c) 2015-2017 Apple Inc. All rights reserved.
+.\" 
+.\" The contents of this file constitute Original Code as defined in and
+.\" are subject to the Apple Public Source License Version 1.1 (the
+.\" "License").  You may not use this file except in compliance with the
+.\" License.  Please obtain a copy of the License at
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\" 
+.\" This Original Code and all software distributed under the License are
+.\" distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+.\" License for the specific language governing rights and limitations
+.\" under the License.
+.\" 
+.\"     @(#)newfs_apfs.8
+.hlm 0
+.Dd September 15, 2015
+.Dt NEWFS_APFS 8
+.Os "Mac OS X"
+.Sh NAME
+.Nm newfs_apfs
+.Nd construct a new
+.Tn APFS
+volume
+.Sh SYNOPSIS
+.Nm
+.Op Fl o Ar options
+.Op Fl i
+.Op Fl b Ar block-size
+.Op Fl s Ar volume-size | Fl q Ar volume-quota Fl r Ar volume-reserve
+.Op Fl v Ar volume-name
+.Op Fl E | Fl P
+.Op Fl R Ar role
+.Ar special
+.Nm
+.Fl C
+.Op Fl o Ar options
+.Op Fl i
+.Op Fl b Ar block-size
+.Ar special
+.Nm
+.Fl A
+.Op Fl o Ar options
+.Op Fl i
+.Op Fl s Ar volume-size | Fl q Ar volume-quota Fl r Ar volume-reserve
+.Op Fl v Ar volume-name
+.Op Fl E | Fl P
+.Op Fl R Ar role
+.Ar special
+.Nm
+.Op Fl o Ar options
+.Op Fl i
+.Op Fl s Ar volume-size | Fl q Ar volume-quota Fl r Ar volume-reserve
+.Op Fl v Ar volume-name
+.Op Fl E | Fl P
+.Op Fl R Ar role
+.Ar special
+.Sh DESCRIPTION
+The
+.Nm
+command creates a new
+.Tn APFS
+container on the device and/or adds a new
+.Tn APFS
+volume to a container.
+.Pp
+The first, more traditional, form of
+.Nm
+formats the given
+.Ar special
+as a container with a single volume inside it.
+The second form creates a container only, with no volumes.
+The third form is used to non-destructively add additional volumes inside an existing container.
+The fourth form reformats an existing volume by effectively deleting and re-creating it; in this usage (only)
+.Ar special
+indicates a volume inside the container.
+.Pp
+The
+.Ar special
+parameter should be the path to a disk device node, such as
+.Pa /dev/disk1s2 ,
+although can be specified as simply
+.Pa disk1s2 .
+.Pp
+The options are as follows:
+.Bl -tag -width 17n
+.It Fl b Ar block-size
+The block size of the container.
+All volumes within this container will use this block size.
+The default is 4096 bytes.
+.It Fl o Ar options
+Additional (undocumented) formatting options.
+.It Fl i
+Creates a case-insensitive volume. This is the default on macOS.
+.It Fl e
+Creates a case-sensitive volume.
+.It Fl U Ar uid
+The UID of the root volume. Defaults to current UID.
+.It Fl G Ar uid
+The GID of the root volume. Defaults to current GID.
+.It Fl q Ar volume-quota
+Places a quota, or upper limit, on the size of the volume.  If specified then no more than this much space will be used for its content,
+even if there is additional free space in the container; however it is not guaranteed that the entire quota will always be available.
+By default a volume has no assigned quota.
+.It Fl r Ar volume-reserve
+Reserves an amount of space for this volume.  If specified it is guaranteed that at least this much space will be available for its content;
+the volume may also grow beyond this size (up to its quota limit, if any) if additional free space in the container.
+By default a volume has no assigned reserve.
+.It Fl s Ar volume-size
+The fixed size of the volume.
+If specified then the volume is guaranteed that exactly this much space will be available for its content.
+Setting
+.Fl s
+is equivalant to setting both
+.Fl q
+and
+.Fl r
+to that same value.
+If not specified then the available space is dynamic and determined by the usage of other volumes within the same container (space-sharing).
+.It Fl v Ar volume-name
+The name of the volume.
+The default is 
+.Qq untitled .
+.It Fl A
+Add a volume to an existing container.
+There is a limit to the number of volumes that may reside inside a container.
+.It Fl C
+Create a container only, with no volume.
+.Nm
+.Fl A
+may be used later to format volumes inside that container.
+.It Fl E
+Enable volume encryption.
+The volume metadata is also encrypted.
+.It Fl F Ar special
+Format as a Fusion device (with the secondary device specified here).
+.It Fl R Ar role
+Set the OS
+.Qq role
+of the volume within the container.  The
+.Ar role
+may be certain valid combinations of the following characters:
+.Bl -tag -width "  " -offset "  " -compact
+.It Sy b
+PreBoot - will contain information used to help boot System volumes
+.It Sy u
+User - will contain home directory and other user data
+.It Sy s
+System - will contain a bootable system
+.It Sy r
+Recovery - will contain the RecoveryOS
+.It Sy v
+VM - will contain swapfiles and hibernate image
+.El
+.El
+.Sh DIAGNOSTICS
+.Ex -std
+.Sh EXAMPLES
+The following formats a new container and a volume named
+.Qq Macintosh
+on the
+.Pa /dev/disk1s2
+device:
+.Dl Nm Fl v Ar Macintosh Pa disk1s2
+.Pp
+And then this adds another volume, named
+.Qq Data
+with a fixed size of 100 GB, to that container:
+.Dl Nm Fl v Ar Data Fl s Ar 100g Fl A Pa disk1s2
+.Sh SEE ALSO
+.Xr mount_apfs 8
+.Sh HISTORY
+The
+.Nm
+utility first appeared in OS X 10.12.

@@ -1,0 +1,332 @@
+.\"
+.\" Copyright (c) 2015 Apple Computer, Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\"
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\"
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\"
+.\" @APPLE_LICENSE_HEADER_END@
+.Dd January 14, 2015
+.Dt NCCTL 1
+.Os
+.Sh NAME
+.Nm ncctl
+.Nd Control
+.Tn NFS
+kernel credentials
+.Sh SYNOPSIS
+.Nm
+.Op Fl Ar Pvh
+.Bro
+.Brq init | set
+.Op Fl Ar F
+.Fl Ar p Ar principal |
+.Brq destroy | unset
+.No |
+.Brq list | get
+.Brc
+.Op Pa path ...
+.Nm ncinit Op Fl Ar PvhF
+.Fl Ar p principal
+.Op path ...
+.Nm ncdestroy Op Fl Ar Pvh
+.Op path ...
+.Nm nclist Op Fl Ar Pvh
+.Op path ...
+.Sh DESCRIPTION
+.Nm
+controls the caller's kernel
+.Tn Kerberos
+credentials for any of the specified path's associated
+.Tn NFS
+mounts.  If no paths are specified then all the caller's associated credentials for all
+.Tn NFS
+file systems are acted upon by the command given.
+.Pp
+When an
+.Tn NFS
+file system is mounted using
+.Tn Kerberos
+through the
+.Dq sec=
+option or by the export specified on the server, the resulting session context is stored in a table for each mount. If the user decides to finish his or her session or chooses to use a different
+credential, then
+.Nm
+can be called to invalidate or change those credentials in the kernel.
+.Pp
+.Nm
+supports the following commands:
+.Bl -tag -width 15m
+.It Ar init , Ar set
+Set the mount or mounts to obtain credentials form the associated principal. Any current credential is unset.
+.It Ar destroy , Ar unset
+Unset the current credentials on the mount or mounts.
+.It Ar list , Ar get
+List the principal(s) set on the mount or mounts for this session. If
+no principal was set, then display
+.Dq Default credential
+followed by
+.Dq Bq from Aq principal name
+if the access succeeded and
+.Dq Bq kinit needed
+if not.
+If there has been no access to the file system then
+display
+.Dq Credentials are not set .
+.El
+.Pp
+.Bl -tag -compact -width indent
+.It Note the second synopsis is equivalent to
+.Nm Op Fl Ar Pv
+.Brq init | set
+.Op Fl Ar F
+.Fl Ar p Ar principal
+.It The third synopsis is equivalent to
+.Nm
+.Op Fl Ar Pv
+.Brq destroy | unset
+.It And the last synopsis is equivalent to
+.Nm
+.Op Fl Ar Pv
+.Brq list | get
+.El
+.Pp
+.Tn Kerberos
+keeps a collection of credentials which can be seen by using
+.Pp
+.Dl Nm klist Fl Ar A .
+.Pp
+The current default credential can be seen with
+.Nm klist
+without any arguments.
+.Nm kswitch
+can be used to switch the default to a different
+.Tn Kerberos
+credential.
+.Nm kdestroy
+can be use to remove all or a particular
+.Tn Kerberos
+credential.
+New
+.Tn Kerberos
+credentials can be obtain and added to the collection
+by calling
+.Nm kinit
+and those credentials can be used when accessing the mount.
+See
+.Xr kinit 1 ,
+.Xr klist 1 ,
+.Xr kswitch 1 ,
+and
+.Xr kdestroy 1 .
+.Pp
+.Nm
+can set any principal from the associated
+.Tn Kerberos
+credentials or can destroy and unset credentials currently on the mount. When accessing a
+.Tn Kerberos
+mounted
+.Tn NFS
+file system, if no principal is set on the mount, when the kernel needs credentials it will make an up call to the
+.Nm gssd
+daemon and what ever the default credentials are available at the time
+will be used.
+.Pp
+The options are as follows:
+.Bl -tag -width 15m
+.It Fl Ar h , Fl - Ns Ar help
+Print a help summary of the command and then exit.
+.It Fl Ar v , Fl - Ns Ar verbose
+Be verbose and show what file system is being operated on and any resulting errors.
+.It Fl Ar P , Fl - Ns Ar nofollow
+If the trailing component resolves to a symbolic link do not resolve the link but use the current path to determine any associate
+.Tn NFS
+file system.
+.It Fl Ar p , Fl - Ns Ar principal Aq Ar principal
+For the
+.Ar init ,
+.Ar set
+and
+.Nm ncinit
+commands set the principal to
+.Aq Ar principal .
+This option is required for theses commands. This option is not valid for other commands.
+.It Fl Ar F , Fl - Ns Ar force
+For the
+.Ar init ,
+.Ar set
+and
+.Nm ncinit
+commands to not check the presence of the required principal in the
+.Tn Kerberos
+cache collection.
+This may be useful if
+.Tn Kerberos
+credentials will be obtain later.
+.Bd -filled -compact
+.Em WARNING :
+If the credential is incorrectly set it may not work and no access
+to the file system will ever be allowed until another
+.Ar set
+or
+.Ar  unset
+operation takes place.
+This option is not valid for other commands.
+.Ed
+.El
+.Sh EXAMPLES
+.Pp
+If leaving for the day:
+.Bd -literal
+ $ kdestroy -A
+ $ ncdestroy
+.Ed
+.Pp
+Lets say a user does
+.Bd -literal
+ $ kinit user@FOO.COM
+.Ed
+.Pp
+And through the
+.Nm automounter
+access a path /Network/Serves/someserver/Sources/foo/bar
+where the mount of /Network/Servers/someserver/Sources/foo was done with user@FOO.COM.
+.Bd -literal
+ $ cat /Network/Servers/someserver/Sources/foo/bar
+ cat: /Network/Servers/someserver/Sources/foo/bar: Permission denied
+.Ed
+.Pp
+The user realizes that in order to have access on the server his
+identity should be user2@BAR.COM. So:
+.Bd -literal
+ $ kinit user2@BAR.COM
+ $ ncctl set -p user2@BAR.COM
+.Ed
+.sp
+Now the local user can access bar. To see your credentials
+.Bd -literal
+$ nclist
+/Network/Servers/someserver/Sources/foo: user2@BAR.COM
+.Ed
+.Pp
+If the user destroys his credentials and then acquires new ones
+.Bd -literal
+$ ncdestroy
+$ nclist -v
+/private/tmp/mp                    : No credentials are set.
+/Network/Servers/xs1/release       : NFS mount is not using Kerberos.
+$ kinit user
+user@FOO.COM's password: ******
+$ klist
+Credentials cache: API:648E3003-0A6B-4BB3-8447-1D5034F98EAE
+	Principal: user@FOO.COM
+
+  Issued                Expires               Principal
+Dec 15 13:57:57 2014  Dec 15 23:57:57 2014  krbtgt/FOO.COM@FOO.COM
+$ ls /private/tmp/mp
+filesystemui.socket=	sysdiagnose.tar.gz	x
+mtrecorder/		systemstats/		z
+$ nclist
+/private/tmp/mp                 : Default credential [from user@FOO.COM]
+.Ed
+.Sh NOTES
+As mentioned above credentials are per session, so the console session's credential cache collection is separate for a collections
+of credentials obtain in an
+.Nm ssh
+session even by the same user.
+.Tn Kerberos
+will set the default credential with
+.Nm klist
+or
+.Nm kswitch .
+However, the default credential can change without the user's knowledge, because of renewals or some other script or program in the
+user's session is run and does a
+.Nm kswitch
+.Fn ( krb5_cc_set_default_name )
+or
+.Nm kinit
+on the user's behalf.
+.Nm kinit
+may not prompt for a password if the
+.Tn Kerberos
+password for the principal is in the user's keychain.
+.Pp
+.Nm
+with the
+.Ar set
+command will allow a user to change the mapping of the local user identity to a different one on the server. It is up to the user to
+decide which identity will be used.
+.Pp
+Previous versions of
+.Nm gssd
+daemon would attempt to select credentials if they were not set, by
+choosing credentials in the same realm as the server. This was imperfect and that has been removed. There may be multiple credentials in the same realm or a user may prefer a cross realm principal. It is highly recommended that after accessing a mount (typically through the
+.Nm automounter )
+that if the user has access to multiple credentials to set the credential on the mount that they want to use. The current default
+credential will be used by the
+.Nm automounter
+on first mount. If you
+do not explicitly set the credentials to use, then if the server
+expires the credential, the client will use the current default
+credential at the time of renewal and that may be a different
+identity.
+.Pp
+If using mount directly a user can select what credential to use for
+the mount and subsequently there after (at least until a new
+.Nm
+.Ar set
+command is run) by using the
+.Ar principal Ns = Ns Aq principal
+option. It is also possible to select the realm to use with the
+.Ar realm Ns = Ns Aq realm
+option. The latter can be useful to administrators in automounter maps.
+.Pp
+There is currently no way to remember what the chosen identity is for a given mount after its been unmounted. So for automounted mounts
+a reference it taken on the mount point so unmounts will not happen until all credentials on a mount with a set principal have been destroyed. Forced unmounts will not be effected.
+.Nm nclist
+or
+.Nm
+.Ar get
+can be used to see what credentials are actually being used
+and
+.Nm ncdestroy
+or
+.NM
+.Ar unset
+can be used to destroy that session's credential. Accessing
+the mount after its credentials have been destroyed will cause the default credential to be used until the next
+.Nm ncinit
+or
+.Nm
+.Ar set
+Default credentials for an automounted
+.Tn NFS
+mount will not prevent the unmounting of the file system.
+.Sh DIAGNOSTICS
+The
+.Nm
+command will exit with 1 if any of the supplied paths doesn't exist or there is an error returned for any path tried. If all paths
+exist and no errors are returned the exit status will be 0.
+.Sh SEE ALSO
+.Xr kdestroy 1 ,
+.Xr kinit 1 ,
+.Xr klist 1 ,
+.Xr kswitch 1 ,
+.Xr mount_nfs 8
+.Sh BUGS
+There should be an option to kdestroy to destroy cached
+.Tn NFS
+contexts.

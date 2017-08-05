@@ -1,0 +1,380 @@
+.\"-
+.\" Copyright (c) 2000 Brian Somers <brian@Awfulhak.org>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $FreeBSD: src/share/man/man5/periodic.conf.5,v 1.65 2007/05/13 09:33:35 maxim Exp $
+.\"
+.Dd May 12, 2007
+.Dt PERIODIC.CONF 5
+.Os
+.Sh NAME
+.Nm periodic.conf
+.Nd periodic job configuration information
+.Sh DESCRIPTION
+The file
+.Nm
+contains a description of how daily, weekly and monthly system maintenance
+jobs should run.
+It resides in the
+.Pa /etc/defaults
+directory and parts may be overridden by a file of the same name in
+.Pa /etc ,
+which itself may be overridden by the
+.Pa /etc/periodic.conf.local
+file.
+.Pp
+The
+.Nm
+file
+is actually sourced as a shell script from each of the periodic scripts
+and is intended to simply provide default configuration variables.
+.Pp
+The following variables are used by
+.Xr periodic 8
+itself:
+.Bl -tag -offset 4n -width 2n
+.It Va local_periodic
+.Pq Vt str
+List of directories to search for periodic scripts.
+This list is always prefixed with
+.Pa /etc/periodic ,
+and is only used when an argument to
+.Xr periodic 8
+is not an absolute directory name.
+.It Ao Ar dir Ac Ns Va _output
+.Pq Vt path No or Vt list
+What to do with the output of the scripts executed from
+the directory
+.Ar dir .
+If this variable is set to an absolute path name, output is logged to
+that file, otherwise it is taken as one or more space separated email
+addresses and mailed to those users.
+If this variable is not set or is empty, output is sent to standard output.
+.Pp
+For an unattended machine, suitable values for
+.Va daily_output ,
+.Va weekly_output ,
+and
+.Va monthly_output
+might be
+.Dq Li /var/log/daily.log ,
+.Dq Li /var/log/weekly.log ,
+and
+.Dq Li /var/log/monthly.log
+respectively, as
+.Xr newsyslog 8
+will rotate these files (if they exists) at the appropriate times.
+.It Ao Ar dir Ac Ns Va _show_success
+.It Ao Ar dir Ac Ns Va _show_info
+.It Ao Ar dir Ac Ns Va _show_badconfig
+.Pq Vt bool
+These variables control whether
+.Xr periodic 8
+will mask the output of the executed scripts based on their return code
+(where
+.Ar dir
+is the base directory name in which each script resides).
+If the return code of a script is
+.Sq 0
+and
+.Ao Ar dir Ac Ns Va _show_success
+is set to
+.Dq Li NO ,
+.Xr periodic 8
+will mask the script's output.
+If the return code of a script is
+.Sq 1
+and
+.Ao Ar dir Ac Ns Va _show_info
+is set to
+.Dq Li NO ,
+.Xr periodic 8
+will mask the script's output.
+If the return code of a script is
+.Sq 2
+and
+.Ao Ar dir Ac Ns Va _show_badconfig
+is set to
+.Dq Li NO ,
+.Xr periodic 8
+will mask the script's output.
+If these variables are set to neither
+.Dq Li YES
+nor
+.Dq Li NO ,
+they default to
+.Dq Li YES ,
+.Dq Li YES
+and
+.Dq Li NO
+respectively.
+.Pp
+Refer to the
+.Xr periodic 8
+manual page for how script return codes are interpreted.
+.El
+.Pp
+The following variables are used by the standard scripts that reside in
+.Pa /etc/periodic/daily :
+.Bl -tag -offset 4n -width 2n
+.It Va daily_clean_tmps_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to clear temporary directories daily.
+.It Va daily_clean_tmps_dirs
+.Pq Vt str
+Set to the list of directories to clear if
+.Va daily_clean_tmps_enable
+is set to
+.Dq Li YES .
+.It Va daily_clean_tmps_days
+.Pq Vt num
+When
+.Va daily_clean_tmps_enable
+is set, this must also be set to the number of days old that a file's access
+and modification times must be before it is deleted.
+.It Va daily_clean_tmps_ignore
+.Pq Vt str
+Set to the list of files that should not be deleted when
+.Va daily_clean_tmps_enable
+is set to
+.Dq Li YES .
+Wild card characters are permitted.
+.It Va daily_clean_tmps_verbose
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want the removed files to be reported in your daily output.
+.It Va daily_clean_msgs_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you wish old system messages to be purged.
+.It Va daily_clean_msgs_days
+.Pq Vt num
+Set to the number of days that files must not have been modified before
+they are deleted.
+If this variable is left blank, the
+.Xr msgs 1
+default is used.
+.It Va daily_clean_rwho_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you wish old files in
+.Pa /var/who
+to be purged.
+.It Va daily_clean_rwho_days
+.Pq Vt num
+Set to the number of days that files must not have been modified before
+they are deleted.
+.It Va daily_clean_rwho_verbose
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want the removed files to be reported in your daily output.
+.It Va daily_accounting_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to rotate your daily accounting files.
+No rotations are necessary unless
+.Va accounting_enable
+is enabled in
+.Xr rc.conf 5 .
+.It Va daily_accounting_compress
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want your daily accounting files to be compressed using
+.Xr gzip 1 .
+.It Va daily_accounting_save
+.Pq Vt num
+When
+.Va daily_accounting_enable
+is set, this may also be set to the number of daily accounting files that are
+to be saved.
+The default is
+.Dq Li 3 .
+.It Va daily_accounting_flags
+.Pq Vt str
+Set to the arguments to pass to the
+.Xr sa 8
+utility (in addition to
+.Fl s )
+when
+.Va daily_accounting_enable
+is set to
+.Dq Li YES .
+The default is
+.Fl q .
+.It Va daily_status_disks_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to run
+.Xr df 1
+(with the arguments supplied in
+.Va daily_status_disks_df_flags ) .
+.It Va daily_status_disks_df_flags
+.Pq Vt str
+Set to the arguments for the
+.Xr df 1
+utility when
+.Va daily_status_disks_enable
+is set to
+.Dq Li YES .
+.It Va daily_status_network_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to run
+.Nm netstat Fl i .
+.It Va daily_status_network_usedns
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to run
+.Xr netstat 1
+without the
+.Fl n
+option (to do DNS lookups).
+.It Va daily_status_rwho_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to run
+.Xr uptime 1
+(or
+.Xr ruptime 1
+if
+.Va rwhod_enable
+is set to
+.Dq Li YES
+in
+.Pa /etc/rc.conf ) .
+.It Va daily_status_mailq_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to run
+.Xr mailq 1 .
+.It Va daily_status_mailq_shorten
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to shorten the
+.Xr mailq 1
+output when
+.Va daily_status_mailq_enable
+is set to
+.Dq Li YES .
+.It Va daily_status_include_submit_mailq
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you also want to run
+.Xr mailq 1
+on the submit mail queue when
+.Va daily_status_mailq_enable
+is set to
+.Dq Li YES .
+This may not work with MTAs other than
+.Xr sendmail 8 .
+.It Va daily_local
+.Pq Vt str
+Set to a list of extra scripts that should be run after all other
+daily scripts.
+All scripts must be absolute path names.
+.El
+.Pp
+The following variables are used by the standard scripts that reside in
+.Pa /etc/periodic/weekly :
+.Bl -tag -offset 4n -width 2n
+.It Va weekly_whatis_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to run
+.Pa /usr/libexec/makewhatis.local .
+This script regenerates the database used by the
+.Xr apropos 1
+command.
+.It Va weekly_local
+.Pq Vt str
+Set to a list of extra scripts that should be run after all other
+weekly scripts.
+All scripts must be absolute path names.
+.El
+.Pp
+The following variables are used by the standard scripts that reside in
+.Pa /etc/periodic/monthly :
+.Bl -tag -offset 4n -width 2n
+.It Va monthly_accounting_enable
+.Pq Vt bool
+Set to
+.Dq Li YES
+if you want to do login accounting using the
+.Xr ac 8
+command.
+.It Va monthly_local
+.Pq Vt str
+Set to a list of extra scripts that should be run after all other
+monthly scripts.
+All scripts must be absolute path names.
+.El
+.Sh FILES
+.Bl -tag -width ".Pa /etc/defaults/periodic.conf"
+.It Pa /etc/defaults/periodic.conf
+The default configuration file.
+This file contains all default variables and values.
+.It Pa /etc/periodic.conf
+The usual system specific variable override file.
+.It Pa /etc/periodic.conf.local
+An additional override file, useful when
+.Pa /etc/periodic.conf
+is shared or distributed.
+.El
+.Sh SEE ALSO
+.Xr apropos 1 ,
+.Xr calendar 1 ,
+.Xr df 1 ,
+.Xr diff 1 ,
+.Xr gzip 1 ,
+.Xr man 1 ,
+.Xr msgs 1 ,
+.Xr netstat 1 ,
+.Xr nice 1 ,
+.Xr ac 8 ,
+.Xr newsyslog 8 ,
+.Xr periodic 8 ,
+.Xr sendmail 8
+.Sh HISTORY
+The
+.Nm
+file appeared in
+.Fx 4.1 .
+.Sh AUTHORS
+.An Brian Somers Aq brian@Awfulhak.org

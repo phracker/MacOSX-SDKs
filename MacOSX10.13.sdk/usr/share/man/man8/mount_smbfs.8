@@ -1,0 +1,143 @@
+.\" $Id: mount_smbfs.8,v 1.5 2006/01/20 05:35:23 lindak Exp $
+.Dd March 10, 2000
+.Dt MOUNT_SMBFS 8
+.Os FreeBSD
+.Sh NAME
+.Nm mount_smbfs
+.Nd "mount a shared resource from an SMB file server"
+.Sh SYNOPSIS
+.Nm
+.Op Fl N
+.Op Fl o Ar options
+.Op Fl d Ar mode
+.Op Fl f Ar mode
+.Op Fl h
+.Op Fl s
+.Op Fl v
+.\" //[domain;][user[:password]@]server[/share]
+.Pf // Oo Ar domain ;
+.Oc Ns Oo Ar user Ns Oo
+.Pf : Ar password
+.Oc Ns @ Ns Oc Ns Ar server Ns Oo
+.Pf / Ar share
+.Oc
+.Ar path
+.Sh DESCRIPTION
+The
+.Nm
+command mounts a share from a remote server using SMB/CIFS protocol.
+.Pp
+The options are as follows:
+.Bl -tag -width indent
+.It Fl N
+Do not ask for a password.
+At run time,
+.Nm
+reads the
+.Pa ~/Library/Preferences/nsmb.conf
+file for additional configuration parameters and a password.
+If no password is found,
+.Nm
+prompts for it.
+.It Fl o 
+Options passed to 
+.Xr mount 2
+are specified with the 
+.Fl o 
+option followed by a comma separated string of options. See the 
+.Xr mount 8 
+man page for possible options and their meanings. Additional options supported 
+by the mount_smbfs are as follows:
+.Bl -tag -width indent
+.It nobrowse
+Indicate to the Carbon subsystem that this volume is not to be displayed 
+to the user.
+.It automounted
+Set flags on the mountpoint to indicate that the volume has been mounted 
+by the automounter.
+.It nostreams
+Don't use NTFS Streams even if they are supported by the server.
+.It soft
+Make the mount soft.  Fail file system calls after a number of seconds.
+.It nonotification
+Turn off using notifications for this volume.
+.El
+.It Fl f Ar mode , Fl d Ar mode
+Specify permissions that should be assigned to files and directories.
+The values must be specified as octal numbers.
+Default value for the file mode
+is taken from mount point, default value for the directory mode adds execute
+permission where the file mode gives read permission.
+.Pp
+Note that these permissions can differ from the rights granted by SMB
+server. 
+.It Fl h
+Prints a help message, much like the SYNOPSIS above.
+.It Fl s
+Force a new session to be created to the server.
+.It Fl v
+Prints version.
+.\" //[domain;][user[:password]@]server[/share]
+.It Xo
+.Pf // Oo Ar domain ;
+.Oc Ns Oo Ar user Ns Oo
+.Pf : Ar password
+.Oc Ns @ Ns Oc Ar server Ns Oo
+.Pf / Ar share
+.Oc
+.Xc
+The
+.Nm
+command will use
+.Ar server
+as the NetBIOS name of remote computer,
+.Ar user
+as the remote user name and
+.Ar share
+as the resource name on a remote server.
+.Ar Domain
+and/or
+.Ar password
+may be specified here.  If
+.Ar user
+is omitted the logged in user id will be used.  Omitting
+.Ar share
+is an error when
+.Nm
+is run from the command line, otherwise a browsing dialogue is presented.
+.It Ar path
+Path to mount point.
+.El
+.Sh FILES
+.Bl -tag -width ".Pa nsmb.conf" -compact
+.It Pa nsmb.conf
+Keeps static parameters for connections and other information.
+See
+.Pa man nsmb.conf
+for details.
+.El
+.Sh EXAMPLES
+This example shows the proper url to use to mount the share PUBLIC from
+the SMB server myserver :
+.Bd -literal -offset indent
+mkdir /smb/public
+mount -t smbfs //username:userpass@myserver/PUBLIC /smb/public
+
+.Ed
+This example shows the proper url to use to mount the share PUBLIC from
+the SMB server myserver as guest:
+.Bd -literal -offset indent
+mkdir /smb/public
+mount -t smbfs //guest:@myserver/PUBLIC /smb/public
+.Ed
+\fBNote:\fP You should always use the system mount command and never call mount_smbfs directly.
+.Sh SEE ALSO
+.Xr mount 2 ,
+.Xr nsmb.conf 5 ,
+.Xr mount 8 ,
+.Xr umount 8
+.Sh BUGS
+Please report bugs to Apple.
+.Sh AUTHORS
+.An Boris Popov Aq bp@butya.kz ,
+.Aq bp@FreeBSD.org

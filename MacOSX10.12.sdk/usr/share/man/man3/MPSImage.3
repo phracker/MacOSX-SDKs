@@ -1,0 +1,175 @@
+.TH "MPSImage" 3 "Wed Jul 20 2016" "Version MetalPerformanceShaders-60" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSImage \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSImage\&.h>\fP
+.PP
+Inherits NSObject\&.
+.PP
+Inherited by \fBMPSTemporaryImage\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:imageDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithTexture:featureChannels:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBNS_UNAVAILABLE\fP"
+.br
+.ti -1c
+.RI "(MPSPurgeableState) \- \fBsetPurgeableState:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "id< MTLDevice > \fBdevice\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBwidth\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBheight\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBfeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBnumberOfImages\fP"
+.br
+.ti -1c
+.RI "MTLTextureType \fBtextureType\fP"
+.br
+.ti -1c
+.RI "MTLPixelFormat \fBpixelFormat\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBprecision\fP"
+.br
+.ti -1c
+.RI "MTLTextureUsage \fBusage\fP"
+.br
+.ti -1c
+.RI "size_t \fBpixelSize\fP"
+.br
+.ti -1c
+.RI "id< MTLTexture > \fBtexture\fP"
+.br
+.ti -1c
+.RI "NSString * \fBlabel\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  A \fBMPSImage\fP object describes a MTLTexture that may have more than 4 channels\&.  Some image types, such as those found in convolutional neural networks (CNN) image differs from a standard texture in that it may have more than 4 channels per image\&. While the channels could hold RGBA data, they will more commonly hold a number of structural permutations upon a RGBA image as the neural network progresses\&. It is not uncommon for each pixel to have 32 or 64 channels in it\&.
+.PP
+Since a standard MTLTexture may have no more than 4 channels, the additional channels are stored in slices of 2d texture array (i\&.e\&. texture type is MTLTextureType2DArray) such that 4 consecutive channels are stored in each slice of this array\&. If the number of feature channels is N, number of array slices needed is (N+3)/4\&. E\&.g\&. a CNN image with width 3 and height 2 with 9 channels will be stored as 
+.PP
+.nf
+slice 2         R???   R???   R???
+                R???   R???   R???
+
+slice 1      RGBA   RGBA   RGBA
+             RGBA   RGBA   RGBA         (ASCII art /diagonal offset/ intended to show a Z dimension)
+
+slice 0   RGBA   RGBA  RGBA
+          RGBA   RGBA  RGBA
+
+.fi
+.PP
+ Thus width and height of underlying 2d texture array is same as width and height of \fBMPSImage\fP and array length is equal to (featureChannels + 3) / 4\&. Channels marked with ? are just for padding and should not contain NaNs or Infs\&.
+.PP
+\fBMPSImage\fP can be container of multiple CNN images for batch processing\&. In order to create \fBMPSImage\fP that contains N images, create MPSImageDescriptror with numberOfImages set to N\&.
+.PP
+Length of 2d texture array (i\&.e\&. number of slices) will be equal to ((featureChannels +3)/4)*numberOfImage where consecutive (featureChannels+3)/4 slices of this array represent one image\&.
+.PP
+Although \fBMPSImage\fP can contain numberOfImages > 1, the actual number of images among these processed by \fBMPSCNNKernel\fP is controlled by z-dimension of clipRect\&. \fBMPSCNNKernel\fP processes n=clipRect\&.size\&.depth images from this collection\&. Starting index of image to process from source \fBMPSImage\fP is given by offset\&.z\&. Starting index of image in destination \fBMPSImage\fP where this processed image is written to is given by clipRect\&.origin\&.z\&. Thus \fBMPSCNNKernel\fP takes n=clipRect\&.size\&.depth image from source at indices [offset\&.z, offset\&.z+n], processed each independently and stores the result in destination at indices [clipRect\&.origin\&.z, clipRect\&.origin\&.z+n] respectively\&. Thus offset\&.z+n should be <= [src numberOfImage] and clipRect\&.origin\&.z+n should be <= [dest numberOfImages] and offset\&.z must be >= 0\&. Example: Suppose \fBMPSCNNConvolution\fP takes an input image with 16 channels and outputs an image with 32 channels\&. This number of slices needed in source 2d texture array is 2 and number of slices nneded in destination 2d array is 4\&. Suppose source batch size is 5 and desination batch size is 4\&. Thus number of source slices will be 2*5=10 and number of destination slices will be 4*4=16\&. If you want to process image 2 and 3 of source and store the result at index 1 and 2 in destination, you can achieve this by setting offset\&.z=2, clipRect\&.origin\&.z=1 and clipRect\&.size\&.depth=2\&. MPSCNNConvoluiton will take, in this case, slice 4 and 5 of source and produce slice 4 to 7 of destination\&. Similarly slice 6 and 7 will be used to produce slice 8 to 11 of destination\&.
+.PP
+All MPSCNNKernels process images in the batch independently\&. That is, calling a \fBMPSCNNKernel\fP on an batch is formally the same as calling it on each image in the batch sequentially\&. Computational and GPU work submission overhead will be amortized over more work if batch processing is used\&. This is especially important for better performance on small images\&.
+.PP
+If the number of feature channel is <= 4 and numberOfImages=1 i\&.e\&. only one slice is needed by represent \fBMPSImage\fP, underlying metal texture type is choosen to be MTLTextureType2D rather than MTLTextureType2DArray as explained above\&.
+.PP
+There are also MPSTemporaryImages, intended for use for very short-lived image data that is produced and consumed immediately in the same MTLCommandBuffer\&. They are a useful way to minimize CPU-side texture allocation costs and greatly reduce the amount of memory used by your image pipeline\&.
+.PP
+Creation of the underlying texture may in some cases occur lazily\&. You should in general avoid calling \fBMPSImage\&.texture\fP except when unavoidable to avoid materializing memory for longer than necessary\&. When possible, use the other \fBMPSImage\fP properties to get information about the \fBMPSImage\fP instead\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device(const \fBMPSImageDescriptor\fP *__nonnull) imageDescriptor"
+Initialize an empty image object 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the image will be used\&. May not be NULL\&. 
+.br
+\fIimageDescriptor\fP The \fBMPSImageDescriptor\fP\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A valid \fBMPSImage\fP object or nil, if failure\&.  Storage to store data needed is allocated lazily on first use of \fBMPSImage\fP or when application calls \fBMPSImage\&.texture\fP 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSTemporaryImage\fP\&.
+.SS "\- (nonnull instancetype) initWithTexture: (nonnull id< MTLTexture >) texture(NSUInteger) featureChannels"
+Initialize an \fBMPSImage\fP object using Metal texture\&. Metal texture has been created by user for specific number of feature channels and number of images\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fItexture\fP The MTLTexture allocated by the user to be used as backing for \fBMPSImage\fP\&. 
+.br
+\fIfeatureChannels\fP Number of feature channels this texture contains\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A valid \fBMPSImage\fP object or nil, if failure\&.  Application can let MPS framework allocate texture with properties specified in imageDescriptor using initWithDevice:\fBMPSImageDescriptor\fP API above\&. However in memory intensive application, you can save memory (and allocation/deallocation time) by using \fBMPSTemporaryImage\fP where MPS framework aggressively reuse memory underlying textures on same command buffer\&. See \fBMPSTemporaryImage\fP class for details below\&. However, in certain cases, application developer may want more control on allocation, placement, reusing/recycling of memory backing textures used in application using Metal Heaps API\&. In this case, application can create \fBMPSImage\fP from pre-allocated texture using initWithTexture:featureChannels\&.
+.RE
+.PP
+MTLTextureType of texture can be MTLTextureType2D ONLY if featureChannels <= 4 in which case \fBMPSImage\&.numberOfImages\fP is set to 1\&. Else it should be MTLTextureType2DArray with arrayLength == numberOfImage * ((featureChannels + 3)/4)\&. \fBMPSImage\&.numberOfImages\fP is set to texture\&.arrayLength / ((featureChannels + 3)/4)\&.
+.PP
+For MTLTextures containing typical image data which application may obtain from MetalKit or other libraries such as that drawn from a JPEG or PNG, featureChannels should be set to number of valid color channel e\&.g\&. for RGB data, even thought MTLPixelFormat will be MTLPixelFormatRGBA, featureChannels should be set to 3\&. 
+.PP
+Reimplemented in \fBMPSTemporaryImage\fP\&.
+.SS "\- (MPSPurgeableState) setPurgeableState: (MPSPurgeableState) state"
+setPurgeableState  Set (or query) the purgeability state of a \fBMPSImage\fP  Usage is per [MTLResource setPurgeableState:], except that the MTLTexture might be MPSPurgeableStateAllocationDeferred, which means there is no texture to mark volatile / nonvolatile\&. Attempts to set purgeability on MTLTextures that have not been allocated will be ignored\&. 
+.SH "Property Documentation"
+.PP 
+.SS "\- device\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The device on which the \fBMPSImage\fP will be used 
+.SS "\- featureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels per pixel\&. 
+.SS "\- height\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The formal height of the image in pixels\&. 
+.SS "\- label\fC [read]\fP, \fC [write]\fP, \fC [atomic]\fP, \fC [copy]\fP"
+A string to help identify this object\&. 
+.SS "\- numberOfImages\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+numberOfImages for batch processing 
+.SS "\- pixelFormat\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The MTLPixelFormat of the underlying texture 
+.SS "\- pixelSize\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Number of bytes from the first byte of one pixel to the first byte of the next pixel in storage order\&. (Includes padding\&.) 
+.SS "\- precision\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of bits of numeric precision available for each feature channel\&.  This is precision, not size\&. That is, float is 24 bits, not 32\&. half precision floating-point is 11 bits, not 16\&. SNorm formats have one less bit of precision for the sign bit, etc\&. For formats like MTLPixelFormatB5G6R5Unorm it is the precision of the most precise channel, in this case 6\&. When this information is unavailable, typically compressed formats, 0 will be returned\&. 
+.SS "\- texture\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The associated MTLTexture object\&. This is a 2D texture if numberOfImages is 1 and number of feature channels <= 4\&. It is a 2D texture array otherwise\&.  To avoid the high cost of premature allocation of the underlying texture, avoid calling this property except when strictly necessary\&. [\fBMPSCNNKernel\fP encode\&.\&.\&.] calls typically cause their arguments to become allocated\&. Likewise, MPSImages initialized with -initWithTexture: featureChannels: have already been allocated\&. 
+.SS "\- textureType\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The type of the underlying texture, typically MTLTextureType2D or MTLTextureType2DArray 
+.SS "\- usage\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Description of texture usage\&. 
+.SS "\- width\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The formal width of the image in pixels\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

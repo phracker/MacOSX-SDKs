@@ -1,0 +1,242 @@
+.TH "MPSCNNKernel" 3 "Sun Jul 2 2017" "Version MetalPerformanceShaders-84.1" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNKernel
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNKernel\&.h>\fP
+.PP
+Inherits \fBMPSKernel\fP\&.
+.PP
+Inherited by \fBMPSCNNBinaryConvolution\fP, \fBMPSCNNConvolution\fP, \fBMPSCNNConvolutionTranspose\fP, \fBMPSCNNCrossChannelNormalization\fP, \fBMPSCNNLocalContrastNormalization\fP, \fBMPSCNNLogSoftMax\fP, \fBMPSCNNNeuron\fP, \fBMPSCNNPooling\fP, \fBMPSCNNSoftMax\fP, \fBMPSCNNSpatialNormalization\fP, \fBMPSCNNUpsampling\fP, and \fBMPSRNNImageInferenceLayer\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceImage:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBencodeToCommandBuffer:sourceImage:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "\fBMPSOffset\fP \fBoffset\fP"
+.br
+.ti -1c
+.RI "MTLRegion \fBclipRect\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBdestinationFeatureChannelOffset\fP"
+.br
+.ti -1c
+.RI "\fBMPSImageEdgeMode\fP \fBedgeMode\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBkernelWidth\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBkernelHeight\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBstrideInPixelsX\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBstrideInPixelsY\fP"
+.br
+.ti -1c
+.RI "BOOL \fBisBackwards\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSNNPadding\fP > \fBpadding\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSNNPadding\fP > id< MPSImageAllocator > \fBdestinationImageAllocator\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  Describes a convolution neural network kernel\&.  A \fBMPSCNNKernel\fP consumes one \fBMPSImage\fP and produces one \fBMPSImage\fP\&. 
+.PP
+.nf
+        The region overwritten in the destination MPSImage is described
+        by the clipRect.  The top left corner of the region consumed (ignoring
+        adjustments for filter size -- e.g. convolution filter size) is given
+        by the offset. The size of the region consumed is a function of the
+        clipRect size and any subsampling caused by pixel strides at work,
+        e.g. MPSCNNPooling.strideInPixelsX/Y.  Where the offset + clipRect
+        would cause a {x,y} pixel address not in the image to be read, the
+        edgeMode is used to determine what value to read there.
+
+        The Z/depth component of the offset, clipRect.origin and clipRect.size
+        indexes which images to use. If the MPSImage contains only a single image
+        then these should be offset.z = 0, clipRect.origin.z = 0
+        and clipRect.size.depth = 1. If the MPSImage contains multiple images,
+        clipRect.size.depth refers to number of images to process. Both source
+        and destination MPSImages must have at least this many images. offset.z
+        refers to starting source image index. Thus offset.z + clipRect.size.depth must
+        be <= source.numberOfImages. Similarly, clipRect.origin.z refers to starting
+        image index in destination. So clipRect.origin.z + clipRect.size.depth must be
+        <= destination.numberOfImage.
+
+        destinationFeatureChannelOffset property can be used to control where the MPSKernel will
+        start writing in feature channel dimension. For example, if the destination image has
+        64 channels, and MPSKernel outputs 32 channels, by default channels 0-31 of destination
+        will be populated by MPSKernel. But if we want this MPSKernel to populate channel 32-63
+        of the destination, we can set destinationFeatureChannelOffset = 32.
+        A good example of this is concat (concatenation) operation in Tensor Flow. Suppose
+        we have a src = w x h x Ni which goes through CNNConvolution_0 which produces
+        output O0 = w x h x N0 and CNNConvolution_1 which produces output O1 = w x h x N1 followed
+        by concatenation which produces O = w x h x (N0 + N1). We can achieve this by creating
+        an MPSImage with dimensions O = w x h x (N0 + N1) and using this as destination of
+        both convolutions as follows
+            CNNConvolution0: destinationFeatureChannelOffset = 0, this will output N0 channels starting at
+                             channel 0 of destination thus populating [0,N0-1] channels.
+            CNNConvolution1: destinationFeatureChannelOffset = N0, this will output N1 channels starting at
+                             channel N0 of destination thus populating [N0,N0+N1-1] channels.
+
+
+        A MPSCNNKernel can be saved to disk / network using NSCoders such as NSKeyedArchiver. 
+        When decoding, the system default MTLDevice will be chosen unless the NSCoder adopts 
+        the <MPSDeviceProvider> protocol.  To accomplish this you will likely need to subclass your
+        unarchiver to add this method.
+.fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (\fBMPSImage\fP * __nonnull) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceImage"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. Create a texture to hold the result and return it\&.  In the first iteration on this method, encodeToCommandBuffer:sourceImage:destinationImage: some work was left for the developer to do in the form of correctly setting the offset property and sizing the result buffer\&. With the introduction of the padding policy (see padding property) the filter can do this work itself\&. If you would like to have some input into what sort of \fBMPSImage\fP (e\&.g\&. temporary vs\&. regular) or what size it is or where it is allocated, you may set the destinationImageAllocator to allocate the image yourself\&.
+.PP
+This method uses the \fBMPSNNPadding\fP padding property to figure out how to size the result image and to set the offset property\&. See discussion in \fBMPSNeuralNetworkTypes\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer 
+.br
+\fIsourceImage\fP A \fBMPSImage\fP to use as the source images for the filter\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A \fBMPSImage\fP or \fBMPSTemporaryImage\fP allocated per the destinationImageAllocator containing the output of the graph\&. The offset property will be adjusted to reflect the offset used during the encode\&. The returned image will be automatically released when the command buffer completes\&. If you want to keep it around for longer, retain the image\&. (ARC will do this for you if you use it later\&.) 
+.RE
+.PP
+
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceImage(\fBMPSImage\fP *__nonnull) destinationImage"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. The operation shall proceed out-of-place\&.  This is the older style of encode which reads the offset, doesn't change it, and ignores the padding method\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP A valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceImage\fP A valid \fBMPSImage\fP object containing the source image\&. 
+.br
+\fIdestinationImage\fP A valid \fBMPSImage\fP to be overwritten by result image\&. destinationImage may not alias sourceImage\&. 
+.RE
+.PP
+
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use initWithCoder:device instead\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A new \fBMPSKernel\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.PP
+Reimplemented in \fBMPSCNNBinaryConvolution\fP, \fBMPSCNNBinaryFullyConnected\fP, \fBMPSCNNConvolutionTranspose\fP, \fBMPSCNNConvolution\fP, \fBMPSCNNFullyConnected\fP, \fBMPSRNNImageInferenceLayer\fP, \fBMPSCNNNeuron\fP, \fBMPSCNNDilatedPoolingMax\fP, \fBMPSCNNPoolingAverage\fP, \fBMPSCNNPoolingL2Norm\fP, \fBMPSCNNCrossChannelNormalization\fP, \fBMPSCNNPooling\fP, \fBMPSCNNPoolingMax\fP, \fBMPSCNNLocalContrastNormalization\fP, and \fBMPSCNNSpatialNormalization\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.PP
+Reimplemented in \fBMPSCNNBinaryConvolution\fP, \fBMPSCNNBinaryFullyConnected\fP, \fBMPSCNNConvolutionTranspose\fP, \fBMPSCNNConvolution\fP, \fBMPSCNNFullyConnected\fP, \fBMPSRNNImageInferenceLayer\fP, \fBMPSCNNNeuronELU\fP, \fBMPSCNNCrossChannelNormalization\fP, \fBMPSCNNPooling\fP, \fBMPSCNNNeuronSoftPlus\fP, \fBMPSCNNNeuronSoftSign\fP, \fBMPSCNNLocalContrastNormalization\fP, \fBMPSCNNNeuronTanH\fP, \fBMPSCNNNeuronAbsolute\fP, \fBMPSCNNNeuronHardSigmoid\fP, \fBMPSCNNNeuronReLU\fP, \fBMPSCNNNeuronSigmoid\fP, \fBMPSCNNNeuronLinear\fP, \fBMPSCNNSpatialNormalization\fP, and \fBMPSCNNUpsampling\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "\- clipRect\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+An optional clip rectangle to use when writing data\&. Only the pixels in the rectangle will be overwritten\&.  A MTLRegion that indicates which part of the destination to overwrite\&. If the clipRect does not lie completely within the destination image, the intersection between clip rectangle and destination bounds is used\&. Default: MPSRectNoClip (\fBMPSKernel::MPSRectNoClip\fP) indicating the entire image\&. clipRect\&.origin\&.z is the index of starting destination image in batch processing mode\&. clipRect\&.size\&.depth is the number of images to process in batch processing mode\&.
+.PP
+See Also: \fBMetalPerformanceShaders\&.h\fP subsubsection_clipRect 
+.SS "\- destinationFeatureChannelOffset\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of channels in the destination \fBMPSImage\fP to skip before writing output\&.  This is the starting offset into the destination image in the feature channel dimension at which destination data is written\&. This allows an application to pass a subset of all the channels in \fBMPSImage\fP as output of \fBMPSKernel\fP\&. E\&.g\&. Suppose \fBMPSImage\fP has 24 channels and a \fBMPSKernel\fP outputs 8 channels\&. If we want channels 8 to 15 of this \fBMPSImage\fP to be used as output, we can set destinationFeatureChannelOffset = 8\&. Note that this offset applies independently to each image when the \fBMPSImage\fP is a container for multiple images and the \fBMPSCNNKernel\fP is processing multiple images (clipRect\&.size\&.depth > 1)\&. The default value is 0 and any value specifed shall be a multiple of 4\&. If \fBMPSKernel\fP outputs N channels, destination image MUST have at least destinationFeatureChannelOffset + N channels\&. Using a destination image with insufficient number of feature channels result in an error\&. E\&.g\&. if the \fBMPSCNNConvolution\fP outputs 32 channels, and destination has 64 channels, then it is an error to set destinationFeatureChannelOffset > 32\&. 
+.SS "\- (id<\fBMPSNNPadding\fP> id<MPSImageAllocator>) destinationImageAllocator\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Method to allocate the result image for -encodeToCommandBuffer:sourceImage:  Default: \fBdefaultAllocator (MPSTemporaryImage)\fP 
+.SS "\- edgeMode\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The MPSImageEdgeMode to use when texture reads stray off the edge of an image  Most \fBMPSKernel\fP objects can read off the edge of the source image\&. This can happen because of a negative offset property, because the offset + clipRect\&.size is larger than the source image or because the filter looks at neighboring pixels, such as a Convolution filter\&. Default: MPSImageEdgeModeZero\&.
+.PP
+See Also: \fBMetalPerformanceShaders\&.h\fP subsubsection_edgemode Note: For \fBMPSCNNPoolingAverage\fP specifying edge mode \fBMPSImageEdgeModeClamp\fP is interpreted as a 'shrink-to-edge' operation, which shrinks the effective filtering window to remain within the source image borders\&. 
+.SS "\- isBackwards\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+YES if the filter operates backwards\&.  This influences how strideInPixelsX/Y should be interpreted\&. Most filters either have stride 1 or are reducing, meaning that the result image is smaller than the original by roughly a factor of the stride\&. A few 'backward' filters (e\&.g unpooling) are intended to 'undo' the effects of an earlier forward filter, and so enlarge the image\&. The stride is in the destination coordinate frame rather than the source coordinate frame\&. 
+.SS "\- kernelHeight\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The height of the \fBMPSCNNKernel\fP filter window  This is the vertical diameter of the region read by the filter for each result pixel\&. If the \fBMPSCNNKernel\fP does not have a filter window, then 1 will be returned\&.
+.PP
+Warning: This property was lowered to this class in ios/tvos 11 The property may not be available on iOS/tvOS 10 for all subclasses of \fBMPSCNNKernel\fP 
+.SS "\- kernelWidth\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The width of the \fBMPSCNNKernel\fP filter window  This is the horizontal diameter of the region read by the filter for each result pixel\&. If the \fBMPSCNNKernel\fP does not have a filter window, then 1 will be returned\&.
+.PP
+Warning: This property was lowered to this class in ios/tvos 11 The property may not be available on iOS/tvOS 10 for all subclasses of \fBMPSCNNKernel\fP 
+.SS "\- offset\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The position of the destination clip rectangle origin relative to the source buffer\&.  The offset is defined to be the position of clipRect\&.origin in source coordinates\&. Default: {0,0,0}, indicating that the top left corners of the clipRect and source image align\&. offset\&.z is the index of starting source image in batch processing mode\&.
+.PP
+See Also: \fBMetalPerformanceShaders\&.h\fP subsubsection_mpsoffset 
+.SS "\- padding\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The padding method used by the filter  This influences how the destination image is sized and how the offset into the source image is set\&. It is used by the -encode methods that return a \fBMPSImage\fP from the left hand side\&. 
+.SS "\- strideInPixelsX\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The downsampling (or upsampling if a backwards filter) factor in the horizontal dimension  If the filter does not do up or downsampling, 1 is returned\&. 
+.PP
+.nf
+        Warning: This property was lowered to this class in ios/tvos 11
+                 The property may not be available on iOS/tvOS 10 for
+                 all subclasses of MPSCNNKernel
+.fi
+.PP
+ 
+.SS "\- strideInPixelsY\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The downsampling (or upsampling if a backwards filter) factor in the vertical dimension  If the filter does not do up or downsampling, 1 is returned\&. 
+.PP
+.nf
+        Warning: This property was lowered to this class in ios/tvos 11
+                 The property may not be available on iOS/tvOS 10 for
+                 all subclasses of MPSCNNKernel
+.fi
+.PP
+ 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

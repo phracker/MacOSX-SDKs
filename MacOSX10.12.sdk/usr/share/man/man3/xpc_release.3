@@ -1,0 +1,342 @@
+.\" Copyright (c) 2011-2012 Apple Inc. All rights reserved.
+.Dd 1 March, 2012
+.Dt xpc_object 3
+.Os Darwin
+.Sh NAME
+.Nm xpc_object
+.Nd XPC object protocol
+.Sh SYNOPSIS
+.Fd #include <xpc/xpc.h>
+.Ft xpc_object_t
+.Fo xpc_retain
+.Fa "xpc_object_t object"
+.Fc
+.Ft void
+.Fo xpc_release
+.Fa "xpc_object_t object"
+.Fc
+.Ft xpc_type_t
+.Fo xpc_get_type
+.Fa "xpc_object_t object"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_copy
+.Fa "xpc_object_t object"
+.Fc
+.Ft bool
+.Fo xpc_equal
+.Fa "xpc_object_t object1"
+.Fa "xpc_object_t object2"
+.Fc
+.Ft size_t
+.Fo xpc_hash
+.Fa "xpc_object_t object"
+.Fc
+.Ft char *
+.Fo xpc_copy_description
+.Fa "xpc_object_t object"
+.Fc
+.Sh DESCRIPTION
+XPC objects share functions for coordinating memory management, type checking,
+comparing for equality, and hashing.
+.Sh MEMORY MANAGEMENT
+Objects returned by creation functions in the XPC framework may be uniformly
+retained and released with the functions
+.Fn xpc_retain
+and
+.Fn xpc_release
+respectively.
+.Pp
+The XPC framework does not guarantee that any given client has the last or only
+reference to a given object. Objects may be retained internally by the system.
+.Pp
+Functions which return objects follow the conventional create, copy and get
+naming rules:
+.Bl -tag -width "XXcreate" -compact -offset indent
+.It \(bu create
+A new object with a single reference is returned. This reference should be
+released by the caller.
+.It \(bu copy
+A copy or retained object reference is returned. This reference should be
+released by the caller.
+.It \(bu get
+An unretained reference to an existing object is returned. The caller
+.Em must not
+release this reference, and is responsible for retaining the object for later
+use if necessary.
+.El
+.Ss INTEGRATION WITH OBJECTIVE-C
+.Bd -filled -offset indent
+When building with an Objective-C or Objective-C++ compiler, XPC objects are
+declared as Objective-C types. This results in the following differences
+compared to building as plain C/C++:
+.Bl -dash
+.It
+if Objective-C Automated Reference Counting is enabled, XPC objects are
+memory managed by the Objective-C runtime and explicit calls to the
+.Fn xpc_retain
+and
+.Fn xpc_release
+functions will produce build errors.
+.Pp
+.Em Note :
+when ARC is enabled, care needs to be taken with XPC API returning an interior
+pointer that is only valid as long as an associated object has not been
+released. If that object is held in a variable with automatic storage, it may
+need to be annotated with the
+.Li objc_precise_lifetime
+attribute, or stored in a
+.Li __strong
+instance variable instead, to ensure that the object is not prematurely
+released. The functions returning interior pointers are:
+.Bl -bullet -compact -offset indent
+.It
+.Xr xpc_data_get_bytes_ptr 3 ,
+.Xr xpc_string_get_string_ptr 3 ,
+.Xr xpc_uuid_get_bytes 3
+.It
+.Xr xpc_array_get_data 3 ,
+.Xr xpc_array_get_string 3 ,
+.Xr xpc_array_get_uuid 3
+.It
+.Xr xpc_dictionary_get_data 3 ,
+.Xr xpc_dictionary_get_string 3 ,
+.Xr xpc_dictionary_get_uuid 3
+.El
+.It
+the Blocks runtime automatically retains and releases XPC objects captured by
+blocks upon
+.Fn Block_copy
+and
+.Fn Block_release ,
+e.g.\& as performed during asynchronous execution of a block via
+.Xr dispatch_async 3 .
+.Pp
+.Em Note :
+retain cycles may be encountered if XPC connection objects are captured by
+their handler blocks; these cycles can be broken by declaring the captured
+object
+.Li __weak
+or by calling
+.Xr xpc_connection_cancel 3
+to cause its handler blocks to be released explicitly.
+.It
+XPC objects can be added directly to Cocoa collections, and their
+lifetime is tracked by the Objective-C static analyzer.
+.El
+.Pp
+Integration of XPC objects with Objective-C requires targeting Mac\ OS\ X
+10.8 or later, and is disabled when building
+for the legacy Objective-C runtime. It can also be disabled
+manually by using compiler options to define the
+.Dv OS_OBJECT_USE_OBJC
+preprocessor macro to
+.Li 0 .
+.Ed
+.Pp
+.Em Important :
+When building with a plain C/C++ compiler or when integration with Objective-C
+is disabled, XPC objects are
+.Em not
+automatically retained and released when captured by a block. Therefore, when a
+XPC object is captured by a block that will be executed asynchronously, the
+object must be manually retained and released:
+.Pp
+.Bd -literal -offset indent
+xpc_retain(object);
+dispatch_async(queue, ^{
+	do_something_with_object(object);
+	xpc_release(object);
+});
+.Ed
+.Sh TYPES
+The
+.Fn xpc_get_type
+function returns the type of an XPC object as a pointer of type
+.Ft xpc_type t .
+The returned type may be compared against the type constants defined by the
+XPC framework with simple pointer equality.
+.Pp
+Type constants:
+.Bl -bullet -compact -offset indent
+.It
+XPC_TYPE_CONNECTION
+.It
+XPC_TYPE_ENDPOINT
+.It
+XPC_TYPE_NULL
+.It
+XPC_TYPE_BOOL
+.It
+XPC_TYPE_INT64
+.It
+XPC_TYPE_UINT64
+.It
+XPC_TYPE_DOUBLE
+.It
+XPC_TYPE_DATE
+.It
+XPC_TYPE_DATA
+.It
+XPC_TYPE_STRING
+.It
+XPC_TYPE_UUID
+.It
+XPC_TYPE_FD
+.It
+XPC_TYPE_SHMEM
+.It
+XPC_TYPE_ARRAY
+.It
+XPC_TYPE_DICTIONARY
+.El
+.Sh BOXED OBJECTS AND COLLECTIONS
+Most XPC object types are boxed representations of primitive C language types
+or low-level operating system handles. These boxed objects are immutable.
+.Pp
+The XPC framework provides two collection types: dictionaries and arrays.
+These types are mutable and may have boxed objects added or removed from the
+collection.
+.Pp
+A suite of primitive get and set functions are available for the dictionary
+and array types. These functions allow for the insertion and extraction of
+primitive values from the collection directly, without the need for
+intermediate boxed objects.
+.Pp
+The following is a list of primitive get and set functions for the dictionary
+collection type:
+.Pp
+.Bl -bullet -compact -offset indent
+.It
+.Xr xpc_dictionary_set_bool 3 ,
+.Xr xpc_dictionary_get_bool 3 ,
+.Xr xpc_array_set_bool 3 ,
+.Xr xpc_array_get_bool 3
+.It
+.Xr xpc_dictionary_set_int64 3 ,
+.Xr xpc_dictionary_get_int64 3 ,
+.Xr xpc_array_set_int64 3 ,
+.Xr xpc_array_get_int64 3
+.It
+.Xr xpc_dictionary_set_uint64 3 ,
+.Xr xpc_dictionary_set_uint64 3 ,
+.Xr xpc_array_set_uint64 3 ,
+.Xr xpc_array_get_uint64 3
+.It
+.Xr xpc_dictionary_set_double 3 ,
+.Xr xpc_dictionary_set_double 3 ,
+.Xr xpc_array_set_double 3 ,
+.Xr xpc_array_get_double 3
+.It
+.Xr xpc_dictionary_set_date 3 ,
+.Xr xpc_dictionary_set_date 3 ,
+.Xr xpc_array_set_date 3 ,
+.Xr xpc_array_get_date 3
+.It
+.Xr xpc_dictionary_set_data 3 ,
+.Xr xpc_dictionary_get_data 3 ,
+.Xr xpc_array_set_data 3 ,
+.Xr xpc_array_get_data 3
+.It
+.Xr xpc_dictionary_set_string 3 ,
+.Xr xpc_dictionary_get_string 3 ,
+.Xr xpc_array_set_string 3 ,
+.Xr xpc_array_get_string 3
+.It
+.Xr xpc_dictionary_set_uuid 3 ,
+.Xr xpc_dictionary_get_uuid 3 ,
+.Xr xpc_array_set_uuid 3 ,
+.Xr xpc_array_get_uuid 3
+.It
+.Xr xpc_dictionary_set_fd 3 ,
+.Xr xpc_dictionary_dup_fd 3 ,
+.Xr xpc_array_set_fd 3 ,
+.Xr xpc_array_dup_fd 3
+.It
+.Xr xpc_dictionary_set_connection 3 ,
+.Xr xpc_array_set_connection 3
+.El
+.Pp
+When the requested key or index is not present in the collection, or if the
+value for the requested key or index is not of the expected type, these
+functions will return sensible default values:
+.Pp
+.Bl -tag -width "XXconnection" -compact -offset indent
+.It \(bu bool
+false
+.It \(bu int64
+0
+.It \(bu uint64
+0
+.It \(bu double
+NAN
+.It \(bu date
+0
+.It \(bu data
+NULL
+.It \(bu uuid
+NULL
+.It \(bu string
+NULL
+.It \(bu fd
+-1
+.It \(bu connection
+NULL
+.El
+.Pp
+.Sh COPYING
+Objects may be copied using the
+.Fn xpc_copy
+function. The result of
+.Fn xpc_copy
+may or may not be a brand new object (i.e. a different pointer). The system may
+choose to return the same object with an additional reference rather than doing
+a complete copy for efficiency reasons.
+.Sh EQUALITY
+Two objects may be compared for equality using the
+.Fn xpc_equal
+function.
+Objects must be of the same type as returned by
+.Fn xpc_get_type
+in order to be considered equal. No casting or transformation is performed
+on the underlying value in order to determine equality.
+.Pp
+Collection types are compared for deep equality, that is to say, two arrays
+are equal only if they contain the same values in the same order, and two
+dictionaries are equal only if they contain the same values for the same keys.
+.Pp
+.Em Important :
+File descriptors and shared memory objects cannot be reliably compared for
+equality, and therefore the
+.Fn xpc_equal
+function will only perform a simple pointer-equality check for these objects.
+.Pp
+Objects may be hashed using the
+.Fn xpc_hash
+function. The result of the hash function is guaranteed to be identical for
+objects which compare to be equal using
+.Fn xpc_equal .
+.Pp
+.Em Important :
+The hash value for a given object should not be considered portable across
+multiple processes or releases of the operating system and as a result should
+not be stored in a permanent fashion.
+.Sh OBJECT DESCRIPTIONS
+The
+.Fn xpc_copy_description
+function may be used to produce a human-readable description of an object.
+The returned C-string must be freed by the caller using
+.Xr free 3 .
+.Pp
+.Em Important :
+The format of this description is not guaranteed to remain consistent across
+releases, and the output should only be used for debugging purposes.
+.Sh SEE ALSO
+.Xr dispatch_async 3 ,
+.Xr xpc_abort 3 ,
+.Xr xpc_array_create 3 ,
+.Xr xpc_connection_cancel 3 ,
+.Xr xpc_connection_create 3 ,
+.Xr xpc_dictionary_create 3 ,
+.Xr xpc_endpoint_create 3 ,
+.Xr xpc_objects 3

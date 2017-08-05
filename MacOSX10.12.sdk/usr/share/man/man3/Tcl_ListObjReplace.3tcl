@@ -1,0 +1,520 @@
+'\"
+'\" Copyright (c) 1996-1997 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: ListObj.3,v 1.12 2007/12/13 15:22:31 dgp Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tcl_ListObj 3 8.0 Tcl "Tcl Library Procedures"
+.BS
+.SH NAME
+Tcl_ListObjAppendList, Tcl_ListObjAppendElement, Tcl_NewListObj, Tcl_SetListObj, Tcl_ListObjGetElements, Tcl_ListObjLength, Tcl_ListObjIndex, Tcl_ListObjReplace \- manipulate Tcl objects as lists
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+int
+\fBTcl_ListObjAppendList\fR(\fIinterp, listPtr, elemListPtr\fR)
+.sp
+int
+\fBTcl_ListObjAppendElement\fR(\fIinterp, listPtr, objPtr\fR)
+.sp
+Tcl_Obj *
+\fBTcl_NewListObj\fR(\fIobjc, objv\fR)
+.sp
+\fBTcl_SetListObj\fR(\fIobjPtr, objc, objv\fR)
+.sp
+int
+\fBTcl_ListObjGetElements\fR(\fIinterp, listPtr, objcPtr, objvPtr\fR)
+.sp
+int
+\fBTcl_ListObjLength\fR(\fIinterp, listPtr, intPtr\fR)
+.sp
+int
+\fBTcl_ListObjIndex\fR(\fIinterp, listPtr, index, objPtrPtr\fR)
+.sp
+int
+\fBTcl_ListObjReplace\fR(\fIinterp, listPtr, first, count, objc, objv\fR)
+.SH ARGUMENTS
+.AS "Tcl_Obj *const" *elemListPtr in/out
+.AP Tcl_Interp *interp in
+If an error occurs while converting an object to be a list object,
+an error message is left in the interpreter's result object
+unless \fIinterp\fR is NULL.
+.AP Tcl_Obj *listPtr in/out
+Points to the list object to be manipulated.
+If \fIlistPtr\fR does not already point to a list object,
+an attempt will be made to convert it to one.
+.AP Tcl_Obj *elemListPtr in/out
+For \fBTcl_ListObjAppendList\fR, this points to a list object
+containing elements to be appended onto \fIlistPtr\fR.
+Each element of *\fIelemListPtr\fR will
+become a new element of \fIlistPtr\fR.
+If *\fIelemListPtr\fR is not NULL and
+does not already point to a list object,
+an attempt will be made to convert it to one.
+.AP Tcl_Obj *objPtr in
+For \fBTcl_ListObjAppendElement\fR,
+points to the Tcl object that will be appended to \fIlistPtr\fR.
+For \fBTcl_SetListObj\fR,
+this points to the Tcl object that will be converted to a list object
+containing the \fIobjc\fR elements of the array referenced by \fIobjv\fR.
+.AP int *objcPtr in
+Points to location where \fBTcl_ListObjGetElements\fR
+stores the number of element objects in \fIlistPtr\fR.
+.AP Tcl_Obj ***objvPtr out
+A location where \fBTcl_ListObjGetElements\fR stores a pointer to an array
+of pointers to the element objects of \fIlistPtr\fR.  
+.AP int objc in
+The number of Tcl objects that \fBTcl_NewListObj\fR
+will insert into a new list object,
+and \fBTcl_ListObjReplace\fR will insert into \fIlistPtr\fR.
+For \fBTcl_SetListObj\fR,
+the number of Tcl objects to insert into \fIobjPtr\fR.
+.AP "Tcl_Obj *const" objv[] in
+An array of pointers to objects.
+\fBTcl_NewListObj\fR will insert these objects into a new list object
+and \fBTcl_ListObjReplace\fR will insert them into an existing \fIlistPtr\fR.
+Each object will become a separate list element.  
+.AP int *intPtr out
+Points to location where \fBTcl_ListObjLength\fR
+stores the length of the list.
+.AP int index in
+Index of the list element that \fBTcl_ListObjIndex\fR
+is to return.
+The first element has index 0.
+.AP Tcl_Obj **objPtrPtr out
+Points to place where \fBTcl_ListObjIndex\fR is to store
+a pointer to the resulting list element object.
+.AP int first in
+Index of the starting list element that \fBTcl_ListObjReplace\fR
+is to replace.
+The list's first element has index 0.
+.AP int count in
+The number of elements that \fBTcl_ListObjReplace\fR
+is to replace.
+.BE
+
+.SH DESCRIPTION
+.PP
+Tcl list objects have an internal representation that supports
+the efficient indexing and appending.
+The procedures described in this man page are used to
+create, modify, index, and append to Tcl list objects from C code.
+.PP
+\fBTcl_ListObjAppendList\fR and \fBTcl_ListObjAppendElement\fR
+both add one or more objects
+to the end of the list object referenced by \fIlistPtr\fR.
+\fBTcl_ListObjAppendList\fR appends each element of the list object
+referenced by \fIelemListPtr\fR while
+\fBTcl_ListObjAppendElement\fR appends the single object
+referenced by \fIobjPtr\fR.
+Both procedures will convert the object referenced by \fIlistPtr\fR
+to a list object if necessary.
+If an error occurs during conversion,
+both procedures return \fBTCL_ERROR\fR and leave an error message
+in the interpreter's result object if \fIinterp\fR is not NULL.
+Similarly, if \fIelemListPtr\fR does not already refer to a list object,
+\fBTcl_ListObjAppendList\fR will attempt to convert it to one
+and if an error occurs during conversion,
+will return \fBTCL_ERROR\fR
+and leave an error message in the interpreter's result object
+if interp is not NULL.
+Both procedures invalidate any old string representation of \fIlistPtr\fR
+and, if it was converted to a list object,
+free any old internal representation.
+Similarly, \fBTcl_ListObjAppendList\fR frees any old internal representation
+of \fIelemListPtr\fR if it converts it to a list object.
+After appending each element in \fIelemListPtr\fR,
+\fBTcl_ListObjAppendList\fR increments the element's reference count
+since \fIlistPtr\fR now also refers to it.
+For the same reason, \fBTcl_ListObjAppendElement\fR
+increments \fIobjPtr\fR's reference count.
+If no error occurs,
+the two procedures return \fBTCL_OK\fR after appending the objects.
+.PP
+\fBTcl_NewListObj\fR and \fBTcl_SetListObj\fR
+create a new object or modify an existing object to hold 
+the \fIobjc\fR elements of the array referenced by \fIobjv\fR
+where each element is a pointer to a Tcl object.
+If \fIobjc\fR is less than or equal to zero,
+they return an empty object.
+The new object's string representation is left invalid.
+The two procedures increment the reference counts
+of the elements in \fIobjc\fR since the list object now refers to them.
+The new list object returned by \fBTcl_NewListObj\fR
+has reference count zero.
+.PP
+\fBTcl_ListObjGetElements\fR returns a count and a pointer to an array of
+the elements in a list object.  It returns the count by storing it in the
+address \fIobjcPtr\fR.  Similarly, it returns the array pointer by storing
+it in the address \fIobjvPtr\fR.
+The memory pointed to is managed by Tcl and should not be freed or written
+to by the caller. If the list is empty, 0 is stored at \fIobjcPtr\fR
+and NULL at \fIobjvPtr\fR.
+If \fIlistPtr\fR is not already a list object, \fBTcl_ListObjGetElements\fR
+will attempt to convert it to one; if the conversion fails, it returns
+\fBTCL_ERROR\fR and leaves an error message in the interpreter's result
+object if \fIinterp\fR is not NULL.
+Otherwise it returns \fBTCL_OK\fR after storing the count and array pointer.
+.PP
+\fBTcl_ListObjLength\fR returns the number of elements in the list object
+referenced by \fIlistPtr\fR.
+It returns this count by storing an integer in the address \fIintPtr\fR.
+If the object is not already a list object,
+\fBTcl_ListObjLength\fR will attempt to convert it to one;
+if the conversion fails, it returns \fBTCL_ERROR\fR
+and leaves an error message in the interpreter's result object
+if \fIinterp\fR is not NULL.
+Otherwise it returns \fBTCL_OK\fR after storing the list's length.
+.PP
+The procedure \fBTcl_ListObjIndex\fR returns a pointer to the object
+at element \fIindex\fR in the list referenced by \fIlistPtr\fR.
+It returns this object by storing a pointer to it
+in the address \fIobjPtrPtr\fR.
+If \fIlistPtr\fR does not already refer to a list object,
+\fBTcl_ListObjIndex\fR will attempt to convert it to one;
+if the conversion fails, it returns \fBTCL_ERROR\fR
+and leaves an error message in the interpreter's result object
+if \fIinterp\fR is not NULL.
+If the index is out of range,
+that is, \fIindex\fR is negative or
+greater than or equal to the number of elements in the list,
+\fBTcl_ListObjIndex\fR stores a NULL in \fIobjPtrPtr\fR
+and returns \fBTCL_OK\fR.
+Otherwise it returns \fBTCL_OK\fR after storing the element's
+object pointer.
+The reference count for the list element is not incremented;
+the caller must do that if it needs to retain a pointer to the element.
+.PP
+\fBTcl_ListObjReplace\fR replaces zero or more elements
+of the list referenced by \fIlistPtr\fR
+with the \fIobjc\fR objects in the array referenced by \fIobjv\fR.
+If \fIlistPtr\fR does not point to a list object,
+\fBTcl_ListObjReplace\fR will attempt to convert it to one;
+if the conversion fails, it returns \fBTCL_ERROR\fR
+and leaves an error message in the interpreter's result object
+if \fIinterp\fR is not NULL.
+Otherwise, it returns \fBTCL_OK\fR after replacing the objects.
+If \fIobjv\fR is NULL, no new elements are added.
+If the argument \fIfirst\fR is zero or negative,
+it refers to the first element.
+If \fIfirst\fR is greater than or equal to the
+number of elements in the list, then no elements are deleted;
+the new elements are appended to the list.
+\fIcount\fR gives the number of elements to replace.
+If \fIcount\fR is zero or negative then no elements are deleted;
+the new elements are simply inserted before the one
+designated by \fIfirst\fR.
+\fBTcl_ListObjReplace\fR invalidates \fIlistPtr\fR's
+old string representation.
+The reference counts of any elements inserted from \fIobjv\fR
+are incremented since the resulting list now refers to them.
+Similarly, the reference counts for any replaced objects are decremented.
+.PP
+Because \fBTcl_ListObjReplace\fR combines
+both element insertion and deletion,
+it can be used to implement a number of list operations.
+For example, the following code inserts the \fIobjc\fR objects
+referenced by the array of object pointers \fIobjv\fR
+just before the element \fIindex\fR of the list referenced by \fIlistPtr\fR:
+.PP
+.CS
+result = Tcl_ListObjReplace(interp, listPtr, index, 0,
+        objc, objv);
+.CE
+.PP
+Similarly, the following code appends the \fIobjc\fR objects
+referenced by the array \fIobjv\fR
+to the end of the list \fIlistPtr\fR:
+.PP
+.CS
+result = Tcl_ListObjLength(interp, listPtr, &length);
+if (result == TCL_OK) {
+    result = Tcl_ListObjReplace(interp, listPtr, length, 0,
+            objc, objv);
+}
+.CE
+.PP
+The \fIcount\fR list elements starting at \fIfirst\fR can be deleted
+by simply calling \fBTcl_ListObjReplace\fR
+with a NULL \fIobjvPtr\fR:
+.PP
+.CS
+result = Tcl_ListObjReplace(interp, listPtr, first, count,
+        0, NULL);
+.CE
+.SH "SEE ALSO"
+Tcl_NewObj, Tcl_DecrRefCount, Tcl_IncrRefCount, Tcl_GetObjResult
+.SH KEYWORDS
+append, index, insert, internal representation, length, list, list object, list type, object, object type, replace, string representation

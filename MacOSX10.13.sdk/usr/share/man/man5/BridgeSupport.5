@@ -1,0 +1,502 @@
+.Dd May 24, 2010
+.Dt BRIDGESUPPORT 5
+.Os
+.\"
+.\"
+.Sh NAME
+.Nm BridgeSupport
+.Nd Scripting bridges support file
+.\"
+.\"
+.Sh DESCRIPTION
+.Nm BridgeSupport
+files are XML files that describe the API symbols of frameworks or libraries that cannot be introspected at runtime. These are generally ANSI C symbols that are non-object-oriented items such as constants, enumerations, structures, and functions but can also include some additional information about classes, methods, and informal protocols.
+.Pp
+.Nm BridgeSupport
+files are a major component of the Objective-C bridges (PyObjC) supported in Mac OS X for scripting languages such as Python.
+.Pp
+.Xr gen_bridge_metadata 1
+is the tool used to generate BridgeSupport files for particular frameworks or libraries.
+.Pp
+To understand the following discussion you should know what
+.Dq element
+and
+.Dq attribute
+mean in XML markup. You should also be familiar with Objective-C and with concepts related to the Objective-C runtime, such as the type-encoding constants.
+.Pp
+As of Mac OS 10.7,
+.Nm BridgeSupport
+uses an improved parser, based on
+.Nm clang .
+This means the
+.Nm BridgeSupport
+files should be more correct and complete, and the true parsing allows the
+automatic extraction of metadata from existing
+.Fn __attribute__
+information supported by the compiler (see below).
+.\"
+.\"
+.Sh STRUCTURE
+The structure of  BridgeSupport XML consists of a hierarchy of elements under the root element, 
+.Cm signatures .
+.Ss The signatures element
+.Cm signatures
+is the top-level, or root, element of a BridgeSupport XML file.
+.Pp
+Mandatory attributes:
+.Bl -tag -width "version"
+.It Ar version
+The version number of the BridgeSupport format. The only possible value is
+.Dq 1.0
+which means the format delivered with Mac OS X 10.5.
+.El
+.Pp
+Possible children elements:
+.Cm depends_on ,
+.Cm struct ,
+.Cm cftype ,
+.Cm opaque ,
+.Cm constant ,
+.Cm string_constant ,
+.Cm enum ,
+.Cm function ,
+.Cm function_alias ,
+.Cm informal_protocol ,
+.Cm class .
+.Ss The depends_on element
+This element describes a dependency on other frameworks. This element is deprecated and no longer provided.
+.Pp
+Mandatory attributes:
+.Bl -tag -width "path"
+.It Ar path
+The path of the dependency.
+.El
+.Ss The struct element
+This element describes a C structure.
+.Pp
+Mandatory attributes: 
+.Bl -tag -width "type, type64"
+.It Ar name
+The name of the C structure. 
+.It Ar type , Ar type64
+The complete type of the C structure, including the field names, as a string of Objective-C runtime encoding types. If the element has a different type on a 64-bit environment, the
+.Ar type64
+attribute will contain it. If the element does not exist on a 32-bit environment, only the
+.Ar type64
+attribute will be used.
+.El
+.Pp
+Optional attributes:
+.Bl -tag -width "opaque"
+.It Ar opaque 
+Indicates whether the fields of the structure should be exposed. The default value is
+.Dq false .
+.El
+.Ss The cftype element
+This element describes a Core Foundation-based type.
+.Pp
+Mandatory attributes: 
+.Bl -tag -width "type, type64"
+.It Ar name
+The name of the Core Foundation type. 
+.It Ar type , Ar type64
+The type of the Core Foundation type as a string of Objective-C runtime encoding types. If the element has a different type on a 64-bit environment, the 
+.Ar type64
+attribute will contain it. If the element does not exist on a 32-bit environment, only the
+.Ar type64
+attribute will be used.
+.El
+.Pp
+Optional attributes:
+.Bl -tag -width "gettypeid_func"
+.It Ar tollfree 
+The name of the tollfree-bridged Objective-C class, if any.
+.It Ar gettypeid_func
+The name of the function that retrieves the TypeID value of the given Core Foundation type, if any. This name usually ends with
+.Dq GetTypeID .
+.El
+.Ss The opaque element
+This element describes an opaque type, most generally a C pointer to a C opaque structure.
+.Pp
+Mandatory attributes: 
+.Bl -tag -width "type, type64"
+.It Ar name
+The name of the opaque type. 
+.It Ar type , Ar type64
+The type of the opaque type, as a string of Objective-C runtime encoding types. If the element has a different type on a 64-bit environment, the
+.Ar type64
+attribute will contain it. If the element does not exist on a 32-bit environment, only the
+.Ar type64
+attribute will be used.
+.El
+.Ss The constant element
+This element describes a C constant.
+.Pp
+Mandatory attributes: 
+.Bl -tag -width "type, type64"
+.It Ar name
+The name of the C constant. 
+.It Ar type , Ar type64
+The type of the C constant, as a string of Objective-C runtime encoding types. If the element has a different type on a 64-bit environment, the
+.Ar type64
+attribute will contain it. If the element does not exist on a 32-bit environment, only the
+.Ar type64
+attribute will be used.
+.El
+.Pp
+Optional attributes:
+.Bl -tag -width "magic_cookie"
+.It Ar magic_cookie
+Indicates whether the C constant has a
+.Dq magic
+or fixed value and should not be converted at runtime to the given type. The default value is
+.Dq false .
+.El
+.Ss The string_constant element
+This element describes a string constant. The string can either be a C string or an Objective-C string (an NSString object).
+.Cm string_constant
+elements are usually created from C preprocessor macros.
+.Pp
+Mandatory attributes:
+.Bl -tag -width value
+.It Ar name
+The name of the string constant.
+.It Ar value
+The value of the string constant.
+.El
+.Pp
+Optional attributes:
+.Bl -tag -width "nsstring"
+.It Ar nsstring
+Indicates whether the string constant has an Objective-C value, and should be converted to an NSString object. The default value is 
+.Dq false .
+.El
+.Ss The enum element
+This element describes a C enumeration.
+.Pp
+Mandatory attributes: 
+.Bl -tag -width "name"
+.It Ar name
+The name of the C enumeration. 
+.It Ar value , Ar value64
+The value of the C enumeration, as an integer. The value can be negative. If the enumeration has a different value on a 64-bit environment, the
+.Ar value64
+attribute will contain it. If the enumeration does not exist on a 32-bit environment, only the
+.Ar value64
+attribute will be used.
+(The
+.Ar le_value
+and
+.Ar be_value
+values for little and big endian platforms are no longer supported; only native,
+little endian order is now used.)
+.El
+.Pp
+Optional attributes:
+.Bl -tag -width "suggestion"
+.It Ar ignore
+Indicates whether the C enumeration should be ignored by the bridges. The default value is
+.Dq false .
+.It Ar suggestion
+If the ignore attribute is
+.Dq true
+, this attribute may contain a textual message that the bridges can deliver as an exception or error message to be delivered to the user. By default there is no suggestion.
+.El
+.Ss The function element
+This element describes a C function.
+.Pp
+Mandatory attributes: 
+.Bl -tag -width "name"
+.It Ar name
+The name of the C function.
+.El
+.Pp
+Optional attributes:
+.Bl -tag -width "variadic"
+.It Ar variadic
+Indicates whether the C function accepts a variable number of arguments. The default value is
+.Dq false .
+.It Ar sentinel
+An integer value that specifies which argument (counting backwards from
+the end of the argument list) must be a NULL value to indicate the end
+of a variable length argument list (thus, this is only legal for variadic
+functions).
+(The
+.Fn __attribute__ "(sentinel)"
+compiler attribute will be automatically recognized by the new parser, and
+the given sentinel value (defaulting to zero), will be assigned to the
+.Ar sentinel
+attribute.)
+.It Ar inline
+Indicates whether the C function is inline. In that case, the symbol can be found in the respective .dylib file that comes with the BridgeSupport file. Consult
+.Xr gen_bridge_metadata 1
+to know how the dylib files are generated. The default value is 
+.Dq false .
+.El
+.Pp
+Possible children: 
+.Cm arg
+(zero or more), 
+.Cm retval 
+(zero or one).
+.Ss The function_alias element
+This element defines an alias or shortcut to a C function.
+.Pp
+Mandatory attributes:
+.Bl -tag -width "original"
+.It Ar name
+The name of the C function alias.
+.It Ar original 
+The name of the original C function the alias points to.
+.El
+.Pp
+.Ss The class element
+This element defines an Objective-C class. Only classes where additional metadata is needed are described.
+.Pp
+Mandatory attributes:
+.Bl -tag -width "name"
+.It Ar name
+The name of the Objective-C class.
+.El
+.Pp
+Possible children:
+.Cm method
+(zero or more).
+.Ss The informal_protocol element
+This element defines an Objective-C informal protocol.
+.Pp
+Mandatory attributes:
+.Bl -tag -width "name"
+.It Ar name
+The name of the Objective-C informal protocol.
+.El
+.Pp
+Possible children:
+.Cm method
+(zero or more).
+.Ss The method element
+This element defines an Objective-C method. Only methods where additional metadata is needed are described.
+.Pp
+Mandatory attributes:
+.Bl -tag -width "selector"
+.It Ar selector 
+The selector of the Objective-C method.
+.El
+.Pp
+Mandatory attributes (only when declared under
+.Cm informal_protocol )
+:
+.Bl -tag -width "type, type64"
+.It Ar type , Ar type64
+The type of the Objective-C method, as a string of Objective-C runtime encoding types. If the element has a different type on a 64-bit environment, the
+.Ar type64
+attribute will contain it. If the element does not exist on a 32-bit environment, only the
+.Ar type64
+attribute will be used.
+.El
+.Pp
+Optional attributes:
+.Bl -tag -width "class_method"
+.It Ar class_method 
+Whether this is a class method or not. The default value is
+.Dq false .
+.El
+.Pp
+Optional attributes (only when not declared under
+.Cm informal_protocol )
+:
+.Bl -tag -width "suggestion"
+.It Ar variadic
+Indicates whether the method accepts a variable number of arguments. The default value is
+.Dq false .
+.It Ar sentinel
+An integer value that specifies which argument (counting backwards from
+the end of the argument list) must be a NULL value to indicate the end
+of a variable length argument list (thus, this is only legal for variadic
+methods).
+(The
+.Fn __attribute__ "(sentinel)"
+compiler attribute will be automatically recognized by the new parser, and
+the given sentinel value (defaulting to zero), will be assigned to the
+.Ar sentinel
+attribute.)
+.It Ar ignore
+Indicates whether the method should be ignored by the bridges. The default value is
+.Dq false .
+.It Ar suggestion
+If the ignore attribute is
+.Dq true
+, this attribute may contain a textual message that the bridges can deliver as an exception or error message to be delivered to the user. By default there is no suggestion.
+.El
+.Pp
+Possible children (only when not declared under 
+.Cm informal_protocol )
+: 
+.Cm arg
+(zero or more), 
+.Cm retval
+(zero or one).
+.Ss The arg and retval elements
+These elements describe respectively an argument and a return value. They should be defined within both
+.Cm function
+and 
+.Cm method
+elements, and their attributes depend under which element they are defined under.
+.Pp
+Optional attributes:
+.Bl -tag -width "c_array_of_variable_length"
+.It Ar c_array_length_in_arg
+Defines the argument or return value as a C array whose length is defined by the value of the given argument. The value of this attribute is the index position of the argument that should contain the array size. The value can also be two integers separated by a comma, which in that case means that the first value is used when converting to C / Objective-C, and the second when converting back to the scripting language. This attribute cannot be used with another
+.Dq c_array_
+attribute.
+.It Ar c_array_of_fixed_length 
+Defines the argument or return value as a C array of a fixed length. The value of this attribute is the array size. This attribute cannot be used with another
+.Dq c_array_
+attribute.
+.It Ar c_array_delimited_by_null 
+Defines the argument or return value as a C array that ends with a NULL value, if the value of this attribute is
+.Dq true . 
+The default value of this attribute is
+.Dq false .
+This attribute cannot be used with another
+.Dq c_array_
+attribute.
+.It Ar c_array_of_variable_length
+Defines the argument or return value as a C array of a variable length, if the value of this attribute is
+.Dq true .
+The default value of this attribute is
+.Dq false .
+This attribute cannot be used with another
+.Dq c_array_
+attribute.
+.It Ar function_pointer
+Indicates whether the argument or return value is a function or block pointer.
+If
+.Dq true ,
+the
+.Ar type
+attribute will be '^?' for functions and '@?' for blocks, and
+the current element should have a set of complete
+.Cm arg
+and
+.Cm retval
+child elements to define both the argument and the return value types of the
+function or block pointer. 
+.It Ar sel_of_type , Ar sel_of_type64
+This attribute, used for
+arguments or return value of the type
+.Dq SEL
+(an Objective-C selector), is used to provide the signature of the method the selector should point to, as a string of Objective-C runtime encoding types.  If the selector has a different type on a 64-bit environment, the
+.Ar sel_of_type64
+attribute will contain it. There is no default value. This attribute can be used to give a hint to the bridges when their default behavior isn't sufficient.
+.El
+.Pp
+Optional attributes
+.Po
+.Cm arg
+only
+.Pc :
+.Bl -tag -width "c_array_length_in_retval"
+.It Ar c_array_length_in_retval
+Defines the argument as a C like array whose length is defined by the value of the return value, if
+.Dq true .
+The default value of this attribute is
+.Dq false .
+This attribute cannot be used with another
+.Dq c_array_
+attribute.
+.It Ar type_modifier
+The type modifier of the argument. Possible values are
+.Dq n
+(in),
+.Dq o
+(out) and
+.Dq N
+(inout). There is no default value.
+(For Objective C methods arguments, the
+.Ft in ,
+.Ft out
+and
+.Ft inout
+type modifiers will be automatically recognized by the new parser, and the
+appropriate
+.Ar type_modifier
+attribute will be set.)
+.It Ar null_accepted
+Indicates whether a NULL value can be passed to this argument. The default value is
+.Dq true .
+(The
+.Fn __attribute__ "(nonnull)"
+compiler attribute will be automatically recognized by the new parser, and
+the corresponding argument's
+.Ar null_accepted
+attribute will set to
+.Dq false . )
+.It Ar printf_format
+Indicates whether this argument accepts a 
+.Xr printf 3
+format string value. The default value is
+.Dq false .
+(The
+.Fn __attribute__ "(format(printf, m, n))"
+compiler attribute will be automatically recognized by the new parser, and the
+.Ar m-th
+argument's
+.Ar printf_format
+attribute will be set to
+.Dq true . )
+.El
+.Pp
+Optional attributes
+.Po
+.Cm retval
+only
+.Pc :
+.Bl -tag -width "already_retained"
+.It Ar already_retained
+A value of
+.Dq true
+indicates that the return value should not be retained by the bridges. The default value is
+.Dq false .
+.El
+.Pp
+Mandatory attributes
+.Po 
+when declared under
+.Cm function
+.Pc :
+.Bl -tag -width "type, type64"
+.It Ar type , Ar type64
+The type of the argument or return value, as a string of Objective-C runtime encoding types. If the element has a different type on a 64-bit environment, the
+.Ar type64
+attribute will contain it. If the element does not exist on a 32-bit environment, only the
+.Ar type64
+attribute will be used.
+.El
+.Pp
+Mandatory attributes (when declared under
+.Cm method ,
+.Cm arg
+only):
+.Bl -tag -width "index"
+.It Ar index
+The index position of the argument.
+.El
+.Pp
+Optional attributes
+.Po
+when declared under
+.Cm method
+.Pc : 
+.Bl -tag -width "type, type64"
+.It Ar type , Ar type64
+The type of the argument or return value, as a string of Objective-C runtime encoding types. If the element has a different type on a 64-bit environment, the
+.Ar type64
+attribute will contain it. If the element does not exist on a 32-bit environment, only the
+.Ar type64
+attribute will be used. This attribute is optional for methods as the bridges can retrieve the type by asking the runtime, but it is possible to override the default type using this attribute. There is no default value.
+.El
+.Pp
+.Sh SEE ALSO
+.Xr gen_bridge_metadata 1
+.Pa /System/Library/DTDs/BridgeSupport.dtd

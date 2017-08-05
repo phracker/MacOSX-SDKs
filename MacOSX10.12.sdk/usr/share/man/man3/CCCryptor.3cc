@@ -1,0 +1,236 @@
+.Dd March 22, 2007
+.Dt CCCryptor 3cc
+.Os
+.Sh NAME
+.Nm CCCryptorCreate ,
+.Nm CCryptorCreateFromData ,
+.Nm CCCryptorRelease ,
+.Nm CCCryptorUpdate ,
+.Nm CCCryptorFinal ,
+.Nm CCCryptorGetOutputLength ,
+.Nm CCCryptorReset ,
+.Nm CCCrypt
+.Nd Common Cryptographic Algorithm Interfaces
+.Sh LIBRARY
+These functions are found in libSystem.
+.Sh SYNOPSIS
+.In CommonCrypto/CommonCryptor.h
+.Ft CCCryptorStatus
+.Fn CCCryptorCreate "CCOperation op" "CCAlgorithm alg" "CCOptions options" \
+"const void *key" "size_t keyLength" "const void *iv" "CCCryptorRef *cryptorRef"
+.Ft CCCryptorStatus
+.Fn CCCryptorCreateFromData "CCOperation op" "CCAlgorithm alg" "CCOptions options" \
+"const void *key" "size_t keyLength" "const void *iv" "const void *data" \
+"size_t dataLength" "CCCryptorRef *cryptorRef" "size_t *dataUsed"
+.Ft CCCryptorStatus
+.Fn CCCryptorRelease "CCCryptorRef cryptorRef"
+.Ft CCCryptorStatus
+.Fn CCCryptorUpdate "CCCryptorRef cryptorRef" "const void *dataIn" \
+"size_t dataInLength" "void *dataOut" "size_t dataOutAvailable" "size_t *dataOutMoved"
+.Ft CCCryptorStatus
+.Fn CCCryptorFinal "CCCryptorRef cryptorRef" "void *dataOut" \
+"size_t dataOutAvailable" "size_t *dataOutMoved"
+.Ft size_t
+.Fn CCCryptorGetOutputLength "CCCryptorRef cryptorRef" "size_t inputLength" "bool final"
+.Ft CCCryptorStatus
+.Fn CCCryptorReset "CCCryptorRef cryptorRef" "const void *iv"
+.Ft CCCryptorStatus
+.Fn CCCrypt "CCOperation op" "CCAlgorithm alg" "CCOptions options" "const void *key" \
+"size_t keyLength" "const void *iv" "const void *dataIn" "size_t dataInLength" \
+"void *dataOut" "size_t dataOutAvailable" "size_t *dataOutMoved"
+.Sh DESCRIPTION
+This interface provides access to a number of symmetric encryption
+algorithms. Symmetric encryption algorithms come in two "flavors" -
+block ciphers, and stream ciphers. Block ciphers process data
+(while both encrypting and decrypting) in discrete chunks of
+data called blocks; stream ciphers operate on arbitrary sized
+data.
+.Pp
+The object declared in this interface, CCCryptor, provides
+access to both block ciphers and stream ciphers with the same
+API; however some options are available for block ciphers that
+do not apply to stream ciphers.
+.Pp
+The general operation of a CCCryptor is: initialize it
+with raw key data and other optional fields with CCCryptorCreate();
+process input data via one or more calls to CCCryptorUpdate(),
+each of which may result in output data being written to
+caller-supplied memory; and obtain possible remaining output data
+with CCCryptorFinal(). The CCCryptor is disposed of via
+CCCryptorRelease(), or it can be reused (with the same key data
+as provided to CCCryptorCreate()) by calling CCCryptorReset().
+.Pp
+CCCryptors can be dynamically allocated by this module, or
+their memory can be allocated by the caller.
+.Pp
+One option for block ciphers is padding, as defined in PKCS7;
+when padding is enabled, the total amount of data encrypted
+does not have to be an even multiple of the block size, and
+the actual length of plaintext is calculated during decryption.
+.Pp
+Another option for block ciphers is Cipher Block Chaining, known
+as CBC mode. When using CBC mode, an Initialization Vector (IV)
+is provided along with the key when starting an encrypt
+or decrypt operation. If CBC mode is selected and no IV is
+provided, an IV of all zeroes will be used.
+.Pp
+CCCryptor also implements block bufferring, so that individual
+calls to CCCryptorUpdate() do not have to provide data whose length
+is aligned to the block size. (If padding is disabled, encrypting
+with block ciphers does require that the *total* length of data
+input to CCCryptorUpdate() call(s) be aligned to the block size.)
+.Pp
+Encryption and decryption can be performed "in-place", with the
+same buffer used for input and output. The .Fn CCCryptorUpdate
+does not support in-place operation for ciphers modes that work
+with blocks of data such as CBC and ECB, because of block buffering.
+
+.Pp
+A given CCCryptor can only be used by one thread at a time;
+multiple threads can use safely different CCCryptors at the
+same time. 
+.Pp
+.Ft CCCryptorRef
+objects created with
+.Fn CCCryptorCreate
+or
+.Fn CCCryptorCreateFromData
+*may* be disposed of
+via
+.Fn CCCRyptorRelease
+; that call is not strictly necessary, but
+if it's not performed, good security practice dictates that the
+caller should zero the memory provided to create the
+.Ft CCCryptorRef
+when the caller is finished using the
+.Ft CCCryptorRef.
+.Pp
+.Fn CCCryptorUpdate
+is used to encrypt or decrypt data.  This routine can be called multiple times. The caller does
+not need to align input data lengths to block sizes; input is
+bufferred as necessary for block ciphers.
+.Pp
+When performing symmetric encryption with block ciphers,
+and padding is enabled via
+.Ft kCCOptionPKCS7Padding,
+the total
+number of bytes provided by all the calls to this function
+when encrypting can be arbitrary (i.e., the total number
+of bytes does not have to be block aligned). However if
+padding is disabled, or when decrypting, the total number
+of bytes does have to be aligned to the block size; otherwise
+.Fn CCCryptFinal
+will return
+.Ft kCCAlignmentError.
+.Pp
+A general rule for the size of the output buffer which must be
+provided by the caller is that for block ciphers, the output
+length is never larger than the input length plus the block size.
+For stream ciphers, the output length is always exactly the same
+as the input length. See the discussion for
+.Fn CCCryptorGetOutputLength
+for more information on this topic.
+.Pp
+.Fn CCCryptFinal
+finishes encryption and decryption operations and obtains the final data output.
+Except when
+.Ft kCCBufferTooSmall
+is returned, the
+.Ft CCCryptorRef
+can no longer be used for subsequent operations unless
+.Fn CCCryptorReset
+is called on it.
+.Pp
+It is not necessary to call
+.Fn CCCryptorFinal
+when performing
+symmetric encryption or decryption if padding is disabled, or
+when using a stream cipher.
+.Pp
+It is not necessary to call
+.Fn CCCryptorFinal
+prior to
+.Fn CCCryptorRelease
+when aborting an operation.
+.Pp
+Use
+.Fn CCCryptorGetOutputLength
+to determine output buffer size required to process a given input size.
+Some general rules apply that allow clients of this module to
+know a priori how much output buffer space will be required
+in a given situation. For stream ciphers, the output size is
+always equal to the input size, and
+.Fn CCCryptorFinal
+never
+produces any data. For block ciphers, the output size will
+always be less than or equal to the input size plus the size
+of one block. For block ciphers, if the input size provided
+to each call to
+.Fn CCCryptorUpdate
+is is an integral multiple
+of the block size, then the output size for each call to
+.Fn CCCryptorUpdate
+is less than or equal to the input size
+for that call to
+.Fn CCCryptorUpdate .
+.Fn CCCryptorFinal
+only produces output when using a block cipher with padding enabled.
+.Pp
+.Fn CCCryptorReset
+reinitializes an existing
+.Ft CCCryptorRef
+with a (possibly) new initialization vector. The key contained in the
+.Ft CCCryptorRef
+is unchanged. This function is not implemented for stream ciphers.  This can be called on a CCCryptorRef with data pending (i.e.
+in a padded mode operation before 
+.Fn CCCryptFinal
+is called); however any pending data will be lost in that case.
+.Pp
+.Fn CCCrypt
+is a stateless, one-shot encrypt or decrypt operation.
+This basically performs a sequence of
+.Fn CCCrytorCreate ,
+.Fn CCCryptorUpdate ,
+.Fn CCCryptorFinal ,
+and
+.Fn CCCryptorRelease .
+.Sh RETURN VALUES
+The following values may be returned as a status of type
+.Ft CCCryptorStatus .
+.Pp
+.Er kCCSuccess
+- Operation completed normally.
+.Pp
+.Er kCCParamError
+- Illegal parameter value.
+.Pp
+.Er kCCBufferTooSmall
+- Insufficent buffer provided for specified operation.
+.Pp
+.Er kCCMemoryFailure
+- Memory allocation failure.
+.Pp
+.Er kCCAlignmentError
+- Input size was not aligned properly.
+.Pp
+.Er kCCDecodeError
+- Input data did not decode or decrypt properly.
+.Pp
+.Er kCCUnimplemented
+- Function not implemented for the current algorithm.
+.Sh HISTORY
+These functions are available in OS X 10.5 and later.
+.Sh SEE ALSO
+.Xr CCHmac 3cc ,
+.Xr CC_MD5 3cc ,
+.Xr CC_SHA 3cc ,
+.Xr CC_crypto 3cc
+.Sh STANDARDS
+.Bl -tag
+.It AES:
+Federal Information Processing Standard \s-1FIPS\s0 \s-1PUB\s0 197 (Advanced Encryption Standard),
+.It DES:
+Federal Information Processing Standard \s-1FIPS\s0 \s-1PUB\s0 46\-3 (Data Encryption Standard)
+.It 3DES:
+NIST Special Publication\s-1PUB\s0 800\-67 (Recommendation for the Triple Data Encryption Algorithm (TDEA) Block Cipher)
+.El

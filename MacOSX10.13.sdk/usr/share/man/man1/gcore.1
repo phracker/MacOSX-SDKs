@@ -1,0 +1,105 @@
+.Dd 2/10/16
+.Dt gcore 1
+.Os Darwin
+.Sh NAME
+.Nm gcore
+.Nd get core images of running processes
+.Sh SYNOPSIS
+.Nm
+.Op Fl s
+.Op Fl v
+.Op Fl b Ar size
+.Op Fl o Ar path | Fl c Ar pathformat
+.Ar pid
+.Sh DESCRIPTION
+The
+.Nm gcore
+program creates a core file image of the process specified by
+.Ar pid .
+The resulting core file can be used with a debugger, e.g.
+.Xr lldb(1) ,
+to examine the state of the process.
+.Pp
+The following options are available:
+.Bl -tag -width Fl
+.It Fl s
+Suspend the process while the core file is captured.
+.It Fl v
+Report progress on the dump as it proceeds.
+.It Fl b Ar size
+Limit the size of the core file to
+.Ar size
+MiBytes.
+.El
+.Pp
+The following options control the name of the core file:
+.Bl -tag -width flag
+.It Fl o Ar path
+Write the core file to
+.Ar path .
+.It Fl c Ar pathformat
+Write the core file to
+.Ar pathformat .
+The
+.Ar pathformat
+string is treated as a pathname that may contain various special
+characters which cause the interpolation of strings representing
+specific attributes of the process into the name.
+.Pp
+Each special character is introduced by the
+.Cm %
+character.  The format characters and their meanings are:
+.Bl -tag -width Fl
+.It Cm N
+The name of the program being dumped, as reported by
+.Xr ps 1 .
+.It Cm U
+The uid of the process being dumped, converted to a string.
+.It Cm P
+The pid of the process being dumped, converted to a string.
+.It Cm T
+The time when the core file was taken, converted to ISO 8601 format.
+.It Cm %
+Output a percent character.
+.El
+.El
+.Pp
+The default file name used by
+.Nm gcore
+is
+.Ar %N-%P-%T .
+By default, the core file will be written to a directory whose
+name is determined from the
+.Ar kern.corefile
+MIB.  This can be printed or modified using
+.Xr sysctl 8 .
+.Pp
+The directory where the core file is to be written must be
+accessible to the owner of the target process.
+.Pp
+.Nm gcore
+will not overwrite an existing file,
+nor will it create missing directories in the path.
+.Sh EXIT_STATUS
+.Ex -std
+.Pp
+.Sh FILES
+.Bl -tag -width "/cores/%N-%P-%T plus" -compact
+.It Pa /cores/%N-%P-%T
+default pathname for the corefile.
+.El
+.Sh BUGS
+With the
+.Fl b
+flag,
+.Nm gcore
+writes out as much data as it can up to the specified limit,
+even if that results in an incomplete core image.
+Such a partial core dump may confuse subsequent
+programs that attempt to parse the contents of such files.
+.Sh SEE ALSO 
+.Xr lldb 1 ,
+.Xr core 5 ,
+.Xr Mach-O 5 ,
+.Xr sysctl 8 ,
+.Xr sudo 8 .

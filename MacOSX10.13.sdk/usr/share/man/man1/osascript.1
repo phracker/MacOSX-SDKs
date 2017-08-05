@@ -1,0 +1,179 @@
+.Dd April 24, 2014
+.Dt OSASCRIPT 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm osascript
+.Nd execute OSA scripts
+.Pq AppleScript, JavaScript, etc.
+.Sh SYNOPSIS
+.Nm osascript
+.Bk -words
+.Op Fl l Ar language
+.Op Fl i
+.Op Fl s Ar flags
+.Op Fl e Ar statement | Ar programfile
+.Op Ar argument ...
+.Ek
+.Sh DESCRIPTION
+.Nm
+executes the given
+.Tn OSA
+script, which may be plain text or a compiled script
+.Pq Li .scpt
+created by Script Editor or
+.Xr osacompile 1 .
+By default,
+.Nm
+treats plain text as AppleScript, but you can change this using the
+.Fl l
+option.
+To get a list of the
+.Tn OSA
+languages installed on your system, use
+.Xr osalang 1 .
+.Pp
+.Nm
+will look for the script in one of the following three places:
+.Bl -enum
+.It
+Specified line by line using
+.Fl e
+switches on the command line.
+.It
+Contained in the file specified by the first filename on the command
+line.  This file may be plain text or a compiled script.
+.It
+Passed in using standard input.  This works only if there are no
+filename arguments; to pass arguments to a STDIN-read script, you
+must explicitly specify
+.Dq -
+for the script name.
+.El
+.Pp
+Any arguments following the script will be passed as a list of strings
+to the direct parameter of the
+.Dq run
+handler.  For example, in AppleScript:
+.Pp
+.Bd -literal -offset indent -compact
+.Em a.scpt:
+on run argv
+    return "hello, " & item 1 of argv & "."
+end run
+
+.Sy % osascript a.scpt world
+hello, world.
+.Ed
+.Pp
+The options are as follows:
+.Bl -tag -width flag
+.It Fl e Ar statement
+Enter one line of a script.  If
+.Fl e
+is given,
+.Nm
+will not look for a filename in the argument
+list.  Multiple
+.Fl e
+options may be given to build up a multi-line script.  Because
+most scripts use characters that are special to many shell programs
+(for example, AppleScript uses single and double quote marks,
+.Dq \&( ,
+.Dq \&) ,
+and
+.Dq * ) ,
+the statement will have to be correctly quoted and escaped to get it
+past the shell intact.
+.It Fl i
+Interactive mode:
+.Nm
+will prompt for one line at a time, and print the result, if
+applicable, after each line.  Any script supplied as a command argument
+using
+.Fl e
+or
+.Ar programfile
+will be loaded, but not executed, before starting the interactive prompt.
+.It Fl l Ar language
+Override the language for any plain text files.  Normally, plain text
+files are compiled as AppleScript.
+.It Fl s Ar flags
+Modify the output style.  The
+.Ar flags
+argument is a string consisting of any of the modifier characters
+.Cm e ,
+.Cm h ,
+.Cm o ,
+and
+.Cm s .
+Multiple modifiers can be concatenated in the same string, and multiple
+.Fl s
+options can be specified.  The modifiers come in exclusive pairs; if
+conflicting modifiers are specified, the last one takes precedence.
+The meanings of the modifier characters are as follows:
+.Bl -item
+.It
+.Bl -tag -width 1n -compact
+.It Cm h
+Print values in human-readable form (default).
+.It Cm s
+Print values in recompilable source form.
+.Pp
+.Nm
+normally prints its results in human-readable form: strings
+do not have quotes around them, characters are not escaped, braces for
+lists and records are omitted, etc.  This is generally more useful,
+but can introduce ambiguities.  For example, the lists
+.Ql {"foo", \&"bar"}
+and
+.Ql {{"foo", {"bar"}}}
+would both be displayed as
+.Ql foo, bar .
+To see
+the results in an unambiguous form that could be recompiled into the
+same value, use the
+.Cm s
+modifier.
+.El
+.It
+.Bl -tag -width 1n -compact
+.It Cm e
+Print script errors to stderr (default).
+.It Cm o
+Print script errors to stdout.
+.Pp
+.Nm
+normally prints script errors to stderr, so downstream
+clients only see valid results.  When running automated tests,
+however, using the
+.Cm o
+modifier lets you distinguish script errors, which you care about
+matching, from other diagnostic output, which you don't.
+.El
+.El
+.El
+.Sh SEE ALSO
+.Xr osacompile 1 ,
+.Xr osalang 1 ,
+.%B AppleScript Language Guide
+.Sh HISTORY
+.Nm
+in Mac OS X 10.0 would translate
+.Sq \er
+characters in the output to
+.Sq \en
+and provided
+.Cm c
+and
+.Cm r
+modifiers for the
+.Fl s
+option to change this.
+.Nm
+now always leaves the output alone; pipe through
+.Xr tr 1
+if necessary.
+.Pp
+Prior to Mac OS X 10.4,
+.Nm
+did not allow passing arguments to the script.

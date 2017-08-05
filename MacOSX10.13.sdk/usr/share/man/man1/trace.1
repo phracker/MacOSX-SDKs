@@ -1,0 +1,375 @@
+.\" Copyright (c) 2010, Apple Inc.  All rights reserved.
+.\"
+.Dd April 3, 2015
+.Dt TRACE 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm trace
+.Nd configure, record, and display kernel trace events
+.Sh SYNOPSIS
+.Bl -hang -compact -width "trace -"
+.\"
+.It Nm Fl d
+.Op Fl a Ar pid | Fl x Ar pid
+.\"
+.It Nm Fl e
+.Op Fl c Ar class Oo Fl p Ar end-class Oc Oo Fl s Ar subclass Oc
+.Op Fl a Ar pid | Fl x Ar pid
+.Op Fl k Ar code
+.Op Fl P
+.Op Fl T Ar filter-file
+.\"
+.It Nm Fl E
+.Op Fl c Ar class Oo Fl p Ar end-class Oc Oo Fl s Ar subclass Oc
+.Op Fl a Ar pid | Fl x Ar pid
+.Op Fl k Ar code
+.Op Fl P
+.Op Fl T Ar tracefilter
+.Ar command
+.Op Ar argument ...
+.\"
+.It Nm Fl h
+.\"
+.It Nm Fl i
+.Op Fl b Ar num-events
+.\"
+.It Nm Fl g
+.\"
+.It Nm Fl l Ar rawfile
+.\"
+.It Nm Fl L Ar rawfile
+.Op Fl S Ar secs
+.\"
+.It Nm Fl n
+.\"
+.It Nm Fl r
+.\"
+.It Nm Fl R Ar rawfile
+.Op Fl X
+.Op Fl F Ar frequency
+.Op Fl o Ar outfile
+.Op Fl N
+.Op Ar codesfile ...
+.\"
+.It Nm Fl t
+.Op Fl o Ar outfile
+.Op Fl N
+.Op Ar codesfile ...
+.El
+.Sh DESCRIPTION
+.Nm
+initializes and configures the kernel trace subsystem.  Trace events can
+be recorded to an in-memory buffer or logged directly to a file, and
+optionally converted to a human-readable, plain-text format.
+.Pp
+.Nm
+operates according to the command flag specified.
+.Sh COMMANDS
+.Bl -tag -width Ds
+.It Fl h
+Print a succinct help message to
+.Xr stdout 4 .
+.\"
+.\"     ## trace -i ##
+.It Fl i Op Fl b Ar num-events
+.Pp
+Initialize the kernel trace buffer.  This command is required before
+tracing.
+.Bl -tag -width Ds
+.It Fl b Ar num-events
+Set the number of events that can be stored in the kernel trace buffer.
+.Ar num-events
+is a decimal number of events.  The default (and minimum) value is 8192
+event records per logical CPU.  No more than half of available
+memory may be used by trace buffers, though running with a buffer this
+large is not recommended.
+.El
+.\"
+.\"     ## trace -g ##
+.It Fl g
+Print the current kernel trace buffer settings to
+.Xr stdout 4 .
+.\"
+.\"     ## trace -d ##
+.It Fl d Op Fl a Ar pid | Fl x Ar pid
+.Pp
+By default, disable collection of events.  This command does not remove
+the kernel trace buffer.
+.Bl -tag -width Ds
+.It Fl a Ar pid
+Disable event collection for the process identified by
+.Ar pid .
+.It Fl x Ar pid
+Stop excluding
+.Ar pid
+from the trace.
+This reenables event collection of events for.
+.Ar pid .
+.El
+.\"
+.\"     ## trace -r ##
+.It Fl r
+Remove the kernel trace buffer.
+.\"
+.\"     ## trace -n ##
+.It Fl n
+Disable ring buffer mode.  When set, the trace buffer will fill to capacity
+and then stop collecting events.  Ring buffer mode is sometimes called
+"head," "stop," or "no-wrap" mode.  By default, the trace buffer will
+wrap around, overwriting previous events.  The default behavior is
+sometimes called windowed or wrap-around mode.
+.\"
+.\"     ## trace -e ##
+.Bk -words
+.It Xo Fl e
+.Op Fl c Ar class Oo Fl p Ar end-class Oc Oo Fl s Ar subclass Oc
+.Op Fl a Ar pid | Fl x Ar pid
+.Op Fl k Ar code ...
+.Op Fl P
+.Op Fl T Ar filter-file
+.Ek
+.Xc
+.Pp
+Enable collection of events.  By default, all events are collected.
+.Pp
+Options can be used to restrict collection to specific classes, class
+ranges, subclasses, and codes.  Classes and subclasses can be specified
+any number of times, but only 4 codes can be filtered at once.  Values
+can be specified in hex (0x...), decimal, or octal (0...).
+.Bl -tag -width " "
+.It Fl c Ar class
+Restrict collection to the events with the specified
+.Ar class .
+This option can be specified any number of times to collect events from
+more classes.
+.Bl -tag -width " "
+.It Fl p Ar end-class
+Provide an ending class to restrict collection to events in an inclusive
+range of classes between
+.Ar class
+and
+.Ar end-class .
+.It Fl s Ar subclass
+Restrict collection to the events with the specified
+.Ar subclass .
+.El
+.It Fl a Ar pid
+Restrict collection to to those events emitted by the process identified
+by
+.Ar pid .
+.It Fl x Ar pid
+Exclude events emitted by the process identified by
+.Ar pid .
+.It Fl k Ar code
+Restrict collection to events with the specified
+.Ar code .
+This option can be specified up to 4 times, and applies to all classes
+being collected.
+.It Fl T Ar filter-file
+Restrict collection to events specified in the provided
+.Ar filter-file .
+See
+.Sx TRACEFILTER FORMAT
+for details.
+.It Xo Fl P
+Restrict collection to PPT events.  This special collection of trace
+events provides insight into system performance.
+.Xc
+.El
+.\"
+.\"     ## trace -E ##
+.Bk -words
+.It Xo Fl E
+.Op Fl c Ar class Oo Fl p Ar end-class Oc Oo Fl s Ar subclass Oc
+.Op Fl a Ar pid | Fl x Ar pid
+.Op Fl k Ar code ...
+.Op Fl P
+.Op Fl T Ar filter-file
+.Ar command Op args ...
+.Ek
+.Xc
+.Pp
+Execute
+.Ar command
+with trace collection enabled for events emitted by the process.  See
+.Fl e
+for more information.
+.\"
+.\"     ## trace -t ##
+.It Fl t Oo Fl o Ar outfile Oc Oo Fl N Oc Oo Ar codesfile ... Oc
+.Pp
+Extract events from the kernel trace buffer and print them in a formatted,
+plain-text representation.  Additional code files can be specified to
+help
+.Nm
+find the names of unknown events.  For more information on the formatting
+process, see
+.Sx TRACE CODES FORMAT .
+.Bl -tag -width Ds
+.It Fl o Ar outfile
+Output the plain-text events to
+.Ar outfile .
+.It Fl N
+Ignore the system-wide trace codes file when getting names of events.
+Additional trace codes files specified will still be used.
+.El
+.\"
+.\"     ## trace -l ##
+.It Fl l Ar rawfile
+.Pp
+Empty the current kernel trace buffer into
+.Ar rawfile
+in a binary format.  If
+.Ar rawfile
+is
+.Li - ,
+the file will be written to
+.Xr stdout 4 .
+.\"
+.\"     ## trace -L ##
+.It Fl L Ar rawfile Fl S Ar seconds
+.Pp
+Copy the current trace buffer to
+.Ar rawfile
+and send all future trace events to
+.Ar rawfile .
+.Bl -tag -width Ds
+.It Fl S Ar seconds
+After 
+.Ar seconds
+have elapsed, stop recording and exit.  If
+.Ar rawfile
+is
+.Li - ,
+the file will be written to
+.Xr stdout 4 .
+.El
+.\"
+.\"     ## trace -R ##
+.It Fl R Ar rawfile Oo Fl o Ar outfile Oc Oo Fl N Oc Oo Fl F Ar frequency Oc Oo Fl X Oc Op Ar codesfile ...
+.Pp
+Read events from
+.Ar rawfile
+and print them in a human-readable format.
+.Bl -tag -width " "
+.It Fl F Ar frequency
+If
+.Ar rawfile
+does not contain clock frequency information, it can be specified with
+.Fl F .
+.It Fl X
+Force the binary format to be interpreted as 32-bit, as opposed to
+matching the width of the system running
+.Nm .
+.El
+.Pp
+See
+.Fl t
+for additional options.
+.El
+.Sh TRACE CODES FORMAT
+Event classes, subclasses, and codes are matched to names using a trace
+codes file.  Any events that cannot be matched will be referred to by
+their debugid in hex.
+.Pp
+The system-wide trace codes file is located at
+.Pa /usr/share/misc/trace.codes .
+Additional files are typically stored in
+.Pa /usr/local/share/misc .
+.Pp
+A code file consists of a list of tracepoints, one per line, with the
+tracepoint's debugid (component, subclass, and code) in hex, followed by
+a tab, followed by the tracepoint's name.
+.Pp
+For instance, the MSC_mach_msg_trap tracepoint is defined by
+.Pp
+.Dl 0x010c007c MSC_mach_msg_trap
+.Pp
+This describes the tracepoint with the following info:
+.Pp
+.Bl -column -offset indent "Subclass" "MSC_mach_msg_trap"
+.\" is this right?  We should refer to the shifting and kdebug.h
+.It Sy Name Ta MSC_mach_msg_trap
+.It Sy Class Ta 0x01 Ta (Mach events)
+.It Sy Subclass Ta 0x0c Ta (Mach system calls)
+.It Sy Code Ta 0x007c Ta (msg_trap)
+.El
+.Pp
+See
+.\" this absolute path no longer exists thanks to SDKs. :P
+.Pa /usr/include/sys/kdebug.h
+for class and subclass values.
+.Sh TRACEFILTER FORMAT
+A tracefilter description file consists of a list of class and subclass
+filters in hex, one per line, which are applied as if they were passed
+with
+.Fl c
+and
+.Fl s .
+Pass
+.Fl v
+to see what classes and subclasses are being set.
+.Pp
+Comment lines start with
+.Ql # ,
+class filter lines start with
+.Ql C ,
+and subclass filter lines start with
+.Ql S
+and include the class they apply to.
+.Pp
+For example, to trace Mach events (class 1):
+.Pp
+.Dl C 0x01
+.Pp
+And to trace Mach system calls (class 1, subclass 13):
+.Pp
+.Dl S 0x010C
+.Pp
+.Sh EXAMPLES
+.Nm
+usually requires multiple invocations in order to set up the trace
+buffers, enable the correct events, and collect the events.  A typical
+session with trace is:
+.Pp
+.Dl trace -i
+.Dl trace -e -c 1 -s 31
+.Dl sleep 1
+.Dl trace -d
+.Dl trace -t
+.Pp
+This initializes the trace buffers to their default values, enables the
+mach_msg_trap subclass of the MACH_SysCall class, waits for one second,
+then disables tracing and prints it to
+.Xr stdout 4 .
+This is useful for investigating isolated issues or gaining some
+understanding about a kernel subsystem.  If a specific execuable should
+be traced, with the events saved for later analysis, the sequence of
+commands would be:
+.Pp
+.Dl trace -i
+.Dl trace -E -c 0x4 ./my_prog
+.Dl trace -d
+.Dl trace -l tracefile
+.Dl trace -R tracefile
+.Pp
+This initializes the trace buffers, enables all events in the BSC_SysCall class and runs
+.Li my_prog ,
+disables tracing, collects events into
+.Li tracefile ,
+and finally prints those events out in a human-readable form.
+.Sh CAVEATS
+Almost all
+.Nm
+command flags require superuser (root) privileges.
+.Pp
+After failures, the trace buffers usually need to be re-initialized.
+.Pp
+.Sh DIAGNOSTICS
+.Ex -std
+.Sh SEE ALSO
+.Xr trace 4 ,
+.Xr fs_usage 1 ,
+.Xr sc_usage 1 ,
+.Xr latency 1 ,
+.Xr top 1

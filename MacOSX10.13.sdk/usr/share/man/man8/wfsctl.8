@@ -1,0 +1,110 @@
+.\"" Copyright (c) 2017 Apple Inc. All Rights Reserved.
+.\""
+.\"" IMPORTANT NOTE: This file is licensed only for use on Apple-branded
+.\"" computers and is subject to the terms and conditions of the Apple Software
+.\"" License Agreement accompanying the package this file is a part of.
+.\"" You may not port this file to another platform without Apple's written consent.
+.\""
+.Dd Sept. 20, 2016
+.Dt wfsctl 8
+.Os "macOS"
+.Sh NAME
+.Nm wfsctl
+.Nd WebDAV File Sharing control utility
+.Sh SYNOPSYS
+.Nm
+.Ar command
+.Op Ar arg
+.Sh OVERVIEW
+The
+.Nm
+utility allows administrators to start, stop, and check the status of the WebDAV File Sharing service (WFS). It also allows administrators to create and delete WebDAV share points. It operates by configuring the Apache httpd server.
+The
+.Nm
+command requires root privileges.
+.Sh COMMANDS
+.Nm
+provides the following commands:
+.Bl -tag -width XXunshareXpathXnameXX
+.It Ic start
+Enable the WFS configuration, and either start or restart Apache to pick it up. If necessary, this action will create an SSL Identity matching the machine's host name as determined by the hostname(1) command, and place it in the System keychain. It will also update, if necessary, environment variable definitions for use by parameteried httpd config files.
+.It Ic stop
+Disable the WFS configuration, and restart Apache if it's already running.
+.It Ic status
+Display the status of WFS, either "enabled" or "disabled", whether or not Apache is running.
+.It Ic shares
+Display existing WebDAV share points.
+.It Ic share Ar path
+Create a WebDAV share point for the specified file system path.
+.It Ic unshare Ar path | Ar name
+Disable WebDAV for the share point at the specified file system path or share point name, and delete the share point if no other file sharing service (AFP or SMB) was enabled on that share point.
+.It Ic diagnose
+Display detailed status of Apache and WebDAV-related processes.
+.El
+.Sh DETAILS
+WebDAV File Sharing operates by:
+.Bl -enum
+.It
+Recognizing WebDAV clients when they send OPTIONS or PROPFIND directives
+.It
+Requiring such clients to provide OD credentials
+.It
+Assigning those authenticated users an HTTP cookie to recognize them as WebDAV clients
+.It
+Launching an instance of the Apache httpd process on behalf of that user, configured as a WebDAV server
+.It
+Reverse-proxying HTTP traffic to that user-specific instance of httpd, so that the WebDAV client (typically an iWork app on iOS) can
+access the home directory and share points on the server machine with privileges of the authenticated user
+.It
+Recognizing share points that are marked as WebDAV share points.
+.El
+.Pp
+Depending on how Apache is configured, this can coexist with other Apache web service functions.
+.Sh NOTE
+Note that WebDAV File Sharing requies SSL, and uses Basic authentication, with credentials that would otherwise be sent in the clear over the network. Also note that it uses Apache modules mod_secure_transport for SSL, and mod_authn_od_apple for Basic authentication with OpenDirectory credentials.
+.Sh CONFIGURABLE SETTINGS
+Certain settings are kept in /etc/wfs/wfs.plist and are configurable by the administrator, including:
+.Bl -tag -width XXunshareXpathXnameXX
+.It Ic ServerName
+The host name the Apache web server should use, and also the Common Name of the identity certficate. If this is not configured, or set to an empty string, the hostname(1) of the machine is used.
+.It Ic ServerAddr
+The IP address the Apache web server should use to listen for HTTPS requests. Default is "*", which means all addresses.
+.It Ic ServerPort
+The TCP port the Apache web server should use to listen for HTTPS requests. Default is the standard HTTPS port, 443.
+.It Ic AccessGroup
+The Open Directory group allowed access to the WebDAV File Sharing service. The default is "everyone", which gives access to any authenticated user. Administrators can change this setting to restrict access further. Note that in any case authenticated users will have, at most, the privileges they are normally allowed by file system permissions. There is no provision for guest access, so unauthenticated users have no access.
+.It Ic SynthesizeSharePointForUserHomeDir
+Whether to allow remote WebDAV clients to see their home diretory as a share point. Default is True.
+.El
+.Pp
+The Apache config file for WebDAV File Sharing is parameterized, and the httpd server is managed by the httpd-wrapper utility, which passes parameters to httpd. This is normally transparent, but note that to check the Apache config file syntax, do not use "apachectl configtest" or "httpd -t". Instead, use "httpd-wrapper -t".
+.Sh RETURN VALUES
+.Nm
+returns a status code of 0 for success. In the event of failure it returns a non-zero status,
+and may also dump additional diagnostic information.
+.Sh FILES
+.Bl -tag -width indent
+.It Pa /etc/wfs/httpd_webdavsharing.conf
+The parameterized Apache config file for the main instance of httpd
+.It Pa /etc/wfs/httpd_webdavsharing_template.conf
+The parameterized Apache config file for the user-specific instances of httpd
+.It Pa /etc/wfs/httpd_webdavsharing_sharepoints.conf
+The Apache config file providing directives specific to each share point; dynamically generated when ehare points are modified by wfsctl
+.It Pa /etc/wfs/wfs.plist
+The file where admin-configurable settings for WFS are stored.
+.It Pa /etc/apache2/env.plist
+The file where environment variables definitions are managed automatically; these variables are passed to httpd for use in parameterized config files.
+.It Pa /Library/Logs/WebDAVSharing.log
+The main WebDAV File Sharing log file
+.It Pa /etc/apache2/other/httpd_webdavsharing.conf
+A symlink seen by Apache when WebDAV File Sharing is enabled.
+.It Pa /var/run/webdavsharing/<username>/
+A directory created on the behalf of each authenticated user to store user-specific WebDAV File Sharing logs.
+.It Pa /usr/share/sandbox/wfs.sb
+The parameterized sandbox profile for user-specific httpd instances.
+.It Pa /etc/wfs/wfs.sb
+The dynamically generated portion of the sandbox profile
+.El
+.Sh SEE ALSO
+.Xr httpd 8
+.Xr httpd-wrapper 8

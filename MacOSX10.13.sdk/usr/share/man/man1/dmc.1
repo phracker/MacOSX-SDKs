@@ -1,0 +1,136 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "DMC" "1" "April 2017" "" ""
+.
+.SH "NAME"
+\fBdmc\fR \- controls the Disk Mount Conditioner
+.
+.SH "SYNOPSIS"
+\fBdmc start\fR \fImount\fR [\fIprofile\-name\fR|\fIprofile\-index\fR]
+.
+.br
+\fBdmc stop\fR \fImount\fR
+.
+.br
+\fBdmc status\fR \fImount\fR [\-json]
+.
+.br
+\fBdmc show\fR \fIprofile\-name\fR|\fIprofile\-index\fR
+.
+.br
+\fBdmc list\fR
+.
+.br
+\fBdmc select\fR \fImount\fR \fIprofile\-name\fR|\fIprofile\-index\fR
+.
+.br
+\fBdmc configure\fR \fImount\fR \fItype\fR \fIaccess\-time\fR \fIread\-throughput\fR \fIwrite\-throughput\fR
+.
+.br
+\fBdmc help | \-h\fR
+.
+.br
+.
+.SH "DESCRIPTION"
+dmc(1) configures the Disk Mount Conditioner\. The Disk Mount Conditioner is a kernel provided service that can degrade the disk I/O being issued to specific mount points, providing the illusion that the I/O is executing on a slower device\. It can also cause the conditioned mount point to advertise itself as a different device type, e\.g\. the disk type of an SSD could be set to an HDD\. This behavior consequently changes various parameters such as read\-ahead settings, disk I/O throttling, etc\., which normally have different behavior depending on the underlying device type\.
+.
+.SH "COMMANDS"
+Common command parameters:
+.
+.IP "\(bu" 4
+\fImount\fR \- the mount point to be used in the command
+.
+.IP "\(bu" 4
+\fIprofile\-name\fR \- the name of a profile as shown in \fBdmc list\fR
+.
+.IP "\(bu" 4
+\fIprofile\-index\fR \- the index of a profile as shown in \fBdmc list\fR
+.
+.IP "" 0
+.
+.P
+\fBdmc start\fR \fImount\fR [\fIprofile\-name\fR|\fIprofile\-index\fR]
+.
+.br
+\~\~\~\~Start the Disk Mount Conditioner on the given mount point with the current settings (from \fBdmc status\fR) or the given profile, if provided\.
+.
+.P
+\fBdmc stop\fR \fImount\fR
+.
+.br
+\~\~\~\~Disable the Disk Mount Conditioner on the given mount point
+.
+.P
+\fBdmc status\fR \fImount\fR [\-json]
+.
+.br
+\~\~\~\~Display the current settings (including on/off state), optionally as JSON
+.
+.P
+\fBdmc show\fR \fIprofile\-name\fR|\fIprofile\-index\fR
+.
+.br
+\~\~\~\~Display the settings of the given profile
+.
+.P
+\fBdmc list\fR
+.
+.br
+\~\~\~\~Display all profile names and indices
+.
+.P
+\fBdmc select\fR \fImount\fR \fIprofile\-name\fR|\fIprofile\-index\fR
+.
+.br
+\~\~\~\~Choose a different profile for the given mount point without enabling or disabling the Disk Mount Conditioner
+.
+.P
+\fBdmc configure\fR \fImount\fR \fItype\fR \fIaccess\-time\fR \fIread\-throughput\fR \fIwrite\-throughput\fR
+.
+.br
+\~\~\~\~Select custom parameters for the given mount point rather than using the settings provided by a default profile\.
+.
+.P
+\~\~\~\~See \fBdmc list\fR for example parameter settings for various disk presets\.
+.
+.IP "\(bu" 4
+\fItype\fR \- \'SSD\' or \'HDD\'\. The type determines how various system behaviors like disk I/O throttling and read\-ahead algorithms affect the issued I/O\. Additionally, choosing \'HDD\' will attempt to simulate seek times, including drive spin\-up from idle\.
+.
+.IP "\(bu" 4
+\fIaccess\-time\fR \- latency in microseconds for a single I/O\. For SSD types this latency is applied exactly as specified to all I/O\. For HDD types, the latency scales based on a simulated seek time (thus making the access\-time the maximum latency or seek penalty)\.
+.
+.IP "\(bu" 4
+\fIread\-throughput\fR \- integer specifying megabytes\-per\-second maximum throughput for disk reads
+.
+.IP "\(bu" 4
+\fIwrite\-throughput\fR \- integer specifying megabytes\-per\-second maxmimu throughput for disk writes
+.
+.IP "" 0
+.
+.P
+\fBdmc help | \-h\fR
+.
+.br
+\~\~\~\~Display help text
+.
+.SH "EXAMPLES"
+\fBdmc start / \'5400 HDD\'\fR
+.
+.P
+\~\~\~\~Turn on the Disk Mount Conditioner for the boot volume, acting like a 5400 RPM hard drive\.
+.
+.P
+\fBdmc configure /Volumes/ExtDisk SSD 100 100 50\fR
+.
+.P
+\~\~\~\~Configure an external disk to use custom parameters to degrade performance as if it were a slow SSD with 100 microsecond latencies, 100MB/s read throughput, and 50MB/s write throughput\.
+.
+.SH "IMPORTANT"
+The Disk Mount Conditioner is not a \'simulator\'\. It can only degrade (or \'condition\') the I/O such that a faster disk device behaves like a slower device, not vice\-versa\. For example, a 5400 RPM hard drive cannot be conditioned to act like a SSD that is capable of a higher throughput than the theoretical limitations of the hard disk\.
+.
+.P
+In addition to running \fBdmc stop\fR, rebooting is also a sufficient way to clear any existing settings and disable Disk Mount Conditioner on all mount points\.
+.
+.SH "SEE ALSO"
+nlc(1)

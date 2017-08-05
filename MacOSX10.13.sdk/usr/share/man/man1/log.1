@@ -1,0 +1,349 @@
+.Dd May 10, 2016               \" DATE
+.Dt log 1      \" Program name and manual section number
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm log
+.Nd Access system wide log messages created by os_log, os_trace and other logging systems.
+.Sh SYNOPSIS
+.Nm
+.Op Ar command Op Ar options
+.Pp
+.Nm
+.Cm help Op Ar command
+.Pp
+.Nm
+.Cm collect
+.Op Fl -output Ar path
+.Op Fl -start Ar date/time
+.Op Fl -size Ar num Op k|m
+.Op Fl -last Ar num Op m|h|d
+.Pp
+.Nm
+.Cm config
+.Op Fl -reset | Fl -status
+.Op Fl -mode Ar mode(s)
+.Op Fl -subsystem Ar name Op Fl -category Ar name
+.Op Fl -process Ar pid
+.Pp
+.Nm
+.Cm erase
+.Op Fl -all
+.Op Fl -ttl
+.Pp
+.Nm
+.Cm show
+.Op Fl -archive Ar archive | Fl -file Ar file
+.Op Fl -predicate Ar filter
+.Op Fl -source
+.Op Fl -style Ar json | syslog | compact
+.Op Fl -color Ar auto | always | none
+.Op Fl -start Ar date/time
+.Op Fl -end Ar date/time
+.Op Fl -info
+.Op Fl -debug
+.Op Fl -last Ar time Op m|h|d
+.Op Fl -timezone Ar local | timezone
+.Pp
+.Nm
+.Cm stats
+.Op Fl -archive Ar archive
+.Op Fl -sort Ar events | Ar bytes
+.Op Fl -count Ar count | Ar all
+.Op Fl -overview | -per-book | -per-file | -sender Ar sender | Fl -process Ar process | Fl -predicate Ar predicate
+.Pp
+.Nm
+.Cm stream
+.Op Fl -level Ar default | info | debug
+.Op Fl -process Ar pid | process
+.Op Fl -predicate Ar filter
+.Op Fl -source
+.Op Fl -style Ar json | syslog | compact
+.Op Fl -color Ar auto | always | none
+.Op Fl -timeout Ar time Op m|h|d
+.Op Fl -type Ar activity | log | trace
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is used to access system wide log messages created by os_log, os_trace and other logging systems. 
+Some commands require root privileges.
+.Pp
+Available commands and their options:
+.Bl -tag -width "set --mode mode"
+.It Cm help Op Ar command
+General help or help specific to command argument
+.It Cm collect
+Collect the system logs into a .logarchive that can be viewed later with tools such as
+.Nm
+or Console.
+If an output path is not specified, system_logs.logarchive will be created in the current directory.
+.Pp
+.Bl -tag -width "--archive path "
+.It Fl -output Ar path
+Save the archive to the specified path or file.
+If the path is a directory, a file named system_logs.logarchive will be created in the specified directory.
+If the path contains the extension .logarchive, a new logarchive will be created with that name at the specified path.
+.It Fl -start Ar date/time
+Limits the content capture to the date and time forward to now.
+The following date/time formats are accepted:
+"YYYY-MM-DD",
+"YYYY-MM-DD HH:MM:SS",
+"YYYY-MM-DD HH:MM:SSZZZZZ"
+.It Fl -last Ar num Op m|h|d
+Limits the captured events to the period starting at the given interval ago from the current time. Time is assumed
+in seconds unless specified. Example: "--last 2m" or "--last 3h"
+.It Fl -size Ar num Op k|m
+The amount of data to be captured in kilobytes or megabytes.
+This is an approximation, as the actual size may be more than requested.
+Example: "--size 100k" or "--size 20m"
+.El
+.It Cm config
+Configure, reset or read settings for the logging system.
+config commands can act system-wide or on a subsystem.
+If not specified, system-wide is assumed.
+If subsystem is specified, category is optional.
+Requires root access.
+.Bl -tag -width "--archive path "
+.It Fl -reset | Fl -status
+Option to show or reset the current settings for the system or a specific subsystem.
+If reset or status is not specified, a change to the configuration is assumed.
+For example, "log config --reset --subsystem com.mycompany.mysubsystem" will reset the subsystem to its default settings.
+"log config --status" will show the current system-wide logging settings.
+"log config --mode "level: default"" will set the system log level to default.
+.It Fl -subsystem Ar name
+Set or get mode for a specified subsystem.
+.It Fl -category Ar name
+Set or get mode for a specified category.
+If category is supplied, subsystem is required.
+.It Fl -process Ar pid
+Set mode for a specified pid.
+.It Fl -mode Ar mode(s)
+Will enable given mode.  Modes include:
+.Pp
+level: {off | default | info | debug} The level is a hierarchy, e.g. debug implies debug, info, and default.
+.Pp
+persist: {off | default | info | debug} The persist mode is a hierarchy, e.g. debug implies debug, info, and default.
+.El
+.It Cm erase
+Delete selected log data from the system.
+If no arguments are specified, the main log datastore and inflight log data will be deleted.
+.Bl -tag -width "--archive path "
+.It Fl -all
+Deletes main log datastore, and inflight log data as well as time-to-live data (TTL), and the fault and error content.
+.It Fl -ttl
+Deletes time-to-live log content.
+.El
+.Pp
+.It Cm show
+Shows contents of the system log datastore, archive or a specific tracev3 file.
+If a file or archive is not specified, the system datastore will be shown.
+If it is from a future system version that log cannot understand,
+it exists with EX_DATAERR (65) and an error message.
+The output contains only default level messages unless --info and/or --debug are specified.
+.Bl -tag -width "--archive path "
+.It Fl -archive Ar archive
+Display events stored in the given archive. The archive must be a valid log archive bundle with the suffix
+\fB.logarchive\fR.
+.It Fl -file Ar file
+Display events stored in the given \fB.tracev3\fR file. In order to be decoded, the file must be contained
+within a valid \fB.logarchive\fR bundle, or part of the system logs directory.
+.It Fl -predicate Ar filter
+Filters messages based on the provided predicate, based on NSPredicate.
+A compound predicate or multiple predicates can be provided.
+See section \fB"PREDICATE-BASED FILTERING"\fR below.
+.It Fl -source
+Include symbol names and source line numbers for messages, if available.
+.It Fl -style Ar json | syslog | compact
+Output the content as a different style.
+.It Fl -color Ar auto | always | none
+Highlight certain types of log messages. In auto, highlighting will be disabled
+if the output is detected to be non-TTY.
+.It Fl -start Ar date/time
+Shows content starting from the provided date.
+The following date/time formats are accepted:
+"YYYY-MM-DD",
+"YYYY-MM-DD HH:MM:SS",
+"YYYY-MM-DD HH:MM:SSZZZZZ"
+.It Fl -end Ar date/time
+Shows content up to the provided date.
+The following date/time formats are accepted:
+"YYYY-MM-DD",
+"YYYY-MM-DD HH:MM:SS",
+"YYYY-MM-DD HH:MM:SSZZZZZ"
+.It Fl -last Ar time Ns Oo m|h|d Oc | boot
+Shows events that occurred within the given time relative to the end of the log archive, or
+beginning at the last boot contained within the log archive. Time may be specified as minutes, 
+hours or days. Time is assumed in seconds unless specified.
+Example: "--last 2m" or "--last 3h"
+.It Fl -timezone Ar local | timezone
+Displays content in the local timezone, or a specified timezone (see
+.Xr tzset 3) .
+If not specified, the output is displayed in the timezone at the time the entry
+was written to source archive or file.
+.It Fl -info
+Shows info level messages in the output.
+.It Fl -debug
+Shows debug level messages in the output.
+.El
+.It Cm stats
+Shows a breakdown of the events contained within a log datastore or archive. The
+following options can be supplied to all modes of \fBlog stats\fR:
+.Bl -tag -width "--sort events | bytes "
+.It Fl -archive Ar archive
+Display statistics for events stored in the given archive. The archive must be a valid log archive 
+bundle with the suffix \fB.logarchive\fR.
+.It Fl -sort Ar events | bytes
+Sort tabulated data output by number of events, or number of bytes.
+.It Fl -count Ar count | all
+Limit tabulated data to the given number of lines, or \fBall\fR displays all entries in tables.
+.It Fl -style Ar human | json
+Control the format style of the requested output mode.
+.El
+.Pp
+In addition, one of the following output modes can be supplied:
+.Bl -tag -width "--sort events | bytes "
+.It Fl -overview
+Displays statistics for the entire archive.
+.It Fl -per-book
+Displays statistics per log book, the subsections of a log archive.
+.It Fl -per-file
+Displays statistics per file in the archive.
+.It Fl -sender Ar sender
+Displays statistics for a given sender image name.
+.It Fl -process Ar process
+Displays statistics for a given originating process.
+.It Fl -predicate Ar predicate
+Displays statistics for all events matching the given predicate.
+.El
+.It Cm stream
+Stream activities, log data or trace messages for the system or from a given process.
+By default, the command assumes system-wide streaming.
+Specifying a process id with the --process option will narrow the results.
+.Bl -tag -width "--archive path "
+.It Fl -level Ar default | info | debug
+Shows messages at specified level and below.
+The level is a hierarchy. Specifying debug implies debug, info and default.
+.It Fl -predicate Ar filter
+Filters messages using the provided predicate based on NSPredicate.
+A compound predicate or multiple predicates can be provided.
+See section \fB"PREDICATE-BASED FILTERING"\fR below.
+.It Fl -process Ar pid | process
+The process on which to operate.
+This option can be passed more than once to operate on multiple processes.
+.It Fl -style Ar json | syslog | compact
+Output the content as a different style.
+.It Fl -color Ar auto | always | none
+Highlight certain types of log messages. In auto, highlighting will be disabled
+if the output is detected to be non-TTY.
+.It Fl -source
+Include symbol names and source line numbers for messages, if available.
+.It Fl -timeout Ar time Op m|h|d
+Timeout the stream operation after a specified time, e.g. "--timeout 5m", "--timeout 1h"
+If minutes, hours, days not specified, seconds will be used.
+.It Fl -type Ar activity | log | trace
+Dictates the type of events to stream from a process.
+By default all types are streamed unless otherwise specified.
+Pass an appropriate
+.Fl -type
+for each requested type of event.
+.El
+.El
+.Pp
+.Sh PREDICATE-BASED FILTERING
+Using predicate-based filters via the
+.Fl -predicate
+option allows users to focus on messages based on the provided filter criteria.
+For detailed information on the use of predicate based filtering, please refer to the
+.Lk https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html "Predicate Programming Guide"
+.Pp
+The
+.Ar filter
+argument defines one or more pattern clauses following NSPredicate rules.
+Supported keys include:
+.Pp
+.Bl -tag -width "processImagePath "
+.It \fBeventType\fR
+The type of event: \fBactivityCreateEvent\fR, \fBactivityTransitionEvent\fR, \fBlogEvent\fR, \fBsignpostEvent\fR, \fBstateEvent\fR, \fBtimesyncEvent\fR, \fBtraceEvent\fR and \fBuserActionEvent\fR.
+.It \fBeventMessage\fR
+The pattern within the message text, or activity name of a log/trace entry.
+.It \fBmessageType\fR
+For logEvent and traceEvent, the type of the message itself: \fBdefault\fR, \fBinfo\fR, \fBdebug\fR, \fBerror\fR or \fBfault\fR.
+.It \fBprocess\fR
+The name of the process the originated the event.
+.It \fBprocessImagePath\fR
+The full path of the process that originated the event.
+.It \fBsender\fR
+The name of the library, framework, kernel extension, or mach-o image, that originated the event.
+.It \fBsenderImagePath\fR
+The full path of the library, framework, kernel extension, or mach-o image, that originated the event.
+.It \fBsubsystem\fR
+The subsystem used to log an event.
+Only works with log messages generated with
+.Xr os_log 3
+APIs.
+.It \fBcategory\fR
+The category used to log an event.
+Only works with log messages generated with
+.Xr os_log 3
+APIs.  
+When category is used, the \fBsubsystem\fR filter should also be provided.
+.El
+.Sh PREDICATE-BASED FILTERING EXAMPLES
+Filter for specific subsystem:
+.nf
+ \fBlog show --predicate 'subsystem == "com.example.my_subsystem"'\fR
+.fi
+.Pp
+Filter for specific subsystem and category:
+.nf
+ \fBlog show --predicate '(subsystem == "com.example.my_subsystem") && (category == "desired_category")'\fR
+.fi
+.Pp
+Filter for specific subsystem and categories:
+.nf
+ \fBlog show --predicate '(subsystem == "com.example.my_subsystem") && (category IN { "category1", "category2" })'\fR
+.fi
+.Pp
+Filter for a specific subsystem and sender(s):
+.nf
+ \fBlog show --predicate '(subsystem == "com.example.my_subsystem") && ((senderImagePath ENDSWITH "mybinary") || (senderImagePath ENDSWITH "myframework"))'\fR
+.fi
+.El
+.Sh PREDICATE-BASED FILTERING EXAMPLES WITH LOG LINE
+.nf
+.Pp
+\fBlog show system_logs.logarchive --predicate 'subsystem == "com.example.subsystem" and category contains "CHECK"'\fR
+.Pp
+Timestamp                       Thread     Type        Activity     PID
+2016-06-13 11:46:37.248693-0700 0x7c393    Default     0x0          10371  timestamp: [com.example.subsystem.CHECKTIME] Time is 06/13/2016 11:46:37
+.nf
+.Pp
+\fBlog show --predicate 'processImagePath endswith "hidd" and senderImagePath contains[cd] "IOKit"' --info\fR
+.Pp
+Timestamp                       Thread     Type        Activity     PID
+2016-06-10 13:54:34.593220-0700 0x250      Info        0x0          113    hidd: (IOKit) [com.apple.iohid.default] Loaded 6 HID plugins
+.Pp
+.fi
+.Sh ENVIRONMENT
+There are various environment variables that can be used to control logging, activity flow, and other things.
+.Bl -tag -width "OS_ACTIVITY_PROPAGATE_MODE "
+.It Ev OS_ACTIVITY_MODE <m>
+Change the mode of launched processes to:
+.Bl -tag -compact
+.It Fa info
+Enables info level messages.
+Does not override logging Preferences that have info level disabled.
+.It Fa debug
+Enables debug level messages which includes info level messages.
+Does not override logging Preferences that have info level or debug level disabled.
+.El
+.It Ev OS_ACTIVITY_STREAM <m>
+Change the type of streaming enabled.
+.Bl -tag -compact
+.It Fa live
+Live streaming from the process using IPC.
+.El
+.It Ev OS_ACTIVITY_PROPAGATE_MODE
+If set, will propagate the mode settings via activities.
+.El
+.Sh SEE ALSO
+.Xr os_log 3 ,
+.Xr os_trace 3

@@ -1,0 +1,110 @@
+.\" Copyright (c) 2015 Apple Computer, Inc. All rights reserved.
+.\" 
+.\" The contents of this file constitute Original Code as defined in and
+.\" are subject to the Apple Public Source License Version 1.1 (the
+.\" "License").  You may not use this file except in compliance with the
+.\" License.  Please obtain a copy of the License at
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\" 
+.\" This Original Code and all software distributed under the License are
+.\" distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+.\" License for the specific language governing rights and limitations
+.\" under the License.
+.\" 
+.\"     @(#)apfs_hfs_convert.8
+.hlm 0
+.Dd September 15, 2015
+.Dt APFS_HFS_CONVERT 8
+.Os "Mac OS X"
+.Sh NAME
+.Nm apfs_hfs_convert
+.Nd convert an existing HFS file system to
+.Tn APFS 
+file system
+.Sh SYNOPSIS
+.Nm
+.Op Fl D
+.Op Fl e
+.Op Fl v
+.Op Fl i
+.Op Fl S Ar path
+.Op Fl n
+.Op Fl f
+.Op Fl F Ar index
+.Op Fl M Ar mount_path
+.Op Fl o Ar nx-apfs-format
+.Ar <device-path>
+.Sh DESCRIPTION
+The
+.Nm
+command converts an existing HFS file system to a new
+.Tn APFS
+file system.
+.Pp
+The
+.Ar device-path
+parameter should be the path to a disk device node, such as
+.Pa /dev/disk1s2 ,  
+with an existing HFS file system, 
+which needs to be converted.
+The
+.Ar device-path
+may be a path to a whole disk, such as
+.Pa /dev/disk0 ,
+which contains Lightweight Volume Manager (LwVM) structures; all HFS slices will
+be converted and LwVM replaced by a GPT partition map with a single partition
+containing the APFS container.
+.Pp
+The options are as follows:
+.Bl -tag -width 20n
+.It Fl e | Fl -estimate
+Estimate the APFS metadata size after conversion.
+.It Fl v | Fl -verbose
+Increase verbosity of the output.
+.It Fl s | Fl -force-case-sensitive
+Force the converted volume to be case-sensitive. By default, the converted volume will have the same case-sensitivity as the original HFS volume.
+.It Fl S Ar path | Fl -stats Ar path
+Print statistics about the conversion to the supplied
+.Ar path .
+If the path is
+.Ar -
+then the statistics are printed to standard output.
+.It Fl n | Fl -dry-run
+Do not finalize the conversion to APFS. Volume remains HFS.
+.It Fl f | Fl -force
+Force conversion if volume is dirty (journal is non-empty, volume had inconsistencies, or volume is not journaled and not unmounted cleanly).
+.It Fl F Ar index | Fl -fixed Ar index
+Volume number
+.Ar index
+(0-based) should be formatted as fixed-size.
+Usually used when converting LwVM.
+.It Fl M Ar mount_path | Fl -mount-path Ar mount_path
+When converting LwVM systems, which require a special "conversion mount" of the underlying device, use the given
+.Ar mount_path
+as the mount point.
+If this option is not used, a temporary directory will be created and used.
+.It Fl o Ar nx-apfs-format
+NX or APFS format options.
+.It Fl D | Fl -skip-single-dirlinks
+Convert all former and current directory hardlinks to files/aliases. 
+.El
+.Sh DIAGNOSTICS
+.Ex -std
+.Sh EXAMPLES
+The following converts the HFS file system
+on the
+.Pa /dev/disk1s2
+device:
+.Dl Nm Fl v Pa /dev/disk1s2
+.Pp
+.Sh SEE ALSO
+.Xr mount_apfs 8
+,
+.Xr newfs_apfs 8
+.Sh HISTORY
+The
+.Nm
+utility first appeared in OS X 10.12.

@@ -1,0 +1,88 @@
+.TH "MPSImageHistogramSpecification" 3 "Wed Jul 20 2016" "Version MetalPerformanceShaders-60" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSImageHistogramSpecification \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSImageHistogram\&.h>\fP
+.PP
+Inherits \fBMPSUnaryImageKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:histogramInfo:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeTransformToCommandBuffer:sourceTexture:sourceHistogram:sourceHistogramOffset:desiredHistogram:desiredHistogramOffset:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "\fBMPSImageHistogramInfo\fP \fBhistogramInfo\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+The \fBMPSImageHistogramSpecification\fP performs a histogram specification operation on an image\&. It is a generalized version of histogram equalization operation\&. The histogram specificaiton filter converts the image so that its histogram matches the desired histogram\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeTransformToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(nonnull id< MTLTexture >) source(nonnull id< MTLBuffer >) sourceHistogram(NSUInteger) sourceHistogramOffset(nonnull id< MTLBuffer >) desiredHistogram(NSUInteger) desiredHistogramOffset"
+Encode the transform function to a command buffer using a MTLComputeCommandEncoder\&. The transform function computes the specification lookup table\&.  The transform function will not begin to execute until after the command buffer has been enqueued and committed\&. This step will need to be repeated with the new \fBMPSKernel\fP if -copyWithZone:device or -copyWithZone: is called\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP A valid MTLCommandBuffer\&. 
+.br
+\fIsource\fP A valid MTLTexture containing the source image for the filter\&. 
+.br
+\fIsourceHistogram\fP A valid MTLBuffer containing the histogram results for the source image\&. This filter will use these histogram results to generate the cumulative histogram for equalizing the image\&. The histogram results / channel are stored together\&. The number of channels for which histogram results are stored is determined by the number of channels in the image\&. If histogramInfo\&.histogramForAlpha is false and the source image is RGBA then only histogram results for RGB channels are stored\&. 
+.br
+\fIsourceHistogramOffset\fP A byte offset into the sourceHistogram MTLBuffer where the histogram starts\&. Must conform to alignment requirements for [MTLComputeCommandEncoder setBuffer:offset:atIndex:] offset parameter\&. 
+.br
+\fIdesiredHistogram\fP A valid MTLBuffer containing the desired histogram results for the source image\&. The histogram results / channel are stored together\&. The number of channels for which histogram results are stored is determined by the number of channels in the image\&. If histogramInfo\&.histogramForAlpha is false and the source image is RGBA then only histogram results for RGB channels are stored\&. 
+.br
+\fIdesiredHistogramOffset\fP A byte offset into the desiredHistogram MTLBuffer where the histogram starts\&. Must conform to alignment requirements for [MTLComputeCommandEncoder setBuffer:offset:atIndex:] offset parameter\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(const \fBMPSImageHistogramInfo\fP *__nonnull) NS_DESIGNATED_INITIALIZER"
+Specifies information about the histogram for the channels of an image\&.  The \fBMPSImageHistogramSpecification\fP applies a transfor to convert the histogram to a specified histogram\&. The process is divided into three steps:
+.PP
+.IP "1." 4
+Call -initWithDevice:histogramInfo: This creates a \fBMPSImageHistogramSpecification\fP object\&. It is done when the method returns\&.
+.IP "2." 4
+Call -encodeTransform:sourceTexture:sourceHistogram:sourceHistogramOffset:desiredHistogram: desiredHistogramOffset: This creates a privately held image transform which will convert the the distribution of the source histogram to the desired histogram\&. This process runs on a MTLCommandBuffer when it is committed to a MTLCommandQueue\&. It must complete before the next step can be run\&. It may be performed on the same MTLCommandBuffer\&. The sourceTexture argument is used by encodeTransform to determine the number of channels and therefore which histogram data in sourceHistogram buffer to use\&. The sourceHistogram and desiredHistogram must have been computed either on the CPU or using the \fBMPSImageHistogram\fP kernel
+.IP "3." 4
+Call -encodeToCommandBuffer:sourceTexture:destinationTexture: to read data from sourceTexture, apply the transform to it and write to destination texture\&. This step is also done on the GPU on a MTLCommandQueue\&.
+.PP
+.PP
+You can reuse the same specification transform on other images to perform the same transform on those images\&. (Since their starting distribution is probably different, they will probably not arrive at the same distribution as the desired histogram\&.) This filter usually will not be able to work in place\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device the filter will run on 
+.br
+\fIhistogramInfo\fP Pointer to the MPSHistogramInfo struct 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+A valid \fBMPSImageHistogramSpecification\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- histogramInfo\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Return a structure describing the histogram content  Returns a \fBMPSImageHistogramInfo\fP structure describing the format of the histogram\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.
