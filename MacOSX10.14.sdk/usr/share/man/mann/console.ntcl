@@ -1,0 +1,411 @@
+'\"
+'\" Copyright (c) 2001 Donal K. Fellows
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH console n 8.4 Tk "Tk Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+console \- Control the console on systems without a real console
+.SH SYNOPSIS
+\fBconsole\fR \fIsubcommand\fR ?\fIarg ...\fR?
+.BE
+.SH DESCRIPTION
+.PP
+The console window is a replacement for a real console to allow input
+and output on the standard I/O channels on platforms that do not have
+a real console.  It is implemented as a separate interpreter with the
+Tk toolkit loaded, and control over this interpreter is given through
+the \fBconsole\fR command.  The behaviour of the console window is
+defined mainly through the contents of the \fIconsole.tcl\fR file in
+the Tk library. Except for TkAqua, this command is not available when
+Tk is loaded into a tclsh interpreter with
+.QW "\fBpackage require Tk\fR" ,
+as a conventional terminal is expected to be present in that case.
+In TkAqua, this command is ony available when stdin is \fB/dev/null\fR
+(as is the case e.g. when the application embedding Tk is started
+from the Mac OS X Finder).
+.PP
+.TP
+\fBconsole eval \fIscript\fR
+Evaluate the \fIscript\fR argument as a Tcl script in the console
+interpreter.  The normal interpreter is accessed through the
+\fBconsoleinterp\fR command in the console interpreter.
+.TP
+\fBconsole hide\fR
+Hide the console window from view.  Precisely equivalent to
+withdrawing the \fB.\fR window in the console interpreter.
+.TP
+\fBconsole show\fR
+Display the console window.  Precisely equivalent to deiconifying the
+\fB.\fR window in the console interpreter.
+.TP
+\fBconsole title \fR?\fIstring\fR?
+Query or modify the title of the console window.  If \fIstring\fR is
+not specified, queries the title of the console window, and sets the
+title of the console window to \fIstring\fR otherwise.  Precisely
+equivalent to using the \fBwm title\fR command in the console
+interpreter.
+.SH "ACCESS TO THE MAIN INTERPRETER"
+.PP
+The \fBconsoleinterp\fR command in the console interpreter allows
+scripts to be evaluated in the main interpreter.  It supports two
+subcommands: \fBeval\fR and \fBrecord\fR.
+.PP
+.TP
+\fBconsoleinterp eval \fIscript\fR
+Evaluates \fIscript\fR as a Tcl script at the global level in the main
+interpreter.
+.TP
+\fBconsoleinterp record \fIscript\fR
+Records and evaluates \fIscript\fR as a Tcl script at the global level
+in the main interpreter as if \fIscript\fR had been typed in at the
+console.
+.SH "ADDITIONAL TRAP CALLS"
+.PP
+There are several additional commands in the console interpreter that
+are called in response to activity in the main interpreter.
+\fIThese are documented here for completeness only; they form part of
+the internal implementation of the console and are likely to change or
+be modified without warning.\fR
+.PP
+Output to the console from the main interpreter via the stdout and
+stderr channels is handled by invoking the \fBtk::ConsoleOutput\fR
+command in the console interpreter with two arguments.  The first
+argument is the name of the channel being written to, and the second
+argument is the string being written to the channel (after encoding
+and end-of-line translation processing has been performed.)
+.PP
+When the \fB.\fR window of the main interpreter is destroyed, the
+\fBtk::ConsoleExit\fR command in the console interpreter is called
+(assuming the console interpreter has not already been deleted itself,
+that is.)
+.SH "DEFAULT BINDINGS"
+.PP
+The default script creates a console window (implemented using a text
+widget) that has the following behaviour:
+.IP [1]
+Pressing the tab key inserts a TAB character (as defined by the Tcl
+\et escape.)
+.IP [2]
+Pressing the return key causes the current line (if complete by the
+rules of \fBinfo complete\fR) to be passed to the main interpreter for
+evaluation.
+.IP [3]
+Pressing the delete key deletes the selected text (if any text is
+selected) or the character to the right of the cursor (if not at the
+end of the line.)
+.IP [4]
+Pressing the backspace key deletes the selected text (if any text is
+selected) or the character to the left of the cursor (of not at the
+start of the line.)
+.IP [5]
+Pressing either Control+A or the home key causes the cursor to go to
+the start of the line (but after the prompt, if a prompt is present on
+the line.)
+.IP [6]
+Pressing either Control+E or the end key causes the cursor to go to
+the end of the line.
+.IP [7]
+Pressing either Control+P or the up key causes the previous entry in
+the command history to be selected.
+.IP [8]
+Pressing either Control+N or the down key causes the next entry in the
+command history to be selected.
+.IP [9]
+Pressing either Control+B or the left key causes the cursor to move
+one character backward as long as the cursor is not at the prompt.
+.IP [10]
+Pressing either Control+F or the right key causes the cursor to move
+one character forward.
+.IP [11]
+Pressing F9 rebuilds the console window by destroying all its children
+and reloading the Tcl script that defined the console's behaviour.
+.PP
+Most other behaviour is the same as a conventional text widget except
+for the way that the \fI<<Cut>>\fR event is handled identically to the
+\fI<<Copy>>\fR event.
+.SH EXAMPLE
+Not all platforms have the \fBconsole\fR command, so debugging code
+often has the following code fragment in it so output produced by
+\fBputs\fR can be seen while during development:
+.CS
+catch {\fBconsole show\fR}
+.CE
+.SH "SEE ALSO"
+destroy(n), fconfigure(n), history(n), interp(n), puts(n), text(n), wm(n)
+.SH KEYWORDS
+console, interpreter, window, interactive, output channels

@@ -1,0 +1,480 @@
+'\" t
+.\" @(#)jdb.1 1.10 00/06/13 SMI;
+.\" Copyright 2003 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2003 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.\" This comment retained for historical purposes only:
+.\"  This document was created by saving an HTML file as text
+.\"  from the JavaSoft web site:
+.\" 
+.\" http://java.sun.com/j2se/1.4/docs/tooldocs/tools.html
+.\" 
+.\"  and adding appropriate troff macros.
+.\" 
+.TH jdb 1 "12 Nov 2001"
+.SH NAME
+jdb \- Java debugger
+.SH SYNOPSIS
+.B jdb 
+[ 
+.I options
+] [
+.I class
+] [
+.I  arguments
+]
+.SH PARAMETERS
+.TP 15
+.I options
+Command-line options.
+.TP
+.I class
+Name of the class to begin debugging.
+.TP
+.I arguments
+Arguments passed to the
+.B main(\|)
+method of
+.IR class .
+.SH DESCRIPTION
+.IX "Java debugger" "" "Java debugger \(em \fLjdb\fP"
+.IX "jdb" "" "\fLjdb\fP \(em Java debugger"
+The Java debugger, 
+.BR jdb , 
+is a simple command-line debugger for
+Java classes.
+It is a demonstration of the
+.B Java Platform Debugger Architecture
+that provides inspection and debugging of a local or remote Java
+Virtual Machine.
+.SS Starting a jdb Session
+.IX "jdb" "Starting a jdb Session" "\fLjdb\fP \(em Java debugger"
+There are many ways to start a 
+jdb session. 
+The most frequently used way is to have 
+.B jdb
+launch a new Java Virtual Machine (VM)
+with the main class of the application to be debugged.
+This is done by substituting the command 
+.B jdb
+for 
+.BR java (1)
+in the command line.
+For example,
+if your application's main class is
+.BR MyClass ,
+you use the following command to debug it under
+.BR jdb : 
+.LP
+.RS
+.B example% jdb MyClass
+.RE
+.LP
+When started this way,
+.B jdb
+invokes a second Java VM with any specified parameters,
+loads the specified class,
+and stops the VM before executing that class's first instruction.
+.LP
+Another way to use
+.B jdb
+is by attaching it to a Java VM that is already running.
+A VM that is to be
+debugged with
+.B jdb
+must be started with the following options: 
+.LP
+.TS
+box;
+cbp-1 | cbp-1
+lb | l 
+lb | l .
+option	purpose
+=
+\-Xdebug	Enables debugging support in the VM.
+_
+T{
+.na
+\-Xrunjdwp:transport=dt_socket,
+server=y,suspend=n
+T}	T{
+.na
+Loads in-process debugging libraries and
+specifies the kind of connection to be made.
+T}
+.TE
+.LP
+For example, the following command
+will run the
+.B MyClass
+application and allow
+.B jdb
+to connect to it at a later time:
+.LP
+.RS 
+.nf
+.ft 3
+example% java \-Xdebug \\
+\-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \\
+\MyClass
+.ft 1
+.fi
+.RE
+.LP
+You can then attach
+.B jdb 
+to the VM with the following command:
+.LP
+.RS
+.B example% jdb \-attach 8000
+.RE
+.LP
+Note that
+.B MyClass
+is not specified in the
+.B jdb
+command line in this case because
+.B jdb
+is connecting to an existing VM instead of launching a new one. 
+.LP
+There are many other ways to connect the
+debugger to a VM,
+and all of them are supported by
+.BR jdb .
+The Java Platform Debugger Architecture has
+additional documentation on these connection options. 
+.SS Basic jdb Commands
+.IX "jdb" "Basic jdb Commands" "\fLjdb\fP \(em Java debugger"
+The following is a list of the basic 
+.B jdb 
+commands.
+The Java debugger supports other commands listed with the
+.B help
+command.
+.LP
+Notice that to display local (stack) variables, the class 
+must have been compiled with the 
+.B javac \-g 
+option.
+.TP 15
+.B cont
+Continues execution of
+the debugged application after a breakpoint,
+exception, or step.
+.TP
+.B dump
+For primitive values, this command is identical to
+.BR print .
+For objects, it prints the
+current value of each field defined in the object.
+Static and instance fields are included. 
+.sp 1n
+The
+.B dump
+command supports the same set of expressions as the
+.B print
+command. 
+.TP
+.BR help ", or " ?
+As the most important 
+.B jdb 
+command, 
+.B help 
+displays the
+list of recognized commands with a brief
+description.
+.TP
+.B print
+Displays Java objects and primitive values.
+For variables or fields of primitive types,
+the actual value is printed.
+For objects, a short description is printed.
+See the
+.B dump
+command for
+getting more information about an object. 
+.sp 1n
+.B print
+supports many simple Java expressions
+including those with method
+invocations.
+For example: 
+.RS
+.TP 3
+\(bu
+.B print MyClass.myStaticField 
+.PD 0
+.TP
+\(bu
+.B print myObj.myInstanceField 
+.TP
+\(bu
+\f3print\f1 \f2i\f1 \f3+\f1 \f2j\f1 \f3+\f1 \f2k\f1  ... where
+.IR i ,
+.IR j ,
+and
+.I k
+are primitives and either fields or local variables.
+.TP
+\(bu
+\f3print myObj.myMethod(\|)\f1  ... if
+.B myMethod
+returns a non-null.
+.TP
+\(bu
+.B print new java.lang.String("Hello").length(\|)
+.RE
+.PD
+.TP 15
+.B thread
+Selects a thread to be the current thread.
+Many
+.B jdb
+commands are based on the
+setting of the current thread.
+The thread is specified with the thread index
+described in the
+.B threads command. 
+.TP
+.B threads
+Lists the threads
+that are currently running.
+For each thread, its name and current
+status are printed,
+as well as an index that can be used for other commands.
+For example: 
+.sp 1n
+.RS 20
+.B 4. (java.lang.Thread)0x1 main      running
+.RE
+.RS 15
+.sp 1n
+In this example, the thread index is
+.BR 4 ,
+the thread is an instance of
+.BR java.lang.Thread ,
+the thread name is
+.BR main ,
+and it is currently running
+.RE
+.TP 15
+.B run
+After starting
+.BR jdb ,
+and setting any necessary breakpoints,
+use this command to start the
+execution of the debugged application.
+This command is available only when
+.B jdb
+launches the debugged application (as opposed to
+attaching to an existing VM). 
+.TP 15
+.B where
+The
+.B where 
+subcommand with no arguments dumps the stack of the
+current thread (which is set with the 
+.B thread
+command).
+Using
+.B where all 
+dumps the stack of all threads
+in the current thread group.
+Using
+.BI where " threadindex"
+dumps the stack of the specified thread.
+If the current thread
+is suspended (either through an event such as a
+breakpoint or through the 
+.B suspend 
+command), local variables
+and fields can be displayed with the 
+.B print 
+and 
+.B dump 
+commands.
+The 
+.B up 
+and 
+.B down
+commands select which stack frame is current.
+.SS Breakpoint Commands
+.IX "jdb" "Breakpoints" "\fLjdb\fP \(em Java debugger"
+Breakpoints are set in 
+.B jdb 
+at line numbers or at the first instruction of a method.
+For example:
+.TP 25
+.B stop at MyClass:22
+Sets a breakpoint at the first instruction for line
+.B 22
+of the source file containing
+.BR MyClass .
+.TP
+.B stop in java.lang.String.length
+Sets a breakpoint at the beginning of the method
+.BR java.lang.String.length .
+.TP
+.BI "stop in MyClass." init
+.I init
+identifies the
+.B MyClass
+constructor.
+.TP
+.BI "stop in MyClass." clinit
+.I clinit
+identifies the static initialization code for
+.BR MyClass .
+.LP
+If a method is overloaded,
+you must also specify its argument types so that the proper
+method can be selected for a breakpoint.
+For example,
+.LP
+.RS 15
+.B MyClass.myMethod(int,java.lang.String)
+.RE
+.LP
+or
+.LP
+.RS 15
+.B MyClass.myMethod() 
+.RE
+.LP
+The
+.B clear
+command removes breakpoints using a syntax as in
+.BR clear MyClass:45 .
+Using the
+.B clear
+command with no argument displays a list of all breakpoints
+currently set.
+The
+.B cont
+command continues execution. 
+.SS Stepping Commands
+.IX "jdb" "Stepping" "\fLjdb\fP \(em Java debugger"
+The
+.B step
+command advances execution to
+the next line,
+whether it is in the current
+stack frame or a called method.
+The
+.B next
+command advances execution to the next line
+in the current stack frame. 
+.SS Exception Commands
+.IX "jdb" "Exceptions" "\fLjdb\fP \(em Java debugger"
+When an exception occurs for which there is no catch
+statement anywhere in the
+throwing thread's call stack,
+the VM normally prints an exception trace and exits.
+When running under
+.BR jdb ,
+however, control returns to
+.B jdb
+at the offending throw.
+Use
+.B jdb
+to determine the cause of the exception. 
+.TP 15
+.B  catch
+Causes the debugged application to stop at other thrown exceptions.
+For example:
+.LP
+.RS 20
+.B catch java.io.FileNotFoundException
+.RE
+.sp 1n
+.RS 15
+or
+.RE
+.LP
+.RS 20
+.B catch mypackage.BigTroubleException
+.RE
+.sp 1n
+.RS 15
+Any exception which is an instance of the specified
+class (or of a subclass) will stop the
+application at the point where it is thrown. 
+.RE
+.TP 15
+.B ignore
+Negates the effect of a previous
+.B catch
+command.
+Notice that the
+.B ignore 
+command does not cause the debugged VM
+to ignore specific exceptions, only the
+debugger.
+.SH OPTIONS
+When using 
+.B jdb 
+in place of the Java application launcher on the command
+line, 
+.B jdb 
+accepts many of the same options as the 
+.BR java (1)
+command, including
+.BR \-D ,
+.BR \-classpath ,
+and
+.BI \-X option\f1.
+.LP
+The following additional options are accepted by
+.BR jdb : 
+.TP 15
+.BI \-sourcepath " dir1\f1:\f2dir2\f1:..."
+Uses the given path in searching for source files
+in the specified path.
+If this option is not
+specified, the default path of "." is used.
+.TP
+.BI \-attach " address"
+Attaches the debugger to
+previously running VM using the default connection mechanism.
+.TP
+.B \-launch
+Launches the debugged application
+immediately upon startup of
+.BR jdb .
+This option removes the need
+for using the
+.B run
+command.
+The debuged application is launched and then
+stopped just before the initial application class is loaded.
+At that point, you can set any
+necessary breakpoints and use the
+.B cont
+command to continue execution. 
+.TP
+.B \-J " option"
+Pass
+.I option
+to the Java virtual machine, where 
+.I option
+is one of the options described on the man page for the
+java application launcher, java(1). For example,
+.I \-J-Xms48m
+sets the startup memory to 48 megabytes. It is a common convention for
+.B \-J
+to pass options to the underlying virtual machine.
+
+.LP
+Other options are supported for
+alternate mechanisms for connecting the debugger and the VM
+it is to debug.
+The Java Platform Debugger Architecture has
+additional documentation on these
+connection alternatives. 
+.SH SEE ALSO
+.BR java (1), 
+.BR javac (1), 
+.BR javadoc (1),
+.BR javah (1), 
+.BR javap (1)
+.LP

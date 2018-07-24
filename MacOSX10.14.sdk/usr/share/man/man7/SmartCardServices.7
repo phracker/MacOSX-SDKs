@@ -1,0 +1,248 @@
+.\" Copyright (c) 2014 Apple Inc.
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of Apple Computer nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd May 12, 2016
+.Dt SmartCardServices 7
+.Os "Mac OS X"
+.Sh NAME
+.Nm SmartCardServices
+.Nd overview of SmartCard support
+.Sh DESCRIPTION
+.Nm
+is a set of components for OS X SmartCard support.
+.Pp
+Any SmartCard which supports the PIV standard is supported natively by OS X. Access to SmartCard items is possible using the keychain interface. Applications can install additional drivers for SmartCards that are not natively supported.
+.Pp
+SmartCard certificates are automatically added to user's keychain when a SmartCard is inserted. SmartCard certificates can be listed with
+.Em security
+using the
+.Em list-smartcards
+or
+.Em export-smartcard 
+commands. Keychain Access GUI cannot be used to manipulate or list these certificates. 
+.Sh SETUP
+To associate users with SmartCards, the system can be set up for either fixed key mapping or attribute based mapping. For fixed key use
+.Xr sc_auth 8
+or use the dialog which appears automatically when an unassociated SmartCard is inserted into a reader. This dialog can be globally suppressed by:
+.Bd -literal -offset indent
+sudo defaults write /Library/Preferences/com.apple.security.smartcard UserPairing -bool NO
+.Ed
+.Pp
+Attribute matching can be set up using the appropriate 
+.Em AttributeMapping
+section in the configuration file as described below. There is no default configuration. If no AttributeMapping exists or the configuration file is missing, attribute matching is not used. If both fixed key mapping and attribute mapping are able to associate the inserted SmartCard with a user, attribute mapping takes precedence.
+.Pp
+By default certificates do not need to be trusted to allow association. Certificate trust can be globally modified by checkCertificateTrust setting:
+.Bd -literal -offset indent
+sudo defaults write /Library/Preferences/com.apple.security.smartcard checkCertificateTrust -int <level>
+.Ed
+Possible level values are:
+.Bl -tag
+.It 0
+certificate trust check is turned off
+.It 1
+certificate trust check is turned on
+.It 2
+certificate trust check is turned on and revocation check is set to the soft level (unreachable OCSP/CRL means success)
+.It 3
+certificate trust check is turned on and revocation check is set to the hard level (verified positive response is needed to succeed)
+.El
+.Sh CONFIGURATION FILE
+The world-readable configuration file should be located at
+.Em /etc/SmartcardLogin.plist
+and should be in a standard plist format. It may contain the following optional sections:
+.Bl -tag -width -indent  \" Begins a tagged list 
+.It Em UserSelectorPath
+This string value points to the custom UserSelector process which is used for associating users with SmartCards. If this section is not found or the component at that path does not exist, the system UserSelector is used.
+.It Em TrustedAuthorities
+It is possible to specify exact Certificate Authorities which will only be used for trust evaluation of SmartCard certificates. This is sometimes called Certificate Pinning. Place SHA-256 fingerprints as string values (without spaces) of Certificate Authorities in an array named TrustedAuthorities. When Certificate Pinning is used, SmartCard certificates issued by a Certificate Authority other than those on this list won't be evaluated as trusted. Please note that if certificate check setting is turned off, TrustedAuthorities will be ignored.
+.It Em AttributeMapping
+This section is used to set up an optional attribute mapping for the system UserSelector. For each available user record in OpenDirectory, certificate field values are combined into a format string which is then compared to a predefined attribute string. Specifying multiple OpenDirectory attribute strings or using conditional formatting in the format string is not supported. All items in this section are mandatory.
+.Pp
+.Em fields
+contains an array of string values. This is the list of certificate field names that will be used to compare against the attribute string. The following field names are supported:
+.Bl -tag -width
+.It Common Name
+.It RFC 822 Name
+.It NT Principal Name
+.It Organization
+.It OrganizationalUnit:1
+.It OrganizationalUnit:2
+.It OrganizationalUnit:3
+.It Country
+.El
+.Pp
+.Em formatString
+contains a string value which specifies how certificate fields will be concatenated. Dollar sign plus number (starting with 1) is replaced with the field
+value at the appropriate index.
+.Pp
+.Em dsAttributeString
+contains a string value. This defines the target attributes for the desired OpenDirectory user record. It will be compared against the generated format strings.
+.El                      \" Ends the list
+.br
+.Sh ATTRIBUTE MAPPING CONFIG EXAMPLE
+Let's have following sample configuration:
+.Pp
+<?xml version="1.0" encoding="UTF-8"?>
+.br
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+.br
+<plist version="1.0">
+.br
+<dict>
+.br
+	<key>AttributeMapping</key>
+.br
+	<dict>
+.br
+		<key>fields</key>
+.br
+		<array>
+.br
+			<string>Common Name</string>
+.br
+			<string>RFC 822 Name</string>
+.br
+		</array>
+.br
+		<key>formatString</key>
+.br
+		<string>$2-$1</string>
+.br
+		<key>dsAttributeString</key>
+.br
+		<string>dsAttrTypeNative:longName</string>
+.br
+	</dict>
+.br
+</dict>
+.br
+</plist>
+.Pp
+Let's also have a certificate that has
+.Em Common Name
+with value "John Appleseed" and 
+.Em RFC 822 Name
+with value "jappleseed@apple.com". For 
+.Em formatString
+"$1-$2"
+the result would be
+.Em "jappleseed@apple.com-John Appleseed"
+and this result would be compared to a
+.Em dsAttrTypeNative:email
+field. When a match is found, the corresponding user is considered associated with the SmartCard.
+.Sh OFFLINE SMARTCARD LOGIN VIA KERBEROS CACHING
+In environments where macOS clients may not always be able to reach Directory Servers, cached SmartCard login support is possible via Kerberos caching. This configuration allows users with network accounts to authenticate via SmartCard when operating outside the enterprise environment. Note: Initial account setup requires machine binding and access to the directory server.
+.Ss Mapping example
+The following example SmartcardLogin.plist file matches the Subject Alternative Name type, NT Principal Name, in the identity on the SmartCard against the Directory Server's altSecurityIdentities field (Kerberos), allowing for offline login and authentication:
+.Pp
+.br
+<?xml version="1.0" encoding="UTF-8"?>
+.br
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+.br
+<plist version="1.0">
+.br
+<dict>
+.br
+	<key>AttributeMapping</key>
+.br
+	<dict>
+.br
+		<key>fields</key>
+.br
+		<array>
+.br
+			<string>NT Principal Name</string>
+.br
+		</array>
+.br
+		<key>formatString</key>
+.br
+		<string>Kerberos:$1</string>
+.br
+		<key>dsAttributeString</key>
+.br
+		<string>dsAttrTypeStandard:AltSecurityIdentities</string>
+.br
+	</dict>
+.br
+</dict>
+.br
+</plist>
+.Ss Additional considerations
+Certificate Checking: checkCertificateTrust should not be set to 3 (hard revocation check) if certificate revocation or OCSP servers are not always available to the client machines.
+.br
+User accounts should be created setting the "Create Mobile User on Login" flag in the Directory Utility application, when binding client machines via the command line, or with a Configuration Profile. When used in conjunction with Kerberos Caching, a mobile user account will allow users to authenticate either online and offline.
+.Sh EXTENSION
+Extensions can be created using the Xcode SmartCard Token Extension template.
+.br
+To enable the app extension and make the token available to the system for authentication, you launch the sc_auth command line tool with value of '‘com.apple.ctk.class-id’ from Info.plist:
+.Pp
+.Bd -literal -offset indent
+sudo sc_auth enable_for_login -t  com.example.HostApp.TokenExtension
+.Sh SYSTEM REPORT
+It is possible to show the current status of SmartCardServices by command:
+.Pp
+.Bd -literal -offset indent
+system_profiler SPSmartCardsDataType
+.Ed
+.Sh USB SMART CARD READER DRIVERS
+OS X has built-in support for USB CCID class-compliant SmartCard readers. For other readers, install the reader driver in
+.Pa /usr/local/libexec/SmartCardServices/drivers .
+Each driver is a bundle. The bundle contains an XML file Info.plist which contains the device's USB vendor ID and product ID. For detailed description of the plist format and how to write a reader driver, see http://pcsclite.alioth.debian.org/api/group__IFDHandler.html
+.Sh SMART CARD APDU LOGGING
+It is possible to turn on logging for SmartCards by setting the global preference:
+.Pp
+.Bd -literal -offset indent
+sudo defaults write /Library/Preferences/com.apple.security.smartcard Logging -bool yes
+.Ed
+.Pp
+After a SmartCard reader is connected (or after reboot) all operations including contents of sent and received APDU messages are logged into the system log. Logging uses the subsystem
+.Em com.apple.CryptoTokenKit
+and category
+.Em APDULog
+so it is possible to set up logging with a predicate (see
+.Xr log 1 ). Example:
+.Pp
+.Bd -literal -offset indent
+log show --predicate '(subsystem == "com.apple.CryptoTokenKit") && (category == "APDULog")'
+.Ed
+.Pp
+To avoid security risks that could occur if logging is turned on indefinitely, the logging setting is one-shot - it must be turned on by the command above to start logging again with a new reader. This includes unplugging and replugging the same reader.
+.Sh ENTITLEMENT
+Sandboxed PCSC clients require 'com.apple.security.smartcard=YES' entitlement. Non-sandboxed PCSC clients do not require such entitlement (in order to keep backward compatibility with macOS < 10.10). Users of TKSmartCard* API from CryptoTokenKit.framework always require that entitlement no matter whether they are sandboxed or not.
+.Sh SEE ALSO
+.Xr SmartCardServices-legacy 7 ,
+.Xr sc_auth 8 ,
+.Xr defaults 1 ,
+.Xr log 1 ,
+.Xr ssh-keychain 8 ,
+.Xr pam_smartcard 8 ,
+.Xr security 1 ,
+.Xr UserSelector 7

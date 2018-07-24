@@ -1,0 +1,715 @@
+.\"
+.\" Copyright (c) 1999-2017 Apple Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.\" Copyright (c) 1992, 1993, 1994, 1995
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"	@(#)mount_nfs.8	8.3 (Berkeley) 3/29/95
+.\"
+.Dd February 28, 2010
+.Dt MOUNT_NFS 8
+.Os 
+.Sh NAME
+.Nm mount_nfs
+.Nd mount NFS file systems
+.Sh SYNOPSIS
+.Nm mount_nfs
+.Op Fl o Ar options
+.Ar server: Ns Ar /path directory
+.Sh DESCRIPTION
+The
+.Nm mount_nfs
+command
+calls the
+.Xr mount 2
+system call to prepare and graft a remote NFS file system (
+.Ar server:/path
+) on to the file system tree at the point
+.Ar directory .
+.Pp
+This command is expected to be executed by the
+.Xr mount 8
+command.  Direct use of
+.Nm
+to mount NFS file systems is strongly discouraged because there is
+little practical benefit of using it instead of
+.Xr mount 8 .
+.Pp
+For NFS versions that use a separate mount protocol,
+.Nm
+implements the mount protocol as described in RFC 1094, Appendix A and
+.%T "NFS: Network File System Version 3 Protocol Specification" ,
+RFC 1813, Appendix I.
+.Pp
+By default,
+.Nm
+will attempt the mount twice before exiting with an error.  If the
+.Fl o Cm bg
+option is given, it will attempt the mount once and then background
+itself to continue trying another 10,000 times (pausing for one minute
+between attempts).  The option
+.Fl o Cm retrycnt Ns = Ns Aq Ar num
+can be used if a different retry behavior is desired for a mount.
+.Pp
+If the server becomes unresponsive while an NFS file system is
+mounted, any new or outstanding file operations on that file system
+will hang uninterruptibly until the server comes back (or that NFS
+file system is forcibly unmounted).
+To modify this default behaviour, see the
+.Fl o Cm intr
+and
+.Fl o Cm soft
+mount options.
+.Pp
+Mount options are specified with a
+.Fl o
+flag followed by a comma separated string of options.
+See the
+.Xr mount 8
+man page for possible options and their meanings.
+The following NFS-specific options are also available:
+.Pp
+.Bl -tag -width indent -compact
+.It Cm bg
+Retry mount in background.
+If an initial attempt to contact the server fails, fork off a child to keep
+trying the mount in the background.  Useful for startup scripts
+where the file system mount is not critical to multiuser operation.
+.Pp
+.It Cm retrycnt Ns = Ns Aq Ar num
+Set the retry count for doing the mount to the specified value.  The
+default is 1 for foreground mounts and 10,000 for background mounts.
+.Pp
+.It Cm udp
+Use UDP transport protocol.
+.Pp
+.It Cm tcp
+Use the TCP transport protocol instead of UDP.  The default is to try TCP first,
+then fall back to UDP if the server doesn't support TCP.
+.Pp
+.It Cm inet
+Use only IPv4 addresses.
+.Pp
+.It Cm inet6
+Use only IPv6 addresses.
+.Pp
+.It Cm proto Ns = Ns Aq Ar netid
+Use the transport protocol and address family as specified by the given ONC RPC Netid (RFC 5665).
+Valid netid values are:
+.Cm tcp
+(TCP over IPv4),
+.Cm udp
+(UDP over IPv4),
+.Cm tcp6
+(TCP over IPv6),
+and
+.Cm udp6
+(UDP over IPv6).
+Note that this option differs from the separate
+.Cm tcp
+and
+.Cm udp
+options described above in that each netid value specifies both a
+transport protocol and address family (IP version).
+.Pp
+.It Cm mntudp
+Force the mount protocol to use UDP transport, even for TCP NFS mounts.
+(Necessary for some old BSD servers.)
+.Pp
+.It Cm mountport Ns = Ns Aq Ar port-number
+Connect to the NFS server's mount daemon using the given port number.
+.Pp
+.It Cm port Ns = Ns Aq Ar port-number
+Connect to an NFS server at the given port number.
+.Pp
+.It Cm noconn
+Do not connect UDP sockets.
+For UDP mount points, do not do a
+.Xr connect 2 .
+This must be used for servers that do not reply to requests from the
+standard NFS port number 2049.  It may also be required for servers
+with more than one IP address if replies come from an address other
+than the one specified in the requests.
+.Pp
+.It Cm resvport
+Use a reserved socket port number.  This is useful for mounting servers
+that require clients to use a reserved port number on the mistaken belief
+that this makes NFS more secure. (For the rare case where the client has
+a trusted root account but untrustworthy users and the network cables
+are in secure areas this does help, but for normal desktop clients this
+does not apply.)
+.Pp
+.It Cm intr
+Make the mount interruptible, which implies that file system calls that
+are delayed due to an unresponsive server will fail with
+.Er EINTR
+when a termination signal is posted for the process.
+.Pp
+.It Cm soft
+Make the mount soft, which means that file system calls will fail after
+.Cm retrans
+round trip timeout intervals.  Note: mounts which are both soft and
+read-only will also have the
+.Cm locallocks
+mount option enabled by default - unless explicitly overridden with a
+lock option (for example,
+.Cm nolocks
+or
+.Cm nolocallocks
+).
+.Pp
+.It Cm vers Ns = Ns Ao Ar num Ns Bo Ns \&. Ns Ar num Bc Ns Ac Ns Op Ns Fl Ns Ao Ns Ar num Ns Bo Ns \&. Ns Ar num Bc Ns Ac
+.It Cm nfsvers Ns = Ns Ao Ar num Ns Bo Ns \&. Ns Ar num Bc Ns Ac Ns Op Ns Fl Ns Ao Ns Ar num Ns Bo Ns \&. Ns Ar num Bc Ns Ac
+NFS protocol version number - 2 for NFSv2, 3 for NFSv3 and 4 for
+NFSv4.  The default is to try version 3 first, and fall back to
+version 2 if the mount fails. A range of versions can be specified by
+including a dash and another version with no spaces between versions
+and the dash. In that case the highest version is tried first and if
+not successful fall back to each version down to the lowest version
+specified until the mount succeeds or the lowest version fails.  Note
+minor versions may be specified for versions greater than or equal to
+four by appending a dot and then the minor version number. Currently
+NFSv4 is the highest supported version with a minor version of
+zero. If no minor version is specified, zero is assumed. Specifying a
+non supported version or minor version will print a warning and ignore
+the
+.Cm vers
+or
+.Cm nfsvers
+option.
+Versions 2 or 3 do not support minor versioning so minor versions greater
+than zero are treated as above.
+.Pp
+.It Cm nfsv2
+.It Cm nfsv3
+.It Cm nfsv4
+Deprecated.  Use
+.Fl o Cm vers Ns = Ns Aq Ar num
+to specify NFS protocol version.
+.Pp
+.It Cm sec Ns = Ns Aq Ar mechanism
+Force a specific security mechanism to be used for the mount, where
+.Ar mechanism
+is one of: krb5p, krb5i, krb5, or sys.  When this option is not given
+the security mechanism will be negotiated transparently with the remote
+server.
+.Pp
+.It Cm realm Ns = Ns Aq Ar realm
+Use the default credential for realm or security domain. For
+Kerberos realms are usually uppercase. If the realm specified
+does not begin with an 
+.Dq "@" ,
+an 
+.Dq "@"
+sign will be prepended to it.
+Note specifying the realm is typically used for automounter maps when clients may have multiple credential caches, and tells the client
+what cache to use on the mount.
+.Pp
+.It Cm principal Ns = Ns Aq Ar principal
+Use the specified principal for acquiring credentials for the mount.
+That principal will be used for all accesses by the mounting
+credential on the mounted file system. Note specifying a principal is useful for user initiated command line mounts, where the user knows the particular credential to use.
+.Pp
+.It Cm sprincipal Ns = Ns Aq Ar server-principal
+Use the specified server-principal for establishing credentials
+for the mount. That server principal will be use for all mount
+access. If no server principal is specified, then the
+GSS_C_NT_HOSTBASED_SERVICE nfs@server is used, where server is taken
+from the mount argument server:/path. Note its rare to use this
+option.
+.Pp
+.It Cm rsize Ns = Ns Aq Ar readsize
+Set the read data size to the specified value.
+The default is 8192 for UDP mounts and 32768 for TCP mounts.
+It should normally be a power of 2 greater than or equal to 1024.
+Values greater than 4096 should be multiples of 4096.
+It may need to be lowered for UDP mounts when the
+.Dq "fragments dropped due to timeout"
+value is getting large while actively using a mount point.
+(Use
+.Xr netstat 1
+with the
+.Fl s
+option to see what the
+.Dq "fragments dropped due to timeout"
+value is.)
+.Pp
+.It Cm wsize Ns = Ns Aq Ar writesize
+Set the write data size to the specified value.
+Ditto the comments w.r.t. the
+.Cm rsize
+option, but using the
+.Dq "fragments dropped due to timeout"
+value on the server instead of the client.
+Note that both the
+.Cm rsize
+and
+.Cm wsize
+options should only be used as a last ditch effort at improving performance
+when mounting servers that do not support TCP mounts.
+.Pp
+.It Cm rwsize Ns = Ns Aq Ar size
+Set both the read data size and write data size to the specified value.
+.Pp
+.It Cm dsize Ns = Ns Aq Ar readdirsize
+Set the directory read size to the specified value. The value should
+normally be a multiple of DIRBLKSIZ that is <= the read size for the
+mount.  The default is 8192 for UDP mounts and 32768 for TCP mounts.
+.Pp
+.It Cm readahead Ns = Ns Aq Ar maxreadahead
+Set the maximum read-ahead count to the specified value.  The default is 16.  This
+may be in the range of 0 - 128, and determines how many blocks will be
+read ahead when a large file is being read sequentially.  Trying larger
+values for this is suggested for mounts with a large bandwidth * delay
+product.
+.Pp
+.It Cm rdirplus
+Used with NFS v3/v4 to specify that directory read operations should
+retrieve additional information about each entry (e.g. use the NFSv3
+\fBReaddirPlus\fR RPC).  This option typically reduces RPC traffic for
+cases such as directory listings that use or display basic attributes
+(e.g.
+.Dq "ls -F"
+and
+.Dq "find . -type f"
+).
+Note that the long directory listing format case (i.e.
+.Dq "ls -l"
+) may not be helped much when the file system does not natively support
+extended attributes.
+Older implementations tended to flood the vnode and name caches with
+prefetched entries which may not be referenced.  The current implementation
+avoids creating those entries until they are referenced.  Try this
+option and see whether performance improves or degrades. Probably most
+useful for client to server network interconnects with a large bandwidth
+times delay product.
+.Pp
+.It Cm acregmin Ns = Ns Aq Ar seconds
+.It Cm acregmax Ns = Ns Aq Ar seconds
+.It Cm acdirmin Ns = Ns Aq Ar seconds
+.It Cm acdirmax Ns = Ns Aq Ar seconds
+These options set the minimum and maximum attribute cache timeouts for
+directories and "regular" (non-directory) files.  The default minimum
+is 5 seconds and the default maximum is 60 seconds.  Setting both the
+minimum and maximum to zero will disable attribute caching.  The algorithm
+to calculate the timeout is based on the age of the file or directory.
+The older it is, the longer the attribute cache is considered valid,
+subject to the limits above.  Note that the effectiveness of this
+algorithm depends on how well the clocks on the client and server are
+synchronized.
+.Pp
+.It Cm actimeo Ns = Ns Aq Ar seconds
+Set all attribute cache timeouts to the same value.
+.Pp
+.It Cm noac
+Disable attribute caching.  Equivalent to setting
+.Cm actimeo
+to 0.
+.Pp
+.It Cm nonegnamecache
+Disable negative name caching.
+.Pp
+.It Cm locallocks
+Perform all file locking operations locally on the NFS client (in the VFS
+layer) instead of on the NFS server.  This option can provide file locking
+support on an NFS file system for which the server does not support file locking.
+However, because the file locking is only performed on the client, the
+NFS server and other NFS clients will have no knowledge of the locks.
+Note: mounts which are both soft and read-only will also have the
+.Cm locallocks
+mount option enabled by default - unless explicitly overridden with a
+lock option (for example,
+.Cm nolocks
+or
+.Cm nolocallocks
+).
+.Pp
+.It Cm nolocks
+.It Cm nolockd
+.It Cm nolock
+.It Cm nonlm
+Do not support NFS file locking operations.  Any attempt to perform file
+locking operations on this mount will return the error
+.Er ENOTSUP
+regardless of whether or not the NFS server supports NFS file locking.
+.Pp
+.It Cm noquota
+Do not support file system quota operations that would normally be
+serviced by using the RQUOTA protocol.  Any attempt to perform quota
+operations on this mount will return the error
+.Er ENOTSUP
+regardless of whether or not the NFS server supports the RQUOTA service.
+.Pp
+.It Cm maxgroups Ns = Ns Aq Ar num
+Set the maximum size of the group list for the credentials to the specified
+value.  This should be used for mounts on old servers that cannot handle
+a group list size of 16, as specified in RFC 1057.  Try 8, if users in
+a lot of groups cannot get a response from the mount point.
+.Pp
+.It Cm dumbtimer
+Turn off the dynamic retransmit timeout estimator.
+This may be useful for UDP mounts that exhibit high retry rates, since it
+is possible that the dynamically estimated timeout interval is too short.
+.Pp
+.It Cm timeo Ns = Ns Aq Ar timeout
+Set the initial retransmit timeout to the specified value
+(in tenths of a second).
+The default is 1 second.
+May be useful for fine tuning UDP mounts over internetworks
+with high packet loss rates or an overloaded server.
+Try increasing the interval if
+.Xr nfsstat 1
+shows high retransmit rates while the file system is active or reducing the
+value if there is a low retransmit rate but long response delay observed.
+(Normally, the
+.Cm dumbtimer
+option should be specified when using this option to manually
+tune the timeout interval.)
+.Pp
+.It Cm retrans Ns = Ns Aq Ar count
+Set the retransmit timeout count for soft mounts to the specified value.
+The default value is 10.
+.Pp
+.It Cm deadtimeout Ns = Ns Aq Ar timeout
+If the mount is still unresponsive
+.Ar timeout
+seconds after it is initially reported unresponsive, then mark the
+mount as dead so that it will be forcibly unmounted.
+Note: mounts which are both soft and read-only will also have the
+.Cm deadtimeout
+mount option set to 60 seconds.  This can be explicitly overridden by setting 
+.Cm deadtimeout Ns = Ns 0 .
+.Pp
+.It Cm mutejukebox
+When NFS requests repeatedly get jukebox errors (NFS3ERR_JUKEBOX,
+NFS4ERR_DELAY) from the server the NFS file system is reported as being
+unresponsive.  Use of this option will prevent the file system from
+being included in the list of unresponsive file systems that would be
+included in a dialog presented to the user.  This option may be useful
+when a file system is expected to get such errors during normal
+operation.  For example, when it's backed by a hierarchical storage
+management system.
+.Pp
+.It Cm async
+Assume that unstable write requests have actually been committed
+to stable storage on the server, and thus will not require resending
+in the event that the server crashes.  Use of this option may improve
+performance but only at the risk of data loss if the server crashes.
+Note: this mount option will only be honored if the
+.Cm nfs.client.allow_async
+option in
+.Xr nfs.conf 5
+is also enabled.
+.Pp
+.It Cm sync
+Perform I/O requests (specifically, write requests) synchronously.
+The operation will not return until a response is received from the
+server.  (The default,
+.Cm nosync ,
+behavior is to return once the I/O has been queued up.)
+.Pp
+.It Cm nocallback
+For NFSv4 mounts, don't support callback requests from the server.
+This should effectively disable features that require callback requests
+such as delegations.
+.Pp
+.It Cm nonamedattr
+For NFSv4 mounts, don't support named attributes even if the server does. This is the default.
+.Pp
+.It Cm namedattr
+For NFSv4 mounts, if the server appears to support named attributes, they will be used to store extended attributes and named streams (e.g. FinderInfo and resource forks).
+.Pp
+.It Cm noacl
+For NFSv4 mounts, don't support ACLs even if the server does.
+ACLs are currently disabled by default to avoid issues with the way
+ACLs and modes are handled differently on other operating systems.
+This may be overriden by specifying the
+.Cm acl
+option.
+.Pp
+.It Cm aclonly
+For NFSv4 mounts, only support ACLs; do not support the mode attribute.
+(Any mode attribute values returned will have all permission bits set -
+regardless of the value of any ACL or access mode stored in the file
+system.)  This option overrides the
+.Cm noacl
+option.
+.Pp
+.It Cm nfc
+Convert name strings to Unicode Normalization Form C (NFC) when sending
+them to the NFS server.  This option may be used to improve interoperability
+with NFS clients and servers that typically use names in the NFC form.
+.El
+.Pp
+.Xr nfs.conf 5
+can be used to configure some NFS client options.  In particular,
+.Cm nfs.client.mount.options
+can be used to specify default mount options.  This can be useful in
+situations where it is not easy to configure the command-line options.
+Some NFS client options in
+.Xr nfs.conf 5
+correspond to kernel configuration values which will get set by
+.Nm
+when performing a mount.  To update these values without performing a
+mount, use the command:
+.Nm
+.Cm configupdate .
+.Sh COMPATIBILITY
+The following
+.Nm
+command line flags have equivalent
+.Fl o Ar option
+forms (shown in parentheses) and their use is strongly discouraged.
+These command line flags are deprecated and the
+.Fl o Ar option
+forms should be used instead.
+.Pp
+.Fl 2
+(vers=2),
+.Fl 3
+(vers=3),
+.Fl 4
+(vers=4),
+.Fl L
+(nolocks),
+.Fl P
+(resvport),
+.Fl T
+(tcp),
+.Fl U
+(mntudp),
+.Fl b
+(bg),
+.Fl c
+(noconn),
+.Fl d
+(dumbtimer),
+.Fl i
+(intr),
+.Fl l
+(rdirplus),
+.Fl s
+(soft),
+.Fl I Ar readdirsize
+(dsize=#),
+.Fl R Ar retrycnt
+(retrycnt=#),
+.Fl a Ar maxreadahead
+(readahead=#),
+.Fl g Ar maxgroups
+(maxgroups=#),
+.Fl r Ar readsize
+(rsize=#),
+.Fl t Ar timeout
+(timeo=#),
+.Fl w Ar writesize
+(wsize=#),
+.Fl x Ar retrans
+(retrans=#).
+.Sh EXAMPLES
+The simplest way to invoke
+.Nm
+is with a command like:
+.Pp
+.D1 Ic mount remotehost:/filesystem /localmountpoint
+.Pp
+or:
+.Pp
+.D1 Ic mount -t nfs remotehost:/filesystem /localmountpoint
+.Sh PERFORMANCE
+As can be derived from the comments accompanying the options, performance
+tuning of
+.Tn NFS
+can be a non-trivial task.
+Here are some common points
+to watch:
+.Bl -bullet -width indent
+.It
+Use of the
+.Cm sync
+option will probably have a detrimental affect on performance.
+Its use is discouraged as it provides little benefit.
+.It
+Use of the
+.Cm async
+option may improve performance, but only at the risk of losing data
+if the server crashes because the client will not be making sure that
+all data is committed to stable storage on the server.
+.It
+Increasing the read and write size with the
+.Cm rsize
+and
+.Cm wsize
+options respectively will increase throughput if the network
+interface can handle the larger packet sizes.
+.Pp
+The default read and write sizes are 8K when using
+.Tn UDP ,
+and 32K when using
+.Tn TCP .
+Values over 16K are only supported for
+.Tn TCP ,
+where 64K is the maximum.
+.Pp
+Any value over 32K is unlikely to get you more performance, unless
+you have a very fast network.
+.It
+If the network interface cannot handle larger packet sizes or a
+long train of back to back packets, you may see low performance
+figures or even temporary hangups during
+.Tn NFS
+activity.
+.Pp
+This can especially happen with lossy network connections
+(e.g. wireless networks) which can lead to a lot of dropped packets.
+.Pp
+In this case, decreasing the read and write size, using
+.Tn TCP ,
+or a combination of both will usually lead to better throughput.
+.It
+For connections that are not on the same
+.Tn LAN ,
+and/or may experience packet loss, using
+.Tn TCP
+is strongly recommended.
+.El
+.Sh ERRORS
+Some common problems with
+.Nm
+can be difficult for first time users to understand.
+.Pp
+.Dl "mount_nfs: can't access /foo: Permission denied
+.Pp
+This message means that the remote host is either not exporting
+the file system you requested or is not exporting it to your host.
+If you believe the remote host is indeed exporting a file system to you,
+make sure the
+.Xr exports 5
+file is exporting the proper directories.
+The program
+.Xr showmount 8
+can be used to see a server's exports list.
+The command
+.Dq "showmount -e remotehostname"
+will display what file systems the remote host is exporting.
+.Pp
+A common mistake is that
+.Xr mountd 8
+will not export a file system with the
+.Fl alldirs
+option, unless it
+is a mount point on the exporting host.
+It is not possible to remotely
+mount a subdirectory of an exported mount, unless it is exported with the
+.Fl alldirs
+option.
+.Pp
+The following error:
+.Pp
+.Dl "NFS Portmap: RPC: Program not registered
+.Pp
+means that the remote host is not running
+.Xr nfsd 8 .
+or
+.Xr mountd 8 .
+The program
+.Xr rpcinfo 8
+can be used to determine if the remote host is running nfsd and mountd by issuing
+the command:
+.Pp
+.Dl rpcinfo -p remotehostname
+.Pp
+If the remote host is running nfsd, mountd, rpc.statd,
+and rpc.lockd it would display:
+.Pp
+.Dl "program vers proto   port
+.Dl " 100000    2   tcp    111  portmapper
+.Dl " 100000    2   udp    111  portmapper
+.Dl " 100005    1   udp    950  mountd
+.Dl " 100005    3   udp    950  mountd
+.Dl " 100005    1   tcp    884  mountd
+.Dl " 100005    3   tcp    884  mountd
+.Dl " 100003    2   udp   2049  nfs
+.Dl " 100003    3   udp   2049  nfs
+.Dl " 100003    2   tcp   2049  nfs
+.Dl " 100003    3   tcp   2049  nfs
+.Dl " 100024    1   udp    644  status
+.Dl " 100024    1   tcp    918  status
+.Dl " 100021    0   udp    630  nlockmgr
+.Dl " 100021    1   udp    630  nlockmgr
+.Dl " 100021    3   udp    630  nlockmgr
+.Dl " 100021    4   udp    630  nlockmgr
+.Dl " 100021    0   tcp    917  nlockmgr
+.Dl " 100021    1   tcp    917  nlockmgr
+.Dl " 100021    3   tcp    917  nlockmgr
+.Dl " 100021    4   tcp    917  nlockmgr
+.Pp
+The error:
+.Pp
+.Dl "mount_nfs: can't resolve host
+.Pp
+indicates that
+.Nm
+could not resolve the name of the remote host.
+.Sh SEE ALSO
+.Xr mount 2 ,
+.Xr unmount 2 ,
+.Xr mount 8 ,
+.Xr umount 8 ,
+.Xr nfsstat 1 ,
+.Xr netstat 1 ,
+.Xr rpcinfo 8 ,
+.Xr showmount 8 ,
+.Xr automount 8 ,
+.Xr nfs.conf 5 ,
+.Xr nfs 5
+.Sh CAVEATS
+An NFS server shouldn't loopback-mount its own exported file systems because
+it's fundamentally prone to deadlock.

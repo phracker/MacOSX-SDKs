@@ -1,0 +1,139 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 11/19/08               \" DATE 
+.Dt hiutil 1      \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm hiutil
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\".Nm Other_name_for_same_program(),
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd utility for creating and examining Help Viewer indices
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Fl Cf Ar file
+.Op Fl 1agv
+.Op Fl m Ar NUM
+.Op Fl s Ar LANG | PATH
+.Op Fl r Ar URL
+.Op Fl t Ar EXT
+.Ar dir            \" Underlined argument - use .Ar anywhere to underline
+.Nm
+.Op Fl ADEFMRS
+.Fl f Ar file
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is for creating and examining .helpindex files.
+.Pp
+There are several different (and mutually-exclusive) modes:
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl C, \-create
+Create an index file at the location you specify. You must provide both a directory of HTML files to index and path to an output file, which will be overwritten if it exists.
+.It Fl A, \-list-anchors
+List the index's anchors separated by newlines.
+.It Fl D, \-list-anchor-dictionary
+List the index's anchor dictionary in XML. This includes a list of which files contain each anchor.
+.It Fl E, \-list-index-versions
+List the index's version dictionary in XML. It describes the system environment on which the index was created.
+.It Fl F, \-list-files
+List all the files included in the index, separated by newlines. You can use the \-v option with this mode to get titles and descriptions as well.
+.It Fl H, \-help
+Prints out usage data.
+.It Fl M, \-list-min-term-length
+List the index's minimum term length.
+.It Fl R, \-list-remote-url
+List the index's remote URL. (This is only relevant for old-style indexes which include one.)
+.It Fl S, \-list-stopwords
+List the index's stopwords separated by newlines.
+.It Fl V, \-version
+Prints out the version of the tool.
+.El                      \" Ends the list
+.Sh GENERAL OPTIONS
+These can be used with any mode.
+.Bl -tag -width -indent
+.It Fl f, \-file
+Pass in the path to	a file, either one to be created or one to be examined.
+.It Fl v, \-verbose
+Verbose output. Errors are always shown, but passing this argument once will print out warnings too. Twice will print out errors, warnings and progress notes. This can be a lot of data!
+.El
+.Sh CREATE OPTIONS
+These can only be used with the create mode.
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl 1
+Index one file at a time. The default is to use a queue to index several files in parallel. In combination with -vvv, this option can be useful in determining which file an error message is from.
+.It Fl a, \-anchors
+Index anchors. The default is not to. Without this flag, there will be no anchor dictionary in the index.
+.It Fl e, \-exclude\fR=\fIPATTERN\fR
+Exclude files which match this pattern. Uses NSPredicate's MATCHES comparison method on the file's path relative to the directory being indexed. This option can be passed as many times as necessary, once per pattern. Exclusions take precedence over files included with \-i.
+.It Fl g, \-generate-summaries
+Generate summary text. This can be slow, but is useful if you don't have DESCRIPTION meta tags on some pages.
+.It Fl i, \-include\fR=\fIPATTERN\fR
+Include files which match this pattern. Uses NSPredicate's MATCHES comparison method on the file's path relative to the directory being indexed. The default patterns to index are ".htm" and ".html". If these defaults are undesirable, you may use \-e above to exclude them. This option can be passed as many times as necessary, once per pattern.
+.It Fl m, \-min-term-length\fR=\fINUM\fR
+Minimum term length. Can be 1, 2 or 3. This is the number of consecutive tokens (typically a character) required for a term not to be ignored by the indexer. Recommended values are 3 for English and 1 for Chinese and other ideographic languages.
+.It Fl r, \-remote-url\fR=\fIURL\fR
+Include a remote URL with the index. This is only useful in Type 1 or Type 2 help books, because the URL is in the help bundle's Info.plist for Type 3 books. The URL should be fully qualified, for example:
+.Pp
+.Dl Ar https://www.mycompany.com/help_v1/
+.It Fl s, \-stopwords\fR=\fILANG\fR|\fIPATH\fR
+Use stopwords. If you have your own stopwords .plist, provide that path. Otherwise, pass the two-character language code:
+.Pp
+.Bl -tag -width 6n -offset indent -compact
+.It \f(CB en
+English
+.It \f(CB es
+Spanish
+.It \f(CB de
+German
+.It \f(CB fr
+French
+.It \f(CB hu
+Hungarian
+.It \f(CB it
+Italian
+.It \f(CB sv
+Swedish
+.El
+.It Fl l, \-locale\fR=\fILANG\fR
+Index for a specific locale. Instead of having to boot into the locale to index, pass the language code or locale identifier here to index for that language. Example locale identifiers:
+.Pp
+.Bl -tag -width 6n -offset indent -compact
+.It \f(CB en_US
+US English
+.It \f(CB es_ES
+Spanish
+.It \f(CB de
+German
+.It \f(CB fr
+French
+.It \f(CB hu
+Hungarian
+.It \f(CB ru_RU
+Russian
+.El
+.El                      \" Ends the list
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -compact
+.It Pa /usr/share/hiutil/Stopwords.plist
+List of default stopwords in different languages
+.El                      \" Ends the list
+.Sh EXAMPLES
+Here's what you'll mostly use this tool for, creating a help index:
+.Pp
+.Dl hiutil \-Caf /tmp/myhelp.helpindex myHelpDirectory
+.Pp
+And if you then want to make sure that worked as expected:
+.Pp
+.Dl hiutil \-Af /tmp/myhelp.helpindex
+.Pp
+Here's how to index .xml files as well, while ignoring everything in the idx directory in the root of your help folder:
+.Pp
+.Dl hiutil \-Caf /tmp/help.helpindex -i \*q.*\.xml$\*q -e \*qidx/.*\*q myhelpdir
+.Pp
+.Sh NOTES
+.Nm
+requires Mac OS X 10.6 or greater.

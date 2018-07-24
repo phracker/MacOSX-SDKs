@@ -1,0 +1,365 @@
+'\"
+'\" Copyright (c) 1990-1994 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tk_GeometryRequest 3 "8.4" Tk "Tk Library Procedures"
+.BS
+.SH NAME
+Tk_GeometryRequest, Tk_SetMinimumRequestSize, Tk_SetInternalBorder, Tk_SetInternalBorderEx \- specify desired geometry or internal border for a window
+.SH SYNOPSIS
+.nf
+\fB#include <tk.h>\fR
+.sp
+\fBTk_GeometryRequest\fR(\fItkwin, reqWidth, reqHeight\fR)
+.sp
+\fBTk_SetMinimumRequestSize\fR(\fItkwin, minWidth, minHeight\fR)
+.sp
+\fBTk_SetInternalBorder\fR(\fItkwin, width\fR)
+.sp
+\fBTk_SetInternalBorderEx\fR(\fItkwin, left, right, top, bottom\fR)
+.SH ARGUMENTS
+.AS baseHeight clientData
+.AP Tk_Window tkwin in
+Window for which geometry is being requested.
+.AP int reqWidth in
+Desired width for \fItkwin\fR, in pixel units.
+.AP int reqHeight in
+Desired height for \fItkwin\fR, in pixel units.
+.AP int minWidth in
+Desired minimum requested width for \fItkwin\fR, in pixel units.
+.AP int minHeight in
+Desired minimum requested height for \fItkwin\fR, in pixel units.
+.AP int width in
+Space to leave for internal border for \fItkwin\fR, in pixel units.
+.AP int left in
+Space to leave for left side of internal border for \fItkwin\fR, in pixel units.
+.AP int right in
+Space to leave for right side of internal border for \fItkwin\fR, in pixel units.
+.AP int top in
+Space to leave for top side of internal border for \fItkwin\fR, in pixel units.
+.AP int bottom in
+Space to leave for bottom side of internal border for \fItkwin\fR, in pixel units.
+.BE
+
+.SH DESCRIPTION
+.PP
+\fBTk_GeometryRequest\fR is called by widget code to indicate its
+preference for the dimensions of a particular window.  The arguments
+to \fBTk_GeometryRequest\fR are made available to the geometry
+manager for the window, which then decides on the actual geometry
+for the window.  Although geometry managers generally try to satisfy
+requests made to \fBTk_GeometryRequest\fR, there is no guarantee that
+this will always be possible.  Widget code should not assume that
+a geometry request will be satisfied until it receives a
+\fBConfigureNotify\fR event indicating that the geometry change has
+occurred.  Widget code should never call procedures like
+\fBTk_ResizeWindow\fR directly.  Instead, it should invoke
+\fBTk_GeometryRequest\fR and leave the final geometry decisions to
+the geometry manager.
+.PP
+If \fItkwin\fR is a top-level window, then the geometry information
+will be passed to the window manager using the standard ICCCM protocol.
+.PP
+\fBTk_SetInternalBorder\fR is called by widget code to indicate that
+the widget has an internal border.  This means that the widget draws
+a decorative border inside the window instead of using the standard
+X borders, which are external to the window's area.  For example,
+internal borders are used to draw 3-D effects.  \fIWidth\fR
+specifies the width of the border in pixels.  Geometry managers will
+use this information to avoid placing any children of \fItkwin\fR
+overlapping the outermost \fIwidth\fR pixels of \fItkwin\fR's area.
+.PP
+\fBTk_SetInternalBorderEx\fR works like \fBTk_SetInternalBorder\fR
+but lets you specify different widths for different sides of the window.
+.PP
+\fBTk_SetMinimumRequestSize\fR is called by widget code to indicate
+that a geometry manager should request at least this size for the
+widget.  This allows a widget to have some control over its size when
+a propagating geometry manager is used inside it.
+.PP
+The information specified in calls to \fBTk_GeometryRequest\fR,
+\fBTk_SetMinimumRequestSize\fR, \fBTk_SetInternalBorder\fR and
+\fBTk_SetInternalBorderEx\fR can be retrieved using the macros
+\fBTk_ReqWidth\fR, \fBTk_ReqHeight\fR, \fBTk_MinReqWidth\fR,
+\fBTk_MinReqHeight\fR, \fBTk_MinReqWidth\fR, \fBTk_InternalBorderLeft\fR,
+\fBTk_InternalBorderRight\fR, \fBTk_InternalBorderTop\fR and
+\fBTk_InternalBorderBottom\fR.
+See the \fBTk_WindowId\fR manual entry for details.
+
+.SH KEYWORDS
+geometry, request

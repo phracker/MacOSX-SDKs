@@ -1,0 +1,203 @@
+
+.\" Copyright (c) 2003
+.\" Originally written by Sergey A. Osokin
+.\" Rewritten by Tom Rhodes
+.\"
+.\" Portions Copyright (C) 2005 - 2017 Apple Inc. All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $FreeBSD: /repoman/r/ncvs/src/share/man/man5/nsmb.conf.5,v 1.1 2003/08/09 19:11:52 trhodes Exp $
+.\"
+.Dd June 30, 2003
+.Dt NSMB.CONF 5
+.Os
+.Sh NAME
+.Nm nsmb.conf
+.Nd configuration file for
+.Tn SMB
+requests
+.Sh DESCRIPTION
+The
+.Nm
+file contains information about the computers and shares
+or mount points for the
+.Tn SMB
+network protocol.
+.Pp
+The configuration hierarchy is made up of several sections,
+each section containing a few or several lines of parameters
+and their assigned values.
+Each of these sections must begin with a section name enclosed within
+square brackets, similar to:
+.Pp
+.D1 Bq Ar section_name
+.Pp
+The end of each section is marked by either the start of a new section,
+or by the abrupt ending of the file, commonly referred to as the
+.Tn EOF .
+Each section may contain zero or more parameters such as:
+.Pp
+.D1 Bq Ar section_name
+.D1 Ar key Ns = Ns Ar value
+.Pp
+where
+.Ar key
+represents a parameter name, and
+.Ar value
+would be the parameter's assigned value.
+.Pp
+The
+.Tn SMB
+library uses the following information for section names:
+.Pp
+.Bl -tag -width indent -compact
+.It Ic A)
+.Bq Li default
+.It Ic B)
+.Bq Ar SERVER
+.It Ic C)
+.Op Ar SERVER : Ns Ar SHARE
+.El
+.Pp
+Possible keywords may include:
+.Bl -column ".Va signing_required" ".Sy Section" ".Va Default"
+.It Sy "Keyword	Section	Default    Comment"
+.It Sy "	A B C      Values"
+.It Va addr               Ta "- + -"  Ta ""       Ta "DNS name or IP address of server"
+.It Va nbtimeout          Ta "+ + -"  Ta "1s"     Ta "Timeout for resolving a NetBIOS name"
+.It Va minauth            Ta "+ + -"  Ta "NTLMv2" Ta "Minimum authentication level allowed"
+.It Va port445            Ta "+ + -"  Ta "normal" Ta "How to use SMB TCP/UDP ports"
+.It Va streams            Ta "+ + +"  Ta "yes"    Ta "Use NTFS Streams if server supported"
+.It Va soft               Ta "+ + +"  Ta ""       Ta "Make the mount soft"
+.It Va notify_off         Ta "+ + +"  Ta "no"     Ta "Turn off using notifications"
+.It Va kloglevel          Ta "+ - -"  Ta "0"      Ta "Turn on smb kernel logging"
+.It Va protocol_vers_map  Ta  "+ - -" Ta "7"      Ta "Bitmap of SMB Versions that are enabled"
+.It Va signing_required   Ta  "+ - -" Ta "no"     Ta "Turn on smb client signing"
+.It Va signing_req_vers   Ta  "+ - -" Ta "6"      Ta "Bitmap of SMB Versions that have signing required"
+.It Va validate_neg_off   Ta "+ - -"  Ta "no"     Ta "Turn off using validate negotiate"
+.It Va max_resp_timeout   Ta "+ + -"  Ta "30s"    Ta "Max time to wait for any response from server"
+.It Va submounts_off      Ta "+ + +"  Ta "no"     Ta "Turn off using submounts"
+.It Va dir_cache_async_cnt  Ta "+ + -"  Ta "10"   Ta "Max async queries to fill dir cache"
+.It Va dir_cache_max      Ta "+ + -"  Ta "60s"    Ta "Max time to cache for a dir"
+.It Va dir_cache_min      Ta "+ + -"  Ta "30s"    Ta "Min time to cache for a dir"
+.El
+.Pp
+The minimum authentication level can be one of:
+.Bl -tag -width ".Li kerberos"
+.It Li kerberos
+Kerberos - NTLMv2, NTLM, LM, and plain-text password authentication are
+not attempted.
+.It Li ntlmv2
+NTLMv2 - Kerberos authentication is attempted if a Kerberos token can be
+obtained, otherwise NTLMv2 authentication is attempted; if the server
+doesn't support encrypted passwords, the authentication fails.
+.It Li ntlm
+NTLM - Kerberos authentication is attempted if a Kerberos token can be
+obtained, otherwise NTLMv2 authentication is attempted and, if that
+fails, NTLMv1 authentication is attempted, with zeroes in the LM hash;
+if the server doesn't support encrypted passwords, the authentication
+fails.
+.It Li lm
+LM - Kerberos authentication is attempted if a Kerberos token can be
+obtained, otherwise NTLMv2 authentication is attempted and, if that
+fails, NTLMv1 authentication is attempted, including the LM hash; if the
+server doesn't support encrypted passwords, the authentication fails.
+.It Li none
+none - The same as
+.Li lm
+except that, if the server doesn't support encrypted passwords,
+plain-text passwords are used. Required for servers that don't support extended security.
+.El
+.Pp
+(Note: "NetBIOS" as used below means "NetBIOS over TCP/IP.")
+.Pp
+"How to use SMB TCP/UDP ports" can be one of:
+.Bl -tag -width ".Li netbios_only"
+.It Li normal
+Attempt to connect via port 445. If that is
+unsuccessful, try to connect via NetBIOS.
+.It Li netbios_only
+Do not attempt to connect via port 445.
+.It Li no_netbios
+Attempt to connect via port 445. If that is 
+unsuccessful, do not try to connect via NetBIOS.
+.El
+.Pp
+"Bitmap of SMB Versions that are enabled" can be one of:
+.Bl -tag -width ".Li 7"
+.It Li 7 == 0111
+SMB 1/2/3 should be enabled
+.It Li 6 == 0110
+SMB 2/3 should be enabled
+.It Li 4 == 0100
+SMB 3 should be enabled
+.El
+.Pp
+"Bitmap of SMB Versions that have signing required" can be one of:
+.Bl -tag -width ".Li 7"
+.It Li 7
+Signing required for SMB 1/2/3.
+.It Li 6
+Signing required for SMB 2/3.
+.It Li 4
+Signing required for SMB 3.
+.El
+.Sh FILES
+.Bl -tag -width ".Pa /etc/nsmb.conf"
+.It Pa /etc/nsmb.conf
+The global configuration file.
+.It Pa ~/Library/Preferences/nsmb.conf
+The user's configuration file, conflicts will be overwritten by the global file.
+.El
+.Sh EXAMPLES
+What follows is a sample configuration file which may,
+or may not match your environment:
+.Bd -literal -offset indent
+# Configuration file for example.com
+[default]
+minauth=ntlmv2
+streams=yes
+soft=yes
+notify_off=yes
+[WINXP]
+addr=windowsXP.apple.com
+.Ed
+.Pp
+All lines which begin with the
+.Ql #
+character are comments and will not be parsed.
+The
+.Dq Li default
+section specifies that only Kerberos and NTLMv2 authentication should be
+attempted; NTLM authentication should not be attempted if NTLMv2
+authentication fails, and plain-text authentication should not be
+attempted if the server doesn't support encrypted passwords.
+.Sh SEE ALSO
+.Xr smbutil 1 ,
+.Xr mount_smbfs 8
+.Sh AUTHORS
+This manual page was originally written by
+.An -nosplit
+.An Sergey Osokin Aq osa@FreeBSD.org
+and
+.An Tom Rhodes Aq trhodes@FreeBSD.org .

@@ -1,0 +1,719 @@
+.Dd 23 October 2012 
+.Os "Mac OS X"
+.Dt ASR 8
+.Pp
+.Sh NAME
+.Nm asr
+.Nd Apple Software Restore; copy volumes (e.g. from disk images)
+.Sh SYNOPSIS
+.Nm
+.Ar verb
+.Op options
+.Nm
+.Sy restore[exact]
+.Fl -source
+.Ar source
+.Fl -target
+.Ar target
+.Op Ar options
+.Nm
+.Sy server
+.Fl -source
+.Ar source
+.Fl -config
+.Ar configuration
+.Op Ar options
+.Nm
+.Sy restore
+.Fl -source
+.Ar asr://source
+.Fl -file
+.Ar file
+.Op Ar options
+.Nm
+.Sy imagescan
+.Fl -source
+.Ar image
+.Op Ar options
+.Nm
+.Sy help
+.Ar |
+.Sy version
+.\" --------------------DESCRIPTION SECTION--------------------
+.Sh DESCRIPTION
+.Nm
+efficiently copies disk images onto volumes, either directly or via a multicast network stream.
+.Nm
+can also accurately clone volumes without the use of an intermediate disk image.
+.Pp
+In its first form,
+.Nm
+copies
+.Ar source
+(usually a disk image, potentially on an HTTP server) to
+.Ns Ar target .
+.Ar source
+can be specified using a path in the filesystem, or an http or https URL.
+It can also be an asr:// URL to indicate a multicast source.
+.Nm
+can also be invoked with its second form to act as a multicast server.
+In its third form,
+.Nm
+will restore a multicast disk image to a file instead of disk volume.
+In its fourth form,
+.Nm
+prepares a disk image to be restored efficiently, adding whole-volume
+checksum information.
+.Sy help
+and
+.Sy version
+provide usage and version information, respectively.
+.Pp
+.Ar source
+and
+.Ar target
+can be /dev entries or volume mountpoints. For more information on restoring to or from
+APFS filesystems, see the
+.Sy RESTORING WITH APFS FILESYSTEMS
+section below.
+If restoring a multicast disk image to a file,
+.Ar file
+can be a path to a local file or directory. If the specified path is a file,
+the disk image is given the specified name. If a directory, the name of the
+disk image being multicast is used. When specifying 
+.Sy server, 
+.Ar source
+has to be a UDIF disk image. Restoring from a multicast stream is accomplished by passing a asr:// url as
+.Ar source .
+.Pp
+When run in its first form above, the
+.Fl -erase
+option must always be used, as
+.Nm
+no longer supports file copying.  Such functionality is done better by 
+.Xr ditto 1 .
+.Pp
+.Nm
+needs to be run as root (see
+.Ns Xr sudo 8 )
+in order to accomplish its tasks.
+.\" --------------------VERBS SECTION--------------------
+.Sh VERBS
+Each verb is listed with its description and individual arguments.
+.Bl -hang -width "restoreexact"
+.It Sy restore
+restores a disk image or volume to another volume (including a mounted disk image)
+.Bl -tag -width "puppetstrings"
+.It Fl -source 
+can be a disk image, /dev entry, or volume mountpoint. In the latter two cases, the volume
+must be unmountable or mounted read-only in order for a erase blockcopy to occur (thus, one
+cannot erase blockcopy the root filesystem as the source, unless it happened to be mounted 
+read-only).
+.It Fl -target 
+can be a /dev entry, or volume mountpoint. Must be unmountable in order for an erase block-copy
+to occur.  If
+.Ar source
+specifies an image of an APFS container, then
+.Ar target
+can specify a mounted APFS volume.  See the
+.Sy RESTORING WITH APFS FILESYSTEMS
+section below for details.
+.It Fl -file
+when performing a multicast restore, 
+.Fl -file
+can be specified instead of 
+.Fl -target.
+If the specified path is a file, the disk image is given the specified name. If a directory,
+the name of the disk image being multicast is used.
+.It Fl -erase
+erases
+.Ar target
+and is required.
+.Fl -erase
+must always be used, as file copies are no longer supported by
+.Nm .
+If 
+.Ar source
+is a asr:// url for restoring from a multicast stream, 
+.Fl -erase
+must be passed (multicasting only supports erase block-copy restores).
+Passing
+.Fl -erase
+with
+.Fl -file
+indicates any existing file should be overwritten when doing a multicast file copy.
+.It Fl -format  Ar HFS+ | HFSX 
+specifies the destination filesystem format, when
+.Fl -erase
+is also given. If not specified, the destination will be formatted
+with the same filesystem format as the source. If multicasting, the 
+.Fl -format
+specified must be block copy compatible with the
+.Ar source .
+.Fl -format
+is ignored if
+.Fl -erase
+is not used. Note: HFS Journaling is an attribute of the source image, and is not affected by
+.Fl -format .
+.It Fl -noprompt
+suppresses the prompt which usually occurs before
+.Ar target
+is erased.
+.Xr newfs_hfs 8
+will be called on
+.Ar target
+and once you start writing new data, there isn't much hope for recovery.
+You have been warned.
+.It Fl -timeout Ar num
+specifies
+.Ar num
+seconds that a multicast client should wait when no payload data has been received over 
+a multicast stream before exiting, allowing the client to stop in case of server failure/stoppage.
+It defaults to 0 (i.e. never time out).
+.It Fl -puppetstrings
+provide progress output that is easy for another program to parse.
+Any program trying to interpret
+.Nm Ns 's
+progress should use
+.Fl -puppetstrings .
+.It Fl -noverify
+skips the verification steps normally taken to ensure that a volume
+has been properly restored.
+.Fl -noverify
+allows images which have not been scanned to be restored.  Skipping
+verification is dangerous for a number of reasons and should never be used
+in production systems.
+.It Fl -allowfragmentedcatalog
+allows restores to proceed even if the source's catalog file is fragmented
+(in particular, if it has more than 8 extents).  By default such restores are
+disallowed.  Catalog fragmentation is undesirable and in most cases it is
+better to fix the problem on the source (e.g. by running fsck_hfs -r on it),
+but
+.Fl -allowfragmentedcatalog
+is provided for situations where such a change is impractical.  This option
+only makes sense if the source specifes an HFS+ filesystem variant.  It is
+otherwise ignored.
+.It Fl -corestorageconvert
+Cause
+.Ar target
+to be converted to a Core Storage LVG at the end of the restore.
+After the copy and verify are complete,
+.Nm
+will create a new Core Storage Logical Volume Group (LVG), using the
+partition represented by
+.Ar target
+as its only physical volume (PV).  The volume contents restored from
+.Ar source
+will be present as a single logical volume (LV) exported from this LVG.
+If
+.Ar target
+is already a Core Storage LV, then this option has no effect.
+.It Fl -SHA256
+forces the restore to use the SHA-256 hash in the image during verification.
+If the image doesn't contain a SHA-256 hash, then an error will be raised.
+.It Fl -sourcevolumename
+tells
+.Nm
+which volume in the
+.Ar source
+container to invert when doing an APFS restore.  It is an error if more than
+one volume has the specified name.  You can see the volume names and UUIDs by running
+.Nm
+with the
+.Sy info
+verb.  See the section
+.Sy RESTORING WITH APFS FILESYSTEMS
+below for when this option is necessary.
+.It Fl -sourcevolumeUUID
+tells
+.Nm
+which volume in the
+.Ar source
+container to invert when doing an APFS restore.  You can see the volume names and UUIDs by running
+.Nm
+with the
+.Sy info
+verb.  See the section
+.Sy RESTORING WITH APFS FILESYSTEMS
+below for when this option is necessary.
+.El
+.It Sy restoreexact
+performs the same operation as
+.Sy restore ,
+taking all the same options, but with the following difference:  the target partition is resized
+to exactly match the size of the source partition/volume, if such a resize can be done.  If the
+target partition needs to grow and there is not enough space, then the operation will fail.  If it
+needs to shrink, then it should always be able to do so, possibly leaving free space in the target
+disk's partition map.  Because the target exactly matches the source in size, all volume structures
+should be identical in source and target upon completion of the restore.
+.It Sy server
+multicasts
+.Ar source
+over the network. Requires
+.Fl -erase
+be passed in by clients (multicasting only supports erase block-copy restores).
+.Bl -tag -width "interface"
+.It Fl -source
+.Ar source
+has to be a UDIF disk image. A path to a disk image on a local/remote volume can be passed in,
+or a http:// url to a disk image that is accessible via a web server.
+.It Fl -interface
+the network interface to be used for multicasting (e.g. en0) instead of the default network interface.
+.It Fl -config
+.Sy server
+requires a configuration file to be passed, in standard property list format.
+The following keys/options configure the various parameters for multicast operation.
+.El
+.Bl -tag -width "DNS Service Discovery"
+.It Em Required
+.It Data Rate
+this is the desired data rate in bytes per second.
+On average, the stream will go slightly slower than this speed, but will never exceed it.
+It's a number in the plist (-int when set with
+.Ns Xr defaults 1 ) .
+.It \ 
+Note: The performance/reliability of the networking infrastructure being multicast on is an
+important factor in determining what data rate can be supported. Excessive/bursty packet
+loss for a given data rate could be due to an inability of the server/client to be able to
+send/receive multicast data at that rate, but it's equally important to verify that the
+network infrastructure can support multicasting at the requested rate.
+.It Multicast Address
+this is the Multicast address for the data stream. It's a string in the plist.
+.It Em Optional
+.It Client Data Rate
+this is the rate the slowest client can write data to its
+.Ar target
+in bytes per second.
+if
+.Nm
+misses data on the first pass (x's during progress) and slowing the Data Rate doesn't
+resolve it, setting the Client Data Rate will dynamically regulate the speed of the
+multicast stream to allow clients more time to write the data. It's a number in the plist
+(-int when set with
+.Ns Xr defaults 1 ) .
+.It DNS Service Discovery
+whether the server should be advertised via DNS Service Discovery, a.k.a. Bonjour (tm).
+It defaults to true.
+It's a boolean in the plist (-bool when set with
+.Ns Xr defaults 1 ) .
+.It Loop Suspend
+a limit of the number of times to multicast the image file when no clients have started a restore operation. Once 
+exceeded, the server will stop the stream and wait for new clients before multicasting the image file. It defaults
+to 0 (e.g. never stop multicasting once a client starts the stream), and should not be set to <2.
+It's a number in the plist (-int when set with 
+.Ns Xr defaults 1 ) .
+.It Multicast TTL
+the time to live on the multicast packets (for multicasting through routers). It defaults to 3. 
+It cannot be set to 0, and should not be set to 1 (otherwise, it could adversely affect some network routers).
+It's a number in the plist (-int when set with 
+.Ns Xr defaults 1 ) .
+.It Port
+the port of initial client-server handshake, version checks, multicast restore metadata, and stream data.
+It defaults to 7800.
+This should only be included/modified if the default port cannot be used.
+It's a number in the plist (-int when set with
+.Ns Xr defaults 1 ) .
+.El
+.It Sy imagescan
+calculate checksums of the data in the provided image and store them in
+the image.  These checksums are used to ensure proper restores.  SHA-1 and SHA-256 hashes are used.
+Also determines if the disk image is in order for multicasting, and rewrites the file in order if not.
+If the image has to be reordered, it will require free disk space equal to the size of the disk image 
+being scanned.
+.Bl -tag -width "nostream"
+.It Fl -nostream
+bypasses the check/reordering of a disk image file for multicasting. By default disk images will be
+rewritten in a way that's necessary for multicasting.
+.It Fl -allowfragmentedcatalog
+bypasses the check for a fragmented catalog file.  By default that check is done and
+scanning won't be allowed on an image that has a fragmented catalog file.  It is usually
+a better idea to fix the image (e.g. run fsck_hfs -r on a writable copy of it) than
+to use
+.Fl -allowfragmentedcatalog,
+but it is provided in case fixing the image is impractical.
+.El
+.It Sy info
+report the image metadata which was placed in the image by a previous
+use of the
+.Sy imagescan
+verb.  Requires
+.Fl -source.
+The report is written to standard output.
+.Bl -tag -width "plist"
+.It Fl -plist
+writes its output as an XML-formatted plist, suitable for parsing by
+another program.
+.El
+.El
+.Sh RESTORING WITH APFS FILESYSTEMS
+Individual APFS volumes can not be restored directly, because their device nodes don't allow I/O from a
+standard process.  However,
+.Nm
+can restore entire APFS containers, including all volumes.  Or it can restore valid system configurations, which
+can get the effect of restoring a single system.  This requires understanding what is meant by a
+.Sy valid system.
+.Pp
+In order for an APFS volume to be bootable, it must contain a properly installed macOS system.  It must also be
+part of an APFS container which also has two special volumes in it: a Preboot volume and a Recovery volume.  A
+container may have arbitrarily many system volumes in it, but it must have only one Preboot volume and one
+Recovery volume, each with the corresponding APFS volume role set (see
+.Ns Xr diskutil 1
+for information on roles).  The Preboot and Recovery volumes contain information which is tied to each system
+volume in the container.  So for a system volume to be bootable, that information needs to be set up in the Preboot
+and Recovery volumes.  A system which is part of a container that has these two special volumes, and for which the
+requisite information is set up in those volumes, will be referred to here as a
+.Sy valid system.
+.Pp
+If the
+.Ar source
+of a restore is an APFS image (i.e. an image which contains an APFS container), then
+.Nm
+does different things depending on how
+.Ar target
+was specified:
+.Bl -tag -width "1234"
+.It Volume Restore
+If the
+.Ar target
+is an individual volume within an existing APFS container, then
+.Nm
+will block restore the APFS container to a file within that volume, after which
+it will invert the volume within the restored container, erasing the previous contents of the
+.Ar target
+volume and replacing them with the source volume contents.  If the
+.Ar source
+container only has a
+single non-special volume (i.e. not Preboot or Recovery), then that is the volume which will be
+inverted.  If the
+.Ar source
+container has more than one non-special volume, then either the
+.Fl -sourcevolumename
+or
+.Fl -sourcevolumeUUID
+option must be present and must specify the volume to invert.
+Additionally, if the volume being inverted is a
+.Sy valid system
+(as defined above), then the relevant contents of both the Preboot and Recovery volumes will be
+copied from the
+.Ar source
+to the
+.Ar target ,
+creating those volumes on the
+.Ar target
+if necessary.
+.It Volume Restore with Creation
+If the
+.Ar target
+is a synthesized APFS whole disk or Apple_APFS partition, and the
+.Fl -erase
+option is not present, then
+.Nm
+will create a new volume in the given container, after which it will do a volume restore to that new volume,
+as with the previous section.  All other volumes in the container are preserved.
+.It Volume Restore with Erase
+If the
+.Ar target
+is a synthesized APFS whole disk or any disk partition, and the
+.Fl -erase
+option is present, then
+.Nm
+will erase the existing partition, create a new APFS container and a new volume in it, after which
+it will do a volume restore to that new volume,
+as with the previous section.
+.El
+.Pp
+See the
+.Sy EXAMPLES
+section below for some command lines that show these operations.
+.Sh BUFFERING
+The following options control how
+.Nm
+uses memory.  These options can have a significant impact on performance.
+.Nm
+is optimized for copying between devices (different disk drives, from a
+network volume to a local disk, etc).  As such,
+.Nm
+defaults to using eight one megabyte
+buffers.  These buffers are wired down (occupying physical memory).
+For partition to partition copies on the same device, one large
+buffer (e.g. 32 MB) is much faster than the default eight medium
+sized ones. For multicast, 4 256k buffers are the default.
+Custom buffering for multicast operation is not recommended.
+.Pp
+.Fl -csumbuffers
+and
+.Fl -csumbuffersize
+allow a different buffer configuration for
+checksumming operations.  One checksum buffer offers the 
+best performance.  The default is 1 1MB buffer. Custom
+checksum buffering is not recommended.
+.Pp
+Like
+.Ns Xr mkfile 8 ,
+.Ar size
+defaults to bytes but can be followed by a multiplier character (e.g. 'm').
+.Bl -tag
+.It Fl -buffers Ar num
+specifies that
+.Ar num
+buffers should be used.
+.It Fl -buffersize Ar size
+specifies the size of each buffer.
+.It Fl -csumbuffers Ar num
+specifies that
+.Ar num
+buffers should be used for checksumming operations (which only affect the
+target).
+Custom checksum buffering is not recommended.
+.It Fl -csumbuffersize Ar size
+specifies the size of each buffer used for checksumming.
+Custom checksum buffering is not recommended.
+.El
+.Pp
+.Sh OTHER OPTIONS
+.Bl -tag -compact
+.It Fl -verbose
+enables verbose progress and error messages.
+.It Fl -debug
+enables other progress and error messages.
+.El
+.Sh EXAMPLES
+.Em Volume cloning:
+.D1 sudo asr restore --source /Volumes/Classic --target /Volumes/install --erase
+.Pp
+.Em Restoring:
+.Dl sudo asr restore -s <compressedimage> -t <targetvol> --erase
+.Pp
+Will erase the target and potentially do a block copy restore.
+.Pp
+.Em Multicast server:
+.D1 asr server --source <compressedimage> --config <configuration.plist>
+.Pp
+Will start up a multicast server for the specified image, using the parameters
+in the configuration.plist. The image will not start multicasting on the network until a client
+attempts to start a restore. The server will continue to multicast the image until the process is terminated.
+.Pp
+.Em \&An example multicast configuration file:
+.D1 defaults write /tmp/streamconfig Qo Data Rate Qc -int 6000000
+.D1 defaults write /tmp/streamconfig Qo Multicast Address Qc <mcastaddr>
+.D1 (will create the file /tmp/streamconfig.plist)
+.D1 <mcastaddr> should be appropriate for your network infrastructure and policy, usually from a range assigned by your network administrator.
+.Pp
+.Em Multicast client
+.D1 sudo asr restore --source asr://<hostname> --target <targetvol> --erase
+.Pp
+.Em Multicast client restoring to a file
+.D1 sudo asr restore --source asr://<hostname> --file <file> --erase
+Will receive the multicast stream from <hostname> and save it to a file. If <file> is a directory, the image of the streamed
+disk image will be used the save the file. --erase causes any existing file with the same name to be overwritten.
+.Pp
+.Em Restoring a single APFS volume
+.D1 sudo asr restore -s <APFS image> -t /Volumes/MyAPFSVolume --erase
+In this case the contents of MyAPFSVolume will be replaced by the contents of the source container's single APFS volume,
+possibly including any associated data for the Preboot and Recovery volumes, if the source is a
+.Sy valid system .
+If the source has more than one non-special volume, this is an error.  No other volumes in the target will be affected.
+.Pp
+.Em Restoring one of many APFS volumes
+.D1 sudo asr restore -s <APFS image> --sourcevolumename SourceVolume -t /Volumes/MyAPFSVolume --erase
+This tells
+.Nm
+to select the volume named "SourceVolume" from the given APFS image.  If there is no volume with that name, or if
+there are more than one with that name, it is an error.  Use the
+.Sy info
+verb to see the volume names and UUIDs for an image.  No other volumes in the target will be affected.
+.Pp
+.Em Creating a new APFS volume on the fly
+.D1 sudo asr restore -s <APFS image> --sourcevolumename SourceVolume -t /dev/disk2
+Here we get the same effect as the last example, except that
+.Nm
+will create a new volume on the target APFS container disk, given by /dev/disk2, and use that newly created volume as
+the target.  Any volumes which already existed in the container will still be there after the restore.
+.Pp
+.Em Overwriting the existing container
+.D1 sudo asr restore -s <APFS image> --sourcevolumename SourceVolume -t /dev/disk2 --erase
+Like the last example, we restore to a new volume on the target APFS container disk.  However
+in this case we are erasing the target, so any volumes which already existed are destroyed.
+.Pp
+.Em Looking at an image's volume names/UUIDs
+.D1 asr info -s <APFS image>
+Assuming this image has been previously scanned (using the
+.Sy imagescan
+verb), this will display the volumes' names and UUIDs so they can be used with the
+.Fl -sourcevolumename
+or
+.Fl -sourcevolumeUUID
+options.
+.Sh HOW TO USE ASR
+.Nm
+requires a properly created disk image for most efficient operation.
+This image is most easily made with the Disk Utility application's
+"Image from Folder" function in OS X 10.3.  The Disk Copy
+from OS X 10.2.3 (v55.6) or later can also be used.
+.Pp
+Basic steps for imaging and restoring a volume:
+.Bl -enum
+.It
+Set up the source volume the way you want it.
+.It
+Use Disk Utility's "File -> New Image -> Image from Folder..." function and select
+the root of the volume.  Save the image as read-only or compressed.
+"File->New Image->Image from <device>" is not recommended for restorable images.
+.It
+Scan the image with "Images -> Scan Image for Restore..."
+.It
+Select a volume and click on the "Restore" button.  Then click on the "Image..."
+button to select the image you have scanned.  Click Restore.
+.El
+.Pp
+.Sh BLOCK COPY RESTORE REQUIREMENTS
+.Nm
+can block copy restore HFS+/HFSX filesystems and resize the source
+filesystem to fit in the target's partition if the source filesystem
+data blocks will fit within the target partition's space (resizing
+the filesystem geometry as appropriate).
+.Pp
+HFS+ can be used as the source of a block copy to either an HFS+ or HFSX destination.
+However, an HFSX source can only be used to block copy to an HFSX destination.
+This is because case collision of file names could occur when converting
+from an HFSX filesystem to HFS+.
+.Pp
+Certain non-HFS+/HFSX filesystems will block copy restore, but the
+target partition will be resized to match the size of the source
+image/partition size, with no filesystem resizing occurring.
+.Pp
+.Sh COMPATIBILITY
+.Nm
+maintains compatibility with previous syntax, e.g.
+.Pp
+.Bl -item -compact
+.It
+.Nm
+.Fl source
+.Ar source
+.Fl target
+.Ar target
+.Op Ar options
+.It
+.Nm
+.Fl source
+.Ar source
+.Fl server
+.Ar configuration
+.Op Ar options
+.It
+.Nm
+.Fl source
+.Ar asr://source
+.Fl file
+.Ar file
+.Op Ar options
+.It
+.Nm
+.Fl imagescan
+.Op Ar options
+.Ar image
+.It
+.Nm
+.Fl h
+.Ar |
+.Fl v
+.El
+.Pp
+where
+.Fl source,
+.Fl target,
+and 
+.Fl file
+are equivalent to 
+.Fl -source,
+.Fl -target,
+and
+.Fl -file
+respectively,
+and all
+.Op Ar options
+are equivalent to their -- descriptions.
+.Nm
+.Fl server
+.Ar configuration
+is superseded by
+.Nm
+.Sy server 
+.Fl -config
+.Ar configuration .
+The following deprecated options also remain:
+.Bl -tag -width "blockonly"
+.It Fl nocheck
+this option is deprecated, but remains for script compatibility.
+Use
+.Fl noverify
+instead.
+.It Fl blockonly
+this option is deprecated, but remains for script compatibility. On by default.
+Note that if an image scanned with
+.Fl blockonly
+cannot be block-copied to a particular
+.Ar target
+an error will occur, since the file-copy information was omitted.
+.El
+.Pp
+.Sy Note:
+Compatibility with previous syntax is not guaranteed in the next major OS release.
+.Sh ERRORS
+.Nm
+will exit with status 1 if it cannot complete the requested operation.  A
+human readable error message will be printed in most cases.  If
+.Nm
+has already started writing to the target volume when the error occurs,
+then it will erase the target, leaving it in a valid (but empty) state.
+It will, however, leave it unmounted.
+.Pp
+Some of the error messages which
+.Nm
+prints are generated by the underlying subsystems that it
+uses, and their meaning is not always obvious.  Here are some useful
+guidelines:
+.Bl -enum
+.It
+.Nm
+does some preflight testing before it starts actually copying data.  Errors
+that show up during this preflighting are usually clear (e.g. "There is not enough space
+in volume "Macintosh HD" to do the restore.")
+.It
+If an error occurs during the copy, it might be because there is corruption in the
+source image file.  Try running "hdiutil verify" with the image.  A common error
+message which indicates this is "codec overrun".
+.It
+Errors which occur during the copy and which don't have an obvious cause (i.e. the
+error message is difficult to interpret) may be transient in nature (e.g. there
+was an I/O error on the disk), and it is worth simply trying the restore again.
+.El
+.Sh HISTORY
+Apple Software Restore got its start as a field service restoration tool
+used to reconfigure computers' software to 'factory' state.  It later
+became a more general software restore mechanism and software installation
+helper application for various Apple computer products.  ASR has been used
+in manufacturing processes and in shipping computers' System Software
+Installers.
+.Pp
+For Mac OS X, asr was rewritten as a command line tool for manufacturing
+and professional customers.
+.Nm
+is the backend for the Mac OS X Software Restore application that shipped
+on Macintosh computers as well as the Scan and Restore functionality in
+Disk Utility.
+.Pp
+Multicast support was added to allow multiple clients to erase restore an image
+from a multicast network stream.
+.Pp
+Per its history, most functionality in
+.Nm
+is limited to HFS+ volumes.
+.Sh SEE ALSO
+.Xr hdiutil 1 ,
+.Xr df 1 ,
+.Xr bless 8 ,
+.Xr ditto 1 ,
+and
+.Xr what 1

@@ -1,0 +1,111 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 7/28/16               \" DATE 
+.Dt AssetCacheLocatorUtil 8      \" Program name and manual section number 
+.Os "macOS"
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm AssetCacheLocatorUtil
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" .Nm Other_name_for_same_program(),
+.\" .Nm Yet another name for the same program.
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Utility for reporting information about macOS Content Caches
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op -j|--json
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+reports information related to macOS Content Caches running on the computer or on the local network.
+.Pp
+Some of the information that
+.Nm
+reports depends on the current network configuration, and on the user running it.
+It might produce different results for different users, on different client devices, or on different networks.
+Applications that use content caches might choose ones other than the ones
+.Nm
+reports due to factors beyond its knowledge, such as iCloud affinity.
+.Pp
+.Nm
+reports the following information separately for system daemons and for the current user:
+.Bl -tag
+.It "Availability hint"
+The system can temporarily save a hint about whether or not there might be content caches on the computer or on the local network.
+.Nm
+prints that saved hint if it is available.
+.It "Saved content caches"
+The system can temporarily save information about content caches it has previously found on the computer or on the local network.
+.Nm
+prints that saved information if it is available.
+.It "Refreshed content caches"
+.Nm
+forces the system to search for content caches on the computer and on the local network and to refresh the saved information above.
+It then prints the results.
+.It "Public IP address ranges"
+If your network administrator has configured public IP address ranges in DNS,
+which the system uses when looking up content caches,
+.Nm
+prints those ranges.
+.El
+.Pp
+.Nm
+then reports the reachability status of all of the content caches it found.
+If the computer cannot communicate with a content cache over the local network then it cannot request files from that content cache.
+However, just because the computer can "ping" a content cache does not imply that that content cache will serve requests sent from this computer.
+.Pp
+The --json option prints the results in machine-parseable JSON format to stdout.
+.Sh WARNINGS
+.Nm
+also reports warnings about potential issues it discovers.
+.Pp
+The Apple cloud service with which content caches register limits the number of content caches on a network.
+This limit can change at any time.
+If a larger number of content caches are available on a network than the cloud allows, client devices might not always
+choose the "best" content cache.
+.Nm
+warns when it detects this possibility.
+The number of content caches available on a network can be reduced by changing the settings of some of the content caches, using
+.Ic "System Preferences > Sharing > Content Caching > press the option key > Advanced Options... > Clients > Cache content for:" .
+.Pp
+.Nm
+also warns when it detects content caches with different
+.Em ranks .
+The exact value and meaning of each rank is defined by the Apple cloud service with which content caches register,
+and can change at any time,
+but each client device will use only the content caches with the lowest-numbered rank available to it.
+A content cache's rank can be changed by adjusting its settings, using
+.Ic "System Preferences > Sharing > Content Caching > press the option key > Advanced Options... > Clients > Cache content for:" .
+A content cache on the same computer as the client always has the lowest-numbered rank.
+.Pp
+Having content caches in different ranks can be intentional or accidental,
+depending on your organization.
+.Nm
+warns about mixed ranks in case it is accidental.
+An example of an intentional use of mixed ranks is when a school has a content cache that caches content for
+.Ic "devices using the same local networks"
+and the school's district office has another content cache that caches content for
+.Ic "devices using the same public IP address" .
+Client devices in the school will use the school's content cache.
+Client devices in a different school in the same district will use the district's content cache.
+.Pp
+Every content cache must have a unique GUID.
+.Nm
+warns when it finds content caches in your organization with duplicate GUIDs.
+A content cache's GUID can be changed by stopping the content cache,
+running the following command in Terminal as an admin user,
+and then restarting it:
+.Ic "sudo -u _assetcache defaults write /Library/Preferences/com.apple.AssetCache.plist ServerGUID = `uuidgen`"
+.Pp
+Another issue about which
+.Nm
+warns is when public IP address ranges are configured but the client device's public IP address is not in the configured ranges.
+This could prevent the device from using your organization's content caches.
+To configure custom public IP address ranges use
+.Ic "System Preferences > Sharing > Content Caching > press the option key > Advanced Options... > Clients > My local networks:"
+and set DNS TXT records appropriately.
+.Sh SEE ALSO 
+System Preferences > Sharing > Content Caching,
+.Xr AssetCacheManagerUtil 8

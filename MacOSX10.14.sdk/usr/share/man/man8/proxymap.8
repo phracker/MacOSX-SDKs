@@ -1,0 +1,238 @@
+.TH PROXYMAP 8 
+.ad
+.fi
+.SH NAME
+proxymap
+\-
+Postfix lookup table proxy server
+.SH "SYNOPSIS"
+.na
+.nf
+\fBproxymap\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBproxymap\fR(8) server provides read\-only or read\-write
+table lookup service to Postfix processes. These services are
+implemented with distinct service names: \fBproxymap\fR and
+\fBproxywrite\fR, respectively. The purpose of these services is:
+.IP \(bu
+To overcome chroot restrictions. For example, a chrooted SMTP
+server needs access to the system passwd file in order to
+reject mail for non\-existent local addresses, but it is not
+practical to maintain a copy of the passwd file in the chroot
+jail.  The solution:
+.sp
+.nf
+local_recipient_maps =
+    proxy:unix:passwd.byname $alias_maps
+.fi
+.IP \(bu
+To consolidate the number of open lookup tables by sharing
+one open table among multiple processes. For example, making
+mysql connections from every Postfix daemon process results
+in "too many connections" errors. The solution:
+.sp
+.nf
+virtual_alias_maps =
+    proxy:mysql:/etc/postfix/virtual_alias.cf
+.fi
+.sp
+The total number of connections is limited by the number of
+proxymap server processes.
+.IP \(bu
+To provide single\-updater functionality for lookup tables
+that do not reliably support multiple writers (i.e. all
+file\-based tables).
+.PP
+The \fBproxymap\fR(8) server implements the following requests:
+.IP "\fBopen\fR \fImaptype:mapname flags\fR"
+Open the table with type \fImaptype\fR and name \fImapname\fR,
+as controlled by \fIflags\fR. The reply includes the \fImaptype\fR
+dependent flags (to distinguish a fixed string table from a regular
+expression table).
+.IP "\fBlookup\fR \fImaptype:mapname flags key\fR"
+Look up the data stored under the requested key.
+The reply is the request completion status code and
+the lookup result value.
+The \fImaptype:mapname\fR and \fIflags\fR are the same
+as with the \fBopen\fR request.
+.IP "\fBupdate\fR \fImaptype:mapname flags key value\fR"
+Update the data stored under the requested key.
+The reply is the request completion status code.
+The \fImaptype:mapname\fR and \fIflags\fR are the same
+as with the \fBopen\fR request.
+.sp
+To implement single\-updater maps, specify a process limit
+of 1 in the master.cf file entry for the \fBproxywrite\fR
+service.
+.sp
+This request is supported in Postfix 2.5 and later.
+.IP "\fBdelete\fR \fImaptype:mapname flags key\fR"
+Delete the data stored under the requested key.
+The reply is the request completion status code.
+The \fImaptype:mapname\fR and \fIflags\fR are the same
+as with the \fBopen\fR request.
+.sp
+This request is supported in Postfix 2.5 and later.
+.IP "\fBsequence\fR \fImaptype:mapname flags function\fR"
+Iterate over the specified database. The \fIfunction\fR
+is one of DICT_SEQ_FUN_FIRST or DICT_SEQ_FUN_NEXT.
+The reply is the request completion status code and
+a lookup key and result value, if found.
+.sp
+This request is supported in Postfix 2.9 and later.
+.PP
+The request completion status is one of OK, RETRY, NOKEY
+(lookup failed because the key was not found), BAD (malformed
+request) or DENY (the table is not approved for proxy read
+or update access).
+
+There is no \fBclose\fR command, nor are tables implicitly closed
+when a client disconnects. The purpose is to share tables among
+multiple client processes.
+.SH "SERVER PROCESS MANAGEMENT"
+.na
+.nf
+.ad
+.fi
+\fBproxymap\fR(8) servers run under control by the Postfix
+\fBmaster\fR(8)
+server.  Each server can handle multiple simultaneous connections.
+When all servers are busy while a client connects, the \fBmaster\fR(8)
+creates a new \fBproxymap\fR(8) server process, provided that the
+process limit is not exceeded.
+Each server terminates after serving at least \fB$max_use\fR clients
+or after \fB$max_idle\fR seconds of idle time.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBproxymap\fR(8) server opens only tables that are
+approved via the \fBproxy_read_maps\fR or \fBproxy_write_maps\fR
+configuration parameters, does not talk to
+users, and can run at fixed low privilege, chrooted or not.
+However, running the proxymap server chrooted severely limits
+usability, because it can open only chrooted tables.
+
+The \fBproxymap\fR(8) server is not a trusted daemon process, and must
+not be used to look up sensitive information such as UNIX user or
+group IDs, mailbox file/directory names or external commands.
+
+In Postfix version 2.2 and later, the proxymap client recognizes
+requests to access a table for security\-sensitive purposes,
+and opens the table directly. This allows the same main.cf
+setting to be used by sensitive and non\-sensitive processes.
+
+Postfix\-writable data files should be stored under a dedicated
+directory that is writable only by the Postfix mail system,
+such as the Postfix\-owned \fBdata_directory\fR.
+
+In particular, Postfix\-writable files should never exist
+in root\-owned directories. That would open up a particular
+type of security hole where ownership of a file or directory
+does not match the provider of its content.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+.SH BUGS
+.ad
+.fi
+The \fBproxymap\fR(8) server provides service to multiple clients,
+and must therefore not be used for tables that have high\-latency
+lookups.
+
+The \fBproxymap\fR(8) read\-write service does not explicitly
+close lookup tables (even if it did, this could not be relied on,
+because the process may be terminated between table updates).
+The read\-write service should therefore not be used with tables that
+leave persistent storage in an inconsistent state between
+updates (for example, CDB). Tables that support "sync on
+update" should be safe (for example, Berkeley DB) as should
+tables that are implemented by a real DBMS.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+On busy mail systems a long time may pass before
+\fBproxymap\fR(8) relevant
+changes to \fBmain.cf\fR are picked up. Use the command
+"\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdata_directory (see 'postconf -d' output)\fR"
+The directory with Postfix\-writable data files (for example:
+caches, pseudo\-random numbers).
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBproxy_read_maps (see 'postconf -d' output)\fR"
+The lookup tables that the \fBproxymap\fR(8) server is allowed to
+access for the read\-only service.
+.PP
+Available in Postfix 2.5 and later:
+.IP "\fBdata_directory (see 'postconf -d' output)\fR"
+The directory with Postfix\-writable data files (for example:
+caches, pseudo\-random numbers).
+.IP "\fBproxy_write_maps (see 'postconf -d' output)\fR"
+The lookup tables that the \fBproxymap\fR(8) server is allowed to
+access for the read\-write service.
+.SH "SEE ALSO"
+.na
+.nf
+postconf(5), configuration parameters
+master(5), generic daemon options
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+.ad
+.fi
+The proxymap service was introduced with Postfix 2.0.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

@@ -1,0 +1,94 @@
+.\" Copyright (c) 2000-2013 Apple Inc. All rights reserved.
+.Dd Mar. 16, 2013
+.Dt "sample" 1
+.Os
+.Sh NAME
+.Nm sample
+.Nd Profile a process during a time interval
+.Sh SYNOPSIS
+.Nm sample
+.Ar pid | partial-executable-name
+.Op duration Op samplingInterval
+.Op Fl wait
+.Op Fl mayDie
+.Op Fl fullPaths
+.Op Fl e
+.Op Fl file Ar filename
+.Sh DESCRIPTION
+.Nm sample
+is a command-line tool for gathering data about the running behavior of a
+process.  It suspends the process at specified intervals
+(by default, every 1 millisecond), records the call stacks of all threads
+in the process at that time, then resumes the process.  The analysis done by
+.Nm sample
+is called ``sampling'' because it only checks the state
+of the program at the sampling points.  The analysis may miss execution of
+some functions that are not executing during one of the samples, but
+.Nm sample
+still provides useful data about commonly executing functions.
+.Pp
+At the end of the
+sampling duration, 
+.Nm sample
+produces a report showing which functions were
+executing during the sampling.  The data is condensed into a call tree, showing
+the functions seen on the stack and how they were called.  (This tree is a
+subset of the actual call tree for the execution, since some functions may not
+have been executing during any of the sampling events.)  The tree is displayed
+textually, with called functions indented one level to the right of the callee.
+.Pp
+In the call tree, if a function calls more than one function then a vertical
+line is printed to visually connect those separate children functions, making it
+easier to see which functions are at the same level.  The characters used to
+draw those lines, such as + | : ! are arbitrary and have no specific meaning.
+.Sh ARGUMENTS
+.Pp
+The user of sample specifies a target process (either by process id, or by name),
+the duration of the sampling run (in seconds), and a sampling rate (in milliseconds).
+.Pp
+If the sampling duration is not specified, a default of 10 seconds is used.  Longer
+sampling durations provide better data by collecting more samples, but could also be
+confusing if the target process performs many different types of operations during
+that period.
+.Pp
+The default sampling rate is 1 millisecond.  Fast sampling rates provide more samples
+and a better chance to capture all the functions that are executing.
+.Pp
+.Fl wait
+tells sample to wait for the process specified (usually as a partial name
+or hint) to exist, then start sampling that process.  This option allows you
+to sample from an application's launch.
+.Pp 
+.Fl mayDie 
+tells sample to immediately grab the location of symbols from the
+application, on the assumption that the application may exit or crash
+at any point during the sampling.  
+This ensures that sample can give information
+about the call stacks even if the process no longer exists.
+.Pp 
+.Fl fullPaths
+tells sample to show the full path to the source code (rather than just the file
+name) for any symbol in a binary image for which debug information is available.
+The full path was the path to the source code when the binary image was built.
+.Pp
+.Fl e
+tells sample to open the output in TextEdit automatically when sampling completes.
+.Pp
+.Fl file Ar filename
+tells sample the full path to where the output should be written.  If this flag
+is not specified, results are written to a file in /tmp called <application name>_<date>_<time>.<XXXX>.sample.txt,
+where each 'X' is replaced by a random alphanumeric character.
+.Pp
+If neither the
+.Fl e
+nor
+.Fl file
+flags are given, the output gets written to stdout as well as saved to the file in /tmp.
+.Pp
+.Sh SEE ALSO
+.Xr filtercalltree 1 ,
+.Xr spindump 8
+.Pp
+The Xcode developer tools also include Instruments, a graphical application that can give information similar to that provided by
+.Nm sample.
+The Time Profiler instrument graphically displays dynamic, real-time CPU sampling information.

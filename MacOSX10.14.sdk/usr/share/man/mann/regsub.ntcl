@@ -1,0 +1,448 @@
+'\"
+'\" Copyright (c) 1993 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\" Copyright (c) 2000 Scriptics Corporation.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: regsub.n,v 1.22.2.1 2008/07/07 08:36:30 dkf Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH regsub n 8.3 Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+regsub \- Perform substitutions based on regular expression pattern matching
+.SH SYNOPSIS
+\fBregsub \fR?\fIswitches\fR? \fIexp string subSpec \fR?\fIvarName\fR?
+.BE
+.SH DESCRIPTION
+.PP
+This command matches the regular expression \fIexp\fR against
+\fIstring\fR,
+and either copies \fIstring\fR to the variable whose name is
+given by \fIvarName\fR or returns \fIstring\fR if \fIvarName\fR is not
+present.
+(Regular expression matching is described in the \fBre_syntax\fR
+reference page.)
+If there is a match, then while copying \fIstring\fR to \fIvarName\fR
+(or to the result of this command if \fIvarName\fR is not present)
+the portion of \fIstring\fR that
+matched \fIexp\fR is replaced with \fIsubSpec\fR.
+If \fIsubSpec\fR contains a
+.QW &
+or
+.QW \e0 ,
+then it is replaced in the substitution with the portion of
+\fIstring\fR that matched \fIexp\fR.
+If \fIsubSpec\fR contains a
+.QW \e\fIn\fR ,
+where \fIn\fR is a digit
+between 1 and 9, then it is replaced in the substitution with
+the portion of \fIstring\fR that matched the \fIn\fR'th
+parenthesized subexpression of \fIexp\fR.
+Additional backslashes may be used in \fIsubSpec\fR to prevent special
+interpretation of
+.QW & ,
+.QW \e0 ,
+.QW \e\fIn\fR
+and backslashes.
+The use of backslashes in \fIsubSpec\fR tends to interact badly
+with the Tcl parser's use of backslashes, so it is generally
+safest to enclose \fIsubSpec\fR in braces if it includes
+backslashes.
+.LP
+If the initial arguments to \fBregsub\fR start with \fB\-\fR then
+they are treated as switches.  The following switches are
+currently supported:
+.TP 10
+\fB\-all\fR
+All ranges in \fIstring\fR that match \fIexp\fR are found and
+substitution is performed for each of these ranges.
+Without this switch only the first
+matching range is found and substituted.
+If \fB\-all\fR is specified, then
+.QW &
+and
+.QW \e\fIn\fR
+sequences are handled for each substitution using the information
+from the corresponding match.
+.TP 15
+\fB\-expanded\fR
+Enables use of the expanded regular expression syntax where
+whitespace and comments are ignored.  This is the same as specifying
+the \fB(?x)\fR embedded option (see the \fBre_syntax\fR manual page).
+.TP 15
+\fB\-line\fR
+Enables newline-sensitive matching.  By default, newline is a
+completely ordinary character with no special meaning.  With this flag,
+.QW [^
+bracket expressions and
+.QW .
+never match newline,
+.QW ^
+matches an empty string after any newline in addition to its normal
+function, and
+.QW $
+matches an empty string before any newline in
+addition to its normal function.  This flag is equivalent to
+specifying both \fB\-linestop\fR and \fB\-lineanchor\fR, or the
+\fB(?n)\fR embedded option (see the \fBre_syntax\fR manual page).
+.TP 15
+\fB\-linestop\fR
+Changes the behavior of
+.QW [^
+bracket expressions and
+.QW .
+so that they
+stop at newlines.  This is the same as specifying the \fB(?p)\fR
+embedded option (see the \fBre_syntax\fR manual page).
+.TP 15
+\fB\-lineanchor\fR
+Changes the behavior of
+.QW ^
+and
+.QW $
+(the
+.QW anchors )
+so they match the
+beginning and end of a line respectively.  This is the same as
+specifying the \fB(?w)\fR embedded option (see the \fBre_syntax\fR
+manual page).
+.TP 10
+\fB\-nocase\fR
+Upper-case characters in \fIstring\fR will be converted to lower-case
+before matching against \fIexp\fR;  however, substitutions specified
+by \fIsubSpec\fR use the original unconverted form of \fIstring\fR.
+.TP 10
+\fB\-start\fR \fIindex\fR
+Specifies a character index offset into the string to start
+matching the regular expression at.  
+.VS 8.5
+The \fIindex\fR value is interpreted in the same manner
+as the \fIindex\fR argument to \fBstring index\fR.
+.VE 8.5
+When using this switch,
+.QW ^
+will not match the beginning of the line, and \eA will still
+match the start of the string at \fIindex\fR.
+\fIindex\fR will be constrained to the bounds of the input string.
+.TP 10
+\fB\-\|\-\fR
+Marks the end of switches.  The argument following this one will
+be treated as \fIexp\fR even if it starts with a \fB\-\fR.
+.PP
+If \fIvarName\fR is supplied, the command returns a count of the
+number of matching ranges that were found and replaced, otherwise the
+string after replacement is returned.
+See the manual entry for \fBregexp\fR for details on the interpretation
+of regular expressions.
+.SH EXAMPLES
+.PP
+Replace (in the string in variable \fIstring\fR) every instance of
+\fBfoo\fR which is a word by itself with \fBbar\fR:
+.CS
+\fBregsub\fR -all {\emfoo\eM} $string bar string
+.CE
+or (using the
+.QW "basic regular expression"
+syntax):
+.CS
+\fBregsub\fR -all {(?b)\e<foo\e>} $string bar string
+.CE
+.PP
+Insert double-quotes around the first instance of the word
+\fBinteresting\fR, however it is capitalized.
+.CS
+\fBregsub\fR -nocase {\eyinteresting\ey} $string {"&"} string
+.CE
+.PP
+Convert all non-ASCII and Tcl-significant characters into \eu escape
+sequences by using \fBregsub\fR and \fBsubst\fR in combination:
+.CS
+# This RE is just a character class for everything "bad"
+set RE {[][{};#\e\e\e$\es\eu0080-\euffff]}
+
+# We will substitute with a fragment of Tcl script in brackets
+set substitution {[format \e\e\e\eu%04x [scan "\e\e&" %c]]}
+
+# Now we apply the substitution to get a subst-string that
+# will perform the computational parts of the conversion.
+set quoted [subst [\fBregsub\fR -all $RE $string $substitution]]
+.CE
+.SH "SEE ALSO"
+regexp(n), re_syntax(n), subst(n),
+.VS 8.5
+string(n)
+.VE
+.SH KEYWORDS
+match, pattern, quoting, regular expression, substitute

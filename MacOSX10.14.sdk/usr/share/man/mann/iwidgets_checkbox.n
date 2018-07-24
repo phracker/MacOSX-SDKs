@@ -1,0 +1,363 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) checkbox.n 1.21 94/12/17 16:04:44
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::checkbox iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::checkbox \- Create and manipulate a checkbox widget
+.SH SYNOPSIS
+\fBiwidgets::checkbox\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Labeledframe <- iwidgets::Checkbox
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBbackground\fR	\fBborderWidth\fR	\fBcursor\fR	\fBdisabledForeground\fR
+\fBforeground\fR	\fBrelief\fR	\fBselectColor\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "INHERITED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBlabelBitmap\fR	\fBlabelFont\fR	\fBlabelImage\fR	\fBlabelMargin\fR
+\fBlabelPos\fR	\fBlabelText\fR	\fBlabelVariable\fR
+.fi
+.LP
+See the "labeledframe" class manual entry for details on the 
+inherited options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:   \fBcommand\fR
+Class:  \fBCommand\fR
+Command-Line Switch:    \fB-command\fR
+.fi
+.IP
+Specifies a Tcl command procedure to be evaluated following a  change in 
+the current check box selection.
+.LP
+.nf
+Name:   \fBorient\fR
+Class:  \fBOrient\fR
+Command-Line Switch:    \fB-orient\fR
+Default Value:  \fBvertical\fR
+.fi
+.IP
+Specifies the orientation of the checkbuttons within the checkbox.  Valid
+values are either "horizontal" or "vertical".
+.LP
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::checkbox\fR command creates a check button box widget 
+capable of adding, inserting, deleting, selecting, and configuring 
+checkbuttons as well as obtaining the currently selected button.
+
+.SH "METHODS"
+.PP
+The \fBiwidgets::checkbox\fR command creates a new Tcl command whose
+name is \fIpathName\fR.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command.  
+.PP
+Many of the widget commands for the \fBcheckbox\fR take as one argument an
+indicator of which checkbutton of the checkbox to operate on.  These indicators
+are called \fIindexes\fR and allow reference and manipulation of checkbuttons.
+Checkbox indexes may be specified in any of the following forms:
+.TP 12
+\fInumber\fR
+Specifies the checkbutton numerically, where 0 corresponds to the top 
+checkbutton of the checkbox.
+.TP 12
+\fBend\fR
+Indicates the last checkbutton of the checkbox.
+.TP 12
+\fIpattern\fR
+If the index doesn't satisfy one of the above forms then this
+form is used.  \fIPattern\fR is pattern-matched against the tag of
+each checkbutton in the checkbox, in order from top to bottom,
+until a matching entry is found.  The rules of \fBTcl_StringMatch\fR
+are used.
+
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBadd\fR \fItag\fR ?\fIoption value option value\fR?
+Adds a new checkbutton to the checkbuttond window on the bottom.  The command
+takes additional options which are passed on to the checkbutton as construction
+arguments.  These include the standard Tk checkbutton options.  The tag is
+returned.
+.TP
+\fIpathName \fBbuttonconfigure\fR \fIindex\fR ?\fIoptions\fR?
+This command is similar to the \fBconfigure\fR command, except that
+it applies to the options for an individual checkbutton, 
+whereas \fBconfigure\fRapplies to the options for the checkbox as a whole.
+\fIOptions\fR may have any of the values accepted by the \fBadd\fR
+widget command.  If \fIoptions\fR are specified, options are modified
+as indicated in the command and the command returns an empty string.
+If no \fIoptions\fR are specified, returns a list describing
+the current options for entry \fIindex\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::checkbox\fR
+command.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::checkbox\fR
+command.
+.TP
+\fIpathName \fBdelete\fR \fIindex\fR
+Deletes a specified checkbutton given an \fIindex\fR.
+.TP
+\fIpathName \fBdeselect\fR \fIindex\fR
+Deselects a specified checkbutton given an \fIindex\fR.
+.TP
+\fIpathName \fBflash\fR \fIindex\fR
+Flashes a specified checkbutton given an \fIindex\fR.
+.TP
+\fIpathName \fBget\fR ?\fIindex\fR?
+Returns the tags of the currently selected checkbuttons or the 
+selection status of specific checkbutton when given an index.
+.TP
+\fIpathName \fBindex\fR \fIindex\fR
+Returns the numerical index corresponding to index.
+.TP
+\fIpathName \fBinsert \fIindex\fR \fItag\fR ?\fIoption value option value ...\fR?
+Same as the \fBadd\fR command except that it inserts the new
+checkbutton just before the one given by \fIindex\fR, instead of appending
+to the end of the checkbox.  The \fIoption\fR, and \fIvalue\fR
+arguments have the same interpretation as for the \fBadd\fR widget
+command.  
+.TP
+\fIpathName \fBselect\fR \fIindex\fR
+Selects a specified checkbutton given an \fIindex\fR.
+
+.SH EXAMPLE
+.DS
+ package require Iwidgets 4.0
+ iwidgets::checkbox .cb -labeltext Styles
+ .cb add bold -text Bold
+ .cb add italic -text Italic
+ .cb add underline -text Underline
+ .cb select underline
+
+ pack .cb -padx 10 -pady 10 -fill both -expand yes
+.DE
+
+.SH AUTHOR
+John A. Tucker
+.SH KEYWORDS
+checkbox, widget

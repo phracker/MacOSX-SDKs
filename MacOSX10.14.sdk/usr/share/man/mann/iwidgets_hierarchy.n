@@ -1,0 +1,814 @@
+'\"
+'\" Copyright (c) 1997 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) hierarchy.n 1.21 94/12/17 16:04:44
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::hierarchy iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::hierarchy \- Create and manipulate a hierarchy widget
+.SH SYNOPSIS
+\fBiwidgets::hierarchy\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Scrolledwidget <- iwidgets::Hierarchy
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fB
+activeBackground    activeForeground    background        borderWidth
+cursor              disabledForeground  foreground        highlightColor
+highlightThickness  relief              selectBackground  selectForeground\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "ASSOCIATED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBactiveRelief\fR	\fBelementBorderWidth\fR	\fBjump\fR	\fBtroughColor\fR
+.fi
+.LP
+See the "scrollbar" widget manual entry for details on the above
+associated options.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBspacing1\fR	\fBspacing2\fR	\fBspacing3\fR	\fBtabs\fR
+.fi
+.LP
+See the "text" widget manual entry for details on the above
+associated options.
+.SH "INHERITED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBlabelBitmap\fR	\fBlabelFont\fR	\fBlabelImage\fR	\fBlabelMargin\fR
+\fBlabelPos\fR	\fBlabelText\fR	\fBlabelVariable\fR	\fBsticky\fR
+.fi
+.LP
+See the "labeledwidget" class manual entry for details on the inherited options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBalwaysQuery\fR
+Class:	\fBAlwaysQuery\fR
+Command-Line Switch:	\fB-alwaysquery\fR
+.fi
+.IP
+Boolean flag which tells the hierarchy widget weather or not
+each refresh of the display should be via a new query using
+the command value of the -querycommand option or use the values 
+previous found the last time the query was made.  The default
+is no.
+.LP
+.nf
+Name:	\fBclosedIcon\fR
+Class:	\fBIcon\fR
+Command-Line Switch:	\fB-closedicon\fR
+.fi
+.IP
+Specifies the name of an existing closed icon image to be used in the 
+hierarchy before those nodes that are collapsed.  Should one not be 
+provided, then a folder icon will be generated, pixmap if possible, 
+bitmap otherwise.
+.LP
+.nf
+Name:	\fBdblClickCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-dblclickcommand\fR
+.fi
+.IP
+Specifies a command to be executed upon user double clicking via mouse button
+one of the text label of an entry. If this command contains "%n", it is
+replaced with the name of the selected node. Should it contain "%s" then a
+boolean indicator of the node's current selection status is substituted.
+.LP
+.nf
+Name:	\fBexpanded\fR
+Class:	\fBExpanded\fR
+Command-Line Switch:	\fB-expanded\fR
+.fi
+.IP
+When true, the hierarchy will be completely expanded when it
+is first displayed.  A fresh display can be triggered by
+resetting the -querycommand option.  The default is false.
+.LP
+.nf
+Name:	\fBfilter\fR
+Class:	\fBFilter\fR
+Command-Line Switch:	\fB-filter\fR
+.fi
+.IP
+When true only the branch nodes and selected items are displayed.
+This gives a compact view of important items.  The default is false.
+.LP
+.nf
+Name:	\fBheight\fR
+Class:	\fBHeight\fR
+Command-Line Switch:	\fB-height\fR
+.fi
+.IP
+Specifies the height of the hierarchy as an entire unit.
+The value may be specified in any of the forms acceptable to 
+\fBTk_GetPixels\fR.  Any additional space needed to display the other
+components such as labels, margins, and scrollbars force the hierarchy
+to be compressed.  A value of zero along with the same value for 
+the width causes the value given for the visibleitems option 
+to be applied which administers geometry constraints in a different
+manner.  The default height is zero.
+.LP
+.nf
+Name:	\fBiconCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-iconcommand\fR
+.fi
+.IP
+Specifies a command to be executed upon user selection via mouse button
+one of any additional icons given in the values returned by the command
+associated with the -querycommand option.  If this command contains "%n", 
+it is replaced with the name of the node the icon belongs to.  Should it 
+contain "%i" then the icon name is  substituted.
+.LP
+.nf
+Name:	\fBiconDblCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-icondblcommand\fR
+.fi
+.IP
+Specifies a command to be executed upon user double clicking via mouse button
+one of the icon of an entry. If this command contains "%n", it is replaced
+with the name of the node the icon belongs to. Should it contain "%i" then
+the icon name is substituted.
+.LP
+.nf
+Name:	\fBimageCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-imagecommand\fR
+.fi
+.IP
+Specifies a command to be executed upon user selecting an image of an entry.
+If this command contains "%n", it is replaced with the name of the selected
+node. Should it contain "%s" then a boolean indicator of the node's current
+selection status is substituted.
+.LP
+.nf
+Name:	\fBimageDblCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-imagedblcommand\fR
+.fi
+.IP
+Specifies a command to be executed upon user double clicking via mouse button
+one of the image of an entry. If this command contains "%n", it is replaced
+with the name of the node the icon belongs to. Should it contain "%i" then
+the icon name is substituted.
+.LP
+.nf
+Name:	\fBimageMenuLoadCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-imagemenuloadcommand\fR
+.fi
+.IP
+Specifies a command to be executed upon user selection via mouse button three,
+on the image or icon, that will dynamically load the itemMenu for the widget.
+.LP
+.nf
+Name:	\fBmarkBackground\fR
+Class:	\fBForeground\fR
+Command-Line Switch:	\fB-markbackground\fR
+.fi
+.IP
+Specifies the background color to use when displaying marked nodes.
+.LP
+.nf
+Name:	\fBmarkForeground\fR
+Class:	\fBBackground\fR
+Command-Line Switch:	\fB-markforeground\fR
+.fi
+.IP
+Specifies the foreground color to use when displaying marked nodes.
+.LP
+.nf
+Name:	\fBmenuCursor\fR
+Class:	\fBCursor\fR
+Command-Line Switch:	\fB-menucursor\fR
+.fi
+.IP
+Specifies the mouse cursor to be used for the item and background 
+menus.  The value may have any of the forms accept able to Tk_GetCursor.
+.LP
+.nf
+Name:	\fBnodeIcon\fR
+Class:	\fBIcon\fR
+Command-Line Switch:	\fB-nodeicon\fR
+.fi
+.IP
+Specifies the name of an existing node icon image to be used in the 
+hierarchy before those nodes that are leafs.  Should one not be provided, 
+then a dog-eared page icon will be generated, pixmap if possible, bitmap 
+otherwise.
+.LP
+.nf
+Name:	\fBopenIcon\fR
+Class:	\fBIcon\fR
+Command-Line Switch:	\fB-openicon\fR
+.fi
+.IP
+Specifies the name of an existing open icon image to be used in the 
+hierarchy before those nodes that are expanded.  Should one not be provided, 
+then an open folder icon will be generated, pixmap if possible, bitmap 
+otherwise.
+.LP
+.nf
+Name:	\fBqueryCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-querycommand\fR
+.fi
+.IP
+Specifies the command executed to query the contents of each node.  If this 
+command contains "%n", it is replaced with the name of the desired 
+node.  In its simpilest form it should return the children of the 
+given node as a list which will be depicted in the display.
+Since the names of the children are used as tags in the underlying 
+text widget, each child must be unique in the hierarchy.  Due to
+the unique requirement, the nodes shall be reffered to as uids 
+or uid in the singular sense.  The format of returned list is
+.IP
+  {uid [uid ...]}
+.IP
+  where uid is a unique id and primary key for the hierarchy entry
+.IP
+Should the unique requirement pose a problem, the list returned
+can take on another more extended form which enables the 
+association of text to be displayed with the uids.  The uid must
+still be unique, but the text does not have to obey the unique
+rule.  In addition, the format also allows the specification of
+additional tags to be used on the same entry in the hierarchy
+as the uid and additional icons to be displayed just before
+the node.  The tags and icons are considered to be the property of
+the user in that the hierarchy widget will not depend on any of 
+their values.  The extended format is
+.IP
+  {{uid [text [tags [icons]]]} {uid [text [tags [icons]]]} ...}
+.IP
+  where uid is a unique id and primary key for the hierarchy entry
+        text is the text to be displayed for this uid
+        tags is a list of user tags to be applied to the entry
+        icons is a list of icons to be displayed in front of the text
+.IP
+The hierarchy widget does a look ahead from each node to determine
+if the node has a children.  This can be cost some performace with
+large hierarchies.  User's can avoid this by providing a hint in
+the user tags.  A tag of "leaf" or "branch" tells the hierarchy
+widget the information it needs to know thereby avoiding the look
+ahead operation.
+.LP
+.nf
+Name:	\fBhscrollMode\fR
+Class:	\fBScrollMode\fR
+Command-Line Switch:	\fB-hscrollmode\fR
+.fi
+.IP
+Specifies the the display mode to be used for the horizontal
+scrollbar: \fBstatic, dynamic,\fR or \fBnone\fR.  In static mode, the 
+scroll bar is displayed at all times.  Dynamic mode displays the
+scroll bar as required, and none disables the scroll bar display.  The 
+default is static.
+.LP
+.nf
+Name:	\fBsbWidth\fR
+Class:	\fBWidth\fR
+Command-Line Switch:	\fB-sbwidth\fR
+.fi
+.IP
+Specifies the width of the scrollbar in any of the forms
+acceptable to \fBTk_GetPixels\fR.  
+.LP
+.nf
+Name:	\fBscrollMargin\fR
+Class:	\fBMargin\fR
+Command-Line Switch:	\fB-scrollmargin\fR
+.fi
+.IP
+Specifies the distance between the text portion of the hierarchy and 
+the scrollbars in any of the forms acceptable to \fBTk_GetPixels\fR.  The 
+default is 3 pixels.
+.LP
+.nf
+Name:	\fBselectCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-selectcommand\fR
+.fi
+.IP
+Specifies a Tcl command to be evaluated when you select a node in the
+hierarchy via left mouse click.  If "%n" is included in the command, it is
+substituted with the node name.  Similarly, "%s" is substituted with the
+node's current selection status: 1 for selected, 0 otherwise.
+.LP
+Name:	\fBtextBackground\fR
+Class:	\fBBackground\fR
+Command-Line Switch:	\fB-textbackground\fR
+.fi
+.IP
+Specifies the background color for the text portion of the hierarchy in 
+any of the forms acceptable to \fBTk_GetColor\fR.
+.LP
+.nf
+Name:	\fBtextFont\fR
+Class:	\fBFont\fR
+Command-Line Switch:	\fB-textfont\fR
+.fi
+.IP
+Specifies the font to be used in the text portion of the hierarchy.
+.LP
+.nf
+Name:	\fBtextMenuLoadCommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-textmenuloadcommand\fR
+.fi
+.IP
+Specifies a command to be executed upon user selection via mouse button three,
+that will dynamically load the itemMenu for the widget.
+.LP
+.nf
+Name:	\fBvisibleitems\fR
+Class:	\fBVisibleItems\fR
+Command-Line Switch:	\fB-visibleitems\fR
+.fi
+.IP
+Specifies the widthxheight in characters and lines for the hierarchy.
+This option is only administered if the width and height options
+are both set to zero, otherwise they take precedence.  The default value
+is 80x24.  With the visibleitems option engaged, geometry constraints 
+are maintained only on the text portion of the hierarchy.  The size of 
+the other components such as 
+labels, margins, and scroll bars, are additive and independent, 
+effecting the overall size of the hierarchy.  In contrast,
+should the width and height options have non zero values, they
+are applied to the hierarchy as a whole.  The hierarchy 
+is compressed or expanded to maintain the geometry constraints.
+.LP
+.nf
+Name:	\fBvscrollMode\fR
+Class:	\fBScrollMode\fR
+Command-Line Switch:	\fB-vscrollmode\fR
+.fi
+.IP
+Specifies the the display mode to be used for the vertical
+scrollbar: \fBstatic, dynamic,\fR or \fBnone\fR.  In static mode, the 
+scroll bar is displayed at all times.  Dynamic mode displays the 
+scroll bar as required, and none disables the scroll bar display.  The 
+default is static.
+.LP
+.nf
+Name:	\fBwidth\fR
+Class:	\fBWidth\fR
+Command-Line Switch:	\fB-width\fR
+.fi
+.IP
+Specifies the width of the hierarchy as an entire unit.
+The value may be specified in any of the forms acceptable to 
+\fBTk_GetPixels\fR.  Any additional space needed to display the other
+components such as labels, margins, and scrollbars force the text portion
+of the hierarchy
+to be compressed.  A value of zero along with the same value for 
+the height causes the value given for the visibleitems option 
+to be applied which administers geometry constraints in a different
+manner.  The default width is zero.
+.LP
+
+
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::hierarchy\fR command creates a hierarchical data view widget.  
+It allows the graphical management of a a list of nodes that can be
+expanded or collapsed.  Individual nodes can be highlighted.
+Clicking with the right mouse button on any item brings up a
+special item menu.  Clicking on the background area brings up
+a different popup menu.  Options exist to provide user control over
+the loading of the nodes and actions associated with node selection.
+Since the hierarchy is based on the scrolledtext widget, it includes
+options to control the method in which the scrollbars are displayed, 
+i.e. statically or  dynamically.  Options also exist for adding a 
+label to the hierarchy and controlling its position.
+
+.SH "METHODS"
+.PP
+The \fBiwidgets::hierarchy\fR command creates a new Tcl command whose
+name is \fIpathName\fR.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command.  The following
+commands are possible for hierarchy widgets:
+.SH "ASSOCIATED METHODS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBbbox\fR	\fBcompare\fR	\fBdebug\fR	\fBdelete\fR	
+\fBdlineinfo\fR	\fBdump\fR	\fBget\fR	\fBindex\fR
+\fBinsert\fR	\fBscan\fR	\fBsearch\fR	\fBsee\fR
+\fBtag\fR	\fBwindow\fR	\fBxview\fR	\fByview\fR
+.fi
+.LP
+See the "text" manual entry for details on the standard methods.
+
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::hierarchy\fR
+command.
+.TP
+\fIpathName \fBclear\fR
+Removes all items from the hierarchy display including all tags and icons.  
+The display will remain empty until the -filter or -querycommand 
+options are set.
+.TP
+\fIpathName \fBcollapse\fR \fIuid\fR
+Collapses the hierarchy beneath the node with the specified unique id by 
+one level.  Since this can take a moment for large hierarchies, the 
+cursor will be changed to a watch during the collapse.  Also, if any
+of the nodes beneath the node being collapsed are selected, their
+status is changed to unselected.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::hierarchy\fR
+command.
+.TP
+\fIpathName \fBcurrent\fR
+Returns the tags for the node that was most recently selected by the 
+right mouse button when the item menu was posted.  Usually used by the code
+in the item menu to figure out what item is being manipulated.
+.TP
+\fIpathName \fBdraw\fR ?\fIwhen\fR?
+Performs a complete redraw of the entire hierarchy.  When may be either -now
+or -eventually where the latter means the draw can be performed after idle.
+.TP
+\fIpathName \fBexpand\fR \fIuid\fR
+Expands the hierarchy beneath the node with the specified unique id by
+one level.  Since this can take a moment for large hierarchies, the cursor 
+will be changed to a watch during the expansion.
+.TP
+\fIpathName \fBexpanded\fR \fIuid\fR
+Returns the current state of expansion for the node with the specified unique
+id.
+.TP
+\fIpathName \fBexpState\fR
+Returns a list of all expanded nodes in the tree.
+.TP
+\fIpathName \fBmark\fR \fIoption ?arg arg ...?\fR
+This command is used to manipulate marks which is quite similar to 
+selection, adding a secondary means of hilighting an item in the 
+hierarchy.  The exact behavior of the command depends on the 
+\fIoption\fR argument that follows the \fBmark\fR argument.  The 
+following forms of the command are currently supported:
+.RS
+.TP
+\fIpathName \fBmark clear\fR
+Clears all the currently marked nodes in the hierarchy.
+.TP
+\fIpathName \fBmark add \fIuid \fR?\fIuid uid ...\fR?
+Marks the nodes with the specified uids in the hierarchy using the 
+\fB-markbackground\fR and \fB-markforeground\fR options and without
+affecting the mark state of any other nodes that were already 
+marked.
+.TP
+\fIpathName \fBmark remove \fIuid \fR?\fIuid uid ...\fR?
+Unmarks the nodes with the specified uids in the hierarchy without
+affecting the mark state of any other nodes that were already 
+marked.
+.TP
+\fIpathName \fBmark get\fR
+Returns a list of the unique ids that are currently marked.
+.RE
+.TP
+\fIpathName \fBrefresh\fR \fIuid\fR
+Performs a redraw of a specific node that has the given uid.  If the node
+is not currently visible or in other words already drawn on the text,
+then no action is taken.
+.TP
+\fIpathName \fBprune\fR \fIuid\fR
+Removes the node specified by the given uid from the hierarchy.  Should 
+the node have children, then all of its children will be removed as well.
+.TP
+\fIpathName \fBselection\fR \fIoption \fR?\fIarg arg ...\fR?
+This command is used to manipulate the selection of nodes in the
+hierarchy.  The exact behavior of the command depends on the 
+\fIoption\fR argument that follows the \fBselection\fR argument.  The 
+following forms of the command are currently supported:
+.RS
+.TP
+\fIpathName \fBselection clear\fR
+Clears all the currently selected nodes in the hierarchy.
+.TP
+\fIpathName \fBselection add \fIuid \fR?\fIuid uid ...\fR?
+Selects the nodes with the specified uids in the hierarchy using the 
+\fB-selectionbackground\fR and \fB-selectionforeground\fR options and without
+affecting the selection state of any other nodes that were already 
+selected.
+.TP
+\fIpathName \fBselection remove \fIuid \fR?\fIuid uid ...\fR?
+Deselects the nodes with the specified uids in the hierarchy without
+affecting the selection state of any other nodes that were already 
+selected.
+.TP
+\fIpathName \fBselection get\fR
+Returns a list of the unique ids that are currently selected.
+.RE
+A nodes selection status is also dependent on it being visible.  If a 
+node is selected and its parent is then collapsed making the selected
+node not visible, then its selection status is changed to unselected.
+.TP
+\fIpathName \fBtoggle\fR \fIuid\fR
+Toggles the hierarchy beneath the node with the specified unique id.  If 
+the hierarchy is currently expanded, then it is collapsed, and vice-versa.
+
+.SH "COMPONENTS"
+.LP
+.nf
+Name:	\fBlist\fR
+Class:	\fBText\fR
+.fi
+.IP
+The list component is the text widget in which the hierarchy is displayed.
+See the "text" widget manual entry for details on the text component item.
+.LP
+.nf
+Name:	\fBbgMenu\fR
+Class:	\fBMenu\fR
+.fi
+.IP
+The bgMenu component is the popup menu which is displayed upon pressing
+the right mouse button in the background, i.e. not over a specific node.  Menu
+items can be added along with their commands via the component command.  
+See the "menu" widget manual entry for details on the bgMenu component item.
+.LP
+.nf
+Name:	\fBhorizsb\fR
+Class:	\fBScrollbar\fR
+.fi
+.IP
+The horizsb component is the horizontal scroll bar.  See the "scrollbar" 
+widget manual entry for details on the horizsb component item.
+.LP
+.nf
+Name:	\fBitemMenu\fR
+Class:	\fBMenu\fR
+.fi
+.IP
+The itemMenu component is the popup menu which is displayed upon selection
+of a hierarchy node with the right mouse button.  Menu items can be 
+added along with their commands via the component command.  See the "menu" 
+widget manual entry for details on the itemMenu component item.
+.LP
+.nf
+Name:	\fBvertsb\fR
+Class:	\fBScrollbar\fR
+.fi
+.IP
+The vertsb component is the vertical scroll bar.  See the "scrollbar" widget 
+manual entry for details on the vertsb component item.
+.fi
+
+.SH EXAMPLE
+.DS
+package require Iwidgets 4.0
+proc get_files {file} {
+    global env
+
+    if {$file == ""} {
+        set dir $env(HOME)
+    } else {
+        set dir $file
+    }
+
+    if {[catch {cd $dir}] != 0} {
+        return ""
+    }
+
+    set rlist ""
+
+    foreach file [lsort [glob -nocomplain *]] {
+        lappend rlist [list [file join $dir $file] $file]
+    }
+
+    return $rlist
+}
+
+iwidgets::hierarchy .h -querycommand "get_files %n" -visibleitems 30x15 \
+    -labeltext $env(HOME)
+pack .h -side left -expand yes -fill both
+.DE
+.SH AUTHOR
+Mark L. Ulferts
+.DE
+Michael J. McLennan
+.SH KEYWORDS
+hierarchy, text, widget

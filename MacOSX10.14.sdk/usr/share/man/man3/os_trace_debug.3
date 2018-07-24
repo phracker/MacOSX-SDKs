@@ -1,0 +1,106 @@
+.\" Copyright (c) 2014 Apple Inc. All rights reserved.
+.Dd June 2, 2016
+.Dt os_trace 3
+.Os Darwin
+.Sh NAME
+.Nm os_trace ,
+.Nm os_trace_debug ,
+.Nm os_trace_error ,
+.Nm os_trace_fault
+.Nd trace message for the current activity
+.Sh SYNOPSIS
+.In os/trace.h
+.Ft void
+.Fn os_trace "const char *format" ...
+.Ft void
+.Fn os_trace_debug "const char *format" ...
+.Ft void
+.Fn os_trace_error "const char *format" ...
+.Ft void
+.Fn os_trace_fault "const char *format" ...
+.Sh DESCRIPTION
+This interface is deprecated and replaced by
+.Xr os_log 3 .
+.Pp
+.Nm
+and its variants use a memory-only buffer to store the provided trace message.
+Trace messages are correlated based on a new identifier assigned when an activity is created by the system, see
+.Xr os_activity_initiate 3 .
+The identifier is automatically carried across GCD and XPC boundaries.
+This identifier provides a correlation point for intra and inter-process work based on that activity.
+.Pp
+Trace messages should never be done in tight loops as they may overrun the buffer pushing relevant trace messages out. Loss of those entries reduces the effectiveness of the trace mechanism.
+.Pp
+The API was designed to prevent strings from being recorded in the buffers for performance and privacy protection.
+See
+.Xr os_log 3
+for string and object support, among other features. The os_trace API set only supports scalar types (float,double, etc.).
+All unsupported types will emit UNSUP to the trace output.
+The format string length does not factor into the trace buffer memory, although there is a maximum supported length of 100 characters.
+.Pp
+Inappropriate use of strings in messages:
+.Bd -literal -offset indent
+os_trace("user %s logged in from hostname %s", username, host);
+.Ed
+.Pp
+Will output:
+.Bd -literal -offset indent
+user UNSUP logged in from hostname UNSUP
+.Ed
+.Pp
+There are four (4) types of trace messages: default, debug, error, and fault.
+.Pp
+.Nm os_trace
+is a "default" trace message.
+The default category of messages are always recorded into the memory buffers regardless of the state of the process.
+Limit use to messages that would help diagnose a failure, crash, etc.
+.Pp
+.Bd -literal -offset indent
+os_trace("issue query for record type: %d, timeout: %d", recType, timeout);
+.Ed
+.Pp
+.Nm os_trace_debug
+is a "debug" trace message.
+The debug category of messages are only recorded if the process is under a debugger or is specifically requested to include debug messages.
+Debug messages should be used for development use while debugging a problem.
+.Pp
+.Nm os_trace_error
+is an "error" trace message.
+The error category of messages should be used when a process encounters a soft-error (i.e., an unexpected error that was successfully avoided).
+.Pp
+.Nm os_trace_fault
+is a "fault" trace message.
+The fault category of messages should be used when a process is about to crash or would otherwise crash but recovered.
+This call causes a collection of all buffers related to activity that triggered the fault.
+The buffers are analyzed and may be provided in crash/spin reports.
+.Pp
+.Ed
+.Sh EXAMPLES
+Example use of trace messages.
+.Pp
+.Bd -literal -offset indent
+#include <os/trace.h>
+#include <pwd.h>
+
+uid_t uid;
+
+os_trace("looking up user %d", uid);
+struct passwd *pwd = getpwuid(uid);
+if (pwd == NULL) {
+    os_trace_error("failed to lookup user %d", uid);
+    return ENOENT;
+}
+
+error = _openPref(pwd->pw_name, pwd->pw_dir);
+if (error) {
+    os_trace_error("failed to open prefs %d", error);
+    return error;
+}
+.Ed
+.Pp
+.Sh CAVEATS
+Please note that os_trace is printf-like, but not printf-compatible. Format specifiers should be exactly matched to the types of the arguments being used to fill them.
+.Sh SEE ALSO
+.Xr os_log 3 ,
+.Xr os_log_create 3 ,
+.Xr os_activity_initiate 3

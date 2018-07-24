@@ -1,0 +1,2404 @@
+.Dd 01 Sep 2016
+.\" 10.13 revision: so far, minor tense changes
+.\" preview changes to this file with 'man Documentation/hdiutil.1'
+.Os "macOS"
+.Dt HDIUTIL 1
+.Sh NAME
+.Nm hdiutil
+.Nd manipulate disk images (attach, verify, create, etc)
+.Sh SYNOPSIS
+.Nm
+.Ar verb
+.Op options
+.Sh DESCRIPTION
+.Nm
+uses the DiskImages framework to manipulate disk images.
+Common verbs include
+.Sy "attach",
+.Sy "detach",
+.Sy "verify",
+.Sy "create",
+.Sy "convert",
+and
+.Sy "compact".
+.Pp
+The rest of the verbs are currently:
+.Sy "help",
+.Sy "info",
+.Sy "burn",
+.Sy "checksum",
+.Sy "chpass",
+.Sy "erasekeys",
+.Sy "unflatten",
+.Sy "flatten",
+.Sy "imageinfo",
+.Sy "isencrypted",
+.Sy "mountvol",
+.Sy "unmount,
+.Sy "plugins",
+.Sy "udifrez",
+.Sy "udifderez",
+.Sy "internet-enable",
+.Sy "resize",
+.Sy "segment",
+.Sy "makehybrid",
+and
+.Sy "pmap".
+.\"
+.Sh BACKGROUND
+Disk images are data containers that emulate disks.  Like disks, they can
+be partitioned and formatted.  Many common uses of disk images blur the
+distinction between the disk image container and its content, but this
+distinction is critical to understanding how disk images work.  The terms
+"attach" and "detach" are used to distinguish the way disk images are
+connected to and disconnected from a system.  "Mount" and "unmount" are
+the parallel filesystems options.
+.Pp
+For example, when you double-click a disk image in the macOS Finder,
+two separate things happen.  First, the image is "attached" to the system
+just like an external drive.  Then, the kernel and Disk Arbitration probe
+the new device for recognized file structures.  If any are discovered that
+should be mounted, the associated volumes will mount and appear on the desktop.
+.Pp
+When using disk images, always consider whether an operation applies to
+the blocks of the disk image container or to the (often file-oriented)
+content of the image.  For example,
+.Nm
+.Sy verify
+verifies that the blocks stored in a read-only disk image have not changed
+since it was created.  It does not check whether the filesystem stored
+within the image is self-consistent (as
+.Sy diskutil verifyVolume
+would). On the other hand,
+.Nm
+.Sy create
+.Fl srcfolder
+creates a disk image container, puts a filesystem in it, and then copies
+the specified files to the new filesystem.
+.\"
+.Sh COMMON OPTIONS
+The following option descriptions apply to all verbs:
+.Pp
+.Bl -hang -width "verbose"
+.It Fl verbose
+be verbose: produce extra progress output and error diagnostics.  This
+option can help the user decipher why a particular operation failed.  At
+a minimum, the probing of any specified images will be detailed.
+.It Fl quiet
+close stdout and stderr, leaving only
+.Nm hdiutil Ns 's
+exit status to indicate success or failure.  No /dev entries or mount points
+will be printed.
+.Fl debug
+and
+.Fl verbose
+disable
+.Fl quiet .
+.It Fl debug
+be very verbose.  This option is good if a large amount of progress information
+is needed.  As of Mac OS X 10.6,
+.Fl debug
+enables
+.Fl verbose .
+.El
+.Pp
+.\"             -- other common opts --
+Many
+.Nm
+verbs understand the following options:
+.Pp
+.Bl -tag -width "-puppetstrings"
+.It Fl plist
+provide result output in plist format.  Other programs invoking
+.Nm
+are expected to use
+.Fl plist
+rather than try to parse the human-readable output.
+The usual output is consistent but generally unstructured.
+.It Fl puppetstrings
+provide progress output that is easy for another program to parse.
+PERCENTAGE outputs can include the value -1 which means
+.Nm
+is performing an operation that will take an indeterminate amount of time
+to complete.  Any program trying to interpret
+.Nm hdiutil Ns 's
+progress should use
+.Fl puppetstrings .
+.Pp
+.It Fl srcimagekey Ar key=value
+specify a key/value pair for the disk image recognition system.
+.Ns ( Fl imagekey
+is normally a synonym)
+.It Fl tgtimagekey Ar key=value
+specify a key/value pair for any image created.
+.Ns ( Fl imagekey
+is only a synonym if there is no input image).
+.Pp
+.It Fl encryption Op Ar AES-128|AES-256
+specify a particular type of encryption or, if not specified, the default
+encryption algorithm.  As of OS X 10.7, the default algorithm is the AES cipher
+running in CBC mode on 512-byte blocks with a 128-bit key.
+.It Fl stdinpass
+read a null-terminated passphrase from standard input.  If the standard
+input is a tty, the passphrase will be read with
+.Xr readpassphrase 3 .
+Otherwise, the password is read from stdin.
+.Fl stdinpass
+replaces
+.Fl passphrase
+which has been deprecated.
+.Fl passphrase
+is insecure because its argument appears in the output of
+.Xr ps 1
+where it is visible to other users and processes on the system.  See
+EXAMPLES.
+.It Fl agentpass
+force the default behavior of prompting for a passphrase.  Useful with
+.Fl pubkey
+to create an image protected by both a passphrase and a public key.
+.It Fl recover Ar keychain_file
+specify a keychain containing the secret corresponding to the certificate
+specified with
+.Fl certificate
+when the image was created.
+.It Fl certificate Ar cert_file
+specify a secondary access certificate for an encrypted image.
+.Ar cert_file
+must be DER-encoded certificate data, which can be created by Keychain
+Access or
+.Xr openssl 1 .
+.It Fl pubkey Ar PK1,PK2,...,PKn
+specify a list of public keys, identified by their hexadecimal hashes,
+to be used to protect the encrypted image being created.
+.It Fl cacert Ar cert
+specify a certificate authority certificate.
+.Ar cert
+can be either a PEM file or a directory of certificates processed by
+.Xr c_rehash 1 Ns .
+See also
+.Fl -capath
+and
+.Fl -cacert
+in
+.Xr curl 1 Ns .
+.It Fl insecurehttp
+ignore SSL host validation failures.  Useful for self-signed servers for
+which the appropriate certificates are unavailable or if access to a
+server is desired when the server name doesn't match what is in the
+certificate.
+.Pp
+.\"
+.\"             -- -shadow --
+.It Fl shadow Op Ar shadowfile
+Use a shadow file in conjunction with the data in the primary image file.
+This option prevents modification of the original image and allows
+read-only images to be attached read/write.  When blocks are being read
+from the image, blocks present in the shadow file override blocks in the
+base image.  All data written to an attached device will be redirected
+to the shadow file.  If not specified,
+.Ar shadowfile
+defaults to
+.Ar image Ns .shadow.
+If the shadow file does not exist, it is created.
+.Nm
+verbs taking images as input accept
+.Fl shadow ,
+.Fl cacert ,
+and
+.Fl insecurehttp Ns .
+.El
+.Pp
+Verbs that create images automatically append the correct extension to any
+filenames if the extension is not already present.  The creation engine
+also examines the filename extension of the provided filename and changes
+its behavior accordingly.  For example, a sparse bundle image can be created
+without specifying -type SPARSEBUNDLE simply by appending the .sparsebundle
+extension to the provided filename.
+.\"
+.Sh VERBS
+Each verb is listed with its description and individual arguments.
+Arguments to the verbs can be passed in any order.  A sector is 512 bytes.
+.\" begin verb list
+.Bl -hang -width "imageinfo"
+.\"
+.\"             -- help --
+.It Sy help
+display minimal usage information for each verb.
+.Nm
+.Ar verb
+.Fl help
+will provide basic usage information for that verb.
+.\"
+.\"             -- attach --
+.It Sy attach Ar image Op Ar options
+.br
+attach a disk image as a device.
+.Sy attach
+will return information about an already-attached image as if it had
+attached it.  If any associated volumes are unmounted (and mounting is
+not suppressed), they will be remounted.
+.Sy mount
+is a poorly-named synonym for
+.Sy "attach" .
+See BACKGROUND.
+.Pp
+By default, the system applies additional mount options to filesystems
+backed by untrusted devices like disk images: options like nosuid and
+quarantine.  PERMISSIONS VS. OWNERS explains the behavior of such
+filesystems and EXAMPLES shows how to override some of the default
+behavior.
+.Pp
+The output of
+.Sy attach
+has been stable since Mac OS X 10.0 (though it was called
+.Xr hdid 8
+then) and is intended to be program-readable.  It consists of the /dev
+node, a tab, a content hint (if applicable), another tab, and a mount
+point (if any filesystems were mounted).  Because content hints are derived
+from the partition data, GUID Partition Table types may leak through.
+Common GUIDs such as "48465300-0000-11AA-AA11-0030654" are mapped to their
+human-readable counterparts (here "Apple_HFS").
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "recover",
+.Fl "imagekey",
+.Fl "shadow",
+.Fl puppetstrings ,
+and
+.Fl "plist".
+.Pp
+Options:
+.Bl -hang -width "-mountrandom path" -compact
+.It Fl readonly
+force the resulting device to be read-only
+.It Fl readwrite
+attempt to override the DiskImages framework's decision to attach a
+particular image read-only.  For example,
+.Fl readwrite
+can be used to modify the HFS+ filesystem on a HFS+/ISO hybrid CD image.
+.It Fl nokernel
+attach with a helper process.  This is (again) the default as of Mac OS
+X 10.5.
+.It Fl kernel
+attempt to attach this image without a helper process; fail if unsupported.
+Only UDRW, UDRO, UDZO, ULFO, and UDSP images are supported in-kernel.  Encryption
+and HTTP are supported by the kernel driver.
+.\"
+.It Fl notremovable
+prevent this image from being detached.  Only root can use this option.
+A reboot is necessary to cleanly detach an image attached with
+.Fl notremovable .
+.Pp
+.It Fl mount Ar required|optional|suppressed
+.br
+indicate whether filesystems in the image should be mounted or not.
+The default is
+.Ar required
+.Ns ( Sy attach
+will fail if no filesystems mount).
+.It Fl nomount
+identical to
+.Fl mount Ar "suppressed".
+.It Fl mountroot Ar path
+mount volumes on subdirectories of
+.Ar path
+instead of under
+.Pa /Volumes .
+.Ar path
+must exist.
+Full mount point paths must be less than MNAMELEN characters (increased
+from 90 to 1024 in Mac OS X 10.6).
+.\" 4063851 tracks better than "no mountable fsys" error for ENOENT here
+.It Fl mountrandom Ar path
+like
+.Fl mountroot ,
+but mount point directory names are randomized with
+.Xr mkdtemp 3 .
+.It Fl mountpoint Ar path
+assuming only one volume, mount it at
+.Ar path
+instead of in
+.Pa /Volumes.
+See
+.Xr fstab 5
+for ways a system administrator can make particular volumes automatically
+mount in particular filesystem locations by editing the file /etc/fstab.
+.It Fl nobrowse
+render any volumes invisible in applications such as the macOS Finder.
+.It Fl owners Ar on|off
+specify that owners on any filesystems be honored or not.
+.It Fl drivekey Ar key=value
+.br
+specify a key/value pair to be set on the device in the IOKit registry.
+.It Fl section Ar subspec
+.br
+Attach a subsection of a disk image.
+.Ar subspec
+is any of <offset>, <first-last>, or <start,count> in 0-based sectors.
+Ranges are inclusive.
+.El
+.Pp
+The following options have corresponding elements in the
+.Ar com.apple.frameworks.diskimages
+preferences domain and thus can be rendered in both the positive and the
+negative to override any existing preferences.
+.Pp
+.Bl -hang -width "-mountpoint path" -compact
+.It Fl [no]verify
+do [not] verify the image.  By default,
+.Nm
+.Sy attach
+attempts to intelligently verify images that contain checksums before
+attaching them.  If
+.Nm
+can write to an image it has verified,
+.Sy attach
+will store an attribute with the image so that it will not be verified
+again unless its timestamp changes.  To maintain backwards
+compatibility,
+.Xr hdid 8
+does not attempt to verify images before attaching them.
+.br
+Preferences keys: skip-verify, skip-verify-remote, skip-verify-locked,
+skip-previously-verified
+.It Fl [no]ignorebadchecksums
+.br
+specify whether bad checksums should be ignored.  The default is to abort
+when a bad checksum is detected.
+.br
+Preferences key: ignore-bad-checksums
+.It Fl [no]idme
+do [not] perform IDME actions on IDME images.  IDME actions are not
+performed by default.
+.br
+Preferences key: skip-idme
+.It Fl [no]idmereveal
+do [not] reveal (in the Finder) the results of IDME processing.
+.br
+Preferences key: skip-idme-reveal
+.It Fl [no]idmetrash
+do [not] put IDME images in the trash after processing.
+.br
+Preferences key: skip-idme-trash
+.It Fl [no]autoopen
+do [not] auto-open volumes (in the Finder) after attaching an image.
+By default, double-clicking a read-only disk image causes the resulting
+volume to be opened in the Finder.
+.Nm
+defaults to
+.Fl noautoopen Ns .
+.It Fl [no]autoopenro
+do [not] auto-open read-only volumes.
+.br
+Preferences key: auto-open-ro-root
+.It Fl [no]autoopenrw
+do [not] auto-open read/write volumes.
+.br
+Preferences key: auto-open-rw-root
+.\" meaning don't fully process them?
+.It Fl [no]autofsck
+do [not] force automatic file system checking before mounting a disk
+image.  By default, only quarantined images (e.g. downloaded from the
+Internet) that have not previously passed fsck are checked.
+.br
+Preferences key: auto-fsck
+.El
+.\"
+.\"             -- detach --
+.It Sy detach Ar dev_name Op Fl force
+.br
+detach a disk image and terminate any associated process.
+.Ar dev_name
+is a partial /dev node path (e.g. "disk1").  As of Mac OS X 10.4,
+.Ar dev_name
+can also be a mountpoint.  If Disk Arbitration is running,
+.Sy detach
+will use it to unmount any filesystems and detach the image.  If not,
+.Sy detach
+will attempt to unmount any filesystems and detach the image directly
+(using the
+.Ql eject
+ioctl).  If Disk Arbitration is not running, it may be necessary to unmount
+the filesystems with
+.Xr umount 8
+before detaching the image.
+.Sy eject
+is a synonym for
+.Ns Sy detach .
+In common operation,
+.Sy detach
+is very similar to
+.Xr diskutil 8 Ns 's
+.Sy eject .
+.Pp
+Options:
+.Bl -hang -width "verbose" -compact
+.It Fl force
+ignore open files on mounted volumes, etc.
+.El
+.\"
+.\"             -- verify --
+.It Sy verify Ar image Op Ar options
+.br
+compute the checksum of a "read-only" or "compressed" image and verify
+it against the value stored in the image.  Read/write images don't
+contain checksums and thus can't be verified.
+.Sy verify
+accepts the common options
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "srcimagekey",
+.Fl puppetstrings ,
+and
+.Fl "plist".
+.Pp
+.\"
+.\"             -- create --
+.It Sy create Ar size_spec image
+.br
+create a new image of the given size or from the provided data.  If
+.Ar image
+already exists,
+.Fl ov
+must be specified or
+.Sy create
+will fail.
+To make a cross-platform CD or DVD, use
+.Sy makehybrid
+instead.  See also EXAMPLES below.
+.Pp
+.\"                             Size Specifiers
+The size specified is the size of the image to be created.  Filesystem
+and partition layout overhead (80 sectors for the default GPTSPUD layout
+on Intel machines) may not be available for the filesystem and user data
+in the image.
+.br
+Size specifiers:
+.Bl -hang -width "megabytes" -compact
+.It Fl size Ar ??b|??k|??m|??g|??t|??p|??e
+.br
+Specify the size of the image in the style of
+.Xr mkfile 8
+with the addition of tera-, peta-, and exa-bytes sizes (note that 'b'
+specifies a number of sectors, not bytes).  The larger sizes are useful
+for large sparse images.
+.\" need to move users towards kibibytes, etc
+.\" XX need to compare -[segment]size behavior
+.It Fl sectors Ar sector_count
+.br
+Specify the size of the image file in 512-byte sectors.
+.It Fl megabytes Ar size
+.br
+Specify the size of the image file in megabytes (1024*1024 bytes).
+.Pp
+.It Fl srcfolder Ar source
+.br
+copies file-by-file the contents of
+.Ar source
+into
+.Ar image ,
+creating a fresh (theoretically defragmented) filesystem on the destination.
+The resulting image is thus recommended for use with
+.Xr asr 8
+since it will have a minimal amount of unused space.  Its size will be
+that of the source data plus some padding for filesystem overhead.  The
+filesystem type of the image volume will match that of the source as
+closely as possible unless overridden with
+.Fl fs .
+Other size specifiers, such as
+.Fl size ,
+will override the default size calculation based on the source content,
+allowing for more or less free space in the resulting filesystem.
+.Fl srcfolder
+can be specified more than once, in which case the image volume will be
+populated at the top level with a copy of each specified filesystem object.
+.Fl srcdir
+is a synonym.
+.It Fl srcdevice Ar device
+.br
+specifies that the blocks of
+.Ar device
+should be used to create a new image.  The image size will match the size
+of
+.Ar device .
+.Sy resize
+can be used to adjust the size of resizable filesystems and writable
+images.  Both
+.Fl srcdevice
+and
+.Fl srcfolder
+can run into errors if there are bad blocks on a disk.  One way around
+this problem is to write over the files in question in the hopes that the
+drive will remap the bad blocks.  Data will be lost, but the image creation
+operation will subsequently succeed.  Filesystem options (like
+.Fl fs ,
+.Fl volname ,
+.Fl stretch ,
+or
+.Fl size )
+are invalid and ignored when using
+.Fl srcdevice .
+.El
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "certificate",
+.Fl "pubkey",
+.Fl "imagekey",
+.Fl "tgtimagekey",
+.Fl puppetstrings ,
+and
+.Fl "plist".
+.Pp
+.Fl imagekey Ar di-sparse-puma-compatible=TRUE
+and
+.Fl imagekey Ar di-shadow-puma-compatible=TRUE
+will create, respectively, sparse and shadow images that can be
+attached on Mac OS X 10.1.
+.Fl imagekey Ar encrypted-encoding-version
+can select between version 1 and version 2 of the encrypted encoding.
+The framework preferences have a corresponding key to change the default
+for all images.  Version 2 is not compatible with Mac OS X 10.2 but is
+more robust for SPARSE (UDSP) images.  Version 1 is the default for
+non-sparse images.  As of Mac OS X 10.4.7, sparse encrypted images always
+use version 2 and as of Mac OS X 10.5, all encrypted images default to
+version 2.
+.Pp
+General options:
+.Bl -hang -width "-volname" -compact
+.It Fl align Ar alignment
+.br
+specifies a size to which the final data partition will be aligned.  The
+default is 4K.
+.Pp
+.It Fl type Ar UDIF|SPARSE|SPARSEBUNDLE
+.br
+.Fl type
+is particular to
+.Sy create
+and is used to specify the format of empty read/write images.  It is
+independent of
+.Fl format
+which is used to specify the final read-only image format when populating
+an image with pre-existing content.
+.Pp
+UDIF is the default type.  If specified, a UDRW of the specified size
+will be created.  SPARSE creates a UDSP: a read/write single-file image
+which expands as is is filled with data.  SPARSEBUNDLE creates a UDSB: a
+read/write image backed by a directory bundle.
+.Pp
+By default, UDSP images grow one megabyte at a time.  Introduced in 10.5,
+UDSB images use 8 MB band files which grow as they are written to.
+.Fl imagekey Ar sparse-band-size=size
+can be used to specify the number of 512-byte sectors that will be added
+each time the image grows.  Valid values for SPARSEBUNDLE range from 2048
+to 16777216 sectors (1 MB to 8 GB).
+.Pp
+The maximum size of a SPARSE image is 128 petabytes; the maximum for
+SPARSEBUNDLE is just under 8 exabytes (2^63 - 512 bytes).
+The amount of data that can be stored in either type of sparse image is
+additionally bounded by the filesystem in the image and by any partition
+map.
+.Sy compact
+can reclaim unused bands in sparse images backing APFS or HFS+ filesystems.
+.Sy resize
+will only change the virtual size of a sparse image.  See also USING
+PERSISTENT SPARSE IMAGES below.
+.Pp
+.It Fl fs Ar filesystem
+.br
+where
+.Ar filesystem
+is one of several options such as HFS+, HFS+J (JHFS+), HFSX, JHFS+X,
+APFS, FAT32, ExFAT, or UDF.  A full list of supported filesystems can
+be found in 
+.Sy create
+.Fl help .
+.Fl fs
+causes a filesystem of the specified type to be written to the image.
+.Fl fs
+may change the partition scheme and type appropriately.
+.Fl fs
+will not make any size adjustments: if the image is the wrong size for the
+specified filesystem,
+.Sy create
+will fail.
+.Fl fs
+is invalid and ignored when using
+.Fl srcdevice .
+.It Fl volname Ar volname
+.br
+The newly-created filesystem will be named
+.Ar "volname".
+The default depends the filesystem being used; The default volume name
+in both HFS+ and APFS is
+.Ql untitled .
+.Fl volname
+is invalid and ignored when using
+.Fl srcdevice .
+.It Fl uid Ar uid
+the root of the newly-created volume will be owned by the given numeric
+user id.  99 maps to the magic
+.Ql unknown
+user (see PERMISSIONS VS. OWNERS).
+.It Fl gid Ar gid
+the root of the newly-created volume will be owned by the given numeric
+group id.  99 maps to
+.Ql "unknown".
+.It Fl mode Ar mode
+the root of the newly-created volume will have mode (in octal)
+.Ar "mode".
+The default mode is determined by the filesystem's newfs unless
+.Fl srcfolder
+is specified, in which case the default mode is derived from the specified
+filesystem object.
+.It Fl [no]autostretch
+.br
+do [not] suppress automatically making backwards-compatible stretchable
+volumes when the volume size crosses the auto-stretch-size threshold
+(default: 256 MB).  See also
+.Xr asr 8 Ns .
+.It Fl stretch Ar max_stretch
+.br
+.Fl stretch
+initializes HFS+ filesystem data such that it can later be stretched on
+older systems (which could only stretch within predefined limits) using
+.Nm
+.Sy resize
+or by
+.Xr asr 8 .
+.Ar max_stretch
+is specified like
+.Ns Fl size .
+.Fl stretch
+is invalid and ignored when using
+.Fl srcdevice .
+.It Fl fsargs Ar newfs_args
+.br
+additional arguments to pass to whichever newfs program is implied by
+.Fl "fs".
+As an example with HFS+, 
+.Xr newfs_hfs 8
+has a number of options that can control the amount of space used by the
+filesystem's data structures.
+.It Fl layout Ar layout
+.br
+Specify the partition layout of the image.
+.Ar layout
+can be anything supported by MediaKit.framework.  NONE creates an image
+with no partition map.  When such an image is attached, a single /dev
+entry will be created (e.g. /dev/disk1).
+.Pp
+.Ql SPUD
+causes a DDM and an Apple Partition Scheme partition map with a single
+entry to be written.
+.Ql GPTSPUD
+creates a similar image but with a GUID Partition Scheme map instead.
+When attached, multiple /dev entries will be created, with either slice
+1 (GPT) or slice 2 (APM) as the data partition.  (e.g. /dev/disk1,
+/dev/disk1s1, /dev/disk1s2).
+.Pp
+Unless overridden by
+.Ns Fl fs ,
+the default layout is
+.Ql GPTSPUD
+(PPC systems used
+.Ql SPUD
+prior to Mac OS X 10.6).  Other layouts include
+.Ql MBRSPUD
+and
+.Ql ISOCD .
+.Sy create
+.Fl help
+lists all supported layouts.
+.It Fl library Ar bundle
+.br
+specify an alternate layout library.  The default is MediaKit's
+MKDrivers.bundle.
+.It Fl partitionType Ar partition_type
+.br
+Change the type of partition in a single-partition disk image.  The default
+is Apple_HFS unless
+.Ns Fl fs
+implies otherwise.
+.Pp
+.It Fl ov
+overwrite an existing file.  The default is not to overwrite existing
+files.
+.It Fl attach
+attach the image after creating it.  If no filesystem is specified via
+.Fl "fs",
+the attach will fail per the default
+.Sy attach Fl mount Ar required
+behavior.
+.El
+.Pp
+Image from source options (for
+.Fl srcfolder
+and
+.Fl srcdevice Ns ):
+.Bl -hang -width "partitionType" -compact
+.It Fl format Ar format
+Specify the final image format.  The default when a source is specified
+is UDZO.
+.Ar format
+can be any of the format parameters used by
+.Sy convert .
+.El
+.Pp
+Options specific to
+.Fl srcdevice Ns :
+.Bl -hang -width "partitionType" -compact
+.It Fl segmentSize Ar size_spec
+.br
+Specify that the image should be written in segments no bigger than
+.Ar size_spec
+(which follows
+.Fl size
+conventions).
+.El
+.Pp
+Options specific to
+.Fl srcfolder Ns :
+.Bl -hang -width "skipunreadable" -compact
+.It Fl [no]crossdev
+do [not] cross device boundaries on the source filesystem.
+.It Fl [no]scrub
+do [not] skip temporary files when imaging a volume.
+Scrubbing is the default when the source is the root of a mounted volume.
+Scrubbed items include trashes, temporary directories, swap files, etc.
+.It Fl [no]anyowners
+do not fail if the user invoking
+.Nm
+can't ensure correct file ownership for the files in the image.
+.It Fl skipunreadable
+skip files that can't be read by the copying user and don't authenticate.
+.It Fl [no]atomic
+do [not] copy files to a temporary location and then rename them to their destination.  Atomic copies are the default.  Non-atomic copying may be slightly faster.
+.It Fl copyuid Ar user
+perform the copy as the given user.  Requires root privilege.  If
+.Ar user
+can't read or create files with the needed owners,
+.Fl anyowners
+or
+.Fl skipunreadable
+must be used to prevent the operation from failing.
+.El
+.Pp
+By default,
+.Sy create
+.Fl srcfolder
+attempts to maintain the permissions present in the source directory.
+It prompts for authentication if it detects an unreadable file, a file
+owned by someone other than the user creating the image, or a SGID file
+in a group that the copying user is not in.
+.\"
+.\"             -- convert --
+.It Sy convert Ar image
+.Fl format
+.Ar format
+.Fl o
+.Ar outfile
+.br
+convert
+.Ar image
+to type
+.Ar format
+and write the result to
+.Ar outfile Ns .
+.Pp
+As with
+.Sy create ,
+the correct filename extension will be added only if it isn't part of the
+provided name.
+.Ar Format
+is one of:
+.Pp
+.Bl -item -offset indent -compact
+.It
+UDRW - UDIF read/write image
+.It
+UDRO - UDIF read-only image
+.It
+UDCO - UDIF ADC-compressed image
+.It
+UDZO - UDIF zlib-compressed image
+.It
+ULFO - UDIF lzfse-compressed image (OS X 10.11+ only)
+.It
+UDBZ - UDIF bzip2-compressed image (Mac OS X 10.4+ only)
+.It
+UDTO - DVD/CD-R master for export
+.It
+UDSP - SPARSE (grows with content)
+.It
+UDSB - SPARSEBUNDLE (grows with content; bundle-backed)
+.It
+UFBI - UDIF entire image with MD5 checksum
+.It
+UDRo - UDIF read-only (obsolete format)
+.It
+UDCo - UDIF compressed (obsolete format)
+.It
+RdWr - NDIF read/write image (deprecated)
+.It
+Rdxx - NDIF read-only image (Disk Copy 6.3.3 format; deprecated)
+.It
+ROCo - NDIF compressed image (deprecated)
+.It
+Rken - NDIF compressed (obsolete format)
+.It
+DC42 - Disk Copy 4.2 image (obsolete format)
+.El
+.Pp
+In addition to the compression offered by some formats, the UDIF and NDIF
+read-only formats skip unused space in HFS, APFS, ExFAT, and MS-DOS (FAT, FAT32)
+filesystems.  For UDZO,
+.Fl imagekey Ar zlib-level=value
+allows the zlib compression level to be specified a la
+.Xr gzip 1 Ns .
+The default compression level is 1 (fastest).
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "certificate",
+.Fl "srcimagekey",
+.Fl "tgtimagekey",
+.Fl "shadow"
+and related,
+.Fl puppetstrings ,
+and
+.Fl "plist".
+.Pp
+Other options:
+.Bl -hang -width "segmentSize" -compact
+.It Fl align Ar alignment
+.br
+The default is 4 (2K).
+.It Fl pmap
+add partition map.
+.br
+When converting an NDIF to any variety of UDIF, or when converting an
+unpartitioned UDIF, the default is true.
+.It Fl segmentSize
+.Op Ar size_spec
+.br
+Specify segmentation into
+.Ar size_spec Ns -sized
+segments as
+.Ar outfile
+is being written.  The default
+.Ar size_spec
+when
+.Fl segmentSize
+is specified alone is 2*1024*1024 (1 GB worth of sectors) for UDTO images
+and 4*1024*1024 (2 GB segments) for all other image types.
+.Ar size_spec
+can also be specified ??b|??k|??m|??g|??t|??p|??e like
+.Sy "create" Ns 's
+.Fl size
+flag.
+.It Fl tasks Ar task_count
+.br
+When converting an image into a compressed format, specify the number of
+threads to use for the compression operation.  The default is the number
+of processors active in the current system.
+.El
+.\"
+.\"             -- burn --
+.It Sy burn Ar image
+.br
+Burn
+.Ar image
+to optical media in an attached burning device.  In all cases, a prompt
+for media will be printed once an appropriate drive has been found.  Common
+options:
+.Fl "shadow"
+and related,
+.Fl "srcimagekey",
+.Fl "encryption",
+.Fl puppetstrings ,
+and
+.Fl "stdinpass".
+.Pp
+Other options:
+.Bl -hang -width "[no]skipfinalfree" -compact
+.It Fl device
+specify a device to use for burning.  See
+.Fl list Ns .
+.It Fl testburn
+don't turn on laser (laser defaults to on).
+.It Fl anydevice
+explicitly allow burning to devices not qualified by Apple (kept for
+backwards compatibility as
+.Sy burn
+will burn to any device by default as of Mac OS X 10.4).
+.Pp
+.It Fl [no]eject
+do [not] eject disc after burning. The default is to eject the disc.
+.It Fl [no]verifyburn
+do [not] verify disc contents after burn.  The default is to verify.
+.Pp
+.It Fl [no]addpmap
+do [not] add partition map if necessary.  Some filesystem types will not be
+recognized when stored on optical media unless they are enclosed in a
+partition map.  This option will add a partition map to any bare filesystem
+which needs a partition map in order to be recognized when burned to
+optical media.  The default is to add the partition map if needed.
+.Pp
+.It Fl [no]skipfinalfree
+do [not] skip final free partition.  If there is a partition map on the image
+specifying an Apple_Free partition as the last partition, that Apple_Free
+partition will not be burned.  The burned partition map will still
+reference the empty space.  The default is to skip burning a final free partition.
+.Pp
+.It Fl [no]optimizeimage
+do [not] optimize filesystem for burning.  Optimization can reduce the
+size of an HFS+ volume to the size of the data contained on the
+volume.  This option will change what is burned such that the disc will
+have a different checksum than the image it came from.  The default is to
+burn all blocks of the disk image (minus any trailing Apple_Free).
+.Pp
+.It Fl [no]forceclose
+do [not] force the disc to be closed after burning.  Further burns to the disc
+will be impossible.  The default is not to close the disc.
+.Pp
+.It Fl nounderrun
+Disable the default buffer underrun protection.
+.Pp
+.It Fl [no]synthesize
+[Don't] Synthesize a hybrid filesystem for the disc.  The default is to
+create a new (HFS+/ISO) filesystem when burning the source image's blocks
+would not result in a valid disc.
+.Pp
+.It Fl speed Ar x_factor
+1, 2, 4, 6, ...
+.Ql max
+.br
+The desired
+.Qq x-factor Ns .
+e.g. 8 means the drive will be instructed burn at
+.Qq 8x speed Ns .
+.Ql max
+will cause the burn to proceed at the maximum speed of the drive.
+.Ql max
+is the default speed.  Slower speeds can produce more reliable burns.
+The speed factor is relative to the media being burned (e.g.
+.Fl speed Ar 2
+has a different data rate when used for a DVD burn vs. a CD burn).
+Note that some drives have a minimum burn speed in which case any slower
+speed specified will result in a burn at the drive's minimum speed.
+.Pp
+.It Fl sizequery
+calculate the size of disc required without burning anything.  The size is
+returned in sectors.
+.Pp
+.It Fl erase
+prompt for optical media (DVD-RW/CD-RW) and then, if the hardware supports
+it, quickly erase the media.  If an image is specified, it will be burned
+to the media after the media has been erased.
+.It Fl fullerase
+erase all sectors of the disc.  This usually takes quite a bit longer than
+.Fl erase Ns .
+.It Fl list
+list all burning devices, with OpenFirmware paths suitable for
+.Fl device Ns .
+.El
+.\"
+.\"             -- makehybrid --
+.It Sy makehybrid Fl o Ar image Ar source
+.br
+Generate a potentially-hybrid filesystem in a read-only disk image
+using the DiscRecording framework's content creation system.  This
+disk image will represent a data disc.
+.Xr drutil 1
+can be used to make audio discs.
+.Pp
+.Ar source
+can either be a directory or a disk image.  The generated image can later
+be burned using
+.Sy "burn",
+or converted to another read-only format with
+.Sy "convert".
+By default, the filesystem will be readable on most modern computing
+platforms.  The generated filesystem is not intended for conversion
+to read/write, but can safely have its files copied to a read/write
+filesystem using
+.Xr ditto 8 .
+.Pp
+.Nm
+supports generating El Torito-style bootable ISO9660 filesystems, which are
+commonly used for booting x86-based hardware. The specification includes
+several emulation modes. By default, an El Torito boot image emulates either
+a 1.2MB, 1.44MB, or 2.88MB floppy drive, depending on the size of the image.
+Also available are
+.Qo \&No Emulation Qc
+and
+.Qo Hard Disk Emulation Qc
+modes, which allow the boot image to either be loaded directly into memory,
+or be virtualized as a partitioned hard disk, respectively. The El Torito
+options should not be used for data CDs.
+.Pp
+.\"                             Filesystem options
+Filesystem options:
+.Bl -hang -width "joliet" -compact
+.It Fl hfs
+Generate an HFS+ filesystem.  This filesystem can be present on an image
+simultaneously with an ISO9660 or Joliet or UDF filesystem.  On operating
+systems that understand HFS+ as well as ISO9660 and UDF, like Mac OS 9
+or OS X, HFS+ is usually the preferred filesystem for hybrid images.
+.It Fl iso
+Generate an ISO9660 Level 2 filesystem with Rock Ridge extensions.  This
+filesystem can be present on an image simultaneously with an HFS+ or
+Joliet or UDF filesystem.  ISO9660 is the standard cross-platform
+interchange format for CDs and some DVDs, and is understood by virtually
+all operating systems.  If an ISO9660 or Joliet filesystem is present on
+a disk image or CD, but not HFS+, OS X will use the ISO9660 (or Joliet)
+filesystem.
+.It Fl joliet
+Generate Joliet extensions to ISO9660.  This view of the filesystem can
+be present on an image simultaneously with HFS+, and requires the presence
+of an ISO9660 filesystem.  Joliet supports Unicode filenames, but is only
+supported on some operating systems.  If both an ISO9660 and Joliet
+filesystem are present on a disk image or CD, but not HFS+, OS X will
+prefer the Joliet filesystem.
+.It Fl udf
+Generate a UDF filesystem. This filesystem can be present on an image
+simultaneously with HFS+, ISO9660, and Joliet. UDF is the standard
+interchange format for DVDs, although operating system support varies
+based on OS version and UDF version.
+.El
+.Pp
+By default, if no filesystem is specified, the image will be created with
+all four filesystems as a hybrid image.  When multiple filesystems are
+selected, the data area of the image is shared between all filesystems,
+and only directory information and volume meta-data are unique to each
+filesystem.  This means that creating a cross-platform ISO9660/HFS+ hybrid
+has a minimal overhead when compared to a single filesystem image.
+.Pp
+.\"                             Other makehybrid options
+Other options (most take a single argument):
+.Bl -hang -width "hfs-blessed-directory" -compact
+.It Fl hfs-blessed-directory
+Path to directory which should be
+.Qo blessed Qc
+for OS X booting on the generated filesystem.  This assumes the directory
+has been otherwise prepared, for example with
+bless
+.Fl bootinfo
+to create a valid
+.Em BootX
+file.
+(HFS+ only).
+.It Fl hfs-openfolder
+Path to a directory that will be opened by the Finder automatically.  See
+also the
+.Fl openfolder
+option in
+.Xr bless 8
+(HFS+ only).
+.It Fl hfs-startupfile-size
+Allocate an empty HFS+ Startup File of the specified size, in bytes (HFS+
+only).
+.Pp
+.It Fl abstract-file
+Path to a file in the source directory (and thus the root of the generated
+filesystem) for use as the ISO9660/Joliet Abstract file (ISO9660/Joliet).
+.It Fl bibliography-file
+Path to a file in the source directory (and thus the root of the generated
+filesystem) for use as the ISO9660/Joliet Bibliography file
+(ISO9660/Joliet).
+.It Fl copyright-file
+Path to a file in the source directory (and thus the root of the generated
+filesystem) for use as the ISO9660/Joliet Copyright file (ISO9660/Joliet).
+.It Fl application
+Application string (ISO9660/Joliet).
+.It Fl preparer
+Preparer string (ISO9660/Joliet).
+.It Fl publisher
+Publisher string (ISO9660/Joliet).
+.It Fl system-id
+System Identification string (ISO9660/Joliet).
+.It Fl keep-mac-specific
+Expose Macintosh-specific files (such as .DS_Store) in non-HFS+ filesystems
+(ISO9660/Joliet).
+.It Fl eltorito-boot
+Path to an El Torito boot image within the source directory. By
+default, floppy drive emulation is used, so the image must be one
+of 1200KB, 1440KB, or 2880KB. If the image has a different size,
+either
+.Fl no-emul-boot
+or
+.Fl hard-disk-boot
+must be used to enable
+.Qo \&No Emulation Qc
+or
+.Qo Hard Disk Emulation Qc
+mode, respectively (ISO9660/Joliet).
+.It Fl hard-disk-boot
+Use El Torito Hard Disk Emulation mode. The image must represent a virtual
+device with an MBR partition map and a single partition
+.It Fl no-emul-boot
+Use El Torito No Emulation mode. The system firmware will load the number
+of sectors specified by
+.Fl boot-load-size
+and execute it, without emulating any devices (ISO9660/Joliet).
+.It Fl no-boot
+Mark the El Torito image as non-bootable. The system firmware may still
+create a virtual device backed by this data. This option is not recommended
+\&(ISO9660/Joliet).
+.It Fl boot-load-seg
+For a No Emulation boot image, load the data at the specified segment address.
+This options is not recommended, so that the system firmware can use
+its default address (ISO9660/Joliet)
+.It Fl boot-load-size
+For a No Emulation boot image, load the specified number of 512-byte emulated
+sectors into memory and execute it. By default, 4 sectors (2KB) will be loaded
+\&(ISO9660/Joliet).
+.It Fl eltorito-platform
+Use the specified numeric platform ID in the El Torito Boot Catalog
+Validation Entry or Section Header. Defaults to 0 to identify x86 hardware (ISO/Joliet).
+.It Fl eltorito-specification
+For complex layouts involving multiple boot images, a plist-formatted string
+can be provided, using either OpenStep-style syntax or XML syntax, representing
+an array of dictionaries. Any of the El Torito options can be set in the
+sub-dictionaries and will apply to that boot image only. If
+.Fl eltorito-specification
+is provided in addition to the normal El Torito command-line options,
+the specification will be used to populate secondary non-default boot entries.
+.It Fl udf-version
+Version of UDF filesystem to generate. This can be either "1.02" or "1.50".
+If not specified, it defaults to "1.50" (UDF).
+.Pp
+.It Fl default-volume-name
+Default volume name for all filesystems, unless overridden.  If not specified,
+defaults to the last path component of
+.Ar source Ns .
+.It Fl hfs-volume-name
+Volume name for just the HFS+ filesystem if it should be different (HFS+ only).
+.It Fl iso-volume-name
+Volume name for just the ISO9660 filesystem if it should be different
+(ISO9660 only).
+.It Fl joliet-volume-name
+Volume name for just the Joliet filesystem if it should be different (Joliet
+only).
+.It Fl udf-volume-name
+Volume name for just the UDF filesystem if it should be different (UDF only).
+.Pp
+.It Fl hide-all
+A glob expression of files and directories that should not be exposed in
+the generated filesystems.  The string may need to be quoted to avoid shell
+expansion, and will be passed to
+.Xr glob 3
+for evaluation.  Although this option cannot be used multiple times, an
+arbitrarily complex glob expression can be used.
+.It Fl hide-hfs
+A glob expression of files and directories that should not be exposed via
+the HFS+ filesystem, although the data may still be present for use by
+other filesystems (HFS+ only).
+.It Fl hide-iso
+A glob expression of files and directories that should not be exposed via
+the ISO filesystem, although the data may still be present for use by other
+filesystems (ISO9660 only).  Per above, the Joliet hierarchy will supersede
+the ISO hierarchy when the hybrid is mounted as an ISO 9660 filesystem on
+OS X.  Therefore, if Joliet is being generated (the default)
+.Fl hide-joliet
+will also be needed to hide the file from
+.Xr mount_cd9660 8 .
+.It Fl hide-joliet
+A glob expression of files and directories that should not be exposed via
+the Joliet filesystem, although the data may still be present for use by
+other filesystems (Joliet only).  Because OS X's ISO 9660 filesystem
+uses the Joliet catalog if it is available,
+.Fl hide-joliet
+effectively supersedes
+.Fl hide-iso
+when the resulting filesystem is mounted as ISO on OS X.
+.It Fl hide-udf
+A glob expression of files and directories that should not be exposed via
+the UDF filesystem, although the data may still be present for use by other
+filesystems (UDF only).
+.It Fl only-udf
+A glob expression of objects that should only be exposed in UDF.
+.It Fl only-iso
+A glob expression of objects that should only be exposed in ISO.
+.It Fl only-joliet
+A glob expression of objects that should only be exposed in Joliet.
+.\" XX need to add Ar expr to all of these
+.Pp
+.It Fl print-size
+Preflight the data and calculate an upper bound on the size of the image.  The
+actual size of the generated image is guaranteed to be less than or equal to this
+estimate.
+.It Fl plistin
+Instead of using command-line parameters, use a standard plist from standard
+input to specific the parameters of the hybrid image generation.  Each
+command-line option should be a key in the dictionary, without the leading
+.Qo - Qc Ns ,
+and the value should be a string for path and string arguments, a number
+for number arguments, and a boolean for toggle options.  The
+.Ar source
+argument should use a key of
+.Qo source Qc
+and the
+.Ar image
+should use a key of
+.Qo output Qc Ns .
+.El
+.Pp
+If a disk image was specified for
+.Ar "source",
+the image will be attached and paths will be evaluated relative to the
+mountpoint of the image.  No absolute paths can be used in this case.  If
+.Ar source
+is a directory, all argument paths should point to files or directories
+either via an absolute path, or via a relative path to the current working
+directory.
+.Pp
+The volume name options, just like files in the filesystems, may need to be
+mapped onto the legal character set for a given filesystem or otherwise changed
+to obey naming restrictions.  Use
+.Xr drutil 1
+as
+.Nm drutil
+.Sy filename
+.Ar myname
+to see how a given string would be remapped.
+.Pp
+The
+.Fl abstract-file ,
+.Fl bibliography-file , and
+.Fl copyright-file
+must exist directly in the source directory, not a sub-directory,
+and must have an 8.3 name for compatibility with ISO9660 Level 1.
+.\"
+.\"             -- compact --
+.It Sy compact Ar image Op Ar options
+.br
+scans the bands of a sparse (SPARSE or SPARSEBUNDLE) disk image containing
+an APFS or HFS+ filesystem, removing those parts of the image which are no
+longer being used by the filesystem.  Depending on the location of files in
+the hosted filesystem,
+.Sy compact
+may or may not shrink the image.  For SPARSEBUNDLE images, completely
+unused band files are simply removed.
+.Pp
+Options:
+.Bl -hang -width "batteryallowed" -compact
+.It Fl batteryallowed
+allow compacting on battery power.  SPARSE images could be damaged if power is
+lost during a compact operation.  The default is not allowed.
+.Pp
+.It Fl sleepallowed
+allow machine to idle sleep while compacting, which cancels the compact
+operation.  The default is not allowed, which prevents idle sleep until compact
+completes.  User-initiated sleep, such as a lid close, will always cancel compact.
+.El
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "srcimagekey",
+.Fl shadow
+and related,
+.Fl puppetstrings ,
+and
+.Fl "plist".
+.\"
+.\"             -- info --
+.It Sy info
+display information about DiskImages.framework, the disk image driver, and
+any images that are currently attached.
+.Nm
+.Sy info
+accepts
+.Fl "plist".
+.\"             -- checksum --
+.It Sy checksum Ar image
+.Fl type Ar type
+.br
+Calculate the specified checksum on the image data, regardless of image
+type.
+.Pp
+Common options:
+.Fl "shadow"
+and related,
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "srcimagekey",
+.Fl puppetstrings ,
+and
+.Fl "plist".
+.Pp
+.Ar type
+is one of:
+.br
+.Bl -item -offset indent -compact
+.It
+UDIF-CRC32 - CRC-32 image checksum
+.br
+UDIF-MD5 - MD5 image checksum
+.br
+DC42 - Disk Copy 4.2
+.br
+CRC28 - CRC-32 (NDIF)
+.br
+CRC32 - CRC-32
+.br
+MD5 - MD5
+.br
+SHA - SHA
+.br
+SHA1 - SHA-1
+.br
+SHA256 - SHA-256
+.br
+SHA384 - SHA-384
+.br
+SHA512 - SHA-512
+.El
+.\"
+.\"             -- chpass --
+.It Sy chpass Ar image
+.br
+change the passphrase for an encrypted image.  The default is to change
+the password interactively.
+.Pp
+Common options:
+.Fl "recover"
+and
+.Fl "srcimagekey" Ns .
+The options
+.Fl oldstdinpass
+and
+.Fl newstdinpass
+allow, in the order specified, the null-terminated old and new passwords
+to be read from the standard input in the same manner as with
+.Fl stdinpass Ns .
+.\"
+.\"             -- erasekeys --
+.It Sy erasekeys Ar image
+.br
+delete keys used to access an encrypted image, quickly rendering the image
+inaccessible.  This does not prevent other copies of the keys from later
+being broken and used to decrypt the data, such as from a copy or backup
+of the image.  In addition, modern storage systems such as solid state
+disks do not securely overwrite data.  As a result,
+.Sy erasekeys
+cannot protect against all attacks, but it may prevent trivial access.
+.Pp
+Common options:
+.Fl "plist"
+and
+.Fl "quiet".
+.\"
+.\"             -- unflatten --
+.It Sy unflatten Ar image
+.br
+unflatten a UDIF disk image, creating an OS 9-style dual-fork image file
+(no XML metadata).  If the resource fork representation of the metadata
+becomes greater than 16 MB, the operation will fail with error -39 ("End
+of fork").
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+and
+.Fl "srcimagekey".
+.\"
+.\"             -- flatten --
+.It Sy flatten Ar image
+.br
+Flatten a read-only (or compressed) UDIF disk image into a single-fork
+file.  By default, metadata will be stored both as XML (for the kernel's
+use) and in an embedded resource fork (for Mac OS X 10.1 and earlier).
+.Pp
+Common options:
+.Fl "srcimagekey",
+.Fl "encryption",
+and
+.Fl "stdinpass".
+Since images are created
+.Qq flat
+by default,
+.Sy flatten
+is only required if the UDIF has previously been
+.Ns Sy unflatten Ns ed.
+.Bl -hang -width "norsrcfork" -compact
+.Pp
+Other options:
+.It Fl noxml
+don't embed XML data for in-kernel attachment.  The image will never
+attach in-kernel.
+.It Fl norsrcfork
+don't embed resource fork data.  The image will not attach on OS X versions
+prior to Mac OS X 10.2.
+.El
+.\"
+.\"             -- fsid --
+.It Sy fsid Ar image
+.br
+Print information about filesystems on a given disk image.
+Per DEVICE SPECIAL FILES,
+.Ar image
+can be a
+.Pa /dev
+entry corresponding to a disk.  More detailed information is presented
+for HFS+ filesystems.
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "srcimagekey",
+and
+.Fl "shadow"
+and related.
+.Pp
+.\"
+.\"             -- mountvol --
+.\"
+.It Sy mountvol Ar dev_name
+.br
+mount the filesystem in
+.Ar dev_name
+using Disk Arbitration (similar
+to
+.Xr diskutil 8 Ns 's
+.Sy mount Ns ).
+XML output is available from
+.Fl "plist".
+Note that
+.Sy mountvol
+(rather than
+.Sy mount ,
+though it often works in Mac OS X 10.5 and later)
+is the correct way to remount a volume after it has been unmounted by
+.Sy unmount .
+.Pp
+Prior to Mac OS X 10.5,
+.Sy mount Ns / Ns Sy attach
+would treat a /dev entry as a disk image to be attached (creating another
+/dev entry).  That behavior was undesirable.
+.\"             -- unmount --
+.\"
+.It Sy unmount Ar volume Op Fl force
+.br
+unmount a mounted volume without detaching any associated image.
+.Ar Volume
+is a /dev entry or mountpoint.  NOTE:
+.Sy unmount
+does NOT detach any disk image associated with the volume.
+Images are attached and detached; volumes are mounted and unmounted.
+.Nm
+.Sy mountvol
+(or
+.Sy diskutil mount Ns )
+will remount a volume that has been unmounted by
+.Nm
+.Sy unmount .
+.Pp
+Options:
+.Bl -hang -width "force++" -compact
+.It Fl force
+unmount filesystem regardless of open files on that filesystem.  Similar
+to umount -f.
+.El
+.\"             -- imageinfo --
+.It Sy imageinfo Ar image Op Ar options
+.br
+Print out information about a disk image.
+.Pp
+Options are any of:
+.Bl -hang -width "checksum" -compact
+.It Fl format
+only print out the image format
+.It Fl checksum
+only print out the image checksum
+.El
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "srcimagekey",
+.Fl "shadow"
+and related, and
+.Fl "plist".
+.\"
+.\"             -- isencrypted --
+.It Sy isencrypted Ar image
+.br
+print a line indicating whether
+.Ar image
+is encrypted.  If it is, additional details are printed.
+.Pp
+Common options:
+.Fl plist .
+.\"
+.\"             -- plugins --
+.It Sy plugins
+print information about DiskImages framework plugins.  The user, system,
+local, and network domains are searched for plugins (i.e.
+.Pa ~/Library/Plug-ins/DiskImages Ns ,
+.Pa /System/Library/Plug-ins/DiskImages Ns ,
+.Pa /Library/Plug-ins/DiskImages Ns ,
+.Pa /Network/Library/Plug-ins/DiskImages Ns ).
+.Pp
+Common options:
+.Fl plist .
+.Pp
+.\"
+.\"             -- internet-enable --
+.It Sy internet-enable
+.Op Fl yes
+|
+.Fl no
+|
+.Fl query
+.Ar image
+.br
+.Sy internet-enable
+is deprecated.  As of OS X 10.7, nothing in OS X processes images
+configured for IDME.
+.\"
+.\"             -- resize --
+.It Sy resize Ar size_spec image
+.br
+Resize a disk image or the containers within it.  For an image containing
+a trailing Apple_HFS partition, the default is to resize the image
+container, the partition, and the filesystem within it by aligning the
+end of the hosted structures with the end of the image.
+.Nm
+.Sy resize
+cannot resize filesystems other than HFS+ and its variants.
+.Pp
+.Sy resize
+can shrink an image so that its HFS+ partition can be converted to
+CD-R/DVD-R format and still be burned.
+.Nm
+.Sy resize
+will not reclaim gaps because it does not move data.
+.Xr diskutil 8 Ns 's
+.Sy resize
+can move filesystem data which can help
+.Nm
+.Sy resize
+create a minimally-sized image.
+.Fl fsargs
+can also be used to minimize filesystem gaps inside an image.
+.Pp
+.Sy resize
+is limited by the disk image container format (e.g. UDSP vs. UDSB), any
+partition scheme, the hosted filesystem, and the filesystem hosting the
+image.  In the case of HFS+ inside of GPT inside of a UDRW on HFS+ with
+adequate free space, the limit is approximately 2^63 bytes.  Older images
+created with an APM partition scheme are limited by it to 2TB.  Before
+Mac OS X 10.4,
+.Sy resize
+was limited by how the filesystem was created (see
+.Nm
+.Sy create
+.Fl stretch Ns ).
+.Pp
+.Nm
+.Sy burn
+does not burn Apple_Free partitions at the end of the devices, so an image
+with a resized filesystem can be burned to create a CD-R/DVD-R master that
+contains only the actual data in the hosted filesystem (assuming minimal
+data fragmentation).
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "srcimagekey",
+.Fl "shadow"
+and related, and
+.Fl "plist".
+.Pp
+Size specifiers:
+.Bl -hang -width "partitionNumber" -compact
+.It Fl size Ar ??b|??k|??m|??g|??t|??p|??e
+.It Fl sectors Ar sector_count | min
+.br
+Specify the number of 512-byte sectors to which the partition should be
+resized.  If this falls outside the mininum valid value or space remaining
+on the underlying file system, an error will be
+returned and the partition will not be resized.
+.Ar min
+automatically determines the smallest possible size.
+.El
+.Pp
+Other options:
+.Bl -hang -width "partitionNumber" -compact
+.It Fl imageonly
+only resize the image file, not the partition(s) and filesystems inside
+of it.
+.It Fl partitiononly
+only resize a partition / filesystem in the image, not the image.
+.Fl partitiononly
+will fail if the new size won't fit inside the image.  On APM, shrinking
+a partition results in an explicit Apple_Free entry taking up the
+remaining space in the image.
+.It Fl partitionNumber Ar partitionNumber
+.br
+specifies which partition to resize (UDIF only -- see HISTORY below).
+.Ar partitionNumber
+is 0-based, but, per
+.Nm
+.Sy pmap Ns ,
+partition 0 is the partition map itself.
+.Pp
+.It Fl growonly
+only allow the image to grow
+.It Fl shrinkonly
+only allow the image to shrink
+.It Fl nofinalgap
+allow resize to entirely eliminate the trailing free partition in an APM
+map.  Restoring such images to very old hardware may interfere with booting.
+.Pp
+.It Fl limits
+Displays the minimum, current, and maximum sizes (in 512-byte sectors)
+for the image.  In addition to any hosted filesystem constraints, UDRW
+images are constrained by available disk space in the filesystem hosting
+the image.
+.Fl limits
+does not modify the image.
+.El
+.\"
+.\"             -- segment --
+.It Sy segment
+.br
+.Sy segment Fl o Ar firstSegname Fl segmentCount Ar #segs image Op opts
+.br
+.Sy segment Fl o Ar firstSegname Fl segmentSize Ar size image Op opts
+.br
+segment an NDIF or UDIF disk image.  Segmented images work around
+limitations in file size which are sometimes imposed by filesystems,
+network protocols, or media.  Note: whether or not the segments are
+encrypted is determined by the options passed to
+.Sy segment
+and not by the state of the source image.
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "srcimagekey",
+.Fl "tgtimagekey",
+.Fl puppetstrings ,
+and
+.Fl "plist".
+.Pp
+Options:
+.Bl -hang -width "segmentCount" -compact
+.It Fl segmentCount Ar segment_count
+.br
+Specify the number of segments.  Only one of
+.Fl segmentCount
+or
+.Fl segmentSize
+will be honored.
+.It Fl segmentSize Ar segment_size
+.br
+Specify the segment size in sectors or in the style of
+.Xr mkfile 8
+(here unqualified numbers are still sectors).  If the original image size
+is not an exact multiple of the segment size, the last segment will be
+shorter than the others.  Only one of
+.Fl segmentCount
+or
+.Fl segmentSize
+will be honored.  Segmenting read/write (UDRW) images is not supported (as
+of Mac OS X 10.3).
+.Pp
+.It Fl firstSegmentSize Ar segment_size
+.br
+Specify the first segment size in sectors in the same form as for
+.Fl "segmentSize".
+Used for multi-CD restores.
+.It Fl restricted
+Make restricted segments for use in multi-CD restores.
+.It Fl ov
+overwrite any existing files.
+.El
+.\"
+.\"             -- pmap --
+.It Sy pmap Op options
+.Ar image
+.br
+display the partition map of an image or device.  By default, this report
+includes starting offsets and significant amounts of free space.
+.Ar image
+is either a disk image or /dev/disk entry (see DEVICE SPECIAL FILES).
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+.Fl "srcimagekey",
+and
+.Fl "shadow"
+and related.
+.Pp
+.Bl -hang -width "-nofreespace" -compact
+.It Fl simple
+generate MediaKit's minimal report: basic partition types, names, and sizes in
+human-readable units.
+.It Fl standard
+generate MediaKit's standard report, which adds partition offsets and
+uses 512-byte sectors.  This is the default.
+.It Fl complete
+generate MediaKit's comprehensive report, with end offsets,
+significant free space, etc.
+.It Fl diagnostic
+generate MediaKit's diagnostic report, which shows all partition schemes
+encountered.  Useful for Boot Camp troubleshooting.
+.Pp
+.It Fl endoffsets
+indicate last block of each partition.
+.It Fl nofreespace
+suppress all free space reporting.  Not valid with
+.Ns Fl shims .
+.It Fl shims
+report free space < 32 sectors.
+.It Fl uuids
+show per-instance UUIDs for each partition.  APM does not store instance
+UUIDs so these will be randomly generated for APM maps.
+.El
+.\"
+.\"             -- udifrez --
+.It Sy udifrez Op options
+.Ar image
+.br
+embed resources (e.g. a software license agreement) in a disk image.
+.Pp
+You must specify one of the following options:
+.Bl -hang -width "xml" -compact
+.It Fl xml Ar file
+.br
+Copy resources from the XML in
+.Ar file .
+.It Fl rsrcfork Ar file
+.br
+Copy resources from
+.Ar file Ns 's
+resource fork.
+.It Fl replaceall
+.br
+Delete all pre-existing resources in
+.Ar image .
+.El
+.\"
+.\"             -- udifderez --
+.It Sy udifderez Op options
+.Ar image
+.br
+extract resources from
+.Ar image .
+.Pp
+Options:
+.Bl -hang -width "xmlxml" -compact
+.It Fl xml
+emit XML output (default)
+.It Fl rez
+emit Rez format output
+.El
+.Pp
+Common options:
+.Fl "encryption",
+.Fl "stdinpass",
+and
+.Fl "srcimagekey".
+.\"
+.\" end verb list
+.El
+.\"
+.Sh EXAMPLES
+Verifying:
+.Dl hdiutil verify myimage.img
+.Bd -ragged -offset indent-two -compact
+verifies an image against its internal checksum.
+.Ed
+.Pp
+Segmenting:
+.Dl hdiutil segment -segmentSize 10m -o /tmp/aseg 30m.dmg
+.Bd -ragged -offset indent-two -compact
+creates aseg.dmg, aseg.002.dmgpart, and aseg.003.dmgpart
+.Ed
+.Pp
+Converting:
+.Dl hdiutil convert master.dmg -format UDTO -o master
+.Bd -ragged -offset indent-two -compact
+converts master.dmg to a CD-R export image named master.cdr
+.Ed
+.Dl hdiutil convert /dev/disk1 -format UDRW -o devimage
+.Bd -ragged -offset indent-two -compact
+converts the disk /dev/disk1 to a read/write device image file.
+authopen(1) will be used if read access to /dev/rdisk1 is not
+available.  Note use of the block-special device.
+.Ed
+.Dl hdiutil convert image.dmg -o image.sparsebundle
+.Bd -ragged -offset indent-two -compact
+converts image.dmg to format UDSB by automatically detecting
+the file extension .sparsebundle.
+.Ed
+.Bd -literal -offset indent -compact
+hdiutil convert files.sparsebundle -format UDZO \\
+    -imagekey zlib-level=5 -o files
+.Ed
+.Bd -ragged -offset indent-two -compact
+converts files.sparsebundle to files.dmg: a read-only,
+compressed disk image using zlib level 5 instead of the
+default.
+.Ed
+.Dl hdiutil convert stuff.dmg -format UDZO -encryption -o stuff-enc
+.Bd -ragged -offset indent-two -compact
+create a copy of stuff.dmg named stuff-enc.dmg which is
+encrypted with AES-128.
+.Ed
+.Pp
+Burning:
+.Dl hdiutil burn myImage.dmg
+.Bd -ragged -offset indent-two -compact
+burns the image to optical media and verifies the burn.
+.Ed
+.Dl hdiutil burn myRawImage.cdr -noverifyburn -noeject
+.Bd -ragged -offset indent-two -compact
+burns the image without verifying the burn or ejecting
+the disc.  Volumes will be mounted after burning.
+.Ed
+.Pp
+Creating a 50 MB read/write encrypted image:
+.Dl hdiutil create -encryption -size 50m e.dmg -fs HFS+J
+.Pp
+Creating a 50 MB read/write encrypted image protected with public key only:
+.Bd -literal -offset indent -compact
+hdiutil create -encryption -size 50m e.dmg -fs HFS+J \\
+    -pubkey F534A3B0C2AEE3B988308CC89AA04ABE7FDB5F30
+.Ed
+.Pp
+Creating a 50 MB read/write encrypted image protected with public key and password:
+.Bd -literal -offset indent -compact
+hdiutil create -encryption -size 50m e.dmg -fs HFS+J -agentpass \\
+    -pubkey F534A3B0C2AEE3B988308CC89AA04ABE7FDB5F30
+.Ed
+.Pp
+Note that these two -pubkey usage examples assume a certificate
+corresponding to this public key is currently in the user's keychain or smart
+card.
+For additional information on smart card authorization setup see
+.Xr sc_auth 8 .
+.Pp
+Creating an encrypted single-partition image without user interaction:
+.Dl printf pp|hdiutil create -encryption -stdinpass -size 9m sp.dmg
+.Pp
+Creating a "1 GB" SPARSE image (a 1 GB filesystem in a growable file):
+.Dl hdiutil create -type SPARSE -size 1g -fs HFS+J growableTo1g
+.Pp
+Creating a "1 GB" SPARSEBUNDLE (a 1 GB filesystem in a growable bundle):
+.Dl hdiutil create -type SPARSEBUNDLE -size 1g -fs HFS+J growableTo1g
+.Pp
+Creating a new mounted volume backed by an image:
+.Dl hdiutil create -volname Dick -size 1.3m -fs HFS+ -attach Moby.dmg
+.Pp
+Attaching an image on a web server to the system, with any writes going
+to a local file:
+.Bd -literal -offset indent -compact
+hdiutil attach https://my.webserver.com/master.dmg \\
+    -shadow /tmp/mastershadowfile
+.Ed
+.Pp
+Using a shadow file to attach a read-only image read/write to modify it,
+then convert it back to a read-only image. This method eliminates the
+time/space required to convert a image to read/write before modifying it.
+.Bd -literal -offset indent
+hdiutil attach -owners on Moby.dmg -shadow
+/dev/disk2   Apple_partition_scheme
+/dev/disk2s1 Apple_partition_map
+/dev/disk2s2 Apple_HFS               /Volumes/Dick
+
+ditto /Applications/Preview.app /Volumes/Dick
+hdiutil detach /dev/disk2
+hdiutil convert -format UDZO Moby.dmg -shadow
+.Ed
+.Pp
+Creating a RAM-backed device and filesystem:
+.Bd -literal -offset indent
+NUMSECTORS=128000       # a sector is 512 bytes
+mydev=`hdiutil attach -nomount ram://$NUMSECTORS`
+newfs_hfs $mydev
+mkdir /tmp/mymount
+mount -t hfs $mydev /tmp/mymount
+.Ed
+.Pp
+Using makehybrid to create cross-platform data with files overlapping
+between filesystem views, containing these files:
+.Bd -literal -offset indent -compact
+albumlist.txt song2.wma     song4.m4a     song6.mp3     song8.mp3
+song1.wma     song3.m4a     song5.mp3     song7.mp3
+.Ed
+.Pp
+.Bd -literal -offset indent -compact
+hdiutil makehybrid -o MusicBackup.iso Music -hfs -iso -joliet \\
+    -hide-hfs 'Music/*.wma' -hide-joliet 'Music/{*.m4a,*.mp3}' \\
+    -hide-iso 'Music/*.{wma,m4a}'
+.Ed
+.Pp
+will create an image with three filesystems pointing to the same blocks.
+The HFS+ filesystem, typically only visible on Macintosh systems, will
+not include the .wma files, but will show the .m4a and .mp3 files. The
+Joliet filesystem will not show the .m4a and .mp3 files, but will show
+the .wma files. The ISO9660 filesystem, typically the default filesystem
+for optical media on many platforms, will only show the .mp3 files. All
+three filesystems will include the "albumlist.txt" files.
+.Pp
+Image from directory:
+.Dl hdiutil create -srcfolder mydir mydir.dmg
+.Bd -ragged -offset indent-two -compact
+This method uses the least disk space during image creation, but the
+resulting image may be slightly less space efficient.
+.Ed
+.Pp
+Image from directory using an intermediate sparse bundle:
+.Dl hdiutil create -srcfolder mydir -format UDSB mydir.sparsebundle
+.Dl hdiutil convert mydir.sparsebundle -format UDZO -o mydir.dmg
+.Bd -ragged -offset indent-two -compact
+This method produces space-optimal images, but requires much more disk
+space during image creation. The intermediate sparse bundle image can
+be removed after the process is complete.
+.Ed
+.Pp
+Manually changing ownership settings of a read-only disk image:
+.Bd -literal -offset indent -compact
+hdiutil attach myimage.dmg
+\&\...
+/dev/disk1s2            Apple_HFS         /Volumes/myVolume
+diskutil unmount disk1s2
+mkdir /Volumes/myVolume
+sudo mount -r -t hfs -o owners /dev/disk1s2 /Volumes/myVolume
+# -o owners is the default for manual mounts
+.Ed
+.Pp
+Forcing a known image to attach:
+.Dl hdiutil attach -imagekey diskimage-class=CRawDiskImage myBlob.bar
+.\"
+.Sh ENVIRONMENT
+The following environment variables affect
+.Nm
+and DiskImages:
+.Bl -tag -width com_apple
+.It Ev com_apple_hdid_verbose
+enable
+.Fl verbose
+behavior for
+.Sy attach .
+.It Ev com_apple_hdid_debug
+enable
+.Fl debug
+behavior for
+.Sy attach .
+.It Ev com_apple_hdid_nokernel
+similar to
+.Fl nokernel
+but works even with, for example,
+.Sy create Fl attach .
+.It Ev com_apple_hdid_kernel
+Make
+.Sy attach
+behave as if
+.Fl kernel
+was passed.  In Mac OS X 10.4.x, in-kernel was the default behavior for UDRW
+and SPARSE images.  In Mac OS X 10.5 and later, these and other
+kernel-compatible images again default to attaching with a user process.
+If an image is not "kernel-compatible" and in-kernel mounting is specified,
+the attach will fail.  WARNING: ram:// images use wired memory when
+attached in-kernel.
+.It Ev com_apple_diskimages_insecureHTTP
+disable SSL peer verification the same way
+.Fl insecurehttp
+does.  Useful for clients of DiskImages such as
+.Xr asr 8
+which don't support a similar command line option.
+.El
+.\"
+.Sh ERRORS
+.\" hdiutil test 7 <errnum> will decode an error number.
+.\" an 'errnum' verb might be useful for debugging
+DiskImages uses many frameworks and can encounter many error codes.  In
+general, it tries to turn these error numbers into localized strings for
+the user.  For background,
+.Xr intro 2
+is a good explanation of our primary error domain: the BSD errno values.
+For debugging,
+.Fl verbose
+should generally provide enough information to figure out what has gone
+wrong.  The following is a list of interesting errors that hdiutil may
+encounter:
+.Bl -tag -width Er
+.It "No mountable filesystems"
+The "No mountable filesystems" error from
+.Nm
+.Sy attach
+means that no filesystems could be recognized or mounted after the disk
+image was attached.  The default behavior in this case is to detach the
+disk image.  See
+.Sy attach
+for options modifying this behavior.  This error can occur if the disk
+image or contained filesystem is corrupt.  It can also occur if an image
+was created from a block device containing a mounted, journaled filesystem
+(in which case the image contains a dirty journal that can't be replayed
+without making the image read/write, such as with
+.Sy attach
+.Fl shadow Ns ).
+.It Bq Er ENXIO
+Device not configured.  This error is returned explicitly by DiskImages
+when its kernel driver or framework helper cannot be contacted.  It also
+often shows up when a device has been removed while I/O is still active.
+One common case of the helper not being found is when Foundation's
+Distributed Objects RPC mechanism cannot be configured.  D.O. doesn't
+work under dead Mach bootstrap contexts such as can exist in a reattached
+.Xr screen 1
+session.  Root users can take advantage of
+.Xr StartupItemContext 8
+(in
+.Pa /usr/libexec )
+to access the startup item Mach bootstrap context.
+.\" 3941240 tracks better bootstraps :)
+.It Bq Er EINVAL
+Invalid argument.  This error is used in many contexts and is often a
+clue that
+.Nm hdiutil Ns 's
+arguments are subtly non-sensical (e.g. an invalid layout name passed to
+.Sy create
+.Fl layout Ns ).
+.It Bq Er EFBIG
+File too large.  DiskImages reports this error when attempting to access
+a disk image over HTTP that is too large for the server to support access
+via Range requests.  Segmented images can sometimes be used to work around
+this limitation of older HTTP servers.  This error can also occur if an
+overflow occurs with an old-style UDIF resource fork.
+.It Bq Er EAUTH
+Authentication error.  Used by DiskImages when
+.Xr libcurl 3
+is unable to verify its SSL peer or when Security.framework indicates
+that the user failed to enter the correct password.  See
+.Fl insecurehttp
+and
+.Fl cacert
+for more information about verification of SSL peers.
+.It Bq Er EBUSY
+Resource busy.  Used if necessary exclusive access cannot be obtained.
+This error often appears when a volume can't be unmounted.
+.Xr lsof 8
+may help determine which open files could be causing the error.
+.It Bq Er EAGAIN
+Resource temporarily unavailable.  As of Mac OS X 10.5, DiskImages uses
+read/write locks on its image files to prevent images from being attached
+on more than one machine at a time (e.g. over the network).
+.Er EAGAIN
+is returned if the appropriate read or write lock can't be obtained.
+.It Er EACCES vs. Er EPERM
+EACCES and EPERM are subtly different.  The latter "operation not
+permitted" tends to refer to an operation that cannot be performed, often
+due to an incorrect effective user ID.  On the other hand, "permission
+denied" tends to mean that a particular file access mode prevented the
+operation.
+.El
+.\"
+.Sh USING PERSISTENT SPARSE IMAGES
+As of Mac OS X 10.5, a more reliable, efficient, and scalable sparse
+format, UDSB (SPARSEBUNDLE), is recommended for persistent sparse images
+as long as a backing bundle (directory) is acceptable.  Mac OS X 10.5 also
+introduced F_FULLFSYNC over AFP (on client and server), allowing proper
+journal flushes for HFS+J-bearing images.  Critical data should never be
+stored in sparse disk images on file servers that don't support
+F_FULLFSYNC.
+.Pp
+SPARSE (UDSP) images and shadow files were designed for intermediate use
+when creating other images (e.g. UDZO) when final image sizes are unknown.
+Generally speaking, SPARSE images are not recommended for persistent storage,
+though they are relatively safe on Mac OS X 10.3.2 and later. On versions
+earlier than 10.3.2, SPARSE should be avoided in favor of UDRW images and
+.Sy resize .
+On Mac OS X 10.5 and later, the more robust and faster SPARSEBUNDLE type
+is preferred.
+.Pp
+Note that both sparse formats, UDSP and UDSB, are growable only up to a limit:
+the size parameter specified when they were created. They will take up less space
+on the hosting filesystem if they contain less data than their created size,
+and grow up to that size as data is added.
+.Pp
+If more space is needed than is referenced by the hosted filesystem,
+.Nm
+.Sy resize
+or
+.Xr diskutil 8
+.Sy resize
+can help to grow or shrink the filesystem in an image.
+.Sy compact
+reclaims unused space in sparse images.  Though they request that hosted
+HFS+ filesystems use a special "front first" allocation policy, beware
+that sparse images can enhance the effects of any fragmentation in the
+hosted filesystem.
+.Pp
+To prevent errors when a filesystem inside of a sparse image has more free
+space than the volume holding the sparse image, HFS+ volumes inside sparse
+images will report an amount of free space slightly less than the amount
+of free space on the volume on which image resides.  The image filesystem
+currently only behaves this way as a result of a direct
+.Sy attach
+action and will not behave this way if, for example, the filesystem is
+unmounted and remounted.  Moving the image file to a different volume
+with sufficient free space will allow the image's filesystem to grow to
+its full size.
+.\"
+.Sh DEVICE SPECIAL FILES
+Since any
+.Pa /dev
+entry can be treated as a raw disk image, it is worth noting which devices
+can be accessed when and how.
+.Pa /dev/rdisk
+nodes are character-special devices, but are "raw" in the BSD sense and
+force block-aligned I/O.  They are closer to the physical disk than the
+buffer cache.
+.Pa /dev/disk
+nodes, on the other hand, are buffered block-special devices and are used
+primarily by the kernel's filesystem code.
+.Pp
+It is not possible to read from a
+.Pa /dev/disk
+node while a filesystem is mounted from it, but anyone with read access
+to the appropriate
+.Pa /dev/rdisk
+node can use
+.Nm hdiutil
+verbs such as
+.Sy fsid
+or
+.Sy pmap
+with it.  Beware that information read from a raw device while a
+filesystem is mounted may not be consistent because the consistent
+data is stored in memory or in the filesystem's journal.
+.Pp
+The DiskImages framework will attempt to use
+.Xr authopen 1
+to open any device which it can't open (due to EACCES) for reading with
+.Xr open 2 Ns .
+Depending on session characteristics, this behavior can cause
+apparent hangs while trying to access
+.Pa /dev
+entries while logged in remotely (an authorization panel is waiting on
+console).
+.Pp
+Generally, the
+.Pa /dev/disk
+node is preferred for imaging devices (e.g.
+.Sy convert
+or
+.Sy create Fl srcdevice
+operations), while
+.Pa /dev/rdisk
+is usable for the quick
+.Sy pmap
+or
+.Ns Sy fsid .
+In particular, converting the blocks of a mounted journaled filesystem
+to a read-only image will prevent the volume in the image from
+mounting (the journal will be permanently dirty).
+.\"
+.Sh PERMISSIONS VS. OWNERS
+Some filesystems support permissions including users and groups.  While
+important for security on a managed filesystem, users and groups ("owners")
+pose challenges for unmanaged, shared filesystems such as those typically
+present in disk images.  macOS's solution to this problem is to make owners
+optional, both while creating files and enforcing permissions.
+.Pp
+By default, unknown HFS+ filesystems on "external" devices (including
+disk images) mount with their owners ignored (mount -o noowners).  Normally
+when owners are ignored, the system uses a special _unknown user and group
+to dynamically substitute the current user's identity for any owners
+recorded in the filesystem.  These _unknown owners are even written to
+the volume when creating new files.  The new files will continue to have
+"floating" ownership when mounted with owners honored.  The net result
+is that shared volumes behave as expected regardless of how they are
+accessed.
+.Pp
+The behavior is different when disk images are attached.  With disk images,
+the owner of all files in a filesystem mount for which owners are ignored
+is the user attaching the disk image.  The attaching owner is also used
+when creating new files.
+.Pp
+On modern macOS systems, root (UID 0) can "see through" the "owners ignored"
+user mappings.  Thus
+.Dl sudo ls -l /Volumes/imageVol
+will show whatever is really stored in the filesystem (possibly _unknown)
+regardless of whether owners are currently being honored on that volume.
+In contrast, non-root users will see themselves any time _unknown is in
+effect, whether the default for the mount when owners are ignored or
+because _unknown is stored on disk.  For disk images, non-root users will
+see owners matching the user that attached the disk image.
+.Pp
+Unlike owners, permissions are never optional.  A non-writable file will
+not be writable just because owners are ignored.  However, a file that
+is writable by its owner will be writable by everyone if _unknown is the
+effective owner of the file for that file.  Because anyone accessing an
+owners-ignored file is treated as the owner, everyone is effectively the
+owner.  Because the default behavior for disk image filesystems is for
+all files to be owned by the user attaching the disk image, other users
+will be treated per the 'group' (if applicable) and 'other' permission
+modes.
+.Pp
+.Xr diskutil 8 Ns 's
+.Sy enableOwnership
+or the Finder's Get Info window can be used to configure a system
+to respect the on-disk owners for a filesystem in the future.
+.\"
+.Sh COMPATIBILITY
+The DiskImages framework supports a variety of flat-file and dual-fork
+image formats, including read/write, read-only, and read-only compressed
+(which are decompressed in small chunks as I/O requests are made).  It
+automatically decodes AppleSingle and MacBinary file formats and is capable
+of mounting most images directly from http:// URLs.  Because DiskImages
+can make many requests over a single connection, responsiveness can be
+improved by modifying HTTP server settings such as apache's
+MaxKeepAliveRequests and KeepAliveTimeout.
+.Pp
+Mac OS X 10.0 supported the disk images of Disk Copy 6 on Mac OS 9.  OS X
+10.1 added sparse, encrypted, and zlib-compressed images.  These images
+will not be recognized on Mac OS X 10.0 (or will attach read/write, possibly
+allowing for their destruction).  As the sparse, shadow, and encrypted
+formats have evolved, switches have been added to facilitate the creation
+of images that are compatible with older OS versions (at the expense of
+the performance and reliability improvements offered by the format
+enhancements).  In particular, sparse images should not be expected to
+attach on versions of OS X older than that which created them.
+.Pp
+With Mac OS X 10.2, the most common image formats went "in-kernel" (i.e. the
+DiskImages kernel extension served them without a helper process), image
+meta-data began being stored both as XML and in the embedded resource fork,
+and the default Disk Copy.app "compressed" format became UDZO (breaking
+compatibility with 10.0).  Mac OS X 10.4 introduced bzip2 compression in the
+UDBZ format which provides smaller images (especially when combined with
+.Sy makehybrid )
+at the expense of backwards compatibility, some performance, and kernel
+compatibility.
+.Pp
+In Mac OS X 10.4.7, the resource forks previously embedded in UDIF images
+were abandoned entirely to avoid metadata length limitations imposed by
+resource fork structures.
+As a result, UDIF images created on 10.4.7 and later will not, by default,
+be recognized by either Mac OS X 10.1 or Mac OS X 10.0.
+.Sy flatten
+can be used to customize the type of metadata stored in the image.
+.Pp
+Mac OS X
+10.5 introduced sparse bundle images which
+.Sy compact
+quickly but are not recognized by previous OS versions.  Mac OS X 10.6
+removed support for attaching SPARSEBUNDLE images from network file
+servers that don't support F_FULLFSYNC, although this requirement was relaxed
+in macOS 10.12.  OS X 10.7 removed double-click support for images using legacy
+metadata; these can be rehabilitated using
+.Sy flatten
+and
+.Sy unflatten Ns ,
+or simply
+.Sy convert Ns .
+.Pp
+OS X 10.11 introduced lzfse compression in the ULFO format, providing
+faster, more efficient compression and smaller images compared to UDZO.
+These images are also supported in-kernel, but will not work on any
+earlier versions of the OS.
+.Pp
+macOS 10.12 included a pre-release version of the Apple File System
+called APFS which was meant for evaluation and development purposes only.
+Files stored in APFS-based images may not be accessible in future
+releases of macOS, and won't work in past ones.  All data to be stored
+in APFS volumes should be backed up prior to using APFS and regularly
+backed up while using APFS.
+.\"
+.Sh HISTORY
+Disk images were first invented to electronically store and transmit
+representations of floppy disks for manufacturing replication.  These
+images of floppies are typically referred to as 'Disk Copy 4.2' images,
+in reference to the application that created and restored them to floppy
+disks.  Disk Copy 4.2 images were block-for-block representations of a
+floppy disk, with no notion of compression.  DART is a variant of the
+Disk Copy 4.2 format that supported compression.
+.Pp
+NDIF (New Disk Image Format) images were developed to replace the Disk
+Copy 4.2 and DART image formats and to support images larger than a floppy
+disk.  With NDIF and Disk Copy version 6, images could be "attached" as
+mass storage devices under Mac OS 9.  Apple Data Compression (ADC) --
+which carefully optimizes for fast decompression -- was used to compress
+images that were typically created once and restored many times during
+manufacturing.
+.Pp
+UDIF (Universal Disk Image Format) device images picked up where NDIF
+left off, allowing images to represent entire block devices and all the
+data therein: DDM, partition map, disk-based drivers, etc.  For example,
+it can represent bootable CDs which can then be replicated from an image.
+To ensure single-fork files (NDIF was dual-fork), it began embedding its
+resource fork in the data fork.  UDIF is the native image format for OS
+X.
+.Pp
+Raw disk images from other operating systems (e.g. .iso files) will be
+recognized as disk images and can be attached and mounted if macOS
+recognizes the filesystems.  They can also be burned with
+.Nm
+.Ns Sy burn .
+.\"
+.Sh WHAT'S NEW
+macOS 10.12 introduced the pre-release APFS for evaluation (see COMPATIBILITY
+above).  10.12 also added an option to disable atomic copying during image from
+folder operations, 
+.Fl noatomic Ns ,
+which may result in slightly faster image creation.
+.Sy pmap
+added a new switch,
+.Fl diagnostic Ns ,
+which captures troubleshooting information for Boot Camp configurations.
+.Pp
+OS X 10.11 added ULFO format images compressed with lzfse.  These images are
+more efficient and smaller than comparable UDZO images compressed with zlib,
+and retain kernel compatibility, but are not usable on earlier OSes.
+.Pp
+OS X 10.10 quadrupled the default UDIF chunk size without affecting backward
+compatibility.  UDIF images created or converted on 10.10 will benefit from
+smaller metadata and more efficient compression for UDZO and especially UDBZ
+formats.
+.Pp
+OS X 10.7 added the ability to quickly render encrypted images
+inaccessible using the new
+.Sy erasekeys
+verb, which saves time versus securely overwriting the entire image.
+.Pp
+In Mac OS X 10.6,
+.Sy pmap
+was rewritten to use MediaKit's latest reporting routines so that it can
+properly support GPT partition maps.  Also
+.Fl debug
+now implies
+.Fl verbose
+for all verbs.
+.Pp
+Mac OS X 10.5 changed the behavior of
+.Sy attach
+when run on an existing image or /dev node: if the image was attached but
+no volume was mounted, the volume would be mounted.  Prior systems would
+return the /dev without mounting the volume.  This change effectively
+removes the ability to create a second /dev node from an existing one.
+.\"
+.Sh SEE ALSO
+.Ns Xr diskutil 8 ,
+.Ns Xr asr 8 ,
+.Ns Xr ioreg 8 ,
+.Ns Xr hfs.util 8 ,
+.Ns Xr apfs.util 8 ,
+.Ns Xr msdos.util 8 ,
+.Ns Xr exfat.util 8 ,
+.Ns Xr authopen 1 ,
+.Ns Xr ditto 8 ,
+.Ns Xr drutil 1 ,
+.Ns Xr diskarbitrationd 8 .
