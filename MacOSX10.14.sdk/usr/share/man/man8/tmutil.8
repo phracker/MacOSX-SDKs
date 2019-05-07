@@ -1,0 +1,511 @@
+.\"Copyright (c) 2007-2015 Apple Inc.  All Rights Reserved.
+.\"
+.\"To check for errors: /usr/bin/groff -I/usr/share/man -S -Wall -mtty-char -mandoc -Tascii tmutil.8
+.\"
+.Dd 10 June 2015
+.Dt TMUTIL 8
+.Os "Mac OS X"
+.Sh NAME
+.Nm tmutil
+.Nd Time Machine utility
+.\"
+.\" ============================================================================
+.\" ========================== BEGIN SYNOPSIS SECTION ==========================
+.Sh SYNOPSIS
+.Nm
+.Ar verb
+.Op options
+.\" =========================== END SYNOPSIS SECTION ===========================
+.\" ============================================================================
+.\"
+.\" ============================================================================
+.\" ======================== BEGIN DESCRIPTION SECTION =========================
+.Sh DESCRIPTION
+.Nm
+provides methods of controlling and interacting with Time Machine, as well as examining and manipulating Time Machine backups. Common abilities include restoring data from backups, editing exclusions, and comparing backups.
+.Pp
+Several, but not all, verbs require root privileges.
+.\" ========================== END DESCRIPTION SECTION =========================
+.\" ============================================================================
+.\"
+.\" ============================================================================
+.\" ====================== BEGIN BACKUP STRUCTURE SECTION ======================
+.Sh BACKUP STRUCTURE
+Throughout this manual, specific language is used to describe particular "realms" associated with Time Machine backups. It is important to understand this terminology to make effective use of
+.Nm
+and its manual.
+.Pp
+.\" ----------------------------------------------------------------------------
+.\" ------------------------- BEGIN TERMINOLOGY LIST ---------------------------
+.Bl -hang
+.\" - - - - - - - - - - - - - - - BACKUP SOURCE - - - - - - - - - - - - - - - -
+.It Em backup source
+.br
+A volume currently being backed up by Time Machine.
+.\" - - - - - - - - - - - - - - -  BACKUP DISK  - - - - - - - - - - - - - - - -
+.It Em backup disk
+.br
+The HFS+ volume that contains Time Machine backups.
+.\" - - - - - - - - - - - - - - BACKUP DESTINATION  - - - - - - - - - - - - - -
+.It Em backup destination
+.br
+\&In the case of a local destination, a synonym for backup disk. For network destinations, this is the AFP or SMB share on which the backup disk image resides.
+.\" - - - - - - - - - - - - - - BACKUP DISK IMAGE - - - - - - - - - - - - - - -
+.It Em backup disk image
+(or
+.Em backup image)
+.br
+A sparsebundle that, when mounted, is the backing store for a volume that is a backup disk.
+.\" - - - - - - - - - - - - - - - BACKUP STORE  - - - - - - - - - - - - - - - -
+.It Em backup store
+.br
+The top-level "Backups.backupdb" directory at the root of a backup disk. E.g.,
+.Pp
+/Volumes/Chronoton/Backups.backupdb
+.\" - - - - - - - - - - - - - - MACHINE DIRECTORY - - - - - - - - - - - - - - -
+.It Em machine directory
+.br
+A directory inside a backup store that contains all the backups for a particular computer. For local destinations, a backup store can contain multiple machine directories, all for separate computers. E.g.,
+.Pp
+/Volumes/Chronoton/Backups.backupdb/thermopylae
+.\" - - - - - - - - - - - - - - - - SNAPSHOT  - - - - - - - - - - - - - - - - - 
+.It Em snapshot
+.br
+A directory inside a machine directory that represents a single initial or incremental backup of one computer. The word "snapshot", in most contexts, is a generic term and is not to be confused with a "local Time Machine snapshot", which is simply a snapshot stored locally on the computer. E.g.,
+.Pp
+/Volumes/Chronoton/Backups.backupdb/thermopylae/2011-07-03-123456
+.\" - - - - - - - - - - - - - - SNAPSHOT VOLUME - - - - - - - - - - - - - - - - 
+.It Em snapshot volume
+.br
+A directory inside a snapshot that represents a single initial or incremental backup of one backup source. E.g.,
+.Pp
+/Volumes/Chronoton/Backups.backupdb/thermopylae/2011-07-03-123456/Mac HD
+.El
+.\" --------------------------- END TERMINOLOGY LIST ---------------------------
+.\" ----------------------------------------------------------------------------
+.\" ======================= END BACKUP STRUCTURE SECTION =======================
+.\" ============================================================================
+.\"
+.\" ============================================================================
+.\" =========================== BEGIN VERBS SECTION ============================
+.Sh VERBS
+Each verb is listed with its description and individual arguments.
+.\"
+.\" ----------------------------------------------------------------------------
+.\" ---------------------------- BEGIN VERBS LIST ------------------------------
+.Bl -hang
+.\" - - - - - - - - - - - - - - SETDESTINATION  - - - - - - - - - - - - - - - - 
+.It Sy setdestination Op Fl ap
+.Ar arg
+.br
+Configure a local HFS+ volume, AFP share, or SMB share as a backup destination. Requires root privileges.
+.Pp
+When the
+.Fl Sy a
+option is provided,
+.Ar arg
+will be added to the list of destinations. Time Machine will automatically choose a backup destination from the list when performing backups. When the
+.Fl Sy a
+option is not provided, the current list of destinations will be replaced by
+.Ar arg.
+.Pp
+If you wish to set an HFS+ volume as the backup destination,
+.Ar arg
+should be the mount point of the volume in question. When setting an AFP or SMB destination
+.Ar arg
+takes the form:
+.Pp
+.Pa protocol://user[:pass]@host/share
+.Pp
+In the AFP and SMB cases, the password component of the URL is optional; you may instead specify the
+.Fl Sy p
+option to enter the password at a non-echoing interactive prompt. This is of particular interest to the security-conscious, as all arguments provided to a program are visible by all users on the system via the
+.Sy ps
+tool.
+.\" - - - - - - - - - - - - - - DESTINATIONINFO  - - - - - - - - - - - - - - - -
+.It Sy destinationinfo Op Fl X
+.br
+Print information about destinations currently configured for use with Time Machine. For each backup destination, the following information may be displayed:
+.Pp
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\" - - - - - - - - - - -  BEGIN DESTINATIONINFO LIST - - - - - - - - - - - - -
+.Bl -hang -offset 4n -width "xxxxxxxxxxxx" -compact
+.It Name
+The volume label as shown in Finder.
+.It Kind
+Whether the destination is locally attached storage or a network device.
+.It URL
+In the case of a network destination, the URL used for Time Machine configuration.
+.It Mount Point
+If the volume is currently mounted, the path in the file system at which it was mounted.
+.It ID
+The unique identifier for the destination.
+.El
+.Pp
+.\" - - - - - - - - - - - - END DESTINATIONINFO LIST  - - - - - - - - - - - - -
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\"
+When more than one destination is configured, the most recent backup destination will be marked with the > indicator.
+.Pp
+When the
+.Fl Sy X
+option is provided, output will be printed in XML property list format.
+.\" - - - - - - - - - - - - - - REMOVEDESTINATION  - - - - - - - - - - - - - - - 
+.It Sy removedestination
+.Ar identifier
+.br
+Remove the destination with the specified unique identifier from the Time Machine configuration. Requires root privileges.
+.Pp
+To obtain the unique identifier for a destination, see
+.Sy destinationinfo.
+.\" - - - - - - - - - - - - - - - ADDEXCLUSION - - - - - - - - - - - - - - - - - 
+.It Sy addexclusion Op Fl pv
+.Ar item ...
+.br
+Configure an exclusion that tells Time Machine not to back up a file, directory, or volume during future backups.
+.Pp
+There are three kinds of user-configurable exclusions in Time Machine:
+.Pp
+The first kind of exclusion, which is the default behavior for the
+.Sy addexclusion
+verb, is a location-independent ("sticky") exclusion that follows a file or directory. When the file or directory is moved, the exclusion goes with the item to the new location. Additionally, when the item is copied, the copy retains the exclusion.
+.Pp
+The second kind of exclusion is a fixed-path exclusion. With this, you tell Time Machine that you want a specific path to be excluded, agnostic of the item at that path. If there is no file or directory at the specified path, the exclusion has no effect; if the item previously at the path has been moved or renamed, the item is not excluded, because it does not currently reside at the excluded path. As a consequence of these semantics, moving a file or directory
+.Em to
+the path will cause the item to be excluded--fixed-path exclusions are not automatically cleaned up when items are moved or deleted and will take effect again once an item exists at an excluded path.
+.Pp
+The third kind of exclusion is a volume exclusion. These track volumes based on file system UUID, which is persistent across volume name and mount path changes. Erasing the volume will cause Time Machine to apply default behavior for the newly erased volume.
+.Pp
+The
+.Fl Sy p
+option configures fixed-path exclusions. The
+.Fl Sy v
+option configures volume exclusions. Both require root privileges. The
+.Fl Sy v
+option is the only supported way to exclude or unexclude a volume; behavior is undefined if a sticky or fixed-path exclusion is specified.
+.\" - - - - - - - - - - - - - - REMOVEEXCLUSION - - - - - - - - - - - - - - - -
+.It Sy removeexclusion Op Fl pv
+.Ar item ...
+.br
+Configure Time Machine to back up a file, directory, or volume during future backups. This verb follows the same usage, exclusion style, and privilege semantics as
+.Sy addexclusion Ns
+\&.
+.\" - - - - - - - - - - - - - - - ISEXCLUDED  - - - - - - - - - - - - - - - - - 
+.It Sy isexcluded Op Fl X
+.Ar item ...
+.br
+Determine if a file, directory, or volume are excluded from Time Machine backups.
+.Pp
+When the
+.Fl Sy X
+option is provided, output will be printed in XML property list format.
+.Pp
+# example output for an excluded item
+.br
+thermopylae:~ thoth$ tmutil isexcluded /Users/admin/Desktop/foo.txt
+.br
+[Excluded]      /Users/admin/Desktop/foo.txt
+.Pp
+# example output for an item that is not excluded
+.br
+thermopylae:~ thoth$ tmutil isexcluded /Users/admin/Desktop/bar.txt
+.br
+[Included]      /Users/admin/Desktop/bar.txt
+.\" - - - - - - - - - - - - - - - - ENABLE  - - - - - - - - - - - - - - - - - -
+.It Sy enable
+.br
+Turn on automatic backups. Requires root privileges.
+.\" - - - - - - - - - - - - - - - - DISABLE - - - - - - - - - - - - - - - - - -
+.It Sy disable
+.br
+Turn off automatic backups. Requires root privileges.
+.\" - - - - - - - - - - - - - - - STARTBACKUP - - - - - - - - - - - - - - - - -
+.It Sy startbackup
+.Op Fl a | -auto
+.Op Fl b | -block
+.Op Fl r | -rotation
+.Op Fl d | -destination Ar dest_id
+.br
+Begin a backup if one is not already running.
+.Pp
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\" - - - - - - - - - -  BEGIN STARTBACKUP OPTIONS LIST - - - - - - - - - - - -
+.Sy Options:
+.Bl -hang -offset 4n -width "destination    " -compact
+.It Fl -auto
+Run the backup in a mode similar to system-scheduled backups.
+.It Fl -block
+Wait (block) until the backup is finished before exiting.
+.It Fl -rotation
+Allow automatic destination rotation during the backup.
+.It Fl -destination
+Perform the backup to the destination corresponding to the specified ID.
+.El
+.Pp
+The
+.Fl Sy -auto
+option provides a supported mechanism with which to trigger "automatic-like" backups, similar to automatic backups that are scheduled by the system. While this is not identical to true system-scheduled backups, it provides custom schedulers the ability to achieve some (but not all) behavior normally exhibited when operating in automatic mode.
+.\" - - - - - - - - - - - END STARTBACKUP OPTIONS LIST  - - - - - - - - - - - -
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\"
+.\" - - - - - - - - - - - - - - - STOPBACKUP  - - - - - - - - - - - - - - - - -
+.It Sy stopbackup
+.br
+Cancel a backup currently in progress.
+.\" - - - - - - - - - - - - - - - COMPARE - - - - - - - - - - - - - - - - - - -
+.It Sy compare Op Fl @acdefglmnstuEUX
+.Op Fl D Ar depth
+.Op Fl I Ar name
+.Op Ar snapshot_path | path1 path2
+.br
+Perform a backup diff.
+.Pp
+If no arguments are provided,
+.Nm
+will compare the computer to the latest snapshot. If a snapshot path is provided as the sole argument,
+.Nm
+will compare the computer to the specified snapshot. If two path arguments are provided,
+.Nm
+will compare those two items to each other.
+.Nm
+will attempt to inform you when you have asked it to do something that doesn't make sense or isn't supported.
+.Pp
+The
+.Sy compare
+verb allows you to specify what properties to compare. If you specify no property options,
+.Nm
+assumes a default property set of
+.Fl Sy @gmstu.
+Specifying any property option overrides the default set.
+.Pp
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\" - - - - - - - - - - -  BEGIN COMPARE OPTIONS LIST - - - - - - - - - - - - -
+.Sy Options:
+.Bl -hang -offset 4n -width "xxxx" -compact
+.It Fl a
+Compare all supported metadata.
+.It Fl n
+No metadata comparison.
+.It Fl @
+Compare extended attributes.
+.It Fl c
+Compare creation times.
+.It Fl d
+Compare file data forks.
+.It Fl e
+Compare ACLs.
+.It Fl f
+Compare file flags.
+.It Fl g
+Compare GIDs.
+.It Fl m
+Compare file modes.
+.It Fl s
+Compare sizes.
+.It Fl t
+Compare modification times.
+.It Fl u
+Compare UIDs.
+.It Fl D
+Limit traversal depth to
+.Ar depth
+levels from the beginning of iteration.
+.It Fl E
+Don't take exclusions into account when comparing items inside volumes.
+.It Fl I
+Ignore paths with a path component equal to
+.Ar name
+during iteration. This may be specified multiple times.
+.It Fl U
+Ignore logical volume identity (volume UUIDs) when directly comparing a local volume or snapshot volume to a snapshot volume.
+.It Fl X
+Print output in XML property list format.
+.El
+.\" - - - - - - - - - - - - END COMPARE OPTIONS LIST  - - - - - - - - - - - - -
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\"
+.\" - - - - - - - - - - - - - - VERIFYCHECKSUMS - - - - - - - - - - - - - - - - 
+.It Sy verifychecksums
+.Ar path ...
+.br
+Compute a checksum of data contained within a backup and verify the result(s) against checksum information computed at the time of backup.
+.Pp
+No output is generated for matching checksums. Issues are reported using the following legend:
+.Pp
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.\" - - - - - - - - BEGIN VERIFYCHECKSUMS LEGEND LIST - - - - - - - - - - - - -
+.Bl -hang -offset 4n -width "xxx" -compact
+.It !
+The file's current checksum does not match the expected recorded checksum.
+.It ?
+The file's recorded checksum is invalid.
+.El
+.\" - - - - - - - - - END VERIFYCHECKSUMS LEGEND LIST - - - - - - - - - - - - -
+.\" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+.Pp
+Beginning in OS X 10.11, Time Machine records checksums of files copied into snapshots. Checksums are not retroactively computed for files that were copied by earlier releases of OS X.
+.\" - - - - - - - - - - - - - - - - RESTORE - - - - - - - - - - - - - - - - - -
+.It Sy restore Op Fl v
+.Ar src ... dst
+.br
+Restore the item
+.Ar src Ns
+, which is inside a snapshot, to the location
+.Ar dst Ns
+\&. The
+.Ar dst
+argument mimics the destination path semantics of the
+.Sy cp
+tool. You may provide multiple source paths to restore. The last path argument must be a destination.
+.Pp
+When using the
+.Sy restore
+verb,
+.Nm
+behaves largely like Finder. Custom Time Machine metadata (extended security and other) will be removed from the restored data, and other metadata will be preserved.
+.Pp
+Root privileges are not strictly required to perform restores, but
+.Nm
+does no permissions preflighting to determine your ability to restore
+.Ar src
+or its descendants. Therefore, depending on what you're restoring, you may need root privileges to perform the restore, and you should know this ahead of time. This is the same behavior you would encounter with other copy tools such as
+.Sy cp
+or
+.Sy ditto Ns
+\&. When restoring with
+.Sy tmutil
+as root, ownership of the restored items will match the state of the items in the backup.
+.\" - - - - - - - - - - - - - - - - DELETE  - - - - - - - - - - - - - - - - - -
+.It Sy delete Ar path ...
+.br
+Delete one or more snapshots, machine directories, or backup stores. This verb can delete items from backups that were not made by, or are not claimed by, the current machine. Requires root privileges.
+.\" - - - - - - - - - - - - - - LATESTBACKUP  - - - - - - - - - - - - - - - - - 
+.It Sy latestbackup
+.br
+Print the path to the most recent snapshot for this computer.
+.\" - - - - - - - - - - - - - - LISTBACKUPS - - - - - - - - - - - - - - - - - - 
+.It Sy listbackups
+.br
+Print paths for all of this computer's completed snapshots.
+.\" - - - - - - - - - - - - - MACHINEDIRECTORY  - - - - - - - - - - - - - - - - 
+.It Sy machinedirectory
+.br
+Print the path to the current machine directory for this computer.
+.\" - - - - - - - - - - - - -  CALCULATEDRIFT - - - - - - - - - - - - - - - - - 
+.It Sy calculatedrift
+.Ar machine_directory
+.br
+Analyze the snapshots in a machine directory and determine the amount of change between each. Averages are printed after all snapshots have been analyzed. This may require root privileges, depending on the contents of the machine directory.
+.\" - - - - - - - - - - - - - -  UNIQUESIZE - - - - - - - - - - - - - - - - - - 
+.It Sy uniquesize
+.Ar path ...
+.br
+Analyze the specified path and determine its unique size. The figure reported by
+.Sy uniquesize
+represents things that only exist in the specified path; things that are hard-linked in other places are not tallied.
+.\" - - - - - - - - - - - - - -  INHERITBACKUP  - - - - - - - - - - - - - - - - 
+.It Sy inheritbackup
+.Ar {machine_directory | sparsebundle}
+.br
+Claim a machine directory or sparsebundle for use by the current machine. Requires root privileges.
+.Pp
+Machine directories and sparsebundles are owned by one computer at a time, and are tracked by unique identifiers rather than computer name, host name, or ethernet address. The
+.Sy inheritbackup
+verb reassigns the identity of the specified item, reconfiguring it so the current host recognizes it during backups. When inheriting a sparsebundle, the machine directory within will also be claimed.
+.Pp
+Inheriting is typically only one step in the process of configuring a backup for use by a machine. You may also need to use
+.Sy setdestination Ns
+,
+.Sy associatedisk Ns
+, or both, depending on the situation.
+.Pp
+One machine can own multiple machine directories and sparsebundles, but it is ill-advised for them to reside in the same place. In such a situation, which will be chosen during a backup is undefined. As a result,
+.Sy inheritbackup
+will attempt to detect possible identity collisions before making changes.
+.\" - - - - - - - - - - - - - -  ASSOCIATEDISK  - - - - - - - - - - - - - - - - 
+.It Sy associatedisk Op Fl a
+.Ar mount_point snapshot_volume
+.br
+Bind a snapshot volume directory to the specified local disk, thereby reconfiguring the backup history. Requires root privileges.
+.Pp
+In Mac OS X, HFS+ volumes have a persistent UUID that is assigned when the file system is created. Time Machine uses this identifier to make an association between a source volume and a snapshot volume. Erasing the source volume creates a new file system on the disk, and the previous UUID is not retained. The new UUID causes the source volume -> snapshot volume association to be broken. If one were just erasing the volume and starting over, it would likely be of no real consequence, and the new UUID would not be a concern; when erasing a volume in order to clone another volume to it, recreating the association may be desired.
+.Pp
+A concrete example of when and how you would use
+.Sy associatedisk Ns
+:
+.Pp
+After having problems with a volume, you decide to erase it and manually restore its contents from a Time Machine backup or copy of another nature. (I.e., not via Time Machine System Restore or Migration Assistant.) On your next incremental backup, the data will be copied anew, as though none of it had been backed up before. Technically, it is true that the data has not been backed up, given the new UUID. However, this is probably not what you want Time Machine to do. You would then use
+.Sy associatedisk
+to reconfigure the backup so it appears that this volume has been backed up previously:
+.Pp
+thermopylae:~ thoth$ sudo tmutil associatedisk [-a] "/Volumes/MyNewStuffDisk" "/Volumes/Chronoton/Backups.backupdb/thermopylae/Latest/MyStuff"
+.Pp
+The result of the above command would associate the snapshot volume
+.Pa MyStuff
+in the specified snapshot with the source volume
+.Pa "MyNewStuffDisk" Ns
+\&. The snapshot volume would also be renamed to match. The
+.Fl Sy a
+option tells
+.Sy associatedisk
+to find all snapshot volumes in the same machine directory that match the identity of
+.Pa MyStuff Ns
+, and then perform the association on all of them.
+.\" - - - - - - - - - - - - - - - - APFS  - - - - - - - - - - - - - - - - -
+.It Sy localsnapshot
+.br
+Create new local Time Machine snapshots of all APFS volumes included in the Time Machine backup.
+.It Sy listlocalsnapshots
+. Ar mount_point
+.br
+List local Time Machine snapshots of the specified volume.
+.It Sy listlocalsnapshotdates
+.Op Ar mount_point
+.br
+List the creation dates of all local Time Machine snapshots.
+.Pp
+Specify
+.Ar mount_point
+to list snapshot creation dates from a specific volume.
+.Pp
+Listed dates are formatted YYYY-MM-DD-HHMMSS.
+.It Sy deletelocalsnapshots
+.Ar date
+.br
+Delete all local Time Machine snapshots for the specified
+.Ar date
+(formatted YYYY-MM-DD-HHMMSS).
+.It Sy thinlocalsnapshots
+.Ar mount_point
+.Op Ar purge_amount
+.Op Ar urgency
+.br
+Thin local Time Machine snapshots for the specified volume.
+.Pp
+When
+.Ar purge_amount
+and
+.Ar urgency
+are specified, tmutil will attempt (with
+.Ar urgency
+level 1-4) to reclaim
+.Ar purge_amount
+in bytes by thinning snapshots.
+.Pp
+If
+.Ar urgency
+is not specified, the default urgency will be used.
+.El
+.\" ----------------------------- END VERBS LIST -------------------------------
+.\" ----------------------------------------------------------------------------
+.\" ============================ END VERBS SECTION =============================
+.\" ============================================================================
+.\"
+.\" ============================================================================
+.\" ======================== BEGIN EXIT STATUS SECTION =========================
+.Sh EXIT STATUS
+In most situations,
+.Nm
+exits 0 on success, \&>0 otherwise.
+.\" ========================= END EXIT STATUS SECTION ==========================
+.\" ============================================================================

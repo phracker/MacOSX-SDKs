@@ -1,0 +1,246 @@
+.TH POSTFIX-TLS 1 
+.ad
+.fi
+.SH NAME
+postfix-tls
+\-
+Postfix TLS management
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostfix tls\fR \fIsubcommand\fR
+.SH DESCRIPTION
+.ad
+.fi
+The "\fBpostfix tls \fIsubcommand\fR" feature enables
+opportunistic TLS in the Postfix SMTP client or server, and
+manages Postfix SMTP server private keys and certificates.
+
+The following subcommands are available:
+.IP "\fBenable\-client\fR [\fB\-r \fIrandsource\fR]"
+Enable opportunistic TLS in the Postfix SMTP client, if all
+SMTP client TLS settings are at their default values.
+Otherwise, suggest parameter settings without making any
+changes.
+.sp
+Specify \fIrandsource\fR to update the value of the
+\fBtls_random_source\fR configuration parameter (typically,
+/dev/urandom).  Prepend \fBdev:\fR to device paths or
+\fBegd:\fR to EGD socket paths.
+.sp
+See also the \fBall\-default\-client\fR subcommand.
+.IP "\fBenable\-server\fR [\fB\-r \fIrandsource\fR] [\fB\-a \fIalgorithm\fR] [\fB\-b \fIbits\fR] [\fIhostname\fB...\fR]"
+Create a new private key and self\-signed server certificate
+and enable opportunistic TLS in the Postfix SMTP server,
+if all SMTP server TLS settings are at their default values.
+Otherwise, suggest parameter settings without making any
+changes.
+.sp
+The \fIrandsource\fR parameter is as with \fBenable\-client\fR
+above, and the remaining options are as with \fBnew\-server\-key\fR
+below.
+.sp
+See also the \fBall\-default\-server\fR subcommand.
+.IP "\fBnew\-server\-key\fR [\fB\-a \fIalgorithm\fR] [\fB\-b \fIbits\fR] [\fIhostname\fB...\fR]"
+Create a new private key and self\-signed server certificate,
+but do not deploy them. Log and display commands to deploy
+the new key and corresponding certificate.  Also log and
+display commands to output a corresponding CSR or TLSA
+records which may be needed to obtain a CA certificate or
+to update DNS before the new key can be deployed.
+.sp
+The \fIalgorithm\fR defaults to \fBrsa\fR, and \fIbits\fR
+defaults to 2048.  If you choose the \fBecdsa\fR  \fIalgorithm\fR
+then \fIbits\fR will be an EC curve name (by default
+\fBsecp256r1\fR, also known as prime256v1).  Curves other
+than \fBsecp256r1\fR, \fBsecp384r1\fR or \fBsecp521r1\fR
+are unlikely to be widely interoperable.  When generating
+EC keys, use one of these three.  DSA keys are obsolete and
+are not supported.
+.sp
+Note: ECDSA support requires OpenSSL 1.0.0 or later and may
+not be available on your system.  Not all client systems
+will support ECDSA, so you'll generally want to deploy both
+RSA and ECDSA certificates to make use of ECDSA with
+compatible clients and RSA with the rest. If you want to
+deploy certificate chains with intermediate CAs for both
+RSA and ECDSA, you'll want at least OpenSSL 1.0.2, as earlier
+versions may not handle multiple chain files correctly.
+.sp
+The first \fIhostname\fR argument will be the \fBCommonName\fR
+of both the subject and issuer of the self\-signed certificate.
+It, and any additional \fIhostname\fR arguments, will also
+be listed as DNS alternative names in the certificate.  If
+no \fIhostname\fR is provided the value of the \fBmyhostname\fR
+main.cf parameter will be used.
+.sp
+For RSA, the generated private key and certificate files
+are named \fBkey\-\fIyyyymmdd\-hhmmss\fB.pem\fR and
+\fBcert\-\fIyyyymmdd\-hhmmss\fB.pem\fR, where \fIyyyymmdd\fR
+is the calendar date and \fIhhmmss\fR is the time of day
+in UTC.  For ECDSA, the file names start with \fBeckey\-\fR
+and \fBeccert\-\fR instead of \fBkey\-\fR and \fBcert\-\fR
+respectively.
+.sp
+Before deploying the new key and certificate with DANE,
+update the DNS with new DANE TLSA records, then wait for
+secondary nameservers to update and then for stale records
+in remote DNS caches to expire.
+.sp
+Before deploying a new CA certificate make sure to include
+all the required intermediate issuing CA certificates in
+the certificate chain file.  The server certificate must
+be the first certificate in the chain file.  Overwrite and
+deploy the file with the original self\-signed certificate
+that was generated together with the key.
+.IP "\fBnew\-server\-cert\fR [\fB\-a \fIalgorithm\fR] [\fB\-b \fIbits\fR] [\fIhostname\fB...\fR]"
+This is just like \fBnew\-server\-key\fR except that, rather
+than generating a new private key, any currently deployed
+private key is copied to the new key file.  Thus if you're
+publishing DANE TLSA "3 1 1" or "3 1 2" records, there is
+no need to update DNS records.  The \fIalgorithm\fR and
+\fIbits\fR arguments are used only if no key of the same
+algorithm is already configured.
+.sp
+This command is rarely needed, because the self\-signed
+certificates generated have a 100\-year nominal expiration
+time.  The underlying public key algorithms may well be
+obsoleted by quantum computers long before then.
+.sp
+The most plausible reason for using this command is when
+the system hostname changes, and you'd like the name in the
+certificate to match the new hostname (not required for
+DANE "3 1 1", but some needlessly picky non\-DANE opportunistic
+TLS clients may log warnings or even refuse to communicate).
+.IP "\fBdeploy\-server\-cert \fIcertfile\fB \fIkeyfile\fR"
+This subcommand deploys the certificates in \fIcertfile\fR
+and private key in \fIkeyfile\fR (which are typically
+generated by the commands above, which will also log and
+display the full command needed to deploy the generated key
+and certificate).  After the new certificate and key are
+deployed any obsolete keys and certificates may be removed
+by hand.   The \fIkeyfile\fR and \fIcertfile\fR filenames
+may be relative to the Postfix configuration directory.
+.IP "\fBoutput\-server\-csr\fR [\fB\-k \fIkeyfile\fR] [\fIhostname\fB...\fR]"
+Write to stdout a certificate signing request (CSR) for the
+specified \fIkeyfile\fR.
+.sp
+Instead of an absolute pathname or a pathname relative to
+$config_directory, \fIkeyfile\fR may specify one of the
+supported key algorithm names (see "\fBpostconf \-T
+public\-key\-algorithms\fR"). In that case, the corresponding
+setting from main.cf is used to locate the \fIkeyfile\fR.
+The default \fIkeyfile\fR value is \fBrsa\fR.
+.sp
+Zero or more \fIhostname\fR values can be specified.  The
+default \fIhostname\fR is the value of \fBmyhostname\fR
+main.cf parameter.
+.IP "\fBoutput\-server\-tlsa\fR [\fB\-h \fIhostname\fR] [\fIkeyfile\fB...\fR]"
+Write to stdout a DANE TLSA RRset suitable for a port 25
+SMTP server on host \fIhostname\fR with keys from any of
+the specified \fIkeyfile\fR values.  The default \fIhostname\fR
+is the value of the \fBmyhostname\fR main.cf parameter.
+.sp
+Instead of absolute pathnames or pathnames relative to
+$config_directory, the \fIkeyfile\fR list may specify
+names of supported public key algorithms (see "\fBpostconf
+\-T public\-key\-algorithms\fR").  In that case, the actual
+\fIkeyfile\fR list uses the values of the corresponding
+Postfix server TLS key file parameters.  If a parameter
+value is empty or equal to \fBnone\fR, then no TLSA record
+is output for that algorithm.
+.sp
+The default \fIkeyfile\fR list consists of the two supported
+algorithms \fBrsa\fR and \fBecdsa\fR.
+.SH "AUXILIARY COMMANDS"
+.na
+.nf
+.IP "\fBall\-default\-client\fR"
+Exit with status 0 (success) if all SMTP client TLS settings are
+at their default values.  Otherwise, exit with a non\-zero status.
+This is typically used as follows:
+.sp
+\fBpostfix tls all\-default\-client &&
+        postfix tls enable\-client\fR
+.IP "\fBall\-default\-server\fR"
+Exit with status 0 (success) if all SMTP server TLS settings are
+at their default values.  Otherwise, exit with a non\-zero status.
+This is typically used as follows:
+.sp
+\fBpostfix tls all\-default\-server &&
+        postfix tls enable\-server\fR
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+The "\fBpostfix tls \fIsubcommand\fR" feature reads
+or updates the following configuration parameters.
+.IP "\fBcommand_directory (see 'postconf -d' output)\fR"
+The location of all postfix administrative commands.
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBopenssl_path (openssl)\fR"
+The location of the OpenSSL command line program \fBopenssl\fR(1).
+.IP "\fBsmtp_tls_loglevel (0)\fR"
+Enable additional Postfix SMTP client logging of TLS activity.
+.IP "\fBsmtp_tls_security_level (empty)\fR"
+The default SMTP TLS security level for the Postfix SMTP client;
+when a non\-empty value is specified, this overrides the obsolete
+parameters smtp_use_tls, smtp_enforce_tls, and smtp_tls_enforce_peername.
+.IP "\fBsmtp_tls_session_cache_database (empty)\fR"
+Name of the file containing the optional Postfix SMTP client
+TLS session cache.
+.IP "\fBsmtpd_tls_cert_file (empty)\fR"
+File with the Postfix SMTP server RSA certificate in PEM format.
+.IP "\fBsmtpd_tls_eccert_file (empty)\fR"
+File with the Postfix SMTP server ECDSA certificate in PEM format.
+.IP "\fBsmtpd_tls_eckey_file ($smtpd_tls_eccert_file)\fR"
+File with the Postfix SMTP server ECDSA private key in PEM format.
+.IP "\fBsmtpd_tls_key_file ($smtpd_tls_cert_file)\fR"
+File with the Postfix SMTP server RSA private key in PEM format.
+.IP "\fBsmtpd_tls_loglevel (0)\fR"
+Enable additional Postfix SMTP server logging of TLS activity.
+.IP "\fBsmtpd_tls_received_header (no)\fR"
+Request that the Postfix SMTP server produces Received:  message
+headers that include information about the protocol and cipher used,
+as well as the remote SMTP client CommonName and client certificate issuer
+CommonName.
+.IP "\fBsmtpd_tls_security_level (empty)\fR"
+The SMTP TLS security level for the Postfix SMTP server; when
+a non\-empty value is specified, this overrides the obsolete parameters
+smtpd_use_tls and smtpd_enforce_tls.
+.IP "\fBtls_random_source (see 'postconf -d' output)\fR"
+The external entropy source for the in\-memory \fBtlsmgr\fR(8) pseudo
+random number generator (PRNG) pool.
+.SH "SEE ALSO"
+.na
+.nf
+master(8) Postfix master program
+postfix(1) Postfix administrative interface
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+TLS_README, Postfix TLS configuration and operation
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+The "\fBpostfix tls\fR" command was introduced with Postfix
+version 3.1.
+.SH "AUTHOR(S)"
+.na
+.nf
+Viktor Dukhovni

@@ -1,0 +1,389 @@
+.Dd August 25, 2003
+.Dt dscl 1
+.Os MacOSX
+.Sh NAME
+.Nm dscl
+.Nd Directory Service command line utility
+.Sh SYNOPSIS
+.Nm
+.Op options
+.Op Ar datasource Op command
+.Pp
+options:
+.Bl -tag -width "-P password" -compact -offset indent
+.It Fl p
+prompt for password
+.It Fl u Ar user
+authenticate as user
+.It Fl P Ar password
+authentication password
+.It Fl f Ar filepath
+targeted local node database file path
+.It Fl raw
+don't strip off prefix from DirectoryService API constants
+.It Fl plist
+print out record(s) or attribute(s) in XML plist format
+.It Fl url
+print record attribute values in URL-style encoding
+.It Fl q
+quiet - no interactive prompt
+.El
+.Pp
+commands:
+.Bl -inset -compact -offset indent
+.It Fl read Op Ar path Op Ar key Li "..."
+.It Fl readall Op Ar path Op Ar key Li "..."
+.It Fl readpl Ar path Ar key Ar plist_path
+.It Fl readpli Ar path Ar key Ar value_index Ar plist_path
+.It Fl list Ar path Op key
+.It Fl search Ar path key val
+.It Fl create Ar record_path
+.Oo
+.Ar key
+.Op Ar val Li "..."
+.Oc
+.It Fl createpl Ar record_path Ar key Ar plist_path Ar val1 Op Ar val2 Li "..."
+.It Fl createpli Ar record_path Ar key Ar value_index Ar plist_path Ar val1 Op Ar val2 Li "..."
+.It Fl append Ar record_path key val Li "..."
+.It Fl merge Ar record_path key val Li "..."
+.It Fl delete Ar path
+.Oo
+.Ar key Op Ar val Li "..."
+.Oc
+.It Fl deletepl Ar record_path Ar key Ar plist_path Op val Li "..."
+.It Fl deletepli Ar record_path Ar key Ar value_index Ar plist_path Op val Li "..."
+.It Fl change Ar record_path key old_val new_val
+.It Fl changei Ar record_path key val_index new_val
+.It Fl diff Ar path1 Ar path2 Op Ar key Li "..."
+.It Fl passwd Ar user_path
+.Oo
+.Ar new_password | old_password new_password
+.Oc
+.El
+.Pp
+available only in interactive mode:
+.Bl -inset -compact -offset indent
+.It Fl cd Ar dir
+.It Fl pushd Op Ar dir
+.It Fl popd
+.It Fl auth Op Ar user Op Ar password
+.It Fl authonly Op Ar user Op Ar password
+.It Fl quit
+.El
+.Pp
+.Sh DESCRIPTION
+.Nm
+is a general-purpose utility for operating on Directory Service directory nodes.  Its commands allow one to create, read, and manage Directory Service data.  If invoked without any commands,
+.Nm
+runs in an interactive mode, reading commands from standard input.  Interactive processing is terminated by the
+.Ar quit
+command.  Leading dashes ("-") are optional for all commands.
+.Pp
+.Nm
+operates on a datasource specified on the command line.  This may be a node name or a Mac OS X Server (10.2 or later) host specified by DNS hostname or IP address.  Node names may be absolute paths beginning with a slash ("/"), or relative domain paths beginning with a dot (".") character, which specifies the local domain, or "..", specifying the local domain's parent.  If the hostname or IP address form is used then the user must specify the
+.Fl u
+option and either the
+.Fl P
+of
+.Fl p
+options to specify an administrative user and password on the remote host to authenticate with to the remote host. The exception to this is if "localhost" is specified.  Passing passwords on the command line is inherently insecure and can cause password exposure.  For better security do not provide the password as part of the command and you will be securely prompted.
+.Pp
+The datasource may also be specified as "localonly" in which case a separate DirectoryService daemon process is activated which contains only the Local plugin for use by dscl.  If no file path is provided then access goes only to the registered local nodes on the system. However, if the
+.Fl f
+option is specified then access is added to the local node "/Local/Target" which points to the database located at the provided filepath. One example is to provide the filepath of "/Volumes/Build100/var/db/dslocal/nodes/Default" and then access to that database is provided via the nodename "/Local/Target".
+.Pp
+.Sh PATH SPECIFICATION
+There are two modes of operation when specifying paths to operate on. The two modes correspond to whether the datasource is a node or a host. In the case of specifying a node, the top level of paths will be record types. Example top level paths would be:
+.Pp
+.Dl /Users/alice
+.Dl /Groups/admin
+.Pp
+In the case of specifying a host as a data source, the top level of paths correspond to Open Directory plug-ins and Search Paths. One can specify the plug-in to traverse to a node name, after which the paths are equivalent to the former usage. The following might be the equivalent paths as the above paths:
+.Pp
+.Dl /NetInfo/root/Users/alice
+.Dl /LDAPv3/10.0.1.42/Groups/admin
+.Pp
+If path components contain keys or values with embedded slash characters, the slash characters must be escaped with a leading backslash character.  Since the shell also processes escape characters, an extra backslash is required to correctly specify an escape.  For example, to read a mount record with the name "ldapserver:/Users" in the "/Mounts" path, the following path would be used:
+.Pp
+.Dl Nm Li "\& ." Fl read Li "/Mounts/ldaphost:\\e\\&/Users"
+.Pp
+All pathnames are case-sensitive.
+.Sh COMMANDS
+The action of each command is described below.  Some commands have aliases.  For example, "cat" and "." are aliases for "read".  Command aliases are listed in parentheses.
+.Ss read (cat .)
+Usage: read
+.Op Ar path Op Ar key Li "..."
+.Pp
+Prints a directory.  The property key is followed by colon, then a space-separated list of the values for that property. If any value contains embedded spaces, the list will instead be displayed one entry per line, starting on the line after the key.
+.Pp
+If The 
+.Fl raw
+flag for raw output has been given, then
+.Sx read
+prints the full DirectoryService API constant for record and attribute types.
+.Pp
+If the
+.Fl url
+flag has been specified then printed record path attribute values are encoded in the style of URLs. This is useful if a script or program is trying to process the output since values will not have any spaces or other control characters.
+.Ss readall
+Usage: readall
+.Op Ar path Op Ar key Li "..."
+.Pp
+.Sx readall
+prints all the records of a given type.  The output of readall is formatted in the same way as
+.Sx read
+with a "-" on a line as a delimeter between records.
+.Ss readpl
+Usage: readpl
+.Ar path Ar key Ar plist_path
+.Pp
+Prints the contents of
+.Ar plist_path "."
+The
+.Ar plist_path
+is followed by a colon, then a whitespace, and then the value for the path.
+.Pp
+If the
+.Ar plist_path
+is the key for a dictionary or array, the contents of it are displayed in plist form after the
+.Ar plist_path "."
+If
+.Ar plist_path
+is the key for a string, number, bool, date, or data object, only the value is printed out after the
+.Ar plist_path "."
+.Ss readpli
+Usage: readpli
+.Ar path Ar key Ar value_index Ar plist_path
+.Pp
+Prints the contents of
+.Ar plist_path
+for the plist at
+.Ar value_index
+of the key.
+The
+.Ar plist_path
+is followed by a colon, then a whitespace, and then the value for the path.
+.Pp
+If the
+.Ar plist_path
+is the key for a dictionary or array, the contents of it are displayed in plist form after the
+.Ar plist_path "."
+If
+.Ar plist_path
+is the key for a string, number, bool, date, or data object, only the value is printed out after the
+.Ar plist_path "."
+.Ss list (ls)
+Usage: list
+.Ar path
+.Pp
+Lists the subdirectories of the given directory.  Subdirectories are listed one per line.  In the case of listing a search path, the names are preceded by an index number that can act as a shortcut and used in place of the name when specifying a path.
+.Pp
+When used in interactive mode, the path is optional.  With no path given, the current directory will be used.
+.Ss search
+.Ar path key val
+.Pp
+Searches for records that match a pattern.  The search is rooted at the given path.  The path may be a node path or a record type path.  Valid keys are Directory Service record attribute types.
+.Ss create (mk)
+Usage: create
+.Ar record_path
+.Oo Ar key
+.Op Ar val Li "..."
+.Oc
+.Pp
+Creates a record, property, or value.  If only a record path is given, the
+.Sx create
+command will create the record if it does not exist.  If a key is given, then a property with that key will be created.
+.Pp
+WARNING - If a property with the given key already exists, it will be destroyed and a new property will be created in its place.  To add values to an existing property, use the
+.Sx append
+or 
+.Sx merge
+commands.
+.Pp
+If values are included in the command, these values will be set for the given key.
+.Pp
+NOTE - Not all directory nodes support a property without a value. An error will be given if you attempt to create a property with no value in such a directory node.
+.Ss createpl
+Usage: createpl
+.Ar record_path Ar key Ar plist_path Ar val1 Op Ar val2 Li "..."
+.Pp
+Creates a string, or array of strings at
+.Ar plist_path "."
+.Pp
+If you are creating a value at the root of a plist that is an array, simply use "0" as the
+.Ar plist_path "."
+.Pp
+If only
+.Ar val1
+is specified, a string will be created at
+.Ar plist_path "."
+If
+.Ar val1 val2 Li "..."
+are specified, an array of strings will be created at
+.Ar plist_path "."
+.Pp
+WARNING - If a value with the given
+.Ar plist_path
+already exists, it will be destroyed and a new value will be created in its place.
+.Ss createpli
+Usage: createpli
+.Ar record_path Ar key Ar value_index Ar plist_path Ar val1 Op Ar val2 Li "..."
+.Pp
+Creates a string, or array of strings at
+.Ar plist_path
+for the plist at
+.Ar value_index
+of the key.
+.Pp
+If you are creating a value at the root of a plist that is an array, simply use "0" as the
+.Ar plist_path "."
+.Pp
+If only
+.Ar val1
+is specified, a string will be created at
+.Ar plist_path "."
+If
+.Ar val1 val2 Li "..."
+are specified, an array of strings will be created at
+.Ar plist_path "."
+.Pp
+WARNING - If a value with the given
+.Ar plist_path
+already exists, it will be destroyed and a new value will be created in its place.
+.Ss append
+Usage: append
+.Ar record_path key val Li "..."
+.Pp
+Appends one or more values to a property in a given record.  The property is created if it does not exist.
+.Ss merge
+Usage: merge
+.Ar record_path key val Li "..."
+.Pp
+Appends one or more values to a property in a given directory if the property does not already have those values.  The property is created if it does not exist.
+.Ss change
+Usage: change
+.Ar record_path key old_val new_val
+.Pp
+Replaces the given old value in the list of values of the given key with the new value in the specified record.
+.Ss changei
+Usage: changei
+.Ar path key index val
+.Pp
+Replaces the value at the given index in the list of values of the given key with the new value in the specified record.  
+.Ar index
+is an integer value.  An index of 1 specifies the first value.  An index greater than the number of values in the list will result in an error.
+.Ss diff
+Usage: diff
+.Ar path1 path2 key Li "..."
+.Pp
+Compares the data from path1 and path2 looking at the specified keys (or all if no keys are specified).
+.Ss delete (rm)
+Usage: delete
+.Ar path
+.Oo
+.Ar key Op Ar val Li "..."
+.Oc
+.Pp
+Delete a directory, property, or value.  If a directory path is given, the
+.Sx delete
+command will delete the directory.  This can only be used on record type and record paths.  If a key is given, then a property with that key will be deleted.  If one or more values are given, those values will be removed from the property with the given key.
+.Ss deletepl
+Usage: deletepl
+.Ar record_path Ar key Ar plist_path Op val Li "..."
+.Pp
+Deletes a value in a plist.  If no values are given
+.Sx deletepl
+deletes the
+.Ar plist_path "."
+If one or more values are given,
+.Sx deletepl
+deletes the values within
+.Ar plist_path "."
+.Ss deletepli
+Usage: deletepli
+.Ar record_path Ar key Ar value_index Ar plist_path Op val Li "..."
+.Pp
+Deletes a value for the plist at
+.Ar value_index
+of the key.  If no values are given
+.Sx deletepli
+deletes the
+.Ar plist_path "."
+If one or more values are given,
+.Sx deletepli
+deletes the values within
+.Ar plist_path "."
+.Ss passwd
+Usage: passwd
+.Ar user_path
+.Op Ar new_pasword | old_password new_pasword
+.Pp
+Changes a password for a user. The user must be specified by full path, not just a username.  If you are authenticated to the node (either by specifying the
+.Fl u
+and
+.Fl P
+flags or by using the auth command when in interactive node) then you can simply specify a new password.  If you are not authenticated or if FileVault is enabled then the user's old password must be specified.  If passwords are not specified while in interactive mode, you will be prompted for them.  Passing these passwords on the command line is inherently insecure and can cause password exposure.  For better security do not provide the password as part of the command and you will be securely prompted.
+.Sh INTERACTIVE COMMANDS
+.Ss cd
+Usage: cd dir
+.Pp
+Sets the current directory.  Path names for other
+.Nm
+commands may be relative to the current directory.
+.Ss pushd (pd)
+Usage: pushd path
+.Pp
+Similar to the pushd command commonly found in Unix shells.  When a path is specified it sets the current directory while pushing the previous directory on to the directory stack.  If no path is specified it exchanges the top two elements of the directory stack.  It will also print the final directory stack.
+.Ss popd
+Usage: popd
+.Pp
+Pops the directory stack and returns to the new top directory.  It will also print the final directory stack.
+.Ss auth (su)
+Usage: auth
+.Op Ar user Op Ar password
+.Pp
+Authenticate as the named user, or as "root" if no user is specified.  If a password is supplied, then that password is used for authentication, otherwise the command prompts for a password.
+.Pp
+If
+.Nm
+is run in host mode, then when this command is run the current directory must be in the subdirectories of a node.
+.Ss authonly
+Usage: authonly
+.Op Ar user Op Ar password
+.Pp
+Used to verify the password of a named user, or of "root" if no user is specified.  If a password is supplied, then that password is used for authentication, otherwise the command prompts for a password.
+.Pp
+If
+.Nm
+is run in host mode, then when this command is run the current directory must be in the subdirectories of a node.
+.Ss quit (q)
+Usage: quit
+.Pp
+Ends processing of interactive commands and terminates the program.
+.Ss command history
+The up and down arrow keys will scan through the command history. 
+.Ss tab completion
+When pathnames are being typed, pressing the tab key will result in a search to auto-complete the typed partial subdirectory name. It will also attempt to correct capitilization in the process.
+.Sh EXAMPLES
+.Pp
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl "view a record in the local directory node"
+dscl . -read /Users/www
+.It Fl "create or replace the UserShell attribute value for the www user record"
+dscl . -create /Users/www UserShell /usr/bin/false
+.It Fl "create or replace the test key of the mcx_application_data:loginwindow plist value for the MCXSettings attribute of the user1 user record"
+dscl . -createpl /Users/user1 MCXSettings mcx_application_data:loginwindow:test value
+.It Fl "list the uniqueID values for all user records on a given node"
+dscl /LDAPv3/ldap.company.com -list /Users UniqueID
+.It Fl "append a value that has spaces in it"
+dscl . -append /Users/www Comment "This is a comment"
+.El                      \" Ends the list
+.Pp
+.Sh DIAGNOSTICS
+.Pp
+.Nm
+will return -1 (255) on error.
+.Pp
+.Sh SEE ALSO
+.Xr DirectoryService 8 ,
+.Xr DirectoryServiceAttributes 7

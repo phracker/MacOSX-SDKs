@@ -1,0 +1,350 @@
+.\"Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+.\"
+.\"This file contains Original Code and/or Modifications of Original Code
+.\"as defined in and that are subject to the Apple Public Source License
+.\"Version 2.0 (the 'License'). You may not use this file except in
+.\"compliance with the License. Please obtain a copy of the License at
+.\"http://www.opensource.apple.com/apsl/ and read it before using this
+.\"file.
+.\"
+.\"The Original Code and all software distributed under the License are
+.\"distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\"EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\"INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\"FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\"Please see the License for the specific language governing rights and
+.\"limitations under the License.
+
+.\"To preview: /usr/bin/nroff -msafer -mandoc ditto.1 | less
+.\"To check for errors: /usr/bin/groff -I/usr/share/man -S -Wall -mtty-char -mandoc -Tascii ditto.1 > /dev/null 
+
+.Dd December 19, 2008
+.Dt DITTO 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm ditto
+.Nd copy directory hierarchies, create and extract archives
+.Sh SYNOPSIS
+.Nm 
+.Op Fl v
+.Op Fl V
+.Op Fl X
+.Op <options>
+.Ar src ... dst_directory
+.Nm
+.Op Fl v
+.Op Fl V
+.Op <options>
+.Ar src_file dst_file
+.Nm
+.Fl c
+.Op Fl z | Fl j | Fl k
+.Op Fl v
+.Op Fl V
+.Op Fl X
+.Op <options>
+.Ar src dst_archive
+.Nm
+.Fl x
+.Op Fl z | Fl j | Fl k
+.Op Fl v
+.Op Fl V
+.Op <options>
+.Ar src_archive ... dst_directory
+.Nm
+.Fl h |
+.Fl Fl help
+.Sh DESCRIPTION
+In its first form, 
+.Nm
+copies one or more source files or directories to a destination
+directory.  If the destination directory does not exist it will be
+created before the first source is copied.  If the destination
+directory already exists then the source directories are merged
+with the previous contents of the destination.
+.Pp
+In its second form, 
+.Nm
+copies a file to the supplied 
+.Ar dst_file
+pathname.
+.Pp
+The next two forms reflect
+.Nm Ns 's
+ability to create and extract
+archives.  These archives can be either CPIO format (preferred for unix 
+content) or PKZip (for Windows compatibility).
+.Ar src_archive
+(and
+.Ns Ar dst_archive )
+can be the single character '-', causing ditto to read (write) archive data
+from stdin (or to stdout, respectively).
+.Pp
+.Nm
+follows symbolic links provided as arguments but does not follow any links
+as it traverses the source or destination hierarchies.
+.Nm
+overwrites existing files, symbolic links, and devices in the destination
+when these are copied from a source.  The resulting files, links, and
+devices will have the same mode, access time, modification time, owner,
+and group as the source items from which they are copied.  Pipes, sockets,
+and files with names beginning with .nfs or .afpDeleted will be ignored.
+.Nm
+does not modify the mode, owner, group, extended attributes, or ACLs of existing
+directories in the
+destination.  Files and symbolic links cannot overwrite directories or
+vice-versa.
+.Pp
+.Nm 
+can be used to "thin" Universal Mach-O binaries during a copy. 
+.Nm
+can also copy files selectively based on the contents of a BOM
+("Bill of Materials") file.
+.Nm
+preserves file hard links (but not directory hard links) present in the source directories and preserves
+setuid and setgid modes when run as the superuser. 
+.Pp
+.Nm
+will preserve resource forks and HFS meta-data information
+when copying unless instructed otherwise using
+.Fl Fl norsrc
+\&.
+Similarly,
+.Nm
+will preserve extended attributes and Access Control Lists (ACLs) unless
+.Fl Fl noextattr
+or
+.Fl Fl noacl
+is passed.
+.Ev DITTONORSRC
+can be set in the environment as an alias to
+.Fl Fl norsrc 
+.Fl Fl noextattr 
+.Fl Fl noacl
+on the command line.
+.Sh OPTIONS
+.Bl -tag -width "XXkeepParent"
+.It Fl h
+Print full usage.
+.It Fl v
+Print a line of output to stderr for each source directory copied.
+.It Fl V
+Print a line of output to stderr for every file, symbolic link, and device copied.
+.It Fl X
+When copying one or more source directories, do not descend into directories
+that have a different device ID.
+.It Fl c
+Create an archive at the destination path.  The default format is CPIO, unless
+.Fl k
+is given.
+CPIO archives should be stored in files with names ending in .cpio.
+Compressed CPIO archives should be stored in files with names ending in
+\&.cpgz.
+.It Fl z
+Create compressed CPIO archives, using
+.Xr gzip 1
+compression.
+.It Fl j
+Create compressed CPIO archives, using
+.Xr bzip2 1
+compression.
+.It Fl x
+Extract the archives given as source arguments. The format is assumed to
+be CPIO, unless
+.Fl k
+is given.  Compressed CPIO is automatically handled.
+.It Fl k
+Create or extract from a PKZip archive instead of the default CPIO.
+PKZip archives should be stored in filenames ending in .zip.
+.It Fl Fl keepParent
+When creating an archive, embed the parent directory name
+.Ar src
+in
+.Ar dst_archive Ns .
+.It Fl Fl arch Ar arch
+Thin Universal binaries to the specified
+architecture.  If multiple
+.Fl Fl arch
+options are specified then the resulting destination file will contain
+each of the specified architectures (if they are present in the source
+file).
+.Ar arch
+should be specified as "i386", "x86_64", etc.
+.It Fl Fl bom Ar bom
+Copy only files, links, devices, and directories that are present in the
+specified BOM.
+.It Fl Fl rsrc
+Preserve resource forks and HFS meta-data.
+.Nm
+will store this data in Carbon-compatible ._ AppleDouble files on
+filesystems that do not natively support resource forks.  As of Mac OS X 10.4,
+.Fl Fl rsrc
+is default behavior.
+.It Fl Fl norsrc
+Do not preserve resource forks and HFS meta-data.  If both
+.Fl Fl norsrc
+and
+.Fl Fl rsrc
+are passed, whichever is passed last will take precedence.  Both options
+override
+.Ev DITTONORSRC Ns . Unless explicitly specified,
+.Fl Fl norsrc
+also implies
+.Fl Fl noextattr
+and
+.Fl Fl noacl
+to match the behavior of Mac OS X 10.4.
+.It Fl Fl extattr
+Preserve extended attributes (requires
+.Fl Fl rsrc Ns ).
+As of Mac OS X 10.5,
+.Fl Fl extattr
+is the default.
+.It Fl Fl noextattr
+Do not preserve extended attributes (requires 
+.Fl Fl norsrc  Ns ).
+.It Fl Fl qtn
+Preserve quarantine information.
+As of Mac OS X 10.5,
+.Fl Fl qtn
+is the default.
+.It Fl Fl noqtn
+Do not preserve quarantine information.
+.It Fl Fl acl
+Preserve Access Control Lists (ACLs).
+As of Mac OS X 10.5,
+.Fl Fl acl
+is the default.
+.It Fl Fl noacl
+Do not preserve ACLs.
+.It Fl Fl nocache
+Do not perform copies using the Mac OS X Unified Buffer Cache. Files read
+and written will not be cached, although if the file is already present
+in the cache, the cached information will be used.
+.It Fl Fl hfsCompression
+When copying files or extracting content from an archive, if the destination 
+is an HFS+ volume that supports compression, all the content will be compressed
+if appropriate. This is only supported on Mac OS X 10.6 or later, and is only
+intended to be used in installation and backup scenarios that involve system 
+files. Since files using HFS+ compression are not readable on versions of 
+Mac OS X earlier than 10.6, this flag should not be used when dealing with
+non-system files or other user-generated content that will be used on a 
+version of Mac OS X earlier than 10.6. 
+.It Fl Fl nohfsCompression
+Do not compress files with HFS+ compression when copying or extracting content
+from an archive unless the content is already compressed with HFS+ compression. 
+This flag is only supported on Mac OS X 10.6 or later. 
+.Fl Fl nohfsCompression
+is the default.
+.It Fl Fl preserveHFSCompression
+When copying files to an HFS+ volume that supports compression, ditto will 
+preserve the compression of any source files that were using HFS+ compression. 
+This flag is only supported on Mac OS X 10.6 or later. 
+.Fl Fl preserveHFSCompression
+is the default.
+.It Fl Fl nopreserveHFSCompression
+Do not preserve HFS+ compression when copying files that are already compressed with
+HFS+ compression. This is only supported on Mac OS X 10.6 or later.
+.It Fl Fl sequesterRsrc
+When creating a PKZip archive, preserve resource forks and HFS meta-data
+in the subdirectory __MACOSX.  PKZip extraction will automatically find
+these resources.
+.It Fl Fl zlibCompressionLevel Ar num
+Sets the compression level to use when creating a PKZip archive. The compression
+level can be set from 0 to 9, where 0 represents no compression, and 9 
+represents optimal (slowest) compression. By default, ditto will use the default compression
+level as defined by zlib.
+.It Fl Fl password
+When extracting a password-encrypted ZIP archive, you must specify --password to allow ditto 
+to prompt for a password to use to extract the contents of the file. If this option is not 
+provided, and a password-encrypted file is encountered, ditto will emit an error message.
+.El
+.Sh EXAMPLES
+The command:
+.Dl ditto src_directory dst_directory
+copies the contents of src_directory into dst_directory, creating
+dst_directory if it does not already exist.
+.Pp
+The command:
+.Dl ditto src_directory dir/dst_directory
+copies the contents of src_directory into dir/dst_directory, creating
+dir and dst_directory if they don't already exist.
+.Pp
+The command:
+.Dl ditto src-1 ... src-n dst_directory
+copies the contents of all of the src directories into dst_directory,
+creating dst_directory if it does not already exist.
+.Pp
+The command:
+.Dl ditto --arch ppc universal_file thin_file
+copies the contents of universal_file into thin_file, thinning executable
+code to ppc-only on the fly.
+.Pp
+The command:
+.Dl ditto -c --norsrc Scripts -|ssh rhost ditto -x --norsrc - ./Scripts
+copies Scripts, skipping any resources or meta-data, to rhost.
+.Pp
+The command:
+.Dl pax -f archive.cpio
+will list the files in the CPIO archive archive.cpio.
+.Pp
+The command:
+.Dl pax -zf archive.cpgz
+will list the files in the compressed CPIO archive archive.cpgz.
+.Pp
+The command:
+.Dl ditto -c -k --sequesterRsrc --keepParent src_directory archive.zip
+will create a PKZip archive similarly to the Finder's Compress functionality.
+.Pp
+The command:
+.Dl unzip -l archive.zip
+will list the files in the PKZip archive archive.zip.
+.Sh "ERRORS"
+.Nm 
+returns 0 if everything is copied, otherwise non-zero.
+.Nm
+almost never gives up, preferring to report errors along the way.
+Diagnostic messages will be printed to standard error.
+.Sh ENVIRONMENT
+.Bl -tag -width DITTOABORT
+.It Ev DITTOABORT
+If the environment variable
+.Ev DITTOABORT
+is set,
+.Nm
+will call
+.Xr abort 3
+if it encounters a fatal error.
+.It Ev DITTONORSRC
+If
+.Ev DITTONORSRC
+is set but
+.Fl Fl rsrc Ns ,
+.Fl Fl extattr Ns ,
+and
+.Fl Fl acl 
+are not specified,
+.Nm
+will not preserve those additional types of metadata.
+.El
+.Sh "BUGS"
+.Nm 
+doesn't copy directories into directories in the same way as
+.Xr cp 1 Ns .
+In particular,
+.Dl ditto foo bar
+will copy the contents of foo into bar, whereas 
+.Dl cp -r foo bar
+copies foo itself into bar. Though this is not a bug, some may
+consider this bug-like behavior.
+.Fl Fl keepParent
+for non-archive copies will eventually alleviate this problem.
+.Sh "SEE ALSO"
+.Ns Xr bom 5 ,
+.Ns Xr lsbom 8 ,
+.Ns Xr mkbom 8 ,
+.Ns Xr cpio 1 ,
+.Ns Xr zip 1 ,
+.Ns Xr gzip 1 ,
+.Ns Xr bzip2 1 ,
+.Ns Xr tar 1 .

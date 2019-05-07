@@ -1,0 +1,16 @@
+//
+//  INNoteContent.h
+//  Intents
+//
+//  Copyright (c) 2017 Apple Inc. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+API_AVAILABLE(macosx(10.13), ios(11.0), watchos(4.0))
+@interface INNoteContent : NSObject <NSSecureCoding, NSCopying>
+
+@end
+NS_ASSUME_NONNULL_END

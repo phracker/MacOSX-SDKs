@@ -1,0 +1,55 @@
+.\" Copyright (c) 2014 Apple Inc. All rights reserved.
+.Dd 03/03/14
+.Dt os_activity_initiate 3
+.Os Darwin
+.Sh NAME
+.Nm os_activity_initiate ,
+.Nm os_activity_initiate_f
+.Nd activity related routines
+.Sh SYNOPSIS
+.In os/activity.h
+.Ft void
+.Fn os_activity_initiate "const char *description" "uint32_t flags" "void (^activity_block)(void)"
+.Ft void
+.Fn os_activity_initiate_f "const char *description" "uint32_t flags" "void *ctx" "void function(void *ctx)"
+.Sh DESCRIPTION
+An activity is essentially an identifier that is created by the system. The identifier is transported with work via GCD, XPC and other mechanisms.  The identifier simplifies debugging programs since it correlates the trace and log messages to the area in question. Although an activity appears to have a start/end, it is only finished when no other work related to it is enqueued to be processed. Activity functions only allow constant strings for performance and privacy, similar to
+.Xr os_trace 3 .
+.Pp
+Supported Activity Name:
+.Bd -literal -offset indent
+os_activity_initiate("indexing database", OS_ACTIVITY_FLAG_DEFAULT, ^(void) {
+	[self indexDatabase];
+});
+.Ed
+.Pp
+Unsupported Activity Name:
+.Bd -literal -offset indent
+snprintf(buffer, "indexing database for %s", username);
+os_activity_initiate(buffer, OS_ACTIVITY_FLAG_DEFAULT, ^(void) {
+	[self indexDatabase];
+});
+.Ed
+.Pp
+.Nm
+and
+.Nm os_activity_initiate_f
+wraps the block or function with a new activity.
+.Sh EXAMPLES
+Example use of activity with a message.
+.Pp
+.Bd -literal -offset indent
+#include <os/trace.h>
+#include <os/activity.h>
+
+- (IBOutlet) indexDatabase:(id) sender {
+	os_activity_initiate("index database", OS_ACTIVITY_FLAG_DEFAULT, ^{
+		os_trace("re-indexing database for %d", self.uid);
+		
+		[self reIndex: self.uid];
+	});
+}
+.Ed
+.Sh SEE ALSO
+.Xr os_trace 3 ,
+.Xr os_log 3

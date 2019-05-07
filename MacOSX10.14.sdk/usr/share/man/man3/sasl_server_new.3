@@ -1,0 +1,115 @@
+.\" -*- nroff -*-
+.\" 
+.\" Copyright (c) 2001 Carnegie Mellon University.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer. 
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in
+.\"    the documentation and/or other materials provided with the
+.\"    distribution.
+.\"
+.\" 3. The name "Carnegie Mellon University" must not be used to
+.\"    endorse or promote products derived from this software without
+.\"    prior written permission. For permission or any other legal
+.\"    details, please contact  
+.\"      Office of Technology Transfer
+.\"      Carnegie Mellon University
+.\"      5000 Forbes Avenue
+.\"      Pittsburgh, PA  15213-3890
+.\"      (412) 268-4387, fax: (412) 268-7395
+.\"      tech-transfer@andrew.cmu.edu
+.\"
+.\" 4. Redistributions of any form whatsoever must retain the following
+.\"    acknowledgment:
+.\"    "This product includes software developed by Computing Services
+.\"     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+.\"
+.\" CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+.\" THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+.\" AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+.\" FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+.\" AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+.\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\" 
+.TH sasl_server_new 3 "16 May 2001" SASL "SASL man pages"
+.SH NAME
+sasl_server_new \- Create a new server authentication object
+
+
+.SH SYNOPSIS
+.nf
+.B #include <sasl/sasl.h>
+.sp
+.BI "int sasl_server_new(const char " *service ", "
+.BI "			 const char " *serverFQDN ", "
+.BI "			 const char " *user_realm ", "
+.BI "			 const char " *iplocalport ", "
+.BI "			 const char " *ipremoteport ", "
+.BI "			 const sasl_callback_t " *callbacks ", "
+.BI "			 unsigned " flags ", "
+.BI "			 sasl_conn_t ** " pconn ");"
+
+.fi
+.SH DESCRIPTION
+
+.B sasl_server_new()
+creates a new SASL context. This context will be used for all SASL
+calls for one connection. It handles both authentication and
+integrity/encryption layers after authentication.
+.PP
+.I service
+is the registered name of the service (usually the protocol name) using SASL (e.g. "imap").
+.PP
+.I serverFQDN
+is the fully qualified server domain name.  NULL means use gethostname().  This is useful for multi-homed servers.
+.PP
+.I user_realm
+is the domain of the user agent. This is usually not necessary (NULL is default)
+.PP
+.I iplocalport
+is the IP and port of the local side of the connection, or NULL.  If
+iplocalport is NULL it will disable mechanisms that require IP address
+information.  This strings must be in one of the following formats:
+"a.b.c.d;port" (IPv4), "e:f:g:h:i:j:k:l;port" (IPv6),
+or "e:f:g:h:i:j:a.b.c.d;port" (IPv6)
+.PP
+.I ipremoteport
+is the IP and port of the remote side of the connection, or NULL (see
+iplocalport)
+.PP
+.I flags
+are connection flags (see below)
+.PP
+.I pconn
+is a pointer to the connection context allocated by the library. This
+structure will be used for all future SASL calls for this connection.
+.PP
+
+.B Connection Flags
+.TP 0.8i
+.B SASL_SUCCESS_DATA
+The protocol supports a server-last send
+.TP 0.8i
+.B SASL_NEED_PROXY
+Force the use of a mechanism that supports an authorization id that is
+not the authentication id.
+
+.SH "RETURN VALUE"
+
+.B sasl_server_new()
+returns an integer which corresponds to one of the
+SASL error codes. SASL_OK is the only one that indicates success. All
+others indicate errors and should either be handled or the
+authentication session should be quit.
+
+.SH "CONFORMING TO"
+RFC 4422
+.SH "SEE ALSO"
+sasl(3), sasl_errors(3), sasl_server_init(3), sasl_server_start(3), sasl_server_step(3), sasl_setprop(3)

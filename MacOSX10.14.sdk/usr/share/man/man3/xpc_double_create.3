@@ -1,0 +1,467 @@
+.\" Copyright (c) 2011, 2016 Apple Inc. All rights reserved.
+.Dd 1 July, 2011
+.Dt xpc_objects 3
+.Os Darwin
+.Sh NAME
+.Nm xpc_objects
+.Nd boxed XPC objects reference
+.Sh SYNOPSIS
+.Fd #include <xpc/xpc.h>
+.Ft xpc_object_t
+.Fo xpc_null_create
+.Fa "void"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_bool_create
+.Fa "bool value"
+.Fc
+.Ft bool
+.Fo xpc_bool_get_value
+.Fa "xpc_object_t xbool"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_int64_create
+.Fa "int64_t value"
+.Fc
+.Ft int64_t
+.Fo xpc_int64_get_value
+.Fa "xpc_object_t xint"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_uint64_create
+.Fa "uint64_t value"
+.Fc
+.Ft uint64_t
+.Fo xpc_uint64_get_value
+.Fa "xpc_object_t xuint"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_double_create
+.Fa "double value"
+.Fc
+.Ft double
+.Fo xpc_double_get_value
+.Fa "xpc_object_t xdouble"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_date_create
+.Fa "int64_t interval"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_date_create_from_current
+.Fa "void"
+.Fc
+.Ft int64_t
+.Fo xpc_date_get_value
+.Fa "xpc_object_t xdate"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_data_create
+.Fa "const void *bytes"
+.Fa "size_t length"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_data_create_with_dispatch_data
+.Fa "dispatch_data_t ddata"
+.Fc
+.Ft size_t
+.Fo xpc_data_get_length
+.Fa "xpc_object_t xdata"
+.Fc
+.Ft const void *
+.Fo xpc_data_get_bytes_ptr
+.Fa "xpc_object_t xdata"
+.Fc
+.Ft size_t
+.Fo xpc_data_get_bytes
+.Fa "xpc_object_t xdata"
+.Fa "void *buffer"
+.Fa "size_t off"
+.Fa "size_t length"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_string_create
+.Fa "const char *string"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_string_create_with_format
+.Fa "const char *fmt"
+.Fa "..."
+.Fc
+.Ft xpc_object_t
+.Fo xpc_string_create_with_format_and_arguments
+.Fa "const char *fmt"
+.Fa "va_list ap"
+.Fc
+.Ft size_t
+.Fo xpc_string_get_length
+.Fa "xpc_object_t xstring"
+.Fc
+.Ft const char *
+.Fo xpc_string_get_string_ptr
+.Fa "xpc_object_t xstring"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_uuid_create
+.Fa "const uuid_t uuid"
+.Fc
+.Ft const uint8_t *
+.Fo xpc_uuid_get_bytes
+.Fa "xpc_object_t xuuid"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_fd_create
+.Fa "int fd"
+.Fc
+.Ft int
+.Fo xpc_fd_dup
+.Fa "xpc_object_t xfd"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_shmem_create
+.Fa "void *region"
+.Fa "size_t length"
+.Fc
+.Ft size_t
+.Fo xpc_shmem_map
+.Fa "xpc_object_t xshmem"
+.Fa "void **region"
+.Fc
+.Sh DESCRIPTION
+Most XPC objects are boxed representations of primitive C language types or
+low-level operating system handles. These boxed objects are immutable. In
+general, the getter methods for each object type will check to see if the given
+object is of the proper type and, if it is not, will return a sensible default
+value as described in
+.Xr xpc_object 3 .
+If an improper object is given to another type of method, the behavior is
+undefined.
+.Pp
+See
+.Xr xpc_object 3
+for information about functions common to all XPC objects.
+.Pp
+.Sh PRIMITIVE TYPES
+XPC objects can encapsulate a wide variety of primitive C language types:
+.Ss INTEGERS
+Boxed representations of 64-bit wide signed and unsigned integer types may be
+created with
+.Fn xpc_int64_create
+and
+.Fn xpc_uint64_create
+respectively. The boxed values may be retrieved using
+.Fn xpc_int64_get_value
+and
+.Fn xpc_uint64_get_value .
+.Ss FLOATING POINT
+Boxed representations of double-precision floating point value representations
+may be created with the
+.Fn xpc_double_create
+function and retrieved with the
+.Fn xpc_double_get_value
+function.
+.Ss DATES
+Boxed representations of date and time values, expressed as an integral
+number of nanoseconds before or after the Unix epoch, can be created with the
+.Fn xpc_date_create
+function and retrieved with the
+.Fn xpc_date_get_value
+function.
+A date object representing the current date may be created with 
+.Fn xpc_date_create_from_current
+convenience function.
+.Ss NULL AND BOOLEAN SINGLETONS
+Boxed representations of null and Boolean values are expressed as XPC object
+singletons. The 
+.Fn xpc_bool_create
+function returns one of two constant singleton Boolean values:
+.Bl -bullet -compact -offset indent
+.It
+.Ft XPC_BOOL_TRUE
+.It
+.Ft XPC_BOOL_FALSE
+.El
+.Pp
+The singleton values may be compared using direct pointer equality. Similarly,
+no type checking is required when retreiving these values from collections:
+.Pp
+.Bd -literal -offset indent
+xpc_object_t xbool = xpc_dictionary_get_value(dictionary, "key");
+if (xbool == XPC_BOOL_TRUE) {
+	// Handle the true case.
+} else if (xbool == XPC_BOOL_FALSE)
+	// Handle the false case.
+} else {
+	// Handle the case where there was a type mismatch or where there was no
+	// value for the key "key".
+}
+.Ed
+.Pp
+The
+.Fn xpc_null_create
+function returns a constant singleton representation of a null value.
+There is currently no defined constant for this singleton.
+.Pp
+It is safe to call
+.Xr xpc_retain 3
+and
+.Xr xpc_release 3
+on Boolean and null objects.
+.Sh DATA, STRINGS AND UUIDS
+.Ss DATA
+Boxed representations of arbitrary byte values may be created with the
+.Fn xpc_data_create
+function which takes a pointer to a
+.Fa buffer
+and
+.Fa length .
+A pointer to the underlying storage of the data object may be obtained using
+.Fn xpc_data_get_bytes_ptr .
+.Pp
+.Em Important :
+This pointer is only valid for the lifetime of the data object. The underlying
+storage of the pointer value must not be modified by the caller. When ARC is
+enabled, care needs to be taken that the data object is not released
+prematurely, see
+.Xr xpc_object 3
+for details.
+.Pp
+The contents of a data object may be copied to an external buffer using the
+.Fn xpc_data_get_bytes
+function. This function takes a pointer to a
+.Fa buffer
+of size
+.Fa length
+to which the data will be copied.
+The caller may also specify a non-zero
+.Fa offset
+into the source data at which to start the copy. The return value of this
+function is the number of bytes that were copied into the
+.Fa buffer .
+If the destination
+.Fa buffer
+is smaller than the size of the source data, as many bytes as possible will be
+copied and the return value will be equal to the number of bytes specified in
+.Fa length .
+.Pp
+The underlying size of the data value may be determined using the
+.Fn xpc_data_get_length 
+function.
+.Pp
+When creating a data object, the contents of the provided buffer are copied into
+internal storage. If the caller wishes to avoid a copy, the buffer may first be
+encapsulated in a
+.Ft dispatch_data_t
+object and passed to
+.Fn xpc_data_create_with_dispatch_data .
+See
+.Xr dispatch_data_create 3
+for more information.
+.Pp
+.Em Note :
+When the time comes to send a message, the XPC runtime will serialize
+the object graph, which will result in a copy of any data objects contained
+therein. This can be very costly for large amounts of data. To completely avoid
+any copying in the message-send path for large data objects (where "large" is
+defined by the system), you may create a data object using
+.Xr dispatch_data_create 3
+with the
+.Ft DISPATCH_DATA_DESTRUCTOR_MUNMAP
+destructor specified. This will hint to the system that the data buffer may be
+safely shared copy-on-write with the recipient of the message.
+.Pp
+.Em Important :
+Data objects created with the intention of eliminating copies can
+.Em only
+be safely created VM objects that the caller owns. Buffers returned by
+.Xr malloc 3
+do NOT satisfy this condition as the caller does not own the underlying VM
+object associated with an allocation returned by
+.Xr malloc 3 .
+Similarly, if the caller receives a buffer from an external subsystem across an
+API boundary, this buffer is not owned by the caller unless part of the API
+contract specifies how the buffer should have been created. Sending buffers not
+owned by the caller in this way can result in information leakage from elsewhere
+on the heap.
+.Ss STRINGS
+Boxed representations of C string values may be created using the
+.Fn xpc_string_create
+function.
+The XPC framework assumes all strings are encoded as UTF-8 and does not
+support any other encodings. A pointer to the C string representation of a
+value may be obtained using
+.Fn xpc_string_get_string_ptr .
+.Pp
+.Em Important :
+This pointer is only valid for the lifetime of the string object. The underlying
+storage of the pointer value must not be modified by the caller.  When ARC is
+enabled, care needs to be taken that the string object is not released
+prematurely, see
+.Xr xpc_object 3
+for details.
+.Pp
+The length of the C string value may be determined using the
+.Fn xpc_string_get_length
+function. This length does not include the NUL terminator character,
+similar to
+.Xr strlen 3 .
+.Pp
+String objects may also be constructed from
+.Xr printf 3 -style
+format strings using the
+.Fn xpc_string_create_with_format
+function.
+Additionally, the
+.Fn xpc_string_create_with_format_and_arguments
+function allows the caller to pass an existing
+.Ft va_list
+argument with which to construct the formatted string.
+.Ss UUIDs
+Boxed representations of UUID byte values may be created using
+.Fn xpc_uuid_create .
+See
+.Xr uuid 3
+for more information.
+A pointer to storage for the underlying UUID value may be obtained using
+.Fn xpc_uuid_get_bytes .
+The returned pointer may be safely passed to the relevant
+.Xr uuid 3
+functions.
+.Pp
+.Em Important :
+This pointer is only valid for the lifetime of the UUID object. The underlying
+storage of the UUID value must not be modified by the caller. When ARC is
+enabled, care needs to be taken that the UUID object is not released
+prematurely, see
+.Xr xpc_object 3
+for details.
+.Pp
+The pattern of returning a pointer instead of copying the result into a
+.Ft uuid_t
+enables some convenient code simplification. For example:
+.Pp
+.Bd -literal -offset indent
+if (uuid_compare(xpc_uuid_get_bytes(uuid_object), expected_uuid) == 0) {
+	// They are the same.
+}
+.Ed
+.Sh OUT-OF-LINE TYPES
+Boxed representations of low-level operating system primitives such as file
+descriptors and shared memory regions may be created and shared between
+processes as part of an XPC dictionary that is sent as a message.
+.Ss FILE DESCRIPTORS
+Boxed representations of file descriptors may be created using the
+.Fn xpc_fd_create
+function.
+Once created, there is no way to retrieve the original file descriptor from
+the boxed representation. This function performs the equivalent of a
+.Xr dup 2
+on the descriptor, and thus it is safe to call
+.Xr close 2
+on the descriptor after boxing it.
+.Pp
+The
+.Fn xpc_fd_dup
+function can be used to create a new file descriptor from a boxed representation
+in a similar manner to
+.Xr dup 2 .
+The caller is responsible for calling
+.Xr close 2
+on the descriptor returned by
+.Fn xpc_fd_dup .
+
+Multiple calls to
+.Fn xpc_fd_dup
+will produce multiple unique file descriptor values.
+If a failure occurs (i.e. process file descriptor table is full), the invalid
+file descriptor value -1 will be returned.
+.Pp
+.Em Important :
+When file descriptors are copied with
+.Xr dup 2 ,
+they share some state, including flags and
+.Xr lseek 2
+file offset. The same sharing obtains when these boxing and unboxing functions
+create copies of file descriptors, and when a boxed representation of a
+file descriptor is sent to another process using XPC.
+.Pp
+For example, suppose one process opens a file and sends the file descriptor to
+another process. Then, the first process uses
+.Xr read 2
+to read the first 100 bytes from the file. If the second process then calls
+.Xr read 2
+on the descriptor that it received from the first process,
+the data it reads will start at the 101st byte of the file, not the 1st.
+.Pp
+This is not usually the desired behavior.
+.Pp
+Therefore, if you wish to send a file to another process, it is best
+not to box one shared file descriptor. Instead you should
+.Xr open 2
+the file afresh for each other process you wish to share with.
+.Ss SHARED MEMORY
+Boxed representations of shared memory regions allocated using
+.Xr mmap 2
+with the
+.Ft MAP_SHARED
+flag passed in the
+.Fa flags
+argument may be created using the 
+.Fn xpc_shmem_create
+function. Memory objects created using
+.Xr malloc 3
+are not supported.
+The
+.Fa region
+argument is a pointer to the beginning of the shared region and the
+.Fa length
+argument specifies the length of the shared region.
+.Pp
+The recipient of a shared memory object may map the underlying region into its
+address space using the
+.Fn xpc_shmem_map
+function.
+As with file descriptor objects, each call to this function returns a distinct
+but equivalent mapping. On output, the
+.Fa region
+argument will point to the address of the new mapping, and the return value will
+be the size of that mapping. This size will always be an integral page size, as
+it is not possible to share memory regions at less than page granularity. The
+caller is responsible for unmapping the region
+with
+.Xr munmap 2 .
+If the mapping operation failed, 0 will be returned.
+.Pp
+New mappings will be created with the maximum permission as specified by the
+creator of the region. Currently, there is no direct way to modify the
+permissions that the recipient of a region will have. If the caller wishes to
+maintain read-write permissions to a region, for example, while giving others
+read-only access, it can create an equivalent mapping with the desired 
+permissions using a combination of
+.Fn mach_make_memory_entry_64
+and
+.Fn mach_vm_remap .
+The details of this procedure are left as an exercise to the reader.
+.Pp
+Certain operations that can operate on subranges of a region, such as
+.Fn vm_copy ,
+.Fn vm_read ,
+and
+.Fn vm_write ,
+may fragment the underlying representation of a memory region in order to avoid
+physical copies. After this fragmentation has occurred, it is not safe to create
+a shared memory object out of the region. For this reason, it is recommended
+that any such operations be delayed until after the shared memory object has
+been created, as the existence of the object will hint to the VM that the
+region's internal representation should be kept contiguous. Note that this will
+necessarily defeat these optimizations and force physical copies of subranges.
+.Sh SEE ALSO
+.Xr xpc_object 3 ,
+.Xr xpc_dictionary_create 3 ,
+.Xr xpc_array_create 3 ,
+.Xr xpc_connection_create 3 ,
+.Xr dispatch_data_create 3 ,
+.Xr printf 3 ,
+.Xr uuid 3 ,
+.Xr dup 2 ,
+.Xr close 2

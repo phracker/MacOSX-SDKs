@@ -1,0 +1,255 @@
+.TH "MPSRNNImageInferenceLayer" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSRNNImageInferenceLayer
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSRNNLayer\&.h>\fP
+.PP
+Inherits \fBMPSCNNKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:rnnDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:rnnDescriptors:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeSequenceToCommandBuffer:sourceImages:destinationImages:recurrentInputState:recurrentOutputStates:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardImages:destinationBackwardImages:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBinputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBoutputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBnumberOfLayers\fP"
+.br
+.ti -1c
+.RI "BOOL \fBrecurrentOutputIsTemporary\fP"
+.br
+.ti -1c
+.RI "BOOL \fBstoreAllIntermediateStates\fP"
+.br
+.ti -1c
+.RI "\fBMPSRNNBidirectionalCombineMode\fP \fBbidirectionalCombineMode\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  The \fBMPSRNNImageInferenceLayer\fP specifies a recurrent neural network layer for inference on MPSImages\&. Currently two types of recurrent layers are supported: ones that operate with convolutions on images: \fBMPSRNNImageInferenceLayer\fP and one that operates on matrices: \fBMPSRNNMatrixInferenceLayer\fP\&. The former can be often used to implement the latter by using 1x1-images, but due to image size restrictions and performance, it is advisable to use \fBMPSRNNMatrixInferenceLayer\fP for linear recurrent layers\&. \fBA\fP \fBMPSRNNImageInferenceLayer\fP is initialized using a \fBMPSRNNLayerDescriptor\fP, which further specifies the recurrent network layer, or an array of \fBMPSRNNLayerDescriptors\fP, which specifies a stack of recurrent layers, that can operate in parallel a subset of the inputs in a sequence of inputs and recurrent outputs\&. Note that currently stacks with bidirectionally traversing encode functions do not support starting from a previous set of recurrent states, but this can be achieved quite easily by defining two separate unidirectional stacks of layers, and running the same input sequence on them separately (one forwards and one backwards) and ultimately combining the two result sequences as desired with auxiliary functions\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device"
+Make a copy of this kernel for a new device - 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSKernel\fP 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP The NSZone in which to allocate the object 
+.br
+\fIdevice\fP The device for the new \fBMPSKernel\fP\&. If nil, then use self\&.device\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to a copy of this \fBMPSKernel\fP\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (void) encodeBidirectionalSequenceToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSImage\fP * > *__nonnull) sourceSequence(NSArray< \fBMPSImage\fP * > *__nonnull) destinationForwardImages(NSArray< \fBMPSImage\fP * > *__nullable) destinationBackwardImages"
+Encode an \fBMPSRNNImageInferenceLayer\fP kernel stack for an input image sequences into a command buffer bidirectionally\&. The operation proceeds as follows: The first source image x0 is passed through all forward traversing layers in the stack, ie\&. those that were initialized with MPSRNNSequenceDirectionForward, recurrent input is assumed zero\&. This produces forward output yf0 and recurrent states hf00, hf01, hf02, \&.\&.\&. hf0n, one for each forward layer\&. Then x1 is passed to forward layers together with recurrent state hf00, hf01, \&.\&.\&., hf0n, which produces yf1, and hf10,\&.\&.\&. This procedure is iterated until the last image in the input sequence x_(N-1), which produces forward output yf(N-1)\&. The backwards layers iterate the same sequence backwards, starting from input x_(N-1) (recurrent state zero), that produces yb(N-1) and recurrent output hb(N-1)0, hf(N-1)1, \&.\&.\&. hb(N-1)m, one for each backwards traversing layer\&. Then the backwards layers handle input x_(N-2) using recurrent state hb(N-1)0, \&.\&.\&., et cetera, until the first image of the sequence is computed, producing output yb0\&. The result of the operation is either pair of sequences ({yf0, yf1, \&.\&.\&. , yf(N-1)}, {yb0, yb1, \&.\&.\&. , yb(N-1)}) or a combined sequence, {(yf0 + yb0), \&.\&.\&. , (yf(N-1) + yb(N-1)) }, where '+' stands either for sum, or concatenation along feature channels, as specified by \fBbidirectionalCombineMode\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceSequence\fP An array of valid \fBMPSImage\fP objects containing the source image sequence (x0, x1, \&.\&.\&. x_n-1)\&. 
+.br
+\fIdestinationForwardImages\fP An array of valid MPSImages to be overwritten by result from forward input images\&. If bidirectionalCombineMode is either MPSRNNBidirectionalCombineModeAdd or MPSRNNBidirectionalCombineModeConcatenate, then will contain the combined results\&. destinationForwardImage may not alias with any of the source images\&. 
+.br
+\fIdestinationBackwardImages\fP If bidirectionalCombineMode is MPSRNNBidirectionalCombineModeNone, then must be a valid \fBMPSImage\fP that will be overwritten by result from backward input image\&. Otherwise this parameter is ignored and can be nil\&. destinationBackwardImages may not alias to any of the source images\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeSequenceToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSImage\fP * > *__nonnull) sourceImages(NSArray< \fBMPSImage\fP * > *__nonnull) destinationImages(\fBMPSRNNRecurrentImageState\fP *__nullable) recurrentInputState(NSMutableArray< \fBMPSRNNRecurrentImageState\fP * > *__nullable) recurrentOutputStates"
+Encode an \fBMPSRNNImageInferenceLayer\fP kernel (stack) for a sequence of inputs into a command buffer\&. Note that when encoding using this function the 
+.PP
+\fBSee also:\fP
+.RS 4
+layerSequenceDirection is ignored and the layer stack operates as if all layers were forward feeding layers\&. In order to run bidirectional sequences use \fBencodeBidirectionalSequenceToCommandBuffer:sourceSequence:\fP or alternatively run two layer stacks and combine results at the end using utility functions\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceImages\fP An array of valid \fBMPSImage\fP objects containing the sequence of source images\&. 
+.br
+\fIdestinationImages\fP An array valid MPSImages to be overwritten by result image sequence\&. destinationImages may not alias sourceImages\&. 
+.br
+\fIrecurrentInputState\fP An optional state containing the output images and memory cells (for LSTMs) of the layer obtained from the previous input images in a sequence of inputs\&. Has to be the output of a previous call to this function or nil (assumed zero)\&. Note: can be one of the states returned in \fBrecurrentOutputStates\fP\&. 
+.br
+\fIrecurrentOutputStates\fP An optional array that will contain the recurrent output states\&. If nil then the recurrent output state is discarded\&. If \fBstoreAllIntermediateStates\fP is YES, then all intermediate states of the sequence are returned in the array, the first one corresponding to the first input in the sequence, otherwise only the last recurrent output state is returned\&. If recurrentOutputIsTemporary is YES and then all returned recurrent states will be temporary\&. 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSState\fP:isTemporary\&. Example: In order to get a new state one can do the following: 
+.PP
+.nf
+MPSRNNRecurrentImageState* recurrent0 = nil;
+[filter encodeToCommandBuffer: cmdBuf
+                  sourceImage: source0
+             destinationImage: destination0
+          recurrentInputState: nil
+         recurrentOutputState: &recurrent0];
+
+.fi
+.PP
+ Then use it for the next input in sequence: 
+.PP
+.nf
+[filter encodeToCommandBuffer: cmdBuf
+                  sourceImage: source1
+             destinationImage: destination1
+          recurrentInputState: recurrent0
+         recurrentOutputState: &recurrent0];
+
+.fi
+.PP
+ And discard recurrent output of the third input: 
+.PP
+.nf
+[filter encodeToCommandBuffer: cmdBuf
+                  sourceImage: source2
+             destinationImage: destination2
+          recurrentInputState: recurrent0
+         recurrentOutputState: nil];
+
+.fi
+.PP
+ 
+.RE
+.PP
+
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  See \fBMPSKernel::initWithCoder\fP\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSRNNImageInferenceLayer\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSRNNImageInferenceLayer\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSRNNImageInferenceLayer\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(nonnull const \fBMPSRNNDescriptor\fP *) rnnDescriptor"
+Initializes a convolutional RNN kernel 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this MPSRNNImageLayer filter will be used 
+.br
+\fIrnnDescriptor\fP The descriptor that defines the RNN layer 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSRNNImageInferenceLayer\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(NSArray< const \fBMPSRNNDescriptor\fP * > *__nonnull) rnnDescriptors"
+Initializes a kernel that implements a stack of convolutional RNN layers 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this MPSRNNImageLayer filter will be used 
+.br
+\fIrnnDescriptors\fP An array of RNN descriptors that defines a stack of RNN layers, starting at index zero\&. The number of layers in stack is the number of entries in the array\&. All entries in the array must be valid MPSRNNDescriptors\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSRNNImageInferenceLayer\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- bidirectionalCombineMode\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Defines how to combine the output-results, when encoding bidirectional layers using \fBencodeBidirectionalSequenceToCommandBuffer\fP\&. Defaults to \fBMPSRNNBidirectionalCombineModeNone\fP\&. 
+.SS "\- inputFeatureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels per pixel in the input image\&. 
+.SS "\- numberOfLayers\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Number of layers in the filter-stack\&. This will be one when using initWithDevice:rnnDescriptor to initialize this filter and the number of entries in the array 'rnnDescriptors' when initializing this filter with initWithDevice:rnnDescriptors\&. 
+.SS "\- outputFeatureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels per pixel in the output image\&. 
+.SS "\- recurrentOutputIsTemporary\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+How output states from \fBencodeSequenceToCommandBuffer\fP are constructed\&. Defaults to NO\&. For reference 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSState\fP\&. 
+.RE
+.PP
+
+.SS "\- storeAllIntermediateStates\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+If YES then calls to \fBencodeSequenceToCommandBuffer\fP return every recurrent state in the array: recurrentOutputStates\&. Defaults to NO\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

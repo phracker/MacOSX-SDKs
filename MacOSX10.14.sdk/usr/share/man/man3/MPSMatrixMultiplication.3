@@ -1,0 +1,173 @@
+.TH "MPSMatrixMultiplication" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSMatrixMultiplication
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSMatrixMultiplication\&.h>\fP
+.PP
+Inherits \fBMPSKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:transposeLeft:transposeRight:resultRows:resultColumns:interiorColumns:alpha:beta:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:resultRows:resultColumns:interiorColumns:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:leftMatrix:rightMatrix:resultMatrix:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "MTLOrigin \fBresultMatrixOrigin\fP"
+.br
+.ti -1c
+.RI "MTLOrigin \fBleftMatrixOrigin\fP"
+.br
+.ti -1c
+.RI "MTLOrigin \fBrightMatrixOrigin\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBbatchStart\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBbatchSize\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+\fBMPSMatrixMultiplication\&.h\fP  MetalPerformanceShaders\&.framework
+.PP
+\fBCopyright:\fP
+.RS 4
+Copyright (c) 2016 Apple Inc\&. All rights reserved\&.  MetalPerformanceShaders filter base classes
+.RE
+.PP
+This depends on Metal\&.framework\&.
+.PP
+\fBA\fP matrix multiplication kernel\&.
+.PP
+\fBA\fP \fBMPSMatrixMultiplication\fP object computes: 
+.PP
+.nf
+            C = alpha * op(A) * op(B) + beta * C
+
+        A, B, and C are matrices which are represented by MPSMatrix
+        objects. alpha and beta are scalar values (of the same data type
+        as values of C) which are applied as shown above.  A and B may
+        each have an optional transposition operation applied.
+
+        A, B, and C (also referred to in later discussions as the left input
+        matrix, the right input matrix, and the result matrix respectively).
+
+        A MPSMatrixMultiplication object is initialized with the transpose
+        operators to apply to A and B, sizes for the operation to perform,
+        and the scalar values alpha and beta.
+.fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSMatrix\fP *__nonnull) leftMatrix(\fBMPSMatrix\fP *__nonnull) rightMatrix(\fBMPSMatrix\fP *__nonnull) resultMatrix"
+Encode a \fBMPSMatrixMultiplication\fP object to a command buffer\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&.
+.br
+\fIleftMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the left input matrix\&.
+.br
+\fIrightMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the right input matrix\&.
+.br
+\fIresultMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the addend matrix which will also be overwritten by the result\&.
+.RE
+.PP
+Certain constraints apply to the sizes of the matrices depending on the transposition operations and sizes requested at initialization time as well as the origins at the time this routine is called:
+.PP
+The left input matrix must be large enough to hold an array of size resultRows x interiorColumns elements beginning at leftMatrixOrigin\&.
+.PP
+The right input matrix must be large enough to hold an array of size interiorColumns x resultColumns elements beginning at rightMatrixOrigin\&.
+.PP
+The result matrix must be large enough to hold an array of size resultRows x resultColumns elements beginning at resultMatrixOrigin\&.
+.PP
+Each matrix within the range specified by batchStart and batchSize, which also specifies a valid set of matrices within leftMatrix, rightMatrix, and resultMatrix, will be processed\&. 
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Use the above initialization method instead\&. 
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(NSUInteger) resultRows(NSUInteger) resultColumns(NSUInteger) interiorColumns"
+Convenience initialization for a matrix-matrix multiplication with no transpositions, unit scaling of the product, and no accumulation of the result\&. The scaling factors alpha and beta are taken to be 1\&.0 and 0\&.0 respectively\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&.
+.br
+\fIresultRows\fP The number of rows in the result matrix, M in BLAS GEMM description\&.
+.br
+\fIresultColumns\fP The number of columns in the result matrix, N in BLAS GEMM description\&.
+.br
+\fIinteriorColumns\fP The number of columns of the left input matrix\&. K in BLAS GEMM description\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSMatrixMultiplication\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(BOOL) transposeLeft(BOOL) transposeRight(NSUInteger) resultRows(NSUInteger) resultColumns(NSUInteger) interiorColumns(double) alpha(double) beta"
+Initialize an \fBMPSMatrixMultiplication\fP object on a device for a given size and desired transpose and scale values\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&.
+.br
+\fItransposeLeft\fP \fBA\fP boolean value which indicates if the left input matrix should be used in transposed form\&. If 'YES' then op(A) = A**T, otherwise op(A) = \fBA\fP\&.
+.br
+\fItransposeRight\fP \fBA\fP boolean value which indicates if the right input matrix should be used in transposed form\&. If 'YES' then op(B) = B**T, otherwise op(B) = B\&.
+.br
+\fIresultRows\fP The number of rows in the result matrix, M in BLAS GEMM description\&.
+.br
+\fIresultColumns\fP The number of columns in the result matrix, N in BLAS GEMM description\&.
+.br
+\fIinteriorColumns\fP The number of columns of the left input matrix after the appropriate transpose operation has been applied\&. K in BLAS GEMM description\&.
+.br
+\fIalpha\fP The scale factor to apply to the product\&. Specified in double precision\&. Will be converted to the appropriate precision in the implementation subject to rounding and/or clamping as necessary\&.
+.br
+\fIbeta\fP The scale factor to apply to the initial values of C\&. Specified in double precision\&. Will be converted to the appropriate precision in the implementation subject to rounding and/or clamping as necessary\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSMatrixMultiplication\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- batchSize\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of matrices in the batch to process\&. This property is modifiable and by default allows all matrices available at encoding time to be processed\&. 
+.SS "\- batchStart\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The index of the first matrix in the batch\&. This property is modifiable and defaults to 0 at initialization time\&. If batch processing should begin at a different matrix this value should be modified prior to encoding the kernel\&. 
+.SS "\- leftMatrixOrigin\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The origin, relative to [0, 0] in the left input matrix, at which to start reading values\&. This property is modifiable and defaults to [0, 0] at initialization time\&. If a different origin is desired then this should be modified prior to encoding the kernel\&. The z value must be 0\&. 
+.SS "\- resultMatrixOrigin\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The origin, relative to [0, 0] in the result matrix, at which to start writing (and reading if necessary) results\&. This property is modifiable and defaults to [0, 0] at initialization time\&. If a different origin is desired then this should be modified prior to encoding the kernel\&. The z value must be 0\&. 
+.SS "\- rightMatrixOrigin\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The origin, relative to [0, 0] in the right input matrix, at which to start reading values\&. This property is modifiable and defaults to [0, 0] at initialization time\&. If a different origin is desired then this should be modified prior to encoding the kernel\&. The z value must be 0\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

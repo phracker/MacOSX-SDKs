@@ -1,0 +1,337 @@
+.TH "MPSState" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSState
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSState\&.h>\fP
+.PP
+Inherits NSObject\&.
+.PP
+Inherited by \fBMPSCNNConvolutionWeightsAndBiasesState\fP, \fBMPSCNNLossLabels\fP, \fBMPSCNNNormalizationGammaAndBetaState\fP, \fBMPSCNNNormalizationMeanAndVarianceState\fP, \fBMPSNNBinaryGradientState\fP, \fBMPSNNGradientState\fP, \fBMPSRNNMatrixTrainingState\fP, \fBMPSRNNRecurrentImageState\fP, and \fBMPSRNNRecurrentMatrixState\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:bufferSize:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:textureDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithResource:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinit\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:resourceList:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithResources:\fP"
+.br
+.ti -1c
+.RI "(__nullable id< MTLResource >) \- \fBresourceAtIndex:allocateMemory:\fP"
+.br
+.ti -1c
+.RI "(NSUInteger) \- \fBbufferSizeAtIndex:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSStateTextureInfo\fP) \- \fBtextureInfoAtIndex:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSStateResourceType\fP) \- \fBresourceTypeAtIndex:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBsynchronizeOnCommandBuffer:\fP"
+.br
+.ti -1c
+.RI "(NSUInteger) \- \fBresourceSize\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageDescriptor\fP *__nonnull) \- \fBdestinationImageDescriptorForSourceImages:sourceStates:forKernel:suggestedDescriptor:\fP"
+.br
+.in -1c
+.SS "Class Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) + \fBtemporaryStateWithCommandBuffer:bufferSize:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) + \fBtemporaryStateWithCommandBuffer:textureDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) + \fBtemporaryStateWithCommandBuffer:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) + \fBtemporaryStateWithCommandBuffer:resourceList:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBresourceCount\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBreadCount\fP"
+.br
+.ti -1c
+.RI "BOOL \fBisTemporary\fP"
+.br
+.ti -1c
+.RI "NSString * \fBlabel\fP"
+.br
+.ti -1c
+.RI "id< MTLResource > \fBresource\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+This depends on Metal Framework  \fBA\fP semi-opaque data container for large storage in MPS CNN filters  Some MPS CNN kernels produce additional information beyond a \fBMPSImage\fP\&. These may be pooling indices where the result came from, convolution weights, or other information not contained in the usual \fBMPSImage\fP result from a \fBMPSCNNKernel\fP\&. \fBA\fP \fBMPSState\fP object typically contains one or more expensive MTLResources such as textures or buffers to store this information\&. It provides a base class with interfaces for managing this storage\&. Child classes may add additional functionality specific to their contents\&.
+.PP
+Some \fBMPSState\fP objects are temporary\&. Temporary state objects, like MPSTemporaryImages and Matrices, are for very short lived storage, perhaps just a few lines of code within the scope of a single MTLCommandBuffer\&. They are very efficient for storage, as several temporary objects can share the same memory over the course of a MTLCommandBuffer\&. This can improve both memory usage and time spent in the kernel wiring down memory and such\&. You may find that some large CNN tasks can not be computed without them, as non-temporary storage would simply take up too much memory\&.
+.PP
+In exchange, the lifetime of the underlying storage in temporary \fBMPSState\fP objects needs to be carefully managed\&. ARC often waits until the end of scope to release objects\&. Temporary storage often needs to be released sooner than that\&. Consequently the lifetime of the data in the underlying MTLResources is managed by a readCount property\&. Each time a \fBMPSCNNKernel\fP reads a temporary \fBMPSState\fP object the readCount is automatically decremented\&. When it reaches zero, the underlying storage is recycled for use by other MPS temporary objects, and the data is becomes undefined\&. If you need to consume the data multiple times, you should set the readCount to a larger number to prevent the data from becomming undefined\&. You may set the readCount to 0 yourself to return the storage to MPS, if for any reason, you realize that the \fBMPSState\fP object will no longer be used\&.
+.PP
+The contents of a temporary \fBMPSState\fP object are only valid from creation to the time the readCount reaches 0\&. The data is only valid for the MTLCommandBuffer on which it was created\&. Non-temporary \fBMPSState\fP objects are valid on any MTLCommandBuffer on the same device until they are released\&.
+.PP
+.PP
+.nf
+            Finally, temporary MPSState objects are complicated to use with blit encoders.
+            Your application should assume that the temporary MPSState is backed by a MTLHeap,
+            and consequently needs a MTLFence to ensure that compute command encoders and other
+            encoders do not trip over one another with heap based memory. MPS will almost never
+            use a blit encoder for this reason. If you do need one, then you will need to make
+            a new compute encoder to block on whatever previous compute encoder last used the
+            heap block. (MPS will not tell you who previously used the heap block. That encoder
+            is almost certainly long dead anyway.) If concurrent encoders are involved, then a
+            barrier might be needed. Within that compute encoder, you will call -updateFence.
+            End the compute encoder, make a blit encoder wait for the fence, do the blit, update
+            a new fence, then make a new compute encoder, wait for the second fence, then you
+            can continue. Possibly the second do-nothing compute encoder needs to be ended so
+            MPS can be called. Frankly, we don't bother with blit encoders and just write a compute
+            operation for copy / clear as needed, or better yet find a way to eliminate the
+            clear / copy pass so we don't have to pay for it. Your application needs to use
+            temporary MPSStates and MPSTemporaryImages. Memory costs skyrocket, otherwise.
+            It is the blit encoder that is hopefully optional. Note: the most common use of a
+            blit encoder, -synchronizeResource: can not encounter this problem because temporary
+            images and states live in GPU private memory and can not be read by the CPU..fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (NSUInteger) bufferSizeAtIndex: (NSUInteger) index"
+Return the buffer size of the MTLBuffer at index or 0 if it is not a MTLBuffer  Does not force allocation of the MTLResource 
+.SS "\- (\fBMPSImageDescriptor\fP * __nonnull) destinationImageDescriptorForSourceImages: (NSArray< \fBMPSImage\fP * > *__nonnull) sourceImages(NSArray< \fBMPSState\fP * > *__nullable) sourceStates(\fBMPSKernel\fP *__nonnull) kernel(\fBMPSImageDescriptor\fP *__nonnull) inDescriptor"
+Determine padding and sizing of result images  \fBA\fP \fBMPSState\fP has the opportunity to reconfigure the \fBMPSImageDescriptor\fP used to create the filter result state and set the MPSKernel\&.offset to the correct value\&. By default, the \fBMPSState\fP does not modify the descriptor\&.
+.PP
+There is a order of operations defined for who may update the descriptor: 
+.PP
+.nf
+1) Default padding code runs based on the MPSNNPaddingMethod in
+    the MPSCNNKernel.padding. This creates the descriptor and
+    picks a starting value for the MPSCNNKernel.offset.
+2) MPSStates are called in order to apply this function and update
+    the offset.
+3) The MPSNNPadding custom padding method of the same name is called.
+4)
+
+.fi
+.PP
+.PP
+Some code that may prove helpful:
+.PP
+.PP
+.nf
+const int centeringPolicy = 0;  // When kernelSize is even: 0 pad bottom right\&. 1 pad top left\&.    Centers the kernel for even sized kernels\&.
+
+typedef enum Style{
+    StyleValidOnly = -1,
+    StyleSame = 0,
+    StyleFull = 1
+}Style;
+
+// Typical destination size in one dimension for forward filters (most filters)
+static int DestSize( int sourceSize, int stride, int filterWindowSize, Style style ){
+    sourceSize += style * (filterWindowSize - 1);       // adjust how many pixels we are allowed to read
+    return (sourceSize + stride - 1) / stride;          // sourceSize / stride, round up
+}
+
+// Typical destination size in one dimension for reverse filters (e\&.g\&. convolution transpose)
+static int DestSizeReverse( int sourceSize, int stride, int filterWindowSize, Style style ){
+    return (sourceSize-1) * stride +        // center tap for the last N-1 results\&. Take stride into account
+            1 +                             // center tap for the first result
+            style * (filterWindowSize-1);   // add or subtract (or ignore) the filter extent
+}
+
+// Find the MPSOffset in one dimension
+static int Offset( int sourceSize, int stride, int filterWindowSize, Style style ){
+    // The correction needed to adjust from position of left edge to center per MPSOffset definition
+    int correction = filterWindowSize / 2;
+
+    // exit if all we want is to start consuming pixels at the left edge of the image\&.
+    if( 0 )
+        return correction;
+
+    // Center the area consumed in the source image:
+    // Calculate the size of the destination image
+    int destSize = DestSize( sourceSize, stride, filterWindowSize, style ); // use DestSizeReverse here instead as appropriate
+
+    // calculate extent of pixels we need to read in source to populate the destination
+    int readSize = (destSize-1) * stride + filterWindowSize;
+
+    // calculate number of missing pixels in source
+    int extraSize = readSize - sourceSize;
+
+    // number of missing pixels on left side
+    int leftExtraPixels = (extraSize + centeringPolicy) / 2;
+
+    // account for the fact that the offset is based on the center pixel, not the left edge
+    return correction - leftExtraPixels;
+}
+.fi
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsourceImages\fP The list of source images to be used 
+.br
+\fIsourceStates\fP The list of source states to be used 
+.br
+\fIkernel\fP The \fBMPSKernel\fP the padding method will be applied to\&. Set the kernel\&.offset 
+.br
+\fIinDescriptor\fP MPS will prepare a starting guess based on the padding policy (exclusive of MPSNNPaddingMethodCustom) set for the object\&. You should adjust the offset and image size accordingly\&. It is on an autoreleasepool\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The \fBMPSImageDescriptor\fP to use to make a \fBMPSImage\fP to capture the results from the filter\&. The \fBMPSImageDescriptor\fP is assumed to be on an autoreleasepool\&. Your method must also set the kernel\&.offset property\&. 
+.RE
+.PP
+
+.SS "\- (nullable instancetype) init "
+
+.PP
+Reimplemented in \fBMPSCNNDropoutGradientState\fP, \fBMPSCNNLossLabels\fP, and \fBMPSCNNArithmeticGradientState\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (__nonnull id< MTLDevice >) device(size_t) bufferSize"
+
+.PP
+Reimplemented in \fBMPSCNNInstanceNormalizationGradientState\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (__nonnull id< MTLDevice >) device(\fBMPSStateResourceList\fP *__nonnull) resourceList"
+Initialize a non-temporary state to hold a number of textures and buffers  The allocation of each resource will be deferred until it is needed\&. This occurs when -resource or -resourceAtIndex: is called\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIresourceList\fP The list of resources to create\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) initWithDevice: (__nonnull id< MTLDevice >) device(MTLTextureDescriptor *__nonnull) descriptor"
+
+.PP
+Reimplemented in \fBMPSCNNInstanceNormalizationGradientState\fP\&.
+.SS "\- (nonnull instancetype) initWithResource: (__nullable id< MTLResource >) resource"
+Create a \fBMPSState\fP with a non-temporary MTLResource 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIresource\fP \fBA\fP MTLBuffer or MTLTexture\&. May be nil\&. 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNInstanceNormalizationGradientState\fP, and \fBMPSCNNBatchNormalizationState\fP\&.
+.SS "\- (nonnull instancetype) initWithResources: (NSArray< id< MTLResource >> *__nullable) resources"
+Create a state object with a list of MTLResources  Because MPS prefers deferred allocation of resources your application should use -initWithTextures:bufferSizes:bufferCount: whenever possible\&. This method is useful for cases when the MTLResources must be initialized by the CPU\&. 
+.SS "\- (__nullable id <MTLResource>) resourceAtIndex: (NSUInteger) index(BOOL) allocateMemory"
+Get the MTLResource at the indicated index  By convention, except where otherwise documented, the MTLResources held by the \fBMPSState\fP are private to the \fBMPSState\fP object, owned by the \fBMPSState\fP subclass author\&. If the \fBMPSState\fP subclass author is MPS, then the identity (e\&.g\&. texture vs\&. buffer) and information contained in the resource should be considered implementation dependent\&. It may change by operating system version or device\&. If you are the author of the subclass then it is for your own use, and MPS will not look at it, except perhaps so as to pass it to a custom kernel\&. Otherwise, the method is made available to facilitate debugging and to allow you to write your own state objects\&. Provide accessors to read this information in a defined format\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIindex\fP The index of the MTLResource to retrieve 
+.br
+\fIallocateMemory\fP It is very important to avoid allocating memory to hold MTLResources until it is absolutely necessary, especially when working with temporary MPSStates\&. When allocateMemory is set to NO and the resource has not yet been allocated, nil will be returned instead\&. If you just need information about the resource such as buffer size or MTLTexture properties, but not the resource itself, please use -bufferSizeAtIndex: or -textureInfoAtIndex: instead, as these will not force the creation of the MTLResource\&. 
+.RE
+.PP
+
+.SS "\- (NSUInteger) resourceSize "
+Get the number of bytes used to allocate underyling MTLResources  This is the size of the backing store of underlying MTLResources\&. It does not include all storage used by the object, for example the storage used to hold the \fBMPSState\fP instantiation and MTLTexture or MTLBuffer is not included\&. It only measures the size of the allocation used to hold the texels in the texture or bytes in the buffer\&. This value is subject to change between different devices and operating systems\&.
+.PP
+Except when -initWithResource: is used, most MPSStates are allocated without a backing store\&. The backing store is allocated lazily when it is needed, typically when the \&.texture property is called\&. Consequently, in most cases, it should be inexpensive to make a \fBMPSImage\fP to see how much memory it will need, and release it if it is too large\&.
+.PP
+This method may fail in certain circumstances, such as when the \fBMPSImage\fP is created with -initWithTexture:featureChannels:, in which case 0 will be returned\&. 
+.SS "\- (\fBMPSStateResourceType\fP) resourceTypeAtIndex: (NSUInteger) index"
+Return YES if the resource at index is a buffer  Does not force allocation of the MTLResource 
+.SS "\- (void) synchronizeOnCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer"
+Flush any copy of MTLResources held by the state from the device's caches, and invalidate any CPU caches if needed\&.  This will call [id <MTLBlitEncoder> synchronizeResource: ] on the state's MTLResources\&. This is necessary for all MTLStorageModeManaged resources\&. For other resources, including temporary resources (these are all MTLStorageModePrivate), nothing is done\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The commandbuffer on which to synchronize 
+.RE
+.PP
+
+.SS "+ (nonnull instancetype) temporaryStateWithCommandBuffer: (__nonnull id< MTLCommandBuffer >) cmdBuf"
+Create a new autoreleased temporary state object without underlying resource 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcmdBuf\fP The command buffer with which the temporary resource is associated 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNInstanceNormalizationGradientState\fP\&.
+.SS "+ (nonnull instancetype) \fBtemporaryStateWithCommandBuffer:\fP (__nonnull id< MTLCommandBuffer >) cmdBuf(size_t) bufferSize"
+Create a \fBMPSState\fP holding a temporary MTLBuffer 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcmdBuf\fP The command buffer against which the temporary resource is allocated 
+.br
+\fIbufferSize\fP The size of the buffer in bytes 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNInstanceNormalizationGradientState\fP, and \fBMPSCNNBatchNormalizationState\fP\&.
+.SS "+ (nonnull instancetype) \fBtemporaryStateWithCommandBuffer:\fP (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSStateResourceList\fP *__nonnull) resourceList"
+Initialize a temporary state to hold a number of textures and buffers  The textures occur first in sequence 
+.SS "+ (nonnull instancetype) \fBtemporaryStateWithCommandBuffer:\fP (__nonnull id< MTLCommandBuffer >) cmdBuf(MTLTextureDescriptor *__nonnull) descriptor"
+Create a \fBMPSState\fP holding a temporary MTLTexture 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcmdBuf\fP The command buffer against which the temporary resource is allocated 
+.br
+\fIdescriptor\fP \fBA\fP descriptor for the new temporary texture 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNInstanceNormalizationGradientState\fP, and \fBMPSCNNBatchNormalizationState\fP\&.
+.SS "\- (\fBMPSStateTextureInfo\fP) textureInfoAtIndex: (NSUInteger) index"
+Return the texture size {width,height,depth} or {0,0,0} if it is not a MTLTexture  Does not force allocation of the MTLResource 
+.SH "Property Documentation"
+.PP 
+.SS "\- (BOOL) isTemporary\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- label\fC [read]\fP, \fC [write]\fP, \fC [atomic]\fP, \fC [copy]\fP"
+\fBA\fP string to help identify this object\&. 
+.SS "\- (NSUInteger) readCount\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- (id<MTLResource>) resource\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Get the private MTLResource underlying the \fBMPSState\fP  When the state is not directly initialized with a MTLResource, the actuall MTLResource creation is deferred\&. Especially with temporary resources, it is important to delay this creation as late as possible to avoid increasing the memory footprint\&. The memory is returned for reuse when the readCount = 0\&. Calling the -resource method will force the resource to be allocated, so you should not use it lightly, for purposes such as finding the MTLPixelFormat of a texture in the state\&.
+.PP
+By convention, except where otherwise documented, the MTLResources held by the \fBMPSState\fP are private to the \fBMPSState\fP object, owned by the \fBMPSState\fP subclass author\&. If the \fBMPSState\fP subclass author is MPS, then the identity (e\&.g\&. texture vs\&. buffer) and information contained in the resource should be considered implementation dependent\&. It may change by operating system version or device\&. If you are the author of the subclass then it is for your own use, and MPS will not look at it, except perhaps so as to pass it to a custom kernel\&. Otherwise, the method is made available to facilitate debugging and to allow you to write your own state objects\&. 
+.SS "\- (NSUInteger) resourceCount\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Return the number of MTLResource objects held by the state 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

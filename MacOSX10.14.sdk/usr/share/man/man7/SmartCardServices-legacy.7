@@ -1,0 +1,83 @@
+.\" Copyright (c) 2014 Apple Inc.
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of Apple Computer nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd August 5, 2014
+.Dt SmartCardServices-legacy 7
+.Os "Mac OS X"
+.Sh NAME
+.Nm SmartCardServices-legacy
+.Nd overview of legacy SmartCard support
+.Sh DESCRIPTION
+.Nm
+is a set of components which add native support for SmartCards to OS X based on Tokend modules. Since OS X 10.12, there is  SmartCard support which is described in 
+.Xr SmartCardServices 7
+.Pp
+Supported SmartCards appear as separate keychains.  A Tokend module for each SmartCard
+you wish to use must be installed in
+.Pa /Library/Security/tokend
+.Sh USB SMART CARD READER DRIVERS
+OS X has built-in support for USB CCID class-compliant SmartCard readers.
+For other readers, install the reader driver in
+.Pa /usr/local/libexec/SmartCardServices/drivers .
+Each driver is a bundle.  The bundle contains an XML file Info.plist which contains
+the device's USB vendor ID and product ID.  For detailed description of the plist format
+and how to write a reader driver, see http://pcsclite.alioth.debian.org/api/group__IFDHandler.html
+.Sh SMART CARD APDU LOGGING
+It is possible to turn on logging for SmartCards by setting the global preference:
+.Pp
+.Li "sudo defaults write /Library/Preferences/com.apple.security.smartcard Logging -bool yes"
+.Pp
+After a SmartCard reader is connected (or after reboot) all operations including contents
+of sent and received APDU messages are then logged into the system log.  Logging uses the facility
+com.apple.security.smartcard.log
+so it is possible to set up filtering of these logs into custom targets (see
+.Xr asl.conf 5 )
+.Pp
+To avoid security risks that could occur if logging is turned on indefinitely, the logging setting
+is one-shot - it must be turned on by the command above to start logging again with a new reader.
+This includes unplugging and replugging the same reader.
+.Sh DISABLING NEW SMART CARD SUPPORT
+It is possible to turn of the new tokens by setting the global preference:
+.Pp
+.Li "sudo defaults write /Library/Preferences/com.apple.security.smartcard DisabledTokens -array com.apple.CryptoTokenKit.pivtoken"
+.Pp
+.Sh DISABLING SHEET AUTHORIZATION IN PREFERENCES
+When using tokend-based SmartCards, according to your configuration you may not be able to use SmartCards for authorization in System Preferences sheets. In such case, you 
+can disable sheets using following command:
+.Pp
+.Li defaults write com.apple.Preferences UseSheets -bool FALSE
+.Pp 
+System Preferences will then use the original dialog-based authorization.
+.Sh ENTITLEMENT
+Sandboxed PCSC clients require 'com.apple.security.smartcard=YES' entitlement. Non-sandboxed PCSC clients do not require such entitlement (in order to keep backward compatibility with macOS < 10.10).
+.Sh SEE ALSO
+.Xr SmartCardServices 7 ,
+.Xr sc_auth 8 ,
+.Xr defaults 1 ,
+.Xr asl.conf 5 ,
+.Xr ssh-keychain 8
