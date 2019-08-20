@@ -1,0 +1,91 @@
+.\" Process this file with
+.\" groff -man -Tascii usbkdp.1 | less
+.\"
+.Dd March 3, 2016
+.Dt "usbkdp" 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm usbkdp
+.Nd USB KDP Tool
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The usbkdp commandline tool is built to act as a proxy for the kernel debugging, which uses the KDP protocol over USB. It will also accept kernel core dump images transmitted over USB.
+.br
+As a complete technology, USBKDP redirects the kernel debugging KDP protocol over USB. It enables live LLDB debugging of a trapped kernel over a Standard Type A USB debug cable. The debug cable only has the SS Tx-Rx pairs. The Vbus and Ground pins are shorted. It follows the same seamless operation as the Ethernet debugging.
+.br
+It provides the following advantages over Ethernet based remote debugging:
+- Available sooner in the kernel's startup.
+- Available until right when the cpu is powered down at sleep and almost as soon as the cpu is powered when waking.
+- No IP network configuration required.
+- Data rates upto, 5Gb/s.
+.br
+USBKDP also enables Remote Kernel Core Dumps over USB. This allows you to debug a static kernel at a later time without the need to be connected at the time of debug. To enable the kernel core dumps, see the section "Core Dumps". For more information on debugging with Kernel Core Dumps, please see: Technical Note TN2118: Debugging With Kernel Core Dumps.
+.br
+USBKDP works in two parts: kernel software on the target side (i.e. - machine to be debugged) and user-space software on the host side. Now, the target side software is integrated into the OS. This means that the USBKDP functionality is part of the IOUSBFamily.kext.
+.br
+.Sh OPTIONS
+-v : Turn on verbose mode. It enables logging.
+-h : Print help information about usbkdp.
+.Sh COMPATABILITY
+It is compatible with the OSX platforms having XHCI support.
+.Sh USAGE
+Connect two MACs via the USB debug cable and follow the steps below:
+.br
+On the target (machine to be debugged):
+1. Set the boot-args to enable debugging over USB:
+a. To support legacy behavior we have the boot-args as (defaults to XHC1):
+% sudo nvram boot-args="debug=0x14e kdp_match_name=usb"
+b. In case of multiple controllers we explicitly are required to specify the controller, example:
+% sudo nvram boot-args="debug=0x14e kdp_match_name=XHC2"
+.br
+2. Reboot the target:
+% sudo reboot
+3. Break into the debug mode as you would for Ethernet/Firewire i.e. NMI button, panic, debugger traps, etc.
+.br
+On the host (machine where lldb session will run)
+1. Run usbkdp:
+% usbkdp
+The USBKDP tool, currently, has only one default behaviour where it supports:
+a. Live debugging using lldb.
+b. Receving core-dumps, via lldb session, using sendcore macro.
+.br
+USBKDP is a stateless translator that shunts data between the network KDP/UDP port and the USB connection.
+Once started it can be left running indefinitely, for one lldb session.
+.br
+2. On another terminal window, run the lldb with the target operating system's symbol file.
+% lldb ./kernel
+See the Apple Development Kits webpage for the "Kernel Debug Kit" which will contain the matching kernel symbols.
+.br
+3. Attach to the panicked target:
+(lldb) kdp-remote localhost
+This will establish the connection and load the appropriate symbols, if lldb is configured correctly.
+Use all the standard lldb commands and macros as you would for debugging over Ethernet.
+.br
+4. To send the core to the host you will have to use the following:
+(lldb) sendcore localhost
+(lldb) detach
+or
+(lldb) sendcore localhost
+(lldb) continue
+.Sh DISABLING
+To disable the USBKDP, delete the target machine's boot-args. Within Terminal.app run the following:
+.Bl -dash -offset indent -compact
+.It
+% sudo nvram -d boot-args
+.It
+OR set the boot-args variable to your previous setting, by removing the kdp_match_name=usb.
+.It
+Restart to target Mac.
+.El
+.Sh NOTES
+.Ss Other debug/boot-arg options:
+For more information on the debug flags, please see Technical Note TN2118. Setting the boot-arg variable "io" to "0x80" will turn on a significant volume of power management logging, which may be useful while debugging sleep/wake issues. Similarly, adding the "-v" argument to the boot-args will enable Mac OS X's verbose mode. This may be useful for watching local logging during boot or shutdown. For example, to add power management logging and verbose mode:
+.Dl % sudo nvram boot-args="debug=0x8 io=0x80 -v"
+.Sh FILES
+.Bl -tag -width indent
+.It Pa /usr/bin/usbkdp
+is installed as part of the Mac OS X Developer Tools.
+.El
+.Sh "SEE ALSO"
+.Xr fwkdp(1)

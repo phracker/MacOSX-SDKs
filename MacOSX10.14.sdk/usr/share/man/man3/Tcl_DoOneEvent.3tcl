@@ -1,0 +1,376 @@
+'\"
+'\" Copyright (c) 1990-1992 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: DoOneEvent.3,v 1.6 2007/12/13 15:22:31 dgp Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tcl_DoOneEvent 3 7.5 Tcl "Tcl Library Procedures"
+.BS
+.SH NAME
+Tcl_DoOneEvent \- wait for events and invoke event handlers
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+int
+\fBTcl_DoOneEvent\fR(\fIflags\fR)
+.SH ARGUMENTS
+.AS int flags
+.AP int flags in
+This parameter is normally zero.  It may be an OR-ed combination
+of any of the following flag bits:  
+\fBTCL_WINDOW_EVENTS\fR, \fBTCL_FILE_EVENTS\fR,
+\fBTCL_TIMER_EVENTS\fR, \fBTCL_IDLE_EVENTS\fR, \fBTCL_ALL_EVENTS\fR,
+or \fBTCL_DONT_WAIT\fR.
+.BE
+
+.SH DESCRIPTION
+.PP
+This procedure is the entry point to Tcl's event loop; it is responsible for
+waiting for events and dispatching event handlers created with
+procedures such as \fBTk_CreateEventHandler\fR, \fBTcl_CreateFileHandler\fR,
+\fBTcl_CreateTimerHandler\fR, and \fBTcl_DoWhenIdle\fR.
+\fBTcl_DoOneEvent\fR checks to see if
+events are already present on the Tcl event queue; if so,
+it calls the handler(s) for the first (oldest) event, removes it from
+the queue, and returns.
+If there are no events ready to be handled, then \fBTcl_DoOneEvent\fR
+checks for new events from all possible sources.
+If any are found, it puts all of them on Tcl's event queue, calls
+handlers for the first event on the queue, and returns.
+If no events are found, \fBTcl_DoOneEvent\fR checks for \fBTcl_DoWhenIdle\fR
+callbacks; if any are found, it invokes all of them and returns.
+Finally, if no events or idle callbacks have been found, then
+\fBTcl_DoOneEvent\fR sleeps until an event occurs; then it adds any 
+new events to the Tcl event queue, calls handlers for the first event,
+and returns.
+The normal return value is 1 to signify that some event
+was processed (see below for other alternatives).
+.PP
+If the \fIflags\fR argument to \fBTcl_DoOneEvent\fR is non-zero,
+it restricts the kinds of events that will be processed by
+\fBTcl_DoOneEvent\fR.
+\fIFlags\fR may be an OR-ed combination of any of the following bits:
+.TP 27
+\fBTCL_WINDOW_EVENTS\fR \-
+Process window system events.
+.TP 27
+\fBTCL_FILE_EVENTS\fR \-
+Process file events.
+.TP 27
+\fBTCL_TIMER_EVENTS\fR \-
+Process timer events.
+.TP 27
+\fBTCL_IDLE_EVENTS\fR \-
+Process idle callbacks.
+.TP 27
+\fBTCL_ALL_EVENTS\fR \-
+Process all kinds of events:  equivalent to OR-ing together all of the
+above flags or specifying none of them.
+.TP 27
+\fBTCL_DONT_WAIT\fR \-
+Do not sleep:  process only events that are ready at the time of the
+call.
+.LP
+If any of the flags \fBTCL_WINDOW_EVENTS\fR, \fBTCL_FILE_EVENTS\fR,
+\fBTCL_TIMER_EVENTS\fR, or \fBTCL_IDLE_EVENTS\fR is set, then the only
+events that will be considered are those for which flags are set.
+Setting none of these flags is equivalent to the value
+\fBTCL_ALL_EVENTS\fR, which causes all event types to be processed.
+If an application has defined additional event sources with
+\fBTcl_CreateEventSource\fR, then additional \fIflag\fR values
+may also be valid, depending on those event sources.
+.PP
+The \fBTCL_DONT_WAIT\fR flag causes \fBTcl_DoOneEvent\fR not to put
+the process to sleep:  it will check for events but if none are found
+then it returns immediately with a return value of 0 to indicate
+that no work was done.
+\fBTcl_DoOneEvent\fR will also return 0 without doing anything if
+the only alternative is to block forever (this can happen, for example,
+if \fIflags\fR is \fBTCL_IDLE_EVENTS\fR and there are no
+\fBTcl_DoWhenIdle\fR callbacks pending, or if no event handlers or
+timer handlers exist).
+.PP
+\fBTcl_DoOneEvent\fR may be invoked recursively.  For example,
+it is possible to invoke \fBTcl_DoOneEvent\fR recursively
+from a handler called by \fBTcl_DoOneEvent\fR.  This sort
+of operation is useful in some modal situations, such
+as when a
+notification dialog has been popped up and an application wishes to
+wait for the user to click a button in the dialog before
+doing anything else.
+
+.SH KEYWORDS
+callback, event, handler, idle, timer

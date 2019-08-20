@@ -1,0 +1,90 @@
+.Dd December 3, 2003       \" DATE 
+.Dt db_upgrade 1       \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm db_upgrade
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl NsV
+.Op Fl h Ar home
+.Op Fl P Ar password
+file ...
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+The
+.Nm
+utility upgrades the Berkeley DB version of one or more files and the databases they contain to the current release version.
+.Pp
+The options are as follows:
+.Bl -tag -width
+.It Fl h
+Specify a home directory for the database environment; by default, the current working directory is used.
+.It Fl N
+Do not acquire shared region mutexes while running. Other problems, such as potentially fatal errors in Berkeley DB, will be ignored as well. This option is intended only for debugging errors, and should not be used under any other circumstances.
+.It Fl P
+Specify an environment password. Although Berkeley DB utilities overwrite password strings as soon as possible, be aware there may be a window of vulnerability on systems where unprivileged users can see command-line arguments or where utilities are not able to overwrite the memory containing the command-line arguments.
+.It Fl s
+This flag is only meaningful when upgrading databases from releases before the Berkeley DB 3.1 release.
+.Pp
+As part of the upgrade from the Berkeley DB 3.0 release to the 3.1 release, the on-disk format of duplicate data items changed. To correctly upgrade the format requires that applications specify whether duplicate data items in the database are sorted or not. Specifying the -s flag means that the duplicates are sorted; otherwise, they are assumed to be unsorted. Incorrectly specifying the value of this flag may lead to database corruption.
+.Pp
+Because the
+.Nm
+utility upgrades a physical file (including all the databases it contains), it is not possible to use
+.Nm
+to upgrade files where some of the databases it includes have sorted duplicate data items, and some of the databases it includes have unsorted duplicate data items. If the file does not have more than a single database, if the databases do not support duplicate data items, or if all the databases that support duplicate data items support the same style of duplicates (either sorted or unsorted),
+.Nm
+will work correctly as long as the -s flag is correctly specified. Otherwise, the file cannot be upgraded using
+.Nm ,
+and must be upgraded manually using the db_dump and db_load utilities.
+.It Fl V
+Write the library version number to the standard output, and exit.
+.El
+.Pp
+.Em \&It is important to realize that Berkeley DB database upgrades are done in place, and so are potentially destructive. 
+This means that if the system crashes during the upgrade procedure, or if the upgrade procedure runs out of disk space, the databases may be left in an inconsistent and unrecoverable state. See Upgrading databases for more information.
+.Pp
+The
+.Nm
+utility may be used with a Berkeley DB environment (as described for the -h option, the environment variable DB_HOME, or because the utility was run in a directory containing a Berkeley DB environment). In order to avoid environment corruption when using a Berkeley DB environment,
+.Nm
+should always be given the chance to detach from the environment and exit gracefully. To cause
+.Nm
+to release all environment resources and exit cleanly, send it an interrupt signal (SIGINT).
+.Pp
+The 
+.Nm
+utility exits 0 on success, and >0 if an error occurs.
+.Pp
+.Sh ENVIRONMENT      \" May not be needed
+.Bl -tag -width "DB_HOME" \" ENV_VAR_1 is width of the string ENV_VAR_1
+.It Ev DB_HOME
+If the -h option is not specified and the environment variable DB_HOME is set, it is used as the path of the database home, as described in DB_ENV->open.
+.El                      
+.\" .Sh FILES                \" File used or created by the topic of the man page
+.\" .Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.\" .It Pa /usr/share/file_name
+.\" FILE_1description
+.\" .It Pa /Users/joeuser/Library/really_long_file_name
+.\" FILE_2 description
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.Xr db_archive 1 ,
+.Xr db_checkpoint 1 ,
+.Xr db_deadlock 1 ,
+.Xr db_dump 1 ,
+.Xr db_load 1 ,
+.Xr db_printlog 1 ,
+.Xr db_recover 1 ,
+.Xr db_stat 1 ,
+.Xr db_verify 1
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

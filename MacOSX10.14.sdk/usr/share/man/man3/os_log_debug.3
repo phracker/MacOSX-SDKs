@@ -1,0 +1,122 @@
+.\" Copyright (c) 2015 Apple Inc. All rights reserved.
+.Dd June 2, 2016
+.Dt os_log 3
+.Os Darwin
+.Sh NAME
+.Nm os_log ,
+.Nm os_log_info ,
+.Nm os_log_debug ,
+.Nm os_log_error ,
+.Nm os_log_fault
+.Nd log a message scoped by the current activity (if present)
+.Sh SYNOPSIS
+.In os/log.h
+.Ft void
+.Fn os_log "os_log_t log" "const char *format" ...
+.Ft void
+.Fn os_log_info "os_log_t log" "const char *format" ...
+.Ft void
+.Fn os_log_debug "os_log_t log" "const char *format" ...
+.Ft void
+.Fn os_log_error "os_log_t log" "const char *format" ...
+.Ft void
+.Fn os_log_fault "os_log_t log" "const char *format" ...
+.Sh DESCRIPTION
+.Pp
+The unified logging system provides a single, efficient, high performance set of APIs for capturing log messages across all levels of the system.
+This unified system centralizes the storage of log data in memory and in a data store on disk.
+The system implements global settings that govern logging behavior and persistence, while at the same time providing fine-grained control during debugging via the
+.Xr log 1
+command-line tool and through the use of custom logging configuration profiles.
+Log messages are viewed using the Console app in /Applications/Utilities/ and the
+.Xr log 1
+command-line tool.
+Logging and activity tracing are integrated to make problem diagnosis easier.
+If activity tracing is used while logging, related messages are automatically correlated.
+.Pp
+The unified logging system considers dynamic strings and complex dynamic objects to be private, and does not collect them automatically.
+To ensure the privacy of users, it is recommended that log messages consist strictly of static strings and numbers, which are collected automatically by the system.
+In situations where it is necessary to capture a dynamic string, and it would not compromise user privacy,
+you may explicitly declare the string public by using the public keyword in the log format string.
+For example, %{public}s.
+Log arguments can also be specified as private by using the private keyword in the log format string.
+For example, %{private}d.
+.Pp
+To format a log message, use a
+.Xr printf 3
+format string.
+You may also use the "%@" format specifier for use with Obj-C/CF/Swift objects, and %.*P which
+can be used to decode arbitrary binary data.
+The logging system also supports custom decoding of values by denoting value types inline in the format %{value_type}d.
+The built-in value type decoders are:
+.Pp
+.nf
+Value type      Custom specifier         Example output
+BOOL            %{BOOL}d                 YES
+bool            %{bool}d                 true
+darwin.errno    %{darwin.errno}d         [32: Broken pipe]
+darwin.mode     %{darwin.mode}d          drwxr-xr-x
+darwin.signal   %{darwin.signal}d        [sigsegv: Segmentation Fault]
+time_t          %{time_t}d               2016-01-12 19:41:37
+timeval         %{timeval}.*P            2016-01-12 19:41:37.774236
+timespec        %{timespec}.*P           2016-01-12 19:41:37.2382382823
+bitrate         %{bitrate}d              123 kbps
+iec-bitrate     %{iec-bitrate}d          118 Kibps
+uuid_t          %{uuid_t}.16P            10742E39-0657-41F8-AB99-878C5EC2DCAA
+sockaddr        %{network:sockaddr}.*P   fe80::f:86ff:fee9:5c16
+in_addr         %{network:in_addr}d      127.0.0.1
+in6_addr        %{network:in6_addr}.16P  fe80::f:86ff:fee9:5c16
+.fi
+.Pp
+Use
+.Nm os_log
+and its variants to log messages to the system datastore based on rules defined by the os_log_t object, see
+.Xr os_log_create 3 .
+.Pp
+Generally, use the OS_LOG_DEFAULT constant to perform logging using the system defined behavior.
+Create a custom log object when you want to tag messages with a specific subsystem and category for the purpose of filtering, or to customize the logging behavior of your subsystem with a profile for debugging purposes.
+.Pp
+.Nm os_log
+is a "default" type of log message that always captured in memory or on disk from system.  Limit use to messages that would help diagnose a failure, crash, etc. for production installations.
+.Pp
+.Nm os_log_info
+is an "info" type of log message used for additional information.  Depending on configuration these messages may be enabled and only captured in memory.  They can be optionally configured to persist to disk using a profile or via tools.
+.Pp
+.Nm os_log_debug
+is a "debug" type of log message that is only recorded when it is specifically requested by tools or configured as such.  Debug messages should be used for development use, i.e., additional information that is typically only useful during code development.
+.Pp
+.Nm os_log_error
+is an "error" type of log message that is related to the local process or framework.  If a specific os_activity_id_t is present on the thread, that activity will be captured with all messages available and saved as a snapshot of the error event.
+.Pp
+.Nm os_log_fault
+is a "fault" type of log message that may involve system-services or multiple processes.  If a specific os_activity_id_t is present on a thread, that activity will be captured with all messages available from all involved processes and saved as a snapshot of the fault event.
+.Pp
+.Sh EXAMPLES
+Example use of log messages.
+.Pp
+.Bd -literal
+#include <os/log.h>
+#include <pwd.h>
+#include <errno.h>
+
+int main(int argc, const char * argv[])
+{
+    uid_t uid;
+
+    os_log(OS_LOG_DEFAULT, "Standard log message.");
+    os_log_info(OS_LOG_DEFAULT, "Additional info for troubleshooting.");
+    os_log_debug(OS_LOG_DEFAULT, "Debug level messages.");
+
+    struct passwd *pwd = getpwuid(uid);
+    if (pwd == NULL) {
+        os_log_error(OS_LOG_DEFAULT, "failed to lookup user %d", uid);
+        return ENOENT;
+    }
+}
+
+.Ed
+.Pp
+.Sh SEE ALSO
+.Xr log 1 ,
+.Xr os_log_create 3 ,
+.Xr os_activity_initiate 3

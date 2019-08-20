@@ -1,0 +1,339 @@
+'\" t
+.\" @(#)tnameserv.1 1.6 00/06/13 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.TH tnameserv 1 "13 June 2000"
+.SH NAME
+tnameserv \- Java IDL name server starter script
+.SH SYNOPSIS
+.B tnameserv
+.BI \-ORBInitialPort " portNumber"
+.SH DESCRIPTION
+.IX "Java IDL name server starter script" "" "Java IDL name server starter script \(em \fLtnameserv\fP"
+.IX "tnameserv" "" "\fLtnameserv\fP \(em Java IDL name server starter script"
+The
+.SM CORBA COS
+(Common Object Services) Naming Service provides a tree-like
+directory for object references much like a filesystem provides a directory
+structure for files.
+The Naming Service provided with Java
+.SM IDL
+is a simple
+implementation of the
+.SM COS
+Naming Service specification.
+.LP
+Object references are stored in the namespace by name and each object
+reference-name pair is called a name binding.
+Name bindings may be organized
+under naming contexts.
+Naming contexts are themselves name bindings and
+serve the same organizational function as a file system subdirectory.
+All bindings are stored under the initial naming context.
+The initial naming
+context is the only persistent binding in the namespace; the rest of the
+namespace is lost if the Java
+.SM IDL
+name server process halts and restarts.
+.LP
+For an applet or application to use
+.SM COS
+naming, its
+.SM ORB
+must know the name
+and port of a host running a naming service or have access to a stringified
+initial naming context for that name server.
+The naming service can either
+be the Java
+.SM IDL
+name server or another
+.SM COS\s0-compliant
+name service.
+.SH USAGE
+.SS Starting the Java IDL Name Server
+.IX "tnameserv" "Starting the Java IDL Name Server" "\fLtnameserv\fP \(em Java IDL name server starter script"
+You must start the Java
+.SM IDL
+name server before an application or applet that
+uses its naming service.
+Installation of the Java
+.SM IDL
+product creates a
+script named tnameserv 
+that starts the Java
+.SM IDL
+name server.
+Start the name server so it runs in
+the background.
+.LP
+If you do not specify otherwise, the Java
+.SM IDL
+name server listens on port
+900 for the bootstrap protocol used to implement the
+.SM ORB
+.B resolve_initial_references(\|)
+and
+.B list_initial_references(\|)
+methods.
+Specify a different port, for example,
+.BR 1050 ,
+as follows:
+.LP
+.RS
+.B example% tnameserv \-ORBInitialPort 1050
+.RE
+.LP
+Clients of the name server must be made aware of the new port number.
+Do this by setting the
+.B org.omg.CORBA.ORBInitialPort
+property to the new port
+number when creating the
+.SM ORB
+object.
+.SS Stopping the Java IDL Name Server
+.IX "tnameserv" "Stopping the Java IDL Name Server" "\fLtnameserv\fP \(em Java IDL name server starter script"
+To stop the Java
+.SM IDL
+name server, use the relevant operating system command,
+such as
+.BR kill (1).
+Note that names registered with the Java
+.SM IDL
+name service
+disappear when the server is terminated.
+.SS Sample Client: Adding Objects 
+.IX "tnameserv" "Sample Client: Browsing the Namespace" "\fLtnameserv\fP \(em Java IDL name server starter script"
+.IX "tnameserv" "Sample Client: Adding Objects to the Namespace" "\fLtnameserv\fP \(em Java IDL name server starter script"
+The following sample program illustrates how to add names to the namespace.
+It is a self-contained Name Server client that creates the following simple
+tree.
+.br
+.ne 10
+.ft 3
+.nf
+
+        Initial
+     Naming Context
+       /      \\
+      /        \\
+   plans      personal
+                /\\
+               /  \\
+        calendar   schedule
+
+.fi
+.ft 1
+In this example, "plans"
+is an object reference and
+"personal"
+is a naming context that contains two object references:
+"calendar" and "schedule".
+.ft 3
+.nf
+
+import java.util.Properties;
+import org.omg.CORBA.*;
+import org.omg.CosNaming.*;
+
+public class NameClient
+{
+   public static void main(String args[])
+   {
+      try {
+
+.fi
+.ft 1
+In the above section,
+.BR "Starting the Java IDL Name Server" ,
+the nameserver was started on port
+.BR 1050 .
+The following code ensures that the client program is
+aware of this port number.
+.ft 3
+.nf
+
+        Properties props = new Properties();
+        props.put("org.omg.CORBA.ORBInitialPort", "1050");
+        ORB orb = ORB.init(args, props);
+
+.fi
+.ft 1
+The following code obtains the initial naming context and assigns it to
+.BR ctx .
+The second line copies
+.B ctx
+into a dummy object reference,
+.BR objref ,
+that we will attach to various names and add into the namespace.
+.ft 3
+.nf
+
+        NamingContext ctx = NamingContextHelper.narrow
+            (orb.resolve_initial_references("NameService"));
+        NamingContext objref = ctx;
+
+.fi
+.ft 1
+The following code creates a
+name "plans" of type "text" and binds it to our dummy
+object reference.
+"plans" is then added under the initial naming context
+using
+.BR rebind .
+The
+.B rebind
+method allows us to run this program over and over
+again without getting the exceptions we would get from using
+.BR bind .
+.ft 3
+.nf
+
+        NameComponent nc1 = new NameComponent("plans", "text");
+        NameComponent[] name1 = {nc1};
+        ctx.rebind(name1, objref);
+        System.out.println("plans rebind sucessful!");
+
+.fi
+.ft 1
+The following code creates a naming context
+called "Personal" of type "directory".
+The resulting object reference,
+.BR ctx2 ,
+is bound to the name and added under
+the initial naming context.
+.ft 3
+.nf
+
+        NameComponent nc2 = new NameComponent("Personal", "directory");
+        NameComponent[] name2 = {nc2};
+        NamingContext ctx2 = ctx.bind_new_context(name2);
+        System.out.println("new naming context added..");
+
+.fi
+.ft 1
+The remainder of the code binds the dummy object reference using the names
+"schedule" and "calendar" under the "Personal" naming context
+.RB ( ctx2 ).
+.ft 3
+.nf
+
+        NameComponent nc3 = new NameComponent("schedule", "text");
+        NameComponent[] name3 = {nc3};
+        ctx2.rebind(name3, objref);
+        System.out.println("schedule rebind sucessful!");
+
+        NameComponent nc4 = new NameComponent("calender", "text");
+        NameComponent[] name4 = {nc4};
+        ctx2.rebind(name4, objref);
+        System.out.println("calender rebind sucessful!");
+
+    } catch (Exception e) {
+        e.printStackTrace(System.err);
+    }
+  }
+}
+
+.fi
+.ft 1
+.SS Sample Client: Browsing the Namespace
+The following sample program illustrates how to browse the namespace.
+.ft 3
+.nf
+
+import java.util.Properties;
+import org.omg.CORBA.*;
+import org.omg.CosNaming.*;
+
+public class NameClientList
+{
+   public static void main(String args[])
+   {
+      try {
+
+.fi
+.ft 1
+In the above section,
+.BR "Starting the Java IDL Name Server" ,
+the nameserver was started on port
+.BR 1050 .
+The following code ensures that the client program is
+aware of this port number.
+.ft 3
+.nf
+
+        Properties props = new Properties();
+        props.put("org.omg.CORBA.ORBInitialPort", "1050");
+        ORB orb = ORB.init(args, props);
+
+.fi
+.ft 1
+The following code obtains the initial naming context.
+.ft 3
+.nf
+
+        NamingContext nc = NamingContextHelper.narrow
+           (orb.resolve_initial_references("NameService"));
+
+.fi
+.ft 1
+The list method lists the bindings in the naming context.
+In this case, up
+to 1000 bindings from the initial naming context will be returned in the
+.BR BindingListHolder ;
+any remaining bindings are returned in the
+.BR BindingIteratorHolder .
+.ft 3
+.nf
+
+        BindingListHolder bl = new BindingListHolder();
+        BindingIteratorHolder blIt= new BindingIteratorHolder();
+        nc.list(1000, bl, blIt);
+
+.fi
+.ft 1
+The following code gets the array of bindings
+out of the returned
+.BR BindingListHolder .
+If there are no bindings, the program ends.
+.ft 3
+.nf
+
+        Binding bindings[] = bl.value;
+        if (bindings.length == 0) return;
+
+.fi
+.ft 1
+The remainder of the code loops
+through the bindings and prints the names out.
+.ft 3
+.nf
+
+        for (int i=0; i < bindings.length; i++) {
+
+            // get the object reference for each binding
+            org.omg.CORBA.Object obj = nc.resolve
+				 (bindings[i].binding_name);
+            String objStr = orb.object_to_string(obj);
+            int lastIx = bindings[i].binding_name.length-1;
+
+            // check to see if this is a naming context
+            if (bindings[i].binding_type == BindingType.ncontext) {
+              System.out.println
+				 ("Context: " + bindings[i].binding_name[lastIx].id);
+            } else {
+                System.out.println
+				   ("Object: " + bindings[i].binding_name[lastIx].id);
+            }
+        }
+
+       } catch (Exception e) {
+        e.printStackTrace(System.err);
+       }
+   }
+}
+
+.fi
+.ft 1
+.SH SEE ALSO
+.BR kill (1)

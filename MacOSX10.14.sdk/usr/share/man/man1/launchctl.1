@@ -1,0 +1,752 @@
+.Dd 1 October, 2014
+.Dt launchctl 1
+.Os Darwin
+.Sh NAME
+.Nm launchctl
+.Nd Interfaces with launchd
+.Sh SYNOPSIS
+.Nm
+.Ar subcommand Op Ar arguments ...
+.Sh DESCRIPTION
+.Nm 
+interfaces with
+.Nm launchd
+to manage and inspect daemons, agents and XPC services.
+.Sh SUBCOMMANDS
+.Nm launchctl
+allows for detailed examination of
+.Nm launchd
+'s data structures. The fundamental structures are domains, services, and
+endpoints. A domain manages the execution policy for a collection of services.
+A service may be thought of as a virtual process that is always available to be
+spawned in response to demand. Each service has a collection of endpoints, and
+sending a message to one of those endpoints will cause the service to launch on
+demand. Domains advertise these endpoints in a shared namespace and may be
+thought of as synonymous with Mach bootstrap subsets.
+.Pp
+Many subcommands in
+.Nm launchctl
+take a specifier which indicates the target domain or service for the
+subcommand. This specifier may take one of the following forms:
+.Bl -tag -width -indent
+.It Xo Ar system/[service-name]
+.Xc
+Targets the system domain or a service within the system domain. The system
+domain manages the root Mach bootstrap and is considered a privileged execution
+context. Anyone may read or query the system domain, but root privileges are
+required to make modifications.
+.It Xo Ar user/<uid>/[service-name]
+.Xc
+Targets the user domain for the given UID or a service within that domain. A
+user domain may exist independently of a logged-in user. User domains do not
+exist on iOS.
+.It Xo Ar login/<asid>/[service-name]
+.Xc
+Targets a user-login domain or service within that domain. A user-login domain
+is created when the user logs in at the GUI and is identified by the audit
+session identifier associated with that login. If a user domain has an
+associated login domain, the
+.Nm print
+subcommand will display the ASID of that login domain. User-login domains do not
+exist on iOS.
+.It Xo Ar gui/<uid>/[service-name]
+.Xc
+Another form of the
+.Nm login
+specifier. Rather than specifying a user-login domain by its ASID, this
+specifier targets the domain based on which user it is associated with and is
+generally more convenient.
+.Pp
+.Em Note :
+GUI domains and user domains share many resources. For the purposes of the Mach
+bootstrap name lookups, they are "flat", so they share the same set of
+registered names. But they still have discrete sets of services. So when
+printing the user domain's contents, you may see many Mach bootstrap name
+registrations from services that exist in the GUI domain for that user, but you
+will not see the services themselves in that list.
+.It Xo Ar session/<asid>/[service-name]
+.Xc
+Targets the session domain for the given audit session ID or a service within
+that domain. For more information about audit sessions, see
+.Xr auditon 2
+and
+.Xr libbsm 3
+.It Xo Ar pid/<pid>/[service-name]
+.Xc
+Targets the domain for the given PID or a service within that domain. Each
+process on the system will have a PID domain associated with it that consists of
+the XPC services visible to that process which can be reached with
+.Xr xpc_connection_create 3 .
+.El
+.Pp
+For instance, when referring to a service with the identifier
+.Nm com.apple.example
+loaded into the GUI domain of a user with UID 501,
+.Nm domain-target
+is
+.Nm gui/501/ ,
+.Nm service-name
+is
+.Nm com.apple.example ,
+and
+.Nm service-target
+is
+.Nm gui/501/com.apple.example .
+.Sh SUBCOMMANDS
+.Bl -tag -width -indent
+.It Xo Ar bootstrap | bootout Ar domain-target Op Ar service-path service-path2 ...
+.Ar | service-target
+.Xc
+Bootstraps or removes domains and services. When service arguments are present,
+bootstraps and correspondingly removes their definitions into the domain.
+Services may be specified as a series of paths or a service identifier.
+Paths may point to XPC service bundles,
+.Xr launchd.plist 5 s,
+or a directories containing a collection of either. If there were one or more
+errors while bootstrapping or removing a collection of services, the problematic
+paths will be printed with the errors that occurred.
+.Pp
+If no paths or service target are specified, these commands can either bootstrap
+or remove a domain specified as a domain target. Some domains will implicitly
+bootstrap pre-defined paths as part of their creation. 
+.It Xo Ar enable | disable Ar service-target
+.Xc
+Enables or disables the service in the requested domain. Once a service is
+disabled, it cannot be loaded in the specified domain until it is once again
+enabled. This state persists across boots of the device. This subcommand may
+only target services within the system domain or user and user-login domains.
+.It Xo Ar uncache Ar service-name
+.Xc
+This subcommand instructs
+.Nm launchd
+to bypass its service cache for the named service and instead read the service's
+configuration file directly from disk.
+.Nm launchd
+maintains an in-memory cache of XPC service configuration files to minimize the
+disk I/O. This subcommand will remove a cached entry so that developers may more
+rapidly iterate on a service's configuration. It should not ever be used as part
+of production workflow.
+.It Xo Ar kickstart Op Fl kp
+.Ar service-target
+.Xc
+Instructs
+.Nm launchd
+to run the specified service immediately, regardless of its configured launch
+conditions.
+.Bl -tag -width -indent
+.It Fl k
+If the service is already running, kill the running instance before restarting
+the service.
+.It Fl p
+Upon success, print the PID of the new process or the already-running process to
+stdout.
+.El
+.It Xo Ar attach Op Fl ksx
+.Ar service-target
+.Xc
+Attaches the system's debugger to the process currently backing the specified
+service. By default, if the service is not running, this subcommand will block
+until the service starts.
+.Bl -tag -width -indent
+.It Fl k
+If the service is already running, kill the running instance.
+.It Fl s
+Force the service to start.
+.It Fl x
+Attach to
+.Xr xpcproxy 3
+before it execs and becomes the service process. This flag is generally not
+useful for anyone but the
+.Nm launchd
+maintainer.
+.El
+.It Xo Ar debug
+.Ar service-target
+.Op Ar --program <program path>
+.Op Ar --guard-malloc
+.Op Ar --malloc-stack-logging
+.Op Ar --debug-libraries
+.Op Ar --introspection-libraries
+.Op Ar --NSZombie
+.Op Ar --32
+.Op Ar --stdin
+.Op Ar --stdout
+.Op Ar --stderr
+.Op Ar --environment
+.Op Ar --
+.Op Ar argv0 argv1 argv2 ...
+.Xc
+Configures the next invocation of a service for debugging. This subcommand
+allows you to temporarily replace the main executable of the service with one at
+a different path, enable
+.Xr libgmalloc 3 ,
+set environment variables, set the argument vector and more. This is a
+convenient alternative to editing the
+.Xr launchd.plist 5
+for the service and then reloading it, as the additional debugging properties
+are cleared once the service has run once with them.
+.Bl -tag -width -indent
+.It Ar --program <program-path>
+Instructs
+.Xr launchd 8
+to use
+.Ar program-path as the service's executable.
+.It Ar --guard-malloc
+Turns on
+.Xr libgmalloc 3
+for the service.
+.It Ar --malloc-stack-logging
+Turns on
+.Xr malloc 3
+stack logging for the service.
+.It Ar --malloc-nano-allocator
+Turns on the
+.Xr malloc 3
+nano allocator for the service.
+.It Ar --debug-libraries
+Sets the
+.Ar DYLD_IMAGE_SUFFIX
+for the service to "_debug", which prefers the debug variants of libraries if
+they exist. See
+.Xr dyld 1
+for more information.
+.It Ar --introspection-libraries
+Adds
+.Ar /usr/lib/system/introspection
+to the
+.Ar DYLD_LIBRARY_PATH
+environment variable for the service. This causes the system to prefer the
+introspection variants of libraries if they exist.
+.It Ar --NSZombie
+Enables NSZombie.
+.It Ar --32
+Runs the service in the appropriate 32-bit architecture. Only available on
+64-bit platforms.
+.It Ar --stdin [stdin-path]
+Sets the service's standard input to be
+.Ar stdin-path .
+If no file is given,
+uses the current terminal as the service's standard input. If
+.Ar stdin-path
+does not exist, it is created.
+.It Ar --stdout [stdout-path]
+Sets the service's standard input to be
+.Ar stdout-path .
+If no file is given,
+uses the current terminal as the service's standard input. If
+.Ar stdout-path
+does not exist, it is created.
+.It Ar --stderr [stderr-path]
+Sets the service's standard input to be
+.Ar stderr-path .
+If no file is given,
+uses the current terminal as the service's standard input. If
+.Ar stderr-path
+does not exist, it is created.
+.It Ar --environment VARIABLE0=value VARIABLE1=value ...
+Sets the given environment variables on the service.
+.It Ar -- argv0 argv1 ...
+Any arguments following the
+.Ar --
+are given to the service as its argument vector.
+.Pp
+.Em IMPORTANT :
+These arguments replace the service's default argument vector; they are not
+merged in any way. The first argument following
+.Ar --
+is given as the initial (zeroth) element of the service's argument vector. As
+with the
+.Ar ProgramArguments
+.Xr launchd.plist 5
+key, you should read carefully and understand the
+.Xr execve 2
+man page.
+.El
+.It Xo Ar kill Ar signal-name | signal-number Ar service-target
+.Xc
+Sends the specified signal to the specified service if it is running. The signal
+number or name (SIGTERM, SIGKILL, etc.) may be specified.
+.It Xo Ar blame Ar service-target
+.Xc
+If the service is running, prints a human-readable string describing why
+.Nm launchd
+launched the service. Note that services may run for many reasons; this
+subcommand will only show the most proximate reason. So if a service was run due
+to a timer firing, this subcommand will print that reason, irrespective of
+whether there were messages waiting on the service's various endpoints. This
+subcommand is only intended for debugging and profiling use and its output
+should not be relied upon in production scenarios.
+.It Xo Ar print Ar domain-target | service-target
+.Xc
+Prints information about the specified service or domain. Domain output includes
+various properties about the domain as well as a list of services and endpoints
+in the domain with state pertaining to each. Service output includes various
+properties of the service, including information about its origin on-disk, its
+current state, execution context, and last exit status.
+.Pp
+.Em IMPORTANT :
+This output is
+.Em NOT
+API in any sense at all. Do
+.Em NOT
+rely on the structure or information emitted for
+.Em ANY
+reason. It may change from release to release without warning.
+.It Xo Ar print-cache
+.Xc
+Prints the contents of the
+.Nm launchd
+service cache.
+.It Xo Ar print-disabled domain-target
+.Xc
+Prints the list of disabled services in the specified domain.
+.It Xo Ar plist
+.Op Ar segment,section
+.Ar Mach-O
+.Xc
+Prints the the property list embedded in the __TEXT,__info_plist segment/section
+of the target Mach-O or the specified segment/section.
+.It Xo Ar procinfo Ar pid
+.Xc
+Prints information about the execution context of the specified PID. This
+information includes Mach task-special ports and exception ports (and when run
+against a DEVELOPMENT launchd, what names the ports are advertised as in the
+Mach bootstrap namespace, if they are known to
+.Nm launchd )
+and audit session context. This subcommand is
+intended for diagnostic purposes only, and its output should not be relied upon
+in production scenarios. This command requires root privileges.
+.It Xo Ar hostinfo
+.Xc
+Prints information about the system's host-special ports, including the
+host-exception port. This subcommand requires root privileges.
+.It Xo Ar resolveport Ar owner-pid Ar port-name
+.Xc
+Given a PID and the name of a Mach port right in that process' port namespace,
+resolves that port to an endpoint name known to
+.Nm launchd .
+This subcommand requires root privileges.
+.It Xo Ar examine Op Ar tool Ar arg0 Ar arg1 Ar @PID Ar ...
+.Xc
+Causes
+.Nm launchd
+to
+.Xr fork 2
+itself for examination by a profiling tool and prints the PID of this new
+instance to stdout. You are responsible for killing this snapshot when it is no
+longer needed.
+.Pp
+Many profiling tools cannot safely examine
+.Nm launchd
+because they depend on the functionality it provides. This subcommand
+creates an effective snapshot of
+.Nm launchd
+that can be examined independently. Note that on Darwin platforms,
+.Xr fork 2
+is implemented such that only the thread which called
+.Xr fork 2
+is replicated into the new child process, so this subcommand is not useful for
+examining any thread other than the main event loop.
+.Pp
+This subcommand takes an optional invocation of a tool to be used on the
+.Nm launchd
+snapshot. Where you would normally give the PID of the process to be examined
+in the tool's invocation, instead specify the argument "@PID", and
+.Nm launchctl
+will substitute that argument with the PID of the launchd snapshot in its
+subsequent execution of the tool. If used in this form,
+.Nm launchctl
+will automatically kill the snapshot instance when the examination tool exits.
+.Pp
+This subcommand may only be used against a DEVELOPMENT
+.Nm launchd .
+.It Xo Ar config Ar system | user Ar parameter Ar value
+.Xc
+Sets persistent configuration information for
+.Xr launchd 8
+domains. Only the system domain and user domains may be configured. The
+location of the persistent storage is an implementation detail, and changes to
+that storage should
+.Em only
+be made through this subcommand. A reboot is required for changes made through
+this subcommand to take effect.
+.Pp
+Supported configuration parameters are:
+.Bl -tag -width -indent
+.It umask
+Sets the
+.Xr umask 2
+for services within the target domain to the value specified by
+.Ar value .
+Note that this value is parsed by
+.Xr strtoul 3
+as an octal-encoded number, so there is no need to prefix it with a leading '0'.
+.It path
+Sets the PATH environment variable for all services within the target domain to
+the string
+.Ar value .
+The string
+.Ar value
+should conform to the format outlined for the PATH environment variable in
+.Xr environ 7 .
+Note that if a service specifies its own PATH, the service-specific environment
+variable will take precedence.
+.Pp
+.Em NOTE :
+This facility cannot be used to set general environment variables for all
+services within the domain. It is intentionally scoped to the PATH environment
+variable and nothing else for security reasons.
+.El
+.It Xo Ar reboot Ar [system|userspace|halt|logout|apps]
+.Xc
+Instructs
+.Nm launchd
+to begin tearing down userspace. With no argument given or with the
+.Ar system
+argument given,
+.Nm launchd
+will make the
+.Xr reboot 2
+system call when userspace has been completely torn down. With the
+.Ar halt
+argument given,
+.Nm launchd
+will make the
+.Xr reboot 2
+system call when userspace has been completely torn down and pass the
+.Ar RB_HALT
+flag, halting the system and not initiating a reboot.
+.Pp
+With the
+.Ar userspace
+argument given,
+.Nm launchd
+will re-exec itself when userspace has been torn down and bring userspace back
+up. This is useful for rebooting the system quickly under conditions where
+kernel data structures or hardware do not need to be re-initialized.
+.Pp
+With the
+.Ar logout
+argument given, launchd will tear down the caller's GUI login session in a
+manner similar to a logout initiated from the Apple menu. The key difference is
+that a logout initiated through this subcommand will be much faster since it
+will not give apps a chance to display modal dialogs to block logout
+indefinitely; therefore there is data corruption risk to using this option. Only
+use it when you know you have no unsaved data in your running apps.
+.Pp
+With the
+.Ar apps
+argument given, launchd will terminate all apps running in the caller's GUI
+login session that did not come from a
+.Xr launchd.plist 5
+on-disk. Apps like Finder, Dock and SystemUIServer will be unaffected. Apps are
+terminated in the same manner as the
+.Ar logout
+argument, and all the same caveats apply.
+.Bl -tag -width -indent
+.It Fl s
+When rebooting the machine (either a full reboot or userspace reboot), brings
+the subsequent boot session up in single-user mode.
+.El
+.It Xo Ar error Ar [posix|mach|bootstrap] Ar code
+.Xc
+Prints a human-readable string of the given error
+.Ar code .
+By default,
+.Nm
+will attempt to guess which error domain the code given belongs to. The caller
+may optionally specify which domain (either
+.Ar posix ,
+.Ar mach ,
+or
+.Ar bootstrap )
+to interpret the given code as an error from that subsystem.
+.It Xo Ar variant
+.Xc
+Prints the
+.Nm launchd
+variant currently active on the system. Possible variants include RELEASE,
+DEVELOPMENT and DEBUG.
+.It Xo Ar version
+.Xc
+Prints the
+.Nm launchd
+version string.
+.El
+.Sh LEGACY SUBCOMMANDS
+Subcommands from the previous implementation of 
+.Nm launchd
+are generally available, though some may be unimplemented. Unimplemented
+subcommands are documented as such.
+.Bl -tag -width -indent
+.It Xo Ar load | unload Op Fl wF
+.Op Fl S Ar sessiontype
+.Op Fl D Ar searchpath
+.Ar paths ...
+.Xc
+Load the specified configuration files or directories of configuration files.
+Jobs that are not on-demand will be started as soon as possible. All specified 
+jobs will be loaded before any of them are allowed to start. Note that per-user 
+configuration files (LaunchAgents) must be owned by root (if they are located in
+.Nm /Library/LaunchAgents )
+or the user loading them (if they are located in
+.Nm $HOME/Library/LaunchAgents ) .
+All system-wide daemons (LaunchDaemons) must be owned by root. Configuration
+files must disallow group and world writes. These restrictions are in place for
+security reasons, as allowing writability to a launchd configuration file allows
+one to specify which executable will be launched.
+.Pp
+Note that allowing non-root write access to the 
+.Nm /System/Library/LaunchDaemons 
+directory WILL render your system unbootable.
+.Bl -tag -width -indent
+.It Fl w
+Overrides the Disabled key and sets it to false or true for the load and unload
+subcommands respectively. In previous versions, this option would modify the
+configuration file. Now the state of the Disabled key is stored elsewhere on-
+disk in a location that may not be directly manipulated by any process other
+than
+.Nm launchd .
+.It Fl F
+Force the loading or unloading of the plist. Ignore the Disabled key.
+.It Fl S Ar sessiontype
+Some jobs only make sense in certain contexts. This flag instructs
+.Nm launchctl
+to look for jobs in a different location when using the -D flag, and allows
+.Nm launchctl
+to restrict which jobs are loaded into which session types. Sessions are only
+relevant for per-user
+.Nm launchd
+contexts. Relevant sessions are Aqua (the default), Background and LoginWindow.
+Background agents may be loaded independently of a GUI login. Aqua agents are
+loaded only when a user has logged in at the GUI. LoginWindow agents are loaded
+when the LoginWindow UI is displaying and currently run as root.
+.It Fl D Ar searchpath
+Load or unload all
+.Xr plist 5 files in the search path given. This option may be thought of as
+expanding into many individual paths depending on the search path given. Valid
+search paths include "system," "local," and "all." When providing a session
+type, an additional search path is available for use called "user." For
+example, without a session type given, "-D system" would load from or unload
+all property list files from
+.Nm /System/Library/LaunchDaemons .
+With a session type passed, it would load from
+.Nm /System/Library/LaunchAgents .
+Note that
+.Nm launchctl
+no longer respects the network search path.
+.Pp
+In a previous version of launchd, these search paths were called "domains",
+hence -D. The word "domain" is now used for a totally different concept.
+.El
+.Pp
+.Em NOTE :
+Due to bugs in the previous implementation and long-standing client expectations
+around those bugs, the
+.Fa load
+and
+.Fa unload
+subcommands will only return a non-zero exit code due to improper usage.
+Otherwise, zero is always returned.
+.It Xo Ar submit Fl l Ar label
+.Op Fl p Ar executable
+.Op Fl o Ar stdout-path
+.Op Fl e Ar stderr-path
+.Ar -- command
+.Op Ar arg0
+.Op Ar arg1
+.Op Ar ...
+.Xc
+A simple way of submitting a program to run without a configuration file. This
+mechanism also tells launchd to keep the program alive in the event of failure.
+.Bl -tag -width -indent
+.It Fl l Ar label
+What unique label to assign this job to launchd.
+.It Fl p Ar program
+What program to really execute, regardless of what follows the -- in the submit
+sub-command.
+.It Fl o Ar stdout-path
+Where to send the stdout of the program.
+.It Fl e Ar stderr-path
+Where to send the stderr of the program.
+.El
+.It Ar remove Ar label
+Remove the job from launchd by label. This subcommand will return immediately
+and not block until the job has been stopped.
+.It Ar start Ar label
+Start the specified job by label. The expected use of this subcommand is for
+debugging and testing so that one can manually kick-start an on-demand server.
+.It Ar stop Ar label
+Stop the specified job by label. If a job is on-demand, launchd may immediately
+restart the job if launchd finds any criteria that is satisfied.
+.It Xo Ar list 
+.Op Ar -x 
+.Op Ar label
+.Xc
+With no arguments, list all of the jobs loaded into
+.Nm launchd
+in three columns. The first column displays the PID of the job if it is running.
+The second column displays the last exit status of the job. If the number in
+this column is negative, it represents the negative of the signal which stopped
+the job. Thus, "-15" would indicate that the job was terminated with SIGTERM. 
+The third column is the job's label. If
+.Op Ar label
+is specified, prints information about the requested job.
+.Bl -tag -width -indent
+.It Fl x
+This flag is no longer supported.
+.El
+.Pp
+.It Ar setenv Ar key Ar value
+Specify an environment variable to be set on all future processes launched by
+.Nm launchd
+in the caller's context.
+.It Ar unsetenv Ar key
+Specify that an environment variable no longer be set on any future processes
+launched by
+.Nm launchd
+in the caller's context.
+.It Ar getenv Ar key
+Print the value of an environment variable that 
+.Nm launchd
+would set for all processes launched into the caller's context.
+.It Ar export
+Export all of the environment variables of
+.Nm launchd
+for use in a shell eval statement.
+.It Ar getrusage self | children
+Get the resource utilization statistics for
+.Nm launchd
+or the children of
+.Nm launchd .
+This subcommand is not implemented.
+.It Xo Ar log
+.Op Ar level loglevel
+.Op Ar only | mask loglevels...
+.Xc
+Get and set the
+.Xr syslog 3
+log level mask. The available log levels are: debug, info, notice, warning,
+error, critical, alert and emergency. This subcommand is not implemented.
+.It Xo Ar limit
+.Op Ar cpu | filesize | data | stack | core | rss | memlock | maxproc | maxfiles
+.Op Ar both Op Ar soft | hard
+.Xc
+With no arguments, this command prints all the resource limits of
+.Nm launchd
+as found via
+.Xr getrlimit 2 .
+When a given resource is specified, it prints the limits for that resource. With
+a third argument, it sets both the hard and soft limits to that value. With four
+arguments, the third and forth argument represent the soft and hard limits
+respectively.
+See
+.Xr setrlimit 2 .
+.It Ar shutdown
+Tell
+.Nm launchd
+to prepare for shutdown by removing all jobs. This subcommand is not
+implemented.
+.It Ar umask Op Ar newmask
+Get or optionally set the
+.Xr umask 2
+of
+.Nm launchd .
+This subcommand is not implemented.
+.It Xo Ar bslist
+.Op Ar PID | ..
+.Op Ar -j
+.Xc
+This
+subcommand is not implemented and has been superseded by the
+.Ar print
+subcommand, which provides much richer information.
+.Pp
+.It Ar bsexec Ar PID command Op Ar args
+This executes the given command in as similar an execution context as possible
+to the target PID. Adopted attributes include the Mach bootstrap namespace,
+exception server and security audit session. It does not modify the process'
+credentials (UID, GID, etc.) or adopt any environment variables from the target
+process. It affects only the Mach bootstrap context and directly-related
+attributes.
+.Pp
+.It Ar asuser Ar UID command Op Ar args
+This executes the given command in as similar an execution context as possible
+to that of the target user's bootstrap. Adopted attributes include the Mach
+bootstrap namespace, exception server and security audit session. It does not
+modify the process' credentials (UID, GID, etc.) or adopt any user-specific
+environment variables. It affects only the Mach bootstrap context and directly-
+related attributes.
+.It Ar bstree
+This
+subcommand is not implemented and has been superseded by the
+.Ar print
+subcommand, which provides much richer information.
+.It Ar managerpid
+This prints the PID of the launchd which manages the current bootstrap. In prior
+implementations, there could be multiple
+.Nm launchd
+processes each managing their own Mach bootstrap subsets. In the current
+implementation, all bootstraps are managed by one process, so this subcommand
+will always print "1".
+.It Ar manageruid
+This prints the UID associated with the caller's launchd context.
+.It Ar managername
+This prints the name of the launchd job manager which manages the current
+launchd context. See LimitLoadToSessionType in
+.Xr launchd.plist 5
+for more details.
+.It Ar help
+Print out a quick usage statement.
+.El
+.Sh CAVEATS
+The output produced by the "legacy" subcommands (chiefly
+.Ar list )
+should match their output on previous OS X releases. However, the output of
+newer subcommands does not conform to any particular format
+and is not guaranteed to remain stable across releases. These commands are
+intended for use by human developers and system administrators, not for
+automation by programs or scripts. Their output does not constitute an API
+and no promises of forward compatibility are offered to programs that attempt
+to parse it.
+.Sh DEPRECATED AND REMOVED FUNCTIONALITY
+.Nm
+no longer has an interactive mode, nor does it accept commands from stdin. The
+.Nm /etc/launchd.conf
+file is no longer consulted for subcommands to run during early boot time; this
+functionality was removed for security considerations. While it was documented
+that
+.Nm $HOME/.launchd.conf
+would be consulted prior to setting up a user's session, this functionality was
+never implemented.
+.Pp
+launchd no longer uses Unix domain sockets for communication, so the
+.Nm LAUNCHD_SOCKET
+environment variable is no longer relevant and is not set.
+.Pp
+.Nm launchd
+no longer loads configuration files from the network
+.Sh FILES
+.Bl -tag -width "/System/Library/LaunchDaemons" -compact
+.It Pa ~/Library/LaunchAgents
+Per-user agents provided by the user.
+.It Pa /Library/LaunchAgents
+Per-user agents provided by the administrator.
+.It Pa /Library/LaunchDaemons
+System wide daemons provided by the administrator.
+.It Pa /System/Library/LaunchAgents
+OS X Per-user agents.
+.It Pa /System/Library/LaunchDaemons
+OS X System wide daemons.
+.El
+.Sh EXIT STATUS
+.Nm launchctl
+will exit with status 0 if the subcommand succeeded. Otherwise, it will exit
+with an error code that can be given to the
+.Ar error
+subcommand to be decoded into human-readable form.
+.Sh SEE ALSO 
+.Xr launchd.plist 5 ,
+.Xr launchd 8 ,
+.Xr audit 8 ,
+.Xr setaudit_addr 2

@@ -1,0 +1,77 @@
+.lf 1 stdin
+.TH SLAPO-VALSORT 5 "2011/11/24" "OpenLDAP 2.4.28"
+.\" Copyright 2005-2011 The OpenLDAP Foundation All Rights Reserved.
+.\" Copying restrictions apply.  See COPYRIGHT/LICENSE.
+.\" $OpenLDAP$
+.SH NAME
+slapo\-valsort \- Value Sorting overlay to slapd
+.SH SYNOPSIS
+/etc/openldap/slapd.conf
+.SH DESCRIPTION
+The Value Sorting overlay can be used with a backend database to sort the
+values of specific multi-valued attributes within a subtree. The sorting
+occurs whenever the attributes are returned in a search response.
+.LP
+Sorting can be specified in ascending or descending order, using either
+numeric or alphanumeric sort methods. Additionally, a "weighted" sort can
+be specified, which uses a numeric weight prepended to the attribute values.
+The weighted sort is always performed in ascending order, but may be combined
+with the other methods for values that all have equal weights. The weight
+is specified by prepending an integer weight {<\fIweight\fP>}
+in front of each value of the attribute for which weighted sorting is
+desired. This weighting factor is stripped off and never returned in
+search results.
+
+.SH CONFIGURATION
+These
+.I slapd.conf
+options apply to the Value Sorting overlay.
+They should appear after the
+.B overlay
+directive.
+.TP
+valsort\-attr <\fIattribute\fP> <\fIbaseDN\fP> (<\fIsort-method\fP> | weighted [<\fIsort-method\fP>])
+Configure a sorting method for the specified
+.I attribute
+in the subtree rooted at
+.IR baseDN .
+The 
+.I sort-method
+may be one of
+.BR alpha\-ascend ,
+.BR alpha\-descend ,
+.BR numeric\-ascend ,
+or
+.BR numeric\-descend .
+If the special
+.B weighted
+method is specified, a secondary
+.I sort-method
+may also be specified. It is an
+error to specify an alphanumeric
+.I sort-method
+for an attribute with Integer
+or NumericString syntax, and it is an error to specify a numeric
+.I sort-method
+for an attribute with a syntax other than Integer or NumericString.
+.SH EXAMPLES
+.LP
+.nf
+	database bdb
+	suffix dc=example,dc=com
+	...
+	overlay valsort
+	valsort\-attr member ou=groups,dc=example,dc=com alpha\-ascend
+.fi
+
+.SH FILES
+.TP
+\fI/etc/openldap/slapd.conf\fP
+default \fBslapd\fP configuration file
+.SH SEE ALSO
+.BR slapd.conf (5),
+.BR slapd\-config (5).
+.SH ACKNOWLEDGEMENTS
+.P
+This module was written in 2005 by Howard Chu of Symas Corporation. The
+work was sponsored by Stanford University.

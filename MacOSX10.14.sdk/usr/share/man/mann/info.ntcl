@@ -1,0 +1,618 @@
+'\"
+'\" Copyright (c) 1993 The Regents of the University of California.
+'\" Copyright (c) 1994-1997 Sun Microsystems, Inc.
+'\" Copyright (c) 1993-1997 Bell Labs Innovations for Lucent Technologies
+'\" Copyright (c) 1998-2000 Ajuba Solutions
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: info.n,v 1.25 2008/03/12 20:16:13 andreas_kupries Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH info n 8.4 Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+info \- Return information about the state of the Tcl interpreter
+.SH SYNOPSIS
+\fBinfo \fIoption \fR?\fIarg arg ...\fR?
+.BE
+
+.SH DESCRIPTION
+.PP
+This command provides information about various internals of the Tcl
+interpreter.
+The legal \fIoption\fRs (which may be abbreviated) are:
+.TP
+\fBinfo args \fIprocname\fR
+Returns a list containing the names of the arguments to procedure
+\fIprocname\fR, in order.  \fIProcname\fR must be the name of a
+Tcl command procedure.
+.TP
+\fBinfo body \fIprocname\fR
+Returns the body of procedure \fIprocname\fR.  \fIProcname\fR must be
+the name of a Tcl command procedure.
+.TP
+\fBinfo cmdcount\fR
+Returns a count of the total number of commands that have been invoked
+in this interpreter.
+.TP
+\fBinfo commands \fR?\fIpattern\fR?
+If \fIpattern\fR is not specified,
+.\" Do not move this .VS above the .TP
+.VS 8.5
+returns a list of names of all the Tcl commands visible
+(i.e. executable without using a qualified name) to the current namespace,
+including both the built-in commands written in C and
+the command procedures defined using the \fBproc\fR command.
+If \fIpattern\fR is specified,
+only those names matching \fIpattern\fR are returned.
+Matching is determined using the same rules as for \fBstring match\fR.
+\fIpattern\fR can be a qualified name like \fBFoo::print*\fR.
+That is, it may specify a particular namespace
+using a sequence of namespace names separated by double colons (\fB::\fR),
+and may have pattern matching special characters
+at the end to specify a set of commands in that namespace.
+If \fIpattern\fR is a qualified name,
+the resulting list of command names has each one qualified with the name
+of the specified namespace, and only the commands defined in the named
+namespace are returned.
+.\" Technically, most of this hasn't changed; that's mostly just the
+.\" way it always worked. Hardly anyone knew that though.
+.VE 8.5
+.TP
+\fBinfo complete \fIcommand\fR
+Returns 1 if \fIcommand\fR is a complete Tcl command in the sense of
+having no unclosed quotes, braces, brackets or array element names.
+If the command does not appear to be complete then 0 is returned.
+This command is typically used in line-oriented input environments
+to allow users to type in commands that span multiple lines;  if the
+command is not complete, the script can delay evaluating it until additional
+lines have been typed to complete the command.
+.TP
+\fBinfo default \fIprocname arg varname\fR
+\fIProcname\fR must be the name of a Tcl command procedure and \fIarg\fR
+must be the name of an argument to that procedure.  If \fIarg\fR
+does not have a default value then the command returns \fB0\fR.
+Otherwise it returns \fB1\fR and places the default value of \fIarg\fR
+into variable \fIvarname\fR.
+.TP
+\fBinfo exists \fIvarName\fR
+Returns \fB1\fR if the variable named \fIvarName\fR exists in the
+current context (either as a global or local variable) and has been
+defined by being given a value, returns \fB0\fR otherwise.
+.TP
+\fBinfo frame\fR ?\fInumber\fR?
+This command provides access to all frames on the stack, even those
+hidden from \fBinfo level\fR. If \fInumber\fR is not specified, this
+command returns a number giving the frame level of the command. This
+is 1 if the command is invoked at top-level. If \fInumber\fR is
+specified, then the result is a dictionary containing the location
+information for the command at the \fInumber\fRed level on the stack.
+.RS
+.PP
+If \fInumber\fR is positive (> 0) then it selects a particular stack
+level (1 refers to the top-most active command, i.e., \fBinfo frame\fR
+itself, 2 to the command it was called from, and so on); otherwise it
+gives a level relative to the current command (0 refers to the current
+command, i.e., \fBinfo frame\fR itself, -1 to its caller, and so on).
+.PP
+This is similar to how \fBinfo level\fR works, except that this
+subcommand reports all frames, like \fBsource\fRd scripts,
+\fBeval\fRs, \fBuplevel\fRs, etc.
+.PP
+Note that for nested commands, like
+.QW "foo [bar [x]]" ,
+only
+.QW x
+will be seen by an \fBinfo frame\fR invoked within
+.QW x .
+This is the same as for \fBinfo level\fR and error stack traces.
+.PP
+The result dictionary may contain the keys listed below, with the
+specified meanings for their values:
+.TP
+\fBtype\fR
+This entry is always present and describes the nature of the location
+for the command. The recognized values are \fBsource\fR, \fBproc\fR,
+\fBeval\fR, and \fBprecompiled\fR.
+.RS
+.TP
+\fBsource\fR\0\0\0\0\0\0\0\0
+means that the command is found in a script loaded by the \fBsource\fR
+command.
+.TP
+\fBproc\fR\0\0\0\0\0\0\0\0
+means that the command is found in dynamically created procedure body.
+.TP
+\fBeval\fR\0\0\0\0\0\0\0\0
+means that the command is executed by \fBeval\fR or \fBuplevel\fR.
+.TP
+\fBprecompiled\fR\0\0\0\0\0\0\0\0
+means that the command is found in a precompiled script (loadable by
+the package \fBtbcload\fR), and no further information will be
+available.
+.RE
+.TP
+\fBline\fR
+This entry provides the number of the line the command is at inside of
+the script it is a part of. This information is not present for type
+\fBprecompiled\fR. For type \fBsource\fR this information is counted
+relative to the beginning of the file, whereas for the last two types
+the line is counted relative to the start of the script.
+.TP
+\fBfile\fR
+This entry is present only for type \fBsource\fR. It provides the
+normalized path of the file the command is in.
+.TP
+\fBcmd\fR
+This entry provides the string representation of the command. This is
+usually the unsubstituted form, however for commands which are a pure
+list executed by eval it is the substituted form as they have no other
+string representation. Care is taken that the pure-List property of
+the latter is not spoiled.
+.TP
+\fBproc\fR
+This entry is present only if the command is found in the body of a
+regular Tcl procedure. It then provides the name of that procedure.
+.TP
+\fBlambda\fR
+This entry is present only if the command is found in the body of an
+anonymous Tcl procedure, i.e. a lambda. It then provides the entire
+definition of the lambda in question.
+.TP
+\fBlevel\fR
+This entry is present only if the queried frame has a corresponding
+frame returned by \fBinfo level\fR. It provides the index of this
+frame, relative to the current level (0 and negative numbers).
+.PP
+A thing of note is that for procedures statically defined in files the
+locations of commands in their bodies will be reported with type
+\fBsource\fR and absolute line numbers, and not as type
+\fBproc\fR. The same is true for procedures nested in statically
+defined procedures, and literal eval scripts in files or statically
+defined procedures.
+.PP
+In contrast, a procedure definition or \fBeval\fR within a dynamically
+\fBeval\fRuated environment count linenumbers relative to the start of
+their script, even if they would be able to count relative to the
+start of the outer dynamic script. That type of number usually makes
+more sense.
+.PP
+A different way of describing this behaviour is that file based
+locations are tracked as deeply as possible, and where this is not
+possible the lines are counted based on the smallest possible
+\fBeval\fR or procedure body, as that scope is usually easier to find
+than any dynamic outer scope.
+.PP
+The syntactic form \fB{*}\fR is handled like \fBeval\fR. I.e. if it
+is given a literal list argument the system tracks the linenumber
+within the list words as well, and otherwise all linenumbers are
+counted relative to the start of each word (smallest scope)
+.RE
+.TP
+\fBinfo functions \fR?\fIpattern\fR?
+If \fIpattern\fR is not specified, returns a list of all the math
+functions currently defined.
+If \fIpattern\fR is specified, only those functions whose name matches
+\fIpattern\fR are returned.  Matching is determined using the same
+rules as for \fBstring match\fR.
+.TP
+\fBinfo globals \fR?\fIpattern\fR?
+If \fIpattern\fR is not specified, returns a list of all the names
+of currently-defined global variables.
+Global variables are variables in the global namespace.
+If \fIpattern\fR is specified, only those names matching \fIpattern\fR
+are returned.  Matching is determined using the same rules as for
+\fBstring match\fR.
+.TP
+\fBinfo hostname\fR
+Returns the name of the computer on which this invocation is being
+executed.
+Note that this name is not guaranteed to be the fully qualified domain
+name of the host.  Where machines have several different names (as is
+common on systems with both TCP/IP (DNS) and NetBIOS-based networking
+installed,) it is the name that is suitable for TCP/IP networking that
+is returned.
+.TP
+\fBinfo level\fR ?\fInumber\fR?
+If \fInumber\fR is not specified, this command returns a number
+giving the stack level of the invoking procedure, or 0 if the
+command is invoked at top-level.  If \fInumber\fR is specified,
+then the result is a list consisting of the name and arguments for the
+procedure call at level \fInumber\fR on the stack.  If \fInumber\fR
+is positive then it selects a particular stack level (1 refers
+to the top-most active procedure, 2 to the procedure it called, and
+so on); otherwise it gives a level relative to the current level
+(0 refers to the current procedure, -1 to its caller, and so on).
+See the \fBuplevel\fR command for more information on what stack
+levels mean.
+.TP
+\fBinfo library\fR
+Returns the name of the library directory in which standard Tcl
+scripts are stored.
+This is actually the value of the \fBtcl_library\fR
+variable and may be changed by setting \fBtcl_library\fR.
+See the \fBtclvars\fR manual entry for more information.
+.TP
+\fBinfo loaded \fR?\fIinterp\fR?
+Returns a list describing all of the packages that have been loaded into
+\fIinterp\fR with the \fBload\fR command.
+Each list element is a sub-list with two elements consisting of the
+name of the file from which the package was loaded and the name of
+the package.
+For statically-loaded packages the file name will be an empty string.
+If \fIinterp\fR is omitted then information is returned for all packages
+loaded in any interpreter in the process.
+To get a list of just the packages in the current interpreter, specify
+an empty string for the \fIinterp\fR argument.
+.TP
+\fBinfo locals \fR?\fIpattern\fR?
+If \fIpattern\fR is not specified, returns a list of all the names
+of currently-defined local variables, including arguments to the
+current procedure, if any.
+Variables defined with the \fBglobal\fR, \fBupvar\fR  and
+\fBvariable\fR commands will not be returned.
+If \fIpattern\fR is specified, only those names matching \fIpattern\fR
+are returned.  Matching is determined using the same rules as for
+\fBstring match\fR.
+.TP
+\fBinfo nameofexecutable\fR
+Returns the full path name of the binary file from which the application
+was invoked.  If Tcl was unable to identify the file, then an empty
+string is returned.
+.TP
+\fBinfo patchlevel\fR
+Returns the value of the global variable \fBtcl_patchLevel\fR; see
+the \fBtclvars\fR manual entry for more information.
+.TP
+\fBinfo procs \fR?\fIpattern\fR?
+If \fIpattern\fR is not specified, returns a list of all the
+names of Tcl command procedures in the current namespace.
+If \fIpattern\fR is specified,
+only those procedure names in the current namespace
+matching \fIpattern\fR are returned.
+Matching is determined using the same rules as for
+\fBstring match\fR.
+If \fIpattern\fR contains any namespace separators, they are used to
+select a namespace relative to the current namespace (or relative to
+the global namespace if \fIpattern\fR starts with \fB::\fR) to match
+within; the matching pattern is taken to be the part after the last
+namespace separator.
+.TP
+\fBinfo script\fR ?\fIfilename\fR?
+If a Tcl script file is currently being evaluated (i.e. there is a
+call to \fBTcl_EvalFile\fR active or there is an active invocation
+of the \fBsource\fR command), then this command returns the name
+of the innermost file being processed.  If \fIfilename\fR is specified,
+then the return value of this command will be modified for the
+duration of the active invocation to return that name.  This is
+useful in virtual file system applications.
+Otherwise the command returns an empty string.
+.TP
+\fBinfo sharedlibextension\fR
+Returns the extension used on this platform for the names of files
+containing shared libraries (for example, \fB.so\fR under Solaris).
+If shared libraries are not supported on this platform then an empty
+string is returned.
+.TP
+\fBinfo tclversion\fR
+Returns the value of the global variable \fBtcl_version\fR; see
+the \fBtclvars\fR manual entry for more information.
+.TP
+\fBinfo vars\fR ?\fIpattern\fR?
+If \fIpattern\fR is not specified,
+returns a list of all the names of currently-visible variables.
+This includes locals and currently-visible globals.
+If \fIpattern\fR is specified, only those names matching \fIpattern\fR
+are returned.  Matching is determined using the same rules as for
+\fBstring match\fR.
+\fIpattern\fR can be a qualified name like \fBFoo::option*\fR.
+That is, it may specify a particular namespace
+using a sequence of namespace names separated by double colons (\fB::\fR),
+and may have pattern matching special characters
+at the end to specify a set of variables in that namespace.
+If \fIpattern\fR is a qualified name,
+the resulting list of variable names
+has each matching namespace variable qualified with the name
+of its namespace.
+Note that a currently-visible variable may not yet
+.QW exist
+if it has not
+been set (e.g. a variable declared but not set by \fBvariable\fR).
+.SH EXAMPLE
+This command prints out a procedure suitable for saving in a Tcl
+script:
+.PP
+.CS
+proc printProc {procName} {
+    set result [list proc $procName]
+    set formals {}
+    foreach var [\fBinfo args\fR $procName] {
+        if {[\fBinfo default\fR $procName $var def]} {
+            lappend formals [list $var $def]
+        } else {
+            # Still need the list-quoting because variable
+            # names may properly contain spaces.
+            lappend formals [list $var]
+        }
+    }
+    puts [lappend result $formals [\fBinfo body\fR $procName]]
+}
+.CE
+.SH "SEE ALSO"
+global(n), proc(n)
+.SH KEYWORDS
+command, information, interpreter, level, namespace, procedure, variable
+.\" Local Variables:
+.\" mode: nroff
+.\" End:

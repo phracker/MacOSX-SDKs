@@ -1,0 +1,168 @@
+.\" Copyright (c) 1985, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"     from: @(#)ttys.5	8.1 (Berkeley) 6/4/93
+.\" $FreeBSD: src/libexec/getty/ttys.5,v 1.18 2005/06/14 08:40:10 ru Exp $
+.\" "
+.Dd May 27, 2005
+.Dt TTYS 5
+.Os
+.Sh NAME
+.Nm ttys
+.Nd terminal initialization information
+.Sh DESCRIPTION
+The file
+.Nm
+contains information that is used by various routines to initialize
+and control the use of terminal special files.
+This information is read with the
+.Xr getttyent 3
+library routines.
+There is one line in the
+.Nm
+file per special device file.
+Fields are separated by tabs and/or spaces.
+Fields comprised of more than one word should be enclosed in double
+quotes (``"'').
+Blank lines and comments may appear anywhere in the file; comments
+are delimited by hash marks (``#'') and new lines.
+Any unspecified fields will default to null.
+.Pp
+The first field is normally the
+name of the terminal special file as it is found in
+.Pa /dev .
+However, it can be any arbitrary string
+when the associated command is not related to a tty.
+.Pp
+The second field of the file is the command to execute for the line,
+usually
+.Xr getty 8 ,
+which initializes and opens the line, setting the speed, waiting for
+a user name and executing the
+.Xr login 1
+program.
+It can be, however, any desired command, for example
+the start up for a window system terminal emulator or some other
+daemon process, and can contain multiple words if quoted.
+.Pp
+The third field is the type of terminal usually connected to that
+tty line, normally the one found in the
+.Xr termcap 5
+data base file.
+The environment variable
+.Ev TERM
+is initialized with the value by
+either
+.Xr getty 8
+or
+.Xr login 1 .
+.Pp
+The remaining fields set flags in the
+.Fa ty_status
+entry (see
+.Xr getttyent 3 ) ,
+specify a window system process that
+.Xr launchd 8
+will maintain for the terminal line.
+.Pp
+As flag values, the strings ``on'' and ``off'' specify that
+.Xr launchd 8
+should (should not) execute the command given in the second field,
+while ``secure'' (if ``on'' is also specified) allows users with a
+uid of 0 to login on
+this line.
+The flags ``local'', ``rtscts'', ``mdmbuf'', and ``softcar''
+modify the default behaviour of the terminal line, and their actions
+are driver dependent.
+The ``local'' flag causes the driver to
+treat the line as if it locally connected.
+The ``rtscts'' flag
+instructs the driver to use RTS/CTS hardware flow control, if
+possible.
+The ``mdmbuf'' flag instructs the driver to use
+DTR/DCD flow control, if possible.
+The ``softcar'' flag causes the driver to ignore
+hardware carrier on the line.
+These flag fields should not be quoted.
+.Pp
+The string ``window='' may be followed by a quoted command
+string which
+.Xr launchd 8
+will execute
+.Em before
+starting the command specified by the second field.
+.Sh FILES
+.Bl -tag -width /etc/ttys -compact
+.It Pa /etc/ttys
+.El
+.Sh NUMERIC SEQUENCES
+Numeric sequences of terminals can be represented in a more compact format.
+A matching pair of square bracket may enclose two numbers (the start and
+stop values), separated by a hyphen.
+The numbers are assumed to be decimal, unless prefixed with ``0x'', in which
+case they are interpreted as hexadecimal.
+The number of characters (not including any ``0x'') in the starting value gives
+the minimum width; sequence values are zero padded up to this width.
+Thus ``tty[00-07]'' represents the eight terminals ``tty00'' through ``tty07''.
+.Sh EXAMPLES
+.Bd -literal
+# root login on console at 1200 baud
+console	"/usr/libexec/getty std.1200"	vt100	on secure
+# dialup at 1200 baud, no root logins
+ttyd0	"/usr/libexec/getty d1200"	dialup	on 	# 555-1234
+# Mike's terminal: hp2621
+ttyh0	"/usr/libexec/getty std.9600"	hp2621-nl	on 	# 457 Evans
+# John's terminal: vt100
+ttyh1	"/usr/libexec/getty std.9600"	vt100	on 		# 459 Evans
+# terminal emulate/window system
+ttyv0	"/usr/X11/bin/xterm -display :0"	xterm	on window="/usr/X11/bin/X :0"
+# the sequence of eight terminals tty00 through tty07
+tty[00-07]     "/usr/libexec/getty std.9600"  vt100      on
+# Network pseudo ttys -- don't enable getty
+ttyp0	none	network 	
+ttyp1	none	network	off	
+# All sixteen of a pseudo tty sequence
+ttyq[0x0-0xf]  none                           network
+.Ed
+.Sh SEE ALSO
+.Xr login 1 ,
+.Xr getttyent 3 ,
+.Xr ttyslot 3 ,
+.Xr gettytab 5 ,
+.Xr termcap 5 ,
+.Xr getty 8 ,
+.Xr launchd 8
+.\" .Xr ttyflags 8
+.Sh HISTORY
+A
+.Nm
+file appeared in
+.At v6 .

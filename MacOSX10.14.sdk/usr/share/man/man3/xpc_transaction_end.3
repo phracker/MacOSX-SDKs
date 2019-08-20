@@ -1,0 +1,167 @@
+.\" Copyright (c) 2011 Apple Inc. All rights reserved.
+.Dd 1 July, 2011
+.Dt xpc_main 3
+.Os Darwin
+.Sh NAME
+.Nm xpc_main
+.Nd XPC service runtime
+.Sh SYNOPSIS
+.Fd #include <xpc/xpc.h>
+.Ft void
+.Fo xpc_main
+.Fa "xpc_connection_handler_t handler"
+.Fc
+.Ft void
+.Fo xpc_transaction_begin
+.Fa "void"
+.Fc
+.Ft void
+.Fo xpc_transaction_end
+.Fa "void"
+.Fc
+.Sh DESCRIPTION
+The
+.Fn xpc_main
+function is called by an XPC service to initialize the runtime and start
+listening for incoming connections.
+.Sh HANDLER
+The
+.Fa handler
+provided to
+.Fn xpc_main
+will be invoked when a new connection has been established with the service.
+For each new connection, an
+.Ft xpc_connection_t
+will be passed as the parameter to the
+.Fa handler .
+Each connection corresponds to a call to
+.Xr xpc_connection_create 3
+made by a client of the service.
+.Pp
+The service is responsible for setting an event handler on the new connection
+and resuming it in the same fashion as new connections returned by
+.Xr xpc_connection_create 3 .
+.Pp
+.Em Important :
+The new connection passed to
+.Fn handler
+must be retained using
+.Xr xpc_retain 3
+if it will be stored in data structures that persist beyond the scope of that
+function.
+.Pp
+.Bd -literal -offset indent
+static void
+new_connection_handler(xpc_connection_t peer)
+{
+	xpc_connection_set_event_handler(peer, ^(xpc_object_t event) {
+		// Handle messages and errors.
+	});
+	xpc_connection_resume(peer);
+}
+
+int
+main(void)
+{
+	xpc_main(new_connection_handler);
+	exit(EXIT_FAILURE);
+}
+.Ed
+.Pp
+launchd jobs which advertise MachServices may
+.Em not
+call
+.Fn xpc_main .
+.Sh RUNTIME MANAGEMENT
+The XPC runtime automatically keeps track of message activity to determine
+whether a service is busy or idle. If the service remains idle after a period
+of inactivity (defined by the system),
+.Fn xpc_main
+will exit the process. This behavior is automatically enabled for XPC services,
+but
+.Xr launchd 8
+jobs wishing to opt into the same behavior may do so by adding the
+EnablePressuredExit key to their
+.Xr launchd.plist 5 .
+.Pp
+Activity is tracked with a transaction count maintained by the XPC runtime.
+A service is deemed idle when its transaction count is zero.
+The transaction count is incremented immediately before the receipt and
+delivery of a message to a peer connection's event handler. The transaction
+count is correspondingly decremented when the event handler returns.
+.Pp
+The transaction count is also incremented when a reply message is created with
+.Xr xpc_dictionary_create_reply 3 ,
+and decremented when the reply is sent. As a result, a service with outstanding
+reply messages is not considered idle.
+.Pp
+Services may extend the default behavior using
+.Fn xpc_transaction_begin
+and
+.Fn xpc_transaction_end ,
+which increment and decrement the transaction count respectively. This may be
+necessary for services that send periodic messages to their clients, not in
+direct reply to a received message.
+.Pp
+If the service has a non-zero transaction count at a time when the system deems
+it necessary to terminate the service, peer connections in the service may
+receive the
+.Ft XPC_ERROR_TERMINATION_IMMINENT
+event. This event indicates that the service should unwind all outstanding work
+as quickly as possible and not begin any new work, as the system will terminate
+the process if it does not exit in a timely fashion. After this event is
+received, no further messages will be delivered to the peers, and the end of the
+service's last outstanding transaction will automatically terminate the process.
+.Pp
+The XPC runtime will also automatically manage the service's priority based on
+where a message came from. If an app sends a message to the service, the
+act of sending that message will boost the destination service's priority and
+resource limits so that it can more quickly fill the request. If, however, a
+service gets a message from a background process, the service stays at a lower
+priority so as not to interfere with work initiated as a direct result of user
+interaction.
+.Pp
+The lifetime of these boosts is tied to the lifetime of the message or reply
+object, just like transactions. So while the service maintains a reference to
+a message which boosted it, the boost will remain. If a reply message is
+created using
+.Xr xpc_dictionary_create_reply 3 ,
+the boost transfers to the reply object and will remain with the process until
+until the reply has been sent or deallocated.
+.Pp
+Note that boosts happen as a result of a message-send operation. So even if the
+service isn't running when a boosting message is sent, it will be launched
+on-demand at the elevated priority necessary to receive the message in a timely
+fashion.
+.Pp
+launchd jobs which use XPC for their IPC may opt into priority boosting by
+specifying their ProcessType as Adaptive. This will apply priority boosting
+behavior only to the MachServices that are in the launchd.plist. See
+.Xr launchd.plist 5
+for more details.
+.Sh DEFAULT ENVIRONMENT
+The execution environment for XPC services bundled with applications is tightly
+controlled. By default, services are executed in a new security audit session
+and therefore do not have access to the current user's keychain or the ability
+to draw UI.
+This behavior may be overridden with the
+.Ft JoinExistingSession
+key in the service's
+.Pa Info.plist .
+.Pp
+By default, the
+.Fn xpc_main
+function will call the 
+.Xr dispatch_main 3
+function to manage the service's main event loop.
+This behavior may be overridden with the
+.Ft RunLoopType
+key in the service's
+.Pa Info.plist .
+.Pp
+See 
+.Xr xpcservice.plist 5
+for more information about these keys.
+.Sh SEE ALSO
+.Xr xpc 3 ,
+.Xr xpc_connection_create 3

@@ -1,0 +1,118 @@
+.\" Copyright (c) 2009 Apple Inc. All rights reserved.
+.Dd May 7, 2009
+.Dt cache_create 3
+.Os Darwin
+.Sh NAME
+.Nm cache_create
+.Nd Creates an in memory cache
+.Sh SYNOPSIS
+.Fd #include <cache.h>
+.Ft int
+.Fo cache_create
+.Fa "const char *name, cache_attributes_t *attrs, cache_t **cache_out"
+.Fc
+.Ft int
+.Fo cache_destroy
+.Fa "cache_t *cache"
+.Fc
+.Sh DESCRIPTION
+.Pp
+.Fn cache_create
+Creates a cache using attributes 
+.Fa attrs
+(see below) and name
+.Fa name
+and if successful stores it in 
+.Fa cache_out .
+.Fa name
+is a NULL-terminated cstring in reverse-DNS form (e.g. "com.mycompany.imagecache") and 
+is used for debugging and performance tools.  It must not be NULL.
+.Pp
+.Fn cache_destroy
+Removes all unreferenced values in 
+.Fa cache 
+and deallocates it.
+.Sh CACHE ATTRIBUTES
+Cache attributes are callbacks passed to 
+.Fn cache_create 
+to support different types of keys and values and to configure cache behavior.  The cache
+framework provides preexisting 
+.Xr cache_callbacks 3
+functions that can be used for these callbacks to support
+common key and value types
+.Bd -literal
+typedef struct cache_attributes_s {
+    uint32_t version;
+    cache_key_hash_cb_t key_hash_cb;                               
+    cache_key_is_equal_cb_t key_is_equal_cb;                        
+    
+    cache_key_retain_cb_t  key_retain_cb;
+    cache_release_cb_t key_release_cb;
+    cache_release_cb_t value_release_cb;                           
+    
+    cache_value_make_nonpurgeable_cb_t value_make_nonpurgeable_cb; 
+    cache_value_make_purgeable_cb_t value_make_purgeable_cb;       
+    
+    void *user_data;
+    cache_value_retain_cb_t value_retain_cb;
+} cache_attributes_t;
+#define CACHE_ATTRIBUTES_VERSION_2 2 
+.Ed
+.Bl -tag -width XXXvalue_make_nonpurgeable_cb
+.It key_hash_cb 
+Calculates a hash value using key
+.It key_is_equal_cb 
+Determines if two keys are equal
+.It key_retain_cb 
+Called when a key is added to a cache using 
+.Fn cache_set_and_retain 
+to allow key to be copied, or retained if it is a reference-counted object.
+.It key_release_cb 
+Called when a key is removed or evicted from a cache to allow the key
+to be deallocated, or released if it is a reference-counted object.
+.It value_retain_cb 
+Called when a value is added to a cache using 
+.Fn cache_set_and_retain
+to allow value to be retained if it is a reference-counted object.
+.It value_release_cb 
+Called when a value is removed or evicted from a cache to allow the key
+to be deallocated, or released if it is a reference-counted object.
+.It value_make_nonpurgeable_cb 
+Called when a value is referenced using
+.Fn cache_get_and_retain
+to allow it to be made nonpurgeable or uncompressed.
+.It value_make_purgeable_cb 
+Called when a value is unreferenced to allow it to be made purgeable or
+compressed.
+.It version 
+Attributes version number used for binary compatibility.
+.It user_data 
+This value will be passed to all other callbacks for this cache.  May be NULL.
+.El
+.Sh RETURN VALUES
+All functions return 0 for success and non-zero for failure.
+.Sh EXAMPLE
+The following example uses pre-existing 
+.Xr cache_callbacks 3
+to create a cache with cstring keys and 
+.Xr malloc 3
+allocated values.  The 
+.Bd -literal
+#include <cache.h>
+#include <cache_callbcaks.h>
+
+cache_t *im_cache;
+cache_attributes_t attrs = {
+    .version = CACHE_ATTRIBUTES_VERSION_2,
+    .key_hash_cb = cache_key_hash_cb_cstring,
+    .key_is_equal_cb = cache_key_is_equal_cb_cstring,
+    .key_retain_cb = my_copy_string,
+    .key_release_cb = cache_release_cb_free,
+    .value_release_cb = cache_release_cb_free,
+};
+cache_create("com.acme.im_cache", &attrs, &im_cache);
+.Ed
+.Sh SEE ALSO
+.Xr cache 3
+.Xr cache_set_and_retain 3
+.Xr cache_callbacks 3

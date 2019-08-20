@@ -1,0 +1,82 @@
+.\" Copyright (c) 2014, Apple Computer, Inc.  All rights reserved.
+.\"
+.Dd January 29, 2018
+.Dt FOOTPRINT 1
+.Os "OS X"
+.Sh NAME
+.Nm footprint
+.Nd gathers memory information about one or more processes
+.Sh SYNOPSIS
+.Nm
+.Op Fl j Ar path
+.Op Fl f Ar bytes|formatted|pages
+.Op Fl p Ar name|pid
+.Op Fl x Ar name|pid
+.Op Fl t
+.Op Fl s
+.Op Fl v
+.Op Fl y
+.Op Fl w
+.Op Fl -swapped
+.Op Fl -wired
+.Op Fl a
+.Ar process-name | pid | memgraph
+.Op ...
+.Nm
+.Fl h , Fl -help
+.Sh DESCRIPTION
+The
+.Nm
+utility gathers and displays memory consumption information for the specified processes or memory graph files.
+.Pp
+.Nm
+will display all addressable memory used by the specified processes, but it emphasizes memory considered 'dirty' by the kernel for purposes of accounting.  If multiple processes are specified,
+.Nm
+will de-duplicate multiply mapped objects and will display shared objects separately from private ones.
+.Pp
+.Nm
+must be run as root when inspecting processes that are not owned by the current user.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl a , Fl -all
+target all processes (will take much longer)
+.It Fl j , Fl -json Ar path
+also save a JSON representation of the data to the specified path
+.It Fl f , Fl -format Ar bytes|formatted|pages
+textual output should be formatted in
+.Ar bytes , Ar pages ,
+or human-readable
+.Ar formatted
+(default)
+.It Fl p , Fl -proc Ar name
+target the given process by name (can be used multiple times)
+.It Fl p , Fl -pid Ar pid
+target the given process by pid (can be used multiple times)
+.It Fl x , Fl -exclude Ar name/pid
+exclude the given process by name or pid (can be used multiple times)
+.Pp
+often used with
+.Fl -all
+to exclude some processes from analysis
+.It Fl t , Fl -targetChildren
+in addition to the supplied processes, target their children, grandchildren, etc.
+.It Fl s , Fl -skip
+skip processes that are dirty tracked and have no outstanding XPC transactions (i.e., are "clean")
+.It Fl v
+display vmmap-like output of address space layout
+.It Fl y , Fl -summary
+print only regions with dirty memory, and condense __TEXT, __DATA, and __LINKEDIT regions into 'Other' subtotal
+.It Fl w , Fl -wide
+show wide output with all columns (implies
+.Fl -swapped Fl -wired )
+.It Fl -swapped
+show swapped/compressed column, a subset of 'dirty'
+.It Fl -wired
+show wired memory column, a subset of 'dirty'
+.It Fl h , Fl -help
+display help and exit
+.El
+.Sh SAMPLE USAGE
+.Pp
+.Nm
+Mail WindowServer

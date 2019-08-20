@@ -1,0 +1,651 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) tabset.n
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::tabset iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+'\"
+'\"
+.SH NAME
+iwidgets::tabset \- create and manipulate tabs as as set
+.SH SYNOPSIS
+\fBiwidgets::tabset\fR \fIpathName\fR ?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Tabset
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fB
+background  font              selectBackground    cursor
+foreground  selectForeground  disabledForeground  height
+width\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBangle\fR
+Class:	\fBAngle\fR
+Command-Line Switch:	\fB-angle\fR
+.fi
+.IP
+Specifes the angle of slope from the inner edge to the outer edge of the 
+tab. An angle of 0 specifies square tabs. Valid ranges are 0 to 45 degrees 
+inclusive. Default is 15 degrees. If tabPos is e or w, this option is ignored.
+.LP
+.nf
+Name:	\fBbackdrop\fR
+Class:	\fBBackdrop\fR
+Command-Line Switch:	\fB-backdrop\fR
+.fi
+.IP
+Specifies a background color to use when filling in the area behind the tabs.
+.LP
+.nf
+Name:	\fBbevelAmount\fR
+Class:	\fBBevelAmount\fR
+Command-Line Switch:	\fB-bevelamount\fR
+.fi
+.IP
+Specifes the size of tab corners. A value of 0 with angle set to 0 results 
+in square tabs. A \fBbevelAmount\fR of 4, means that the tab will be 
+drawn with angled corners that cut in 4 pixels from the edge of the 
+tab. The default is 0.
+.LP
+.nf
+Name:	\fBcommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-command\fR
+Specifes the prefix of a Tcl command to invoke to change the view in the 
+widget associated with the tabset. When a user selects a tab, a Tcl command 
+is invoked. The actual command consists of this option followed by a space 
+and a number. The number is the numerical index of the tab that has been 
+selected.
+.LP
+.nf
+Name:	\fBequalTabs\fR
+Class:	\fBEqualTabs\fR
+Command-Line Switch:	\fB-equaltabs\fR
+.fi
+.IP
+Specifies whether to force tabs to be equal sized or not. A value 
+of \fBtrue\fR means constrain tabs to be equal sized. A value 
+of \fBfalse\fR allows each tab to size based on the text label size. The 
+value may have any of the forms accepted by the \fBTcl_GetBoolean\fR, such 
+as \fBtrue\fR, \fBfalse\fR, \fB0\fR, \fB1\fR, \fByes\fR, or \fBno\fR.
+.IP
+For horizontally positioned tabs (\fBtabPos\fR is either \fBs\fR 
+or \fBn\fR), \fBtrue\fR forces all tabs to be equal width (the width being 
+equal to the longest label plus any padX specified). Horizontal tabs are 
+always equal in height. 
+.IP
+For vertically positioned tabs (\fBtabPos\fR is either \fBw\fR or \fBe\fR), 
+\fBtrue\fR forces all tabs to be equal height (the height being equal to 
+the height of the label with the largest font). Vertically oriented tabs are 
+always equal in width.
+.LP
+.nf
+Name:	\fBgap\fR
+Class:	\fBGap\fR
+Command-Line Switch:	\fB-gap\fR
+.fi
+.IP
+Specifies the amount of pixel space to place between each tab. Value may 
+be any pixel offset value. In addition, a special keyword \fBoverlap\fR 
+can be used as the value to achieve a standard overlap of tabs. This value 
+may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBmargin\fR
+Class:	\fBMargin\fR
+Command-Line Switch:	\fB-margin\fR
+.fi
+.IP
+Specifies the amount of space to place between the outside edge of the 
+tabset and the outside edge of its tabs. If \fBtabPos\fR is \fBs\fR, this 
+is the amount of space between the bottom edge of the tabset and the 
+bottom edge of the set of tabs. If \fBtabPos\fR is \fBn\fR, this is the 
+amount of space between the top edge of the tabset and the top edge of the 
+set of tabs. If \fBtabPos\fR is \fBe\fR, this is the amount of space between 
+the right edge of the tabset and the right edge of the set of tabs. 
+If \fBtabPos\fR is \fBw\fR, this is the amount of space between the left 
+edge of the tabset and the left edge of the set of tabs. This value may 
+have any of the forms acceptable to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBpadX\fR
+Class:	\fBPadX\fR
+Command-Line Switch:	\fB-padx\fR
+.fi
+.IP
+Specifies a non-negative value indicating how much extra space to request for 
+a tab around its label in the X-direction. When computing how large a 
+window it needs, the tab will add this amount to the width it would normally 
+need The tab will end up with extra internal space to the left and right of 
+its text label. This value may have any of the forms acceptable 
+to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBpadY\fR
+Class:	\fBPadY\fR
+Command-Line Switch:	\fB-pady\fR
+.fi
+.IP
+Specifies a non-negative value indicating how much extra space to request 
+for a tab around its label in the Y-direction. When computing how large a 
+window it needs, the tab will add this amount to the height it would 
+normally need The tab will end up with extra internal space to the top and 
+bottom of its text label. This value may have any of the forms acceptable 
+to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBraiseSelect\fR
+Class:	\fBRaiseSelect\fR
+Command-Line Switch:	\fB-raiseselect\fR
+.fi
+.IP
+Specifes whether to slightly raise the selected tab from the rest of the 
+tabs. The selected tab is drawn 2 pixels closer to the outside edge of the 
+tabset than the unselected tabs. A value of true says to raise selected 
+tabs, a value of false turns this off. The default is false. The value may 
+have any of the forms accepted by the \fBTcl_GetBoolean\fR, such 
+as \fBtrue\fR, \fBfalse\fR, \fB0\fR, \fB1\fR, \fByes\fR, or \fBno\fR.
+.LP
+.nf
+Name:	\fBstart\fR
+Class:	\fBStart\fR
+Command-Line Switch:	\fB-start\fR
+.fi
+.IP
+Specifies the amount of space to place between the left or top edge of the 
+tabset and the starting edge of its tabs. For horizontally positioned tabs, 
+this is the amount of space between the left edge of the tabset and the left 
+edge of the first tab. For vertically positioned tabs, this is the amount 
+of space between the top of the tabset and the top of the first tab. This 
+value may change if the user performs a MButton-2 scroll on the tabs. This 
+value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBstate\fR
+Class:	\fBState\fR
+Command-Line Switch:	\fB-state\fR
+.fi
+.IP
+Sets the active state of the tabset. Specifying \fBnormal\fR allows all 
+tabs to be selectable. Specifying \fBdisabled\fR disables the tabset 
+causing all tabs to be drawn in the disabledForeground color.
+.LP
+.nf
+Name:	\fBtabBorders\fR
+Class:	\fBTabBorders\fR
+Command-Line Switch:	\fB-tabborders\fR
+.fi
+.IP
+Specifies whether to draw the borders of tabs that are not selected. 
+Specifying true (the default) draws these borders, specifying false 
+draws only the border around the selected tab. The value may have any 
+of the forms accepted by the \fBTcl_GetBoolean\fR, such 
+as \fBtrue\fR, \fBfalse,\fR \fB0\fR, \fB1\fR, \fByes\fR, or \fBno\fR.
+.LP
+.nf
+Name:	\fBtabPos\fR
+Class:	\fBTabPos\fR
+Command-Line Switch:	\fB-tabpos\fR
+.fi
+.IP
+Specifies the location of the set of tabs in relation to another widget. Must 
+be \fBn\fR, \fBs\fR, \fBe\fR, or \fBw\fR. Defaults to \fBs\fR. North tabs 
+open downward, South tabs open upward. West tabs open to the right, east 
+tabs open to the left.
+.BE
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::tabset\fR command creates a new window (given by the pathName 
+argument) and makes it into a \fBtabset\fR widget. Additional \fIoptions\fR, 
+described above may be specified on the command line or in the option 
+database to configure aspects of the tabset such as its colors, font, and 
+text. The \fBiwidgets::tabset\fR command returns its \fIpathName\fR argument. At the 
+time this command is invoked, there must not exist a window 
+named \fIpathName\fR, but pathName's parent must exist.
+.PP
+A \fBtabset\fR is a widget that contains a set of Tab buttons. It displays 
+these tabs in a row or column depending on it tabpos. When a tab is 
+clicked on, it becomes the only tab in the tab set that is selected. All 
+other tabs are deselected. The Tcl command prefix associated with this 
+tab (through the command tab configure option) is invoked with the tab 
+index number appended to its argument list. This allows the tabset to 
+control another widget such as a Notebook.
+.SH TABS
+Tabs are drawn to appear attached to another widget. The tabset draws an 
+edge boundary along one of its edges. This edge is known as the attachment 
+edge. This edge location is dependent on the value of \fBtabPos\fR. For 
+example, if \fBtabPos\fR is \fBs\fR, the attachment edge wil be on the 
+top side of the tabset (in order to attach to the bottom or south side of 
+its attached widget). The selected tab is draw with a 3d relief to appear 
+above the other tabs. This selected tab "opens" toward attachment edge. 
+.PP
+Tabs can be controlled in their location along the edges, the angle that 
+tab sides are drawn with, gap between tabs, starting margin of tabs, 
+internal padding around labels in a tab, the font, and its text or bitmap.
+.SH "WIDGET-SPECIFIC METHODS"
+.PP
+The \fBiwidgets::tabset\fR command creates a new Tcl command whose name 
+is \fIpathName\fR. This command may be used to invoke various operations on 
+the widget. It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIoption\fR and the \fIarg\fRs
+determine the exact behavior of the command.
+.PP
+Many of the widget commands for a tabset take as one argument an indicator 
+of which tab of the tabset to operate on. These indicators are called indexes 
+and may be specified in any of the following forms:
+.TP
+\fInumber\fR
+Specifies the tab numerically, where 0 corresponds to the first tab in 
+the tab set, 1 to the second, and so on.
+.TP
+\fBselect\fR
+Specifies the currently selected tab's index. If no tab is currently 
+selected, the value -1 is returned.
+.TP
+\fBend\fR
+Specifes the last tab in the tabset's index. If the tabset is empty this 
+will return -1.
+.TP
+\fIpattern\fR
+If the index doesn't satisfy any of the above forms, then this form is 
+used. Pattern is pattern-matched against the label of each tab in the 
+tabset, in order from the first to the last tab, until a matching entry is 
+found. The rules of Tcl_StringMatch are used.
+.PP
+'.............................................................................
+The following commands are possible for tabset widgets:
+.RS
+.TP
+\fIpathName\fR \fBadd\fR ?\fIoption\fR \fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+Add a new tab at the end of the tabset. Returns the child 
+site \fIpathName\fR. If additional arguments are present, they specify 
+any of the following options:
+.RS
+.TP
+\fB-angle\fR \fIvalue\fR
+Specifes the angle of slope from the inner edge to the outer edge of 
+the tab. An angle of 0 specifies square tabs. Valid ranges are 0 to 
+45 degrees inclusive. Default is 15 degrees. If this option is specified as 
+an empty string (the default), then the angle option for the overall tabset 
+is used.
+.TP
+\fB-background\fR \fIvalue\fR
+Specifies a background color to use for displaying tabs when they are in 
+their normal state (unselected). If this option is specified as an empty 
+string (the default), then the background option for the overall tabset is 
+used.
+.TP
+\fB-bevelamount\fR \fIvalue\fR
+Specifes the size of tab corners. A value of 0 with angle set to 0 results 
+in square tabs. A bevelAmount of 4, means that the tab will be drawn with 
+angled corners that cut in 4 pixels from the edge of the tab. The default is 
+0. This is generally only set at the tabset configuration level. Tabs 
+normally will want to share the same bevelAmount.
+.TP
+\fB-bitmap\fR \fIvalue\fR
+If label is a non-empty string, specifies a bitmap to display in the 
+tab. Bitmap may be of any of the forms accepted by Tk_GetBitmap. 
+.TP
+\fB-disabledforeground\fR \fIvalue\fR
+Specifies a foreground color to use for displaying tab labels when tabs are 
+in their disable state. If this option is specified as an empty 
+string (the default), then the disabledforeground option for the overall 
+tabset is used.
+.TP
+\fB-font\fR \fIvalue\fR
+Specifies the font to use when drawing the label on a tab. If this option 
+is specified as an empty string then the font option for the overall 
+tabset is used.
+.TP
+\fB-foreground\fR \fIvalue\fR
+Specifies a foreground color to use for displaying tab labels when tabs 
+are in their normal unselected state. If this option is specified as an 
+empty string (the default), then the foreground option for the overall 
+tabset is used.
+.TP
+\fB-image\fR \fIvalue\fR
+If label is a non-empty string, specifies an image to display in the 
+tab. Image must have been created with the image create command. Typically, 
+if the image option is specified then it overrides other options that 
+specify a bitmap or textual value to display in the widget; the image 
+option may be reset to an empty string to re-enable a bitmap or text display. 
+.TP
+\fB-label\fR \fIvalue\fR
+Specifies a text string to be placed in the tabs label. If this value is 
+set, the bitmap option is overridden and this option is used instead. This 
+label serves as an additional identifier used to reference the tab. This 
+label may be used for the index value in widget commands.
+.TP
+\fB-selectbackground\fR \fIvalue\fR
+Specifies a background color to use for displaying the selected tab. If 
+this option is specified as an empty string (the default), then the 
+selectBackground option for the overall tabset is used.
+.TP
+\fB-selectforeground\fR \fIvalue\fR
+Specifies a foreground color to use for displaying the selected tab. If 
+this option is specified as an empty string (the default), then the 
+selectForeground option for the overall tabset is used.
+.TP
+\fB-padx\fR \fIvalue\fR
+Specifies a non-negative value indicating how much extra space to request 
+for a tab around its label in the X-direction. When computing how large 
+a window it needs, the tab will add this amount to the width it would 
+normally need The tab will end up with extra internal space to the left 
+and right of its text label. This value may have any of the forms acceptable 
+to Tk_GetPixels. If this option is specified as an empty string (the 
+default), then the padX option for the overall tabset is used
+.TP
+\fB-pady\fR \fIvalue\fR
+Specifies a non-negative value indicating how much extra space to request 
+for a tab around its label in the Y-direction. When computing how large 
+a window it needs, the tab will add this amount to the height it would 
+normally need The tab will end up with extra internal space to the top 
+and bottom of its text label. This value may have any of the forms 
+acceptable to Tk_GetPixels. If this option is specified as an empty 
+string (the default), then the padY option for the overall tabset is used
+.TP
+\fB-state\fR \fIvalue\fR
+Sets the state of the tab. Specifying normal allows this tab to be 
+selectable. Specifying disabled disables the this tab causing its tab label 
+to be drawn in the disabledForeground color. The tab will not respond to 
+events until the state is set back to normal.
+.RE
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+Query or modify the configuration options of the widget. If no \fIoption\fR 
+is specified, returns a list describing all of the available options 
+for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for information on the 
+format of this list). If option is specified with no value, then the 
+command returns a list describing the one named option (this list will be 
+identical to the corresponding sublist of the value returned if no option 
+is specified). If one or more option-value pairs are specified, then the 
+command modifies the given widget option(s) to have the given value(s); in 
+this case the command returns an empty string. \fIOption\fR may have any 
+of the values accepted by the iwidgets::tabset command.
+.TP
+\fIpathName\fR \fBdelete\fR \fIindex1\fR ?\fIindex2\fR?
+Delete all of the tabs between \fIindex1\fR and \fIindex2\fR inclusive. 
+If \fIindex2\fR is omitted then it defaults to \fIindex1\fR. Returns an 
+empty string.
+.TP
+\fIpathName\fR \fBindex\fR \fIindex\fR
+Returns the numerical index corresponding to \fIindex\fR.
+.TP
+\fIpathName\fR \fBinsert\fR \fIindex\fR ?\fIoption\fR \fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+Insert a new tab in the tabset before the tab specified by \fIindex\fR. The 
+additional arguments are the same as for the \fBadd\fR command. Returns 
+the tab's \fIpathName\fR.
+.TP
+\fIpathName\fR \fBnext\fR
+Advances the selected tab to the next tab (order is determined by insertion 
+order). If the currently selected tab is the last tab in the tabset, the 
+selection wraps around to the first tab. It behaves as if the user 
+selected the next tab.
+.TP
+\fIpathName\fR \fBtabconfigure\fR \fIindex\fR ?\fIoption\fR? ?\fIvalue\fR?
+This command is similar to the \fBconfigure\fR command, except that it 
+applies to the options for an individual tab, whereas configure applies to 
+the options for the tabset as a whole. Options may have any of the values 
+accepted by the \fBadd\fR widget command. If options are specified, options 
+are modified as indicated in the command and the command returns an empty 
+string. If no options are specified, returns a list describing the current 
+options for tab index (see \fBTk_ConfigureInfo\fR for information on 
+the format of this list).
+.TP
+\fIpathName\fR \fBprev\fR
+Moves the selected tab to the previous tab (order is determined by insertion 
+order). If the currently selected tab is the first tab in the tabset, the 
+selection wraps around to the last tab in the tabset. It behaves as if 
+the user selected the previous tab.
+.TP
+\fIpathName\fR \fBselect\fR \fIindex\fR
+Selects the tab specified by \fIindex\fR as the currently selected tab. It 
+behaves as if the user selected the new tab.
+
+.SH EXAMPLE 
+.PP
+Following is an example that creates a tabset with two tabs and a list box 
+that the tabset controls. In addition selecting an item from the list 
+also selects the corresponding tab.
+.PP
+.nf
+.IP
+.ta 2c 8c 12c
+package require Iwidgets 4.0
+# Define a proc that knows how to select an item 
+# from a list given an index from the tabset -command callback.
+  proc selectItem { item } {
+    .l selection clear [.l curselection]
+    .l selection set $item
+    .l see $item
+}
+.IP
+# Define a proc that knows how to select a tab 
+# given a y pixel coordinate from the list..
+  proc selectTab { y } {
+    set whichItem [.l nearest $y]
+    .ts select $whichItem
+}
+.IP
+# Create a listbox with two items (one and two) 
+# and bind button 1 press to the selectTab procedure.
+  listbox .l -selectmode single -exportselection false
+  .l insert end one
+  .l insert end two
+  .l selection set 0
+  pack .l
+  bind .l <ButtonPress-1> { selectTab %y }
+.IP
+# Create a tabset, set its -command to call selectItem
+# Add two labels to the tabset (one and two).
+  iwidgets::tabset .ts -command selectItem
+  .ts add -label 1
+  .ts add -label 2
+  .ts select 0
+  pack .ts -fill x -expand no
+.fi
+.SH AUTHOR
+Bill W. Scott
+.SH KEYWORDS
+tab tabset notebook tabnotebook

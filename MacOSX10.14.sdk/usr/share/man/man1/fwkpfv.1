@@ -1,0 +1,260 @@
+.\" Process this file with
+.\" groff -man -Tascii fwkpfv.1 | less
+.\"
+.Dd September 15, 2008
+.Dt "fwkpfv" 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm fwkpfv
+.Nd FireWire kprintf viewer
+.Sh SYNOPSIS
+.Nm
+.Op Fl -appendlog
+.Op Fl -openlog
+.Op Fl -newlog
+.Op Fl -prefix
+.Op Fl -publish
+.Op Fl -single
+.Op Fl -buffer Ns = Ns Ar boot-args
+.Op Fl -setargs Ns Op = Ns Ar boot-args
+.Op Fl -setpm
+.Op Fl -disable
+.Op Fl -erase
+.Op Fl -ioff
+.Op Fl -restart
+.Op Fl -help
+.Sh DESCRIPTION
+Use fwkpfv to receive FireWire kprintf logging. FireWireKPrintf redirects "kprintf()" logging to FireWire. Kernel printfs or "kprintfs" are used by many kernel services as a low level logging mechanism. They can also be used in third party kernel extensions. FireWire kprintfs are available very early in the kernel's startup and right until the cpu is powered down at sleep, restarted, or shutdown. Similarly, they are available almost as soon as the cpu is powered when waking. They can be useful for debugging kernel code (including KEXTs), particularly sleep/wake issues where the display and/or ethernet is unavailable.
+.Sh OPTIONS
+The available options are as follows:
+.Bl -tag -width XXXXX
+.It Fl -appendlog Ns , Fl a
+Append output logging to /tmp/fwkpf.log.
+.It Fl -openlog Ns , Fl o
+Open log file with Console.app. Only valid with
+.Fl a Ns
+\&.
+.It Fl -newlog Ns , Fl n
+Create a new log file, rather than append. Only valid with
+.Fl a Ns
+\&.
+.It Fl -prefix Ns , Fl p
+Prefix logger machine's ID to each log.
+.It Fl -publish Ns , Fl k
+Do not publish FireWire unit directory keys.
+.It Fl -single Ns , Fl s
+Use a single window even if multiple loggers are present.
+.It Fl -buffer Ns = Ns Ar size Ns , Fl b Ns Ar size
+Sets the host's psuedo address space queue buffer to
+.Ar size Ns
+in bytes. Increasing this value may help avoid potential packet loss. The default buffer size is 204,800 bytes.
+.It Fl -file Ns = Ns Ar path Ns , Fl b Ns Fl Ar path
+Sets the log file path, if in use, to
+.Ar path Ns
+given as a path to a file. The tilde character is not allowed.
+.It Fl -setargs Ns Oo = Ns Ar boot-args Oc , Fl r Ns Oo Ns Ar boot-args Oc
+Sets the nvram boot-args on the current machine to
+.Ar boot-args Ns
+\&. This flag should only be used on the target machine (which is contrary to typical usage cases, when this tool is used on the host). If
+.Ar boot-args
+is not passed, the tool will prompt the user as to which boot-args are to be set.
+.It Fl -setpm Ns , Fl m
+Sets the nvram boot-args on the current machine to "debug=0x14e io=0x880". This flag should only be used on the target machine (which is contrary to typical usage cases, when this tool is used on the host).
+.It Fl -disable Ns , Fl x
+Sets the nvram boot-args on the current machine to "debug=0x146" which disables kprintf logging. This flag should only be used on the target machine (which is contrary to typical usage cases, when this tool is used on the host).
+.It Fl -erase Ns , Fl e
+Deletes the boot-args variable from nvram. This flag should only be used on the target machine (which is contrary to typical usage cases, when this tool is used on the host).
+.It Fl -ioff
+Turns off interactive mode.
+.It Fl -restart
+Automatically restarts the machine only after the nvram has been modified by this tool.
+.It Fl -help Ns , Fl h
+Displays usage info for fwkpfv.
+.El
+.Sh COMPATABILITY
+Unlike in the past, Mac OS X 10.5 has integrated FireWireKPrintf functionality, so it is not necessary to install a separate kext to enable kprintf logging over FireWire.
+.Pp
+While the symbol for kprintf() is available at all times, the calls are essentially ignored unless activated with a boot argument (see below).
+.Pp
+While the new FireWireKPrintf is integrated with the normal FireWire stack, once the machine begins logging kprintfs via FireWire, normal FireWire services will stop until the machine is restarted. Once in logging mode, all typical FireWire services (like FireWire hard disk access) will be unavailable. It is expected that any devices connected before logging will be forcefully removed.  If you need to log while also using the FireWire stack, please use FireLog (see the FireWireSDK).
+.Pp
+The new integrated FireWireKPrintf cannot be used while the old AppleFireWireKPrintf.kext is installed. Remove it to use the integrated version.
+.Pp
+The new viewer will be able to capture kprintf logs from the old-style AppleFireWireKPrintf.kext, however, the old-style viewer will not work with the integrated FireWireKPrintf services.
+.Sh USAGE
+To use the FireWireKPrintf, two machines must be setup as such:
+.Bl -dash -offset
+.It
+On the Target machine (to be debugged):
+.Bl -enum -offset indent -compact
+.It
+Boot the Mac from the partition you wish to use.
+.It
+Set kernel boot arguments to enable kernel printfs:
+.Dl % sudo nvram boot-args="debug=0x8"
+While only the debug bit equivalent to '0x8' is required for kprintf logging, you may want to set the debug variable to '0x14e' to enable other debugging services. For more information on the debug flags, please see Technical Note TN2118. For more logging options, please see <Kernel/IOKit/IOKitDebug.h>.
+.It
+Restart the target Mac.
+.It
+Disconnect any FireWire device.
+.El
+.It
+On the debugger machine with Mac OS X and Developer Tools installed, run from Terminal.app:
+.Dl % fwkpfv
+.Dl (If the machine is running Tiger: Run the FireWireKPrintf viewer tool included in the FireWireSDK available at http://developer.apple.com/sdk/.)
+.It
+Connect the two machines together using a FireWire cable.
+.It
+After 5 seconds, you should see output in the viewer and kprintf logging is flowing. Note: At this point, normal FireWire services will cease to exist on the target until the machine is restarted.
+.El
+.Sh TARGET-SIDE OPTIONS
+FireWireKPrintf implements a few options that can be set as a "boot-arg," much like the "debug" variable. The "fwkpf" variable specifies the timestamp format (calculated on the target, before transmission), timestamp padding, verbose kprintf printing, and synchronous mode. To set the "fwkpf" variable, choose a timestamp unit and add any of the "additive" options. The default timestamp is 0x4 (microseconds).
+.Pp
+Timestamp Formats (not additive):
+.Bl -tag -width XXXXXXX
+.It Ar 0x0
+Converted FW Cycle Time Units (c) - Classic time format shown as "Seconds.Microseconds". The Second unit rolls over every 128 seconds. Driven by the FireWire clock.
+.It Ar 0x1
+Absolute Time Units (a) - "Absolute" time units derived directly from the kernel's uptime clock.
+.It Ar 0x2
+FireWire Time Units (w) - Shown as "Seconds:Cycles:Offset". Driven by the FireWire clock. Seconds rollover every 128 seconds. 8000 cycles per second. 3072 offset counts per cycle. Equivalent to FireBug's time format.
+.It Ar 0x3
+Nanoseconds Time Units (n) - The kernel's uptime clock converted to nanoseconds.
+.It Ar 0x4
+Microseconds Time Units (u) - The kernel's uptime clock converted to microseconds.
+.It Ar 0x5
+Milliseconds Time Units (m) - The kernel's uptime clock converted to milliseconds.
+.It Ar 0x6
+Seconds Time Units (s) - Shown as "Seconds:Milliseconds:Microseconds". Converted from kernel's uptime clock.
+.It Ar 0x7
+Day Time Units (d) - "Days:Hours:Minutes:Seconds:Milliseconds:Microseconds". Converted from kernel's uptime clock.
+.It Ar 0xF
+No Time Units (-) - No time units, displayed as "-".
+.El
+.Pp
+Additive Options:
+.Bl -tag -width XXXXXXX
+.It Ar 0x10
+Append output logging to /Library/Logs/FireWireKPrintf.log.
+.It Ar 0x100
+Open log file with Console.app. Only valid with "-o".
+.It Ar 0x800
+Create a new log file, rather than append. Only valid with "-o".
+.It Ar 0x8000
+Prefix logger machine's ID to each log.
+.El
+For example, if you wish to display microsecond time units with padding, synchronous mode enabled, and verbose printing disabled, the target's boot-args would be as follows: "debug=0x14e fwkpf=0x114". On the target, run the following in Terminal.app:
+% sudo nvram boot-args="debug=0x14e fwkpf=0x114"
+.Pp
+If not defined, the "fwkpf" variable defaults to "0x004."
+.Sh DECIPHERING THE OUTPUT
+Once the viewer is running, he target machine is logging, and both machines are connected with a FireWire cable, you will see output similar to the following:
+.Pp
+.Dl % fwkpfv
+.Dl Welcome to FireWireKPrintf (viewer x.x.x).
+.Dl c>50.097255 AppleFWOHCI_KPF version x.x.x
+.Dl c>55.110783 AppleFWOHCI_KPF (re)initialized
+.Dl c>55.110793 Log saver
+.Dl c>55.129614 in.c: warning can't plumb proto if=fw0 type 144 error=17
+.Pp
+.Bl -tag -width XXX
+.It 'Welcome to FireWireKPrintf (viewer x.x.x)'
+signifies viewer tool start correctly. If multiple interfaces are present on the debugger machine, it will give an interface count.
+.It 'AppleFWOHCI_KPF version x.x.x'
+signifies the AppleFireWireKPrintf kext has (re)initialized the FireWire hardware for use in a FireWIreKPrintf manner.
+.It 'FWKPF: Time Format->...'
+displays the time format declared in the target's boot-args. See the "Options" section of this document to select a different time format.
+.It 'c>13.481567'
+displays the time at which the kprintf call was logged. Prefixed with the letter that corresponds to the time formats listed above. The format of this time log is displayed upon start and can be changed in the target's boot-args. See above.
+.It '... in.c: warning can't...'
+the const char * string from the kprintf() call; the log. (This is a normal log.)
+.El
+.Sh TROUBLESHOOTING
+If you are seeing the following symptoms:
+.Pp
+There is no output from the fwkpfv tool on the second machine:
+.Bl -dash -offset indent -compact
+.It
+Make sure the two machines are connected with a good FireWire cable.
+.It
+Run "nvram boot-args" and verify that the boot-args are set correctly.
+.It
+Be sure you're using the new fwkpfv utility, version 2.1 or newer.
+.El
+.Pp
+The machine hangs at boot:
+.Bl -dash -offset indent -compact
+.It
+Sometimes the console will hang at boot when there is a high volume of logging to screen. Try booting in non-verbose mode or limiting the volume of logging. Remove the "-v" from your machine's boot-args. Or remove "io=0x80".
+.El
+.Sh DISABLING
+To disable the FireWireKPrintf, delete the target machine's boot-args. Within Terminal.app run the following:
+.Bl -dash -offset indent -compact
+.It
+% sudo nvram -d boot-args
+.It 
+     OR set the boot-args variable to your previous setting.
+.It
+Restart to target Mac.
+.El
+.Sh NOTES
+.Ss Other debug/boot-arg options:
+For more information on the debug flags, please see Technical Note TN2118. Setting the boot-arg variable "io" to "0x80" will turn on a significant volume of power management logging, which may be useful while debugging sleep/wake issues. Similarly, adding the "-v" argument to the boot-args will enable Mac OS X's verbose mode. This may be useful for watching local logging during boot or shutdown. For example, to add power management logging and verbose mode:
+.Dl % sudo nvram boot-args="debug=0x8 io=0x80 -v"
+.Pp
+.Ss The timestamps for very early boot logs are inconsistent:
+FireWireKPrintf tries to catch kprintf calls as soon as its start() routine is called. All kprintf calls after this point will be saved until the FireWire hardware has been initialized completely (which is also early in the boot process), however, the timestamps for these very early logs will reference the time they were sent via FireWire, not when kprintf() was called. All timestamps can be assumed accurate after the log from FireWireKPrintf that reads something similar to:
+.Dl "FWKPF: Time Format->..." 
+.Pp
+.Ss The timestamps for very early wake logs are inconsistent:
+Similar to very early boot logs, kprintf() calls by the kernel very early upon wake will be saved and sent after the FireWire hardware has had time to initialize. Likewise, the timestamps for these early logs may reflect a yet-to-be-initialized cpu time. These timestamps will be extremely large and clearly recognizable.
+.Pp
+.Ss Synchronous or Non-Synchronous?:
+With exception to the two cases above (very early boot and very early sleep) when the FireWire hardware cannot be initialized without stopping kernel progression, all FireWireKPrintf logs are sent synchronously. This means that if the log is sent successfully, it is guaranteed to be on the wire before the call returns. If the log cannot be sent, an error will be written to system.log.
+.Pp
+.Ss How do I know if I have enabled FireWireKPrintf and have 'normal' FireWire disabled?:
+The "FireWire" tab of "/Applications/Utilities/System Profiler.app" will allow you to see if FireWireKPrintf has disabled normal FireWire services. To this end, if FireWire is disabled, unplug any FireWire cables and restart the Mac to restore normal FireWire services. Additionally, be mindful to restart machines that have dropped into logging mode as soon as you have finished using FireWireKPrintf logging.
+.Pp
+.Ss My boot-args disappeared unexpectedly:
+Some applications, such as the Startup Disk preference pane, set the boot-args themselves. Therefore, it is always best to boot to the partition you wish to debug, set the boot-args, and then restart.
+.Pp
+.Ss My FireWire drive mounts on a second machine and then disappears off the first:
+When a viewer Mac is connected to a logging (target) Mac, all normal FireWire services stop, including FireWire disk access. It may take a few moments for the disk to disappear on the logging Mac, but once you have connected a viewer Mac, it will be impossible to use a FireWire hard disk without restarting.
+.Pp
+.Ss I see an error when I first connect:
+The following log is often shown when you first connect:
+.Dl in.c: warning can't plumb proto if=fw0 type 144 error=17
+It is a normal log from a different part of the system and should not be of any concern. 
+.Pp
+.Ss Compatibility with Intel and PPC:
+FireWireKPrintf works on both Intel and PowerPC based Macs. The integrated FireWireKPrintf and fwkpfv is new for Leopard and is not included in any previous OS release.
+.Pp
+.Ss Other FireWire Devices:
+To avoid conflicts it is best not to have other FireWire devices plugged into the host or target machines while using FireWireKPrintf. Having more than 2 nodes total (i.e. the two CPUs) may cause unexpected results.
+.Pp
+.Ss Logging from multiple machines:
+The fwkpfv utility is able to receive logging from multiple machines. Connecting more than one logging target machine to a viewer will result in individual Terminal windows showing machine specific logs. A full, unparsed log is saved to "/Library/Logs/fwkpf.log". You may also force machine ID prefixation to each log by specifying the "-i" flags to fwkpfv.
+.Pp
+.Ss Using FireWireKPrintf with FireWireKDP:
+FireWireKPrintf is compatible with FireWireKDP. To use both, it is recommended to set the boot-args using the following command:
+% sudo nvram boot-args="debug=0x14e kdp_match_name=firewire"
+Of course, you may modify or add boot-args to suit your needs (see note above).
+.Pp
+.Ss How do I clear the viewer?:
+Remember, you can clear the scrollback buffer of Terminal.app by selecting "Clear Scrollback" (or Cmd-K) from the "Scrollback" menu.
+.Pp
+.Ss Why do I see different logging with different machines?:
+The "built-in" kprintf output is target machine specific. This is due to special casing of hardware and other states. It may also vary with operating system version and even kext versions. Remember, a developer can change their kprintf() calls at any time.
+.Pp
+.Ss Can I see more logging?:
+Most Macs have the ability to output a significant volume of power management logging, which may be useful while debugging sleep/wake issues. Many options are defined in <Kernel/IOKit/IOKitDebug.h>.
+.Pp
+.Ss What about FireLog?:
+FireLog and FireWireKPrintf are different, both in theory and practice. FireLog is a high speed logging system which requires a framework. Most importantly, FireLog uses a buffering system (in a pull manner) to prevent the loss of logs during high logging volume or low processing time. Conversely, FireWireKPrintf employs a push method of sending each log onto the wire as soon as it is available. Furthermore, FireWireKPrintf is available sooner in the kernel's startup. FireLog is an excellent solution if you need high speed logging.
+.Sh FILES
+.Bl -tag -width indent
+.It Pa /usr/bin/fwkpfv
+is installed as part of the Mac OS X Developer Tools.
+.El
+.Sh "SEE ALSO"
+.Xr fwkdp(1)

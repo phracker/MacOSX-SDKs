@@ -1,0 +1,166 @@
+.TH "<MPSCNNConvolutionDataSource >" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+<MPSCNNConvolutionDataSource >
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNConvolution\&.h>\fP
+.PP
+Inherits <MPSStateNSCopying>, and <NSObject>\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(\fBMPSDataType\fP) \- \fBdataType\fP"
+.br
+.ti -1c
+.RI "(\fBMPSCNNConvolutionDescriptor\fP *__nonnull) \- \fBdescriptor\fP"
+.br
+.ti -1c
+.RI "(void *__nonnull) \- \fBweights\fP"
+.br
+.ti -1c
+.RI "(float *__nullable) \- \fBbiasTerms\fP"
+.br
+.ti -1c
+.RI "(BOOL) \- \fBload\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBpurge\fP"
+.br
+.ti -1c
+.RI "(NSString *__nullable) \- \fBlabel\fP"
+.br
+.ti -1c
+.RI "(vector_float2 *__nonnull) \- \fBrangesForUInt8Kernel\fP"
+.br
+.ti -1c
+.RI "(float *__nonnull) \- \fBlookupTableForUInt8Kernel\fP"
+.br
+.ti -1c
+.RI "(\fBMPSCNNWeightsQuantizationType\fP) \- \fBweightsQuantizationType\fP"
+.br
+.ti -1c
+.RI "(\fBMPSCNNConvolutionWeightsAndBiasesState\fP *__nullable) \- \fBupdateWithCommandBuffer:gradientState:sourceState:\fP"
+.br
+.ti -1c
+.RI "(BOOL) \- \fBupdateWithGradientState:sourceState:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.in -1c
+.SH "Method Documentation"
+.PP 
+.SS "\- (float * __nullable \fBMPSCNNConvolutionDataSource\fP) biasTerms \fC [required]\fP"
+Returns a pointer to the bias terms for the convolution\&.  Each entry in the array is a single precision IEEE-754 float and represents one bias\&. The number of entries is equal to outputFeatureChannels\&.
+.PP
+Frequently, this function is a single line of code to return a pointer to memory allocated in -load\&. It may also just return nil\&.
+.PP
+Note: bias terms are always float, even when the weights are not\&. 
+.SS "\- (nonnull instancetype \fBMPSCNNConvolutionDataSource\fP) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device\fC [optional]\fP"
+When copyWithZone:device on convolution is called, data source copyWithZone:device will be called if data source object responds to this selector\&. If not, copyWithZone: will be called if data source responds to it\&. Otherwise, it is simply retained\&. This is to allow application to make a separate copy of data source in convolution when convolution itself is coplied, for example when copying training graph for running on second GPU so that weights update on two different GPUs dont end up stomping same data source\&. 
+.SS "\- (\fBMPSDataType\fP \fBMPSCNNConvolutionDataSource\fP) dataType \fC [required]\fP"
+Alerts MPS what sort of weights are provided by the object  For \fBMPSCNNConvolution\fP, MPSDataTypeUInt8, MPSDataTypeFloat16 and MPSDataTypeFloat32 are supported for normal convolutions using \fBMPSCNNConvolution\fP\&. \fBMPSCNNBinaryConvolution\fP assumes weights to be of type MPSDataTypeUInt32 always\&. 
+.SS "\- (\fBMPSCNNConvolutionDescriptor\fP * __nonnull \fBMPSCNNConvolutionDataSource\fP) descriptor \fC [required]\fP"
+Return a \fBMPSCNNConvolutionDescriptor\fP as needed  MPS will not modify this object other than perhaps to retain it\&. User should set the appropriate neuron in the creation of convolution descriptor and for batch normalization use: 
+.PP
+.nf
+-setBatchNormalizationParametersForInferenceWithMean:variance:gamma:beta:epsilon:
+
+.fi
+.PP
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP \fBMPSCNNConvolutionDescriptor\fP that describes the kernel housed by this object\&. 
+.RE
+.PP
+
+.SS "\- (NSString*__nullable \fBMPSCNNConvolutionDataSource\fP) label \fC [required]\fP"
+\fBA\fP label that is transferred to the convolution at init time  Overridden by a \fBMPSCNNConvolutionNode\&.label\fP if it is non-nil\&. 
+.SS "\- (BOOL \fBMPSCNNConvolutionDataSource\fP) load \fC [required]\fP"
+Alerts the data source that the data will be needed soon  Each load alert will be balanced by a purge later, when MPS no longer needs the data from this object\&. Load will always be called atleast once after initial construction or each purge of the object before anything else is called\&. Note: load may be called to merely inspect the descriptor\&. In some circumstances, it may be worthwhile to postpone weight and bias construction until they are actually needed to save touching memory and keep the working set small\&. The load function is intended to be an opportunity to open files or mark memory no longer purgeable\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+Returns YES on success\&. If NO is returned, expect MPS object construction to fail\&. 
+.RE
+.PP
+
+.SS "\- (float * __nonnull \fBMPSCNNConvolutionDataSource\fP) lookupTableForUInt8Kernel \fC [optional]\fP"
+\fBA\fP pointer to a 256 entry lookup table containing the values to use for the weight range [0,255] 
+.SS "\- (void \fBMPSCNNConvolutionDataSource\fP) purge \fC [required]\fP"
+Alerts the data source that the data is no longer needed  Each load alert will be balanced by a purge later, when MPS no longer needs the data from this object\&. 
+.SS "\- (vector_float2 * __nonnull \fBMPSCNNConvolutionDataSource\fP) rangesForUInt8Kernel \fC [optional]\fP"
+\fBA\fP list of per-output channel limits that describe the 8-bit range  This returns a pointer to an array of vector_float2[outputChannelCount] values\&. The first value in the vector is the minimum value in the range\&. The second value in the vector is the maximum value in the range\&.
+.PP
+The 8-bit weight value is interpreted as: 
+.PP
+.nf
+float unorm8_weight = uint8_weight / 255\&.0f;    // unorm8_weight has range [0,1\&.0]
+float max = range[outputChannel]\&.y;
+float min = range[outputChannel]\&.x;
+float weight = unorm8_weight * (max - min) + min
+
+.fi
+.PP
+ 
+.SS "\- (\fBMPSCNNConvolutionWeightsAndBiasesState\fP* __nullable \fBMPSCNNConvolutionDataSource\fP) updateWithCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNConvolutionGradientState\fP *__nonnull) gradientState(\fBMPSCNNConvolutionWeightsAndBiasesState\fP *__nonnull) sourceState\fC [optional]\fP"
+Callback for the \fBMPSNNGraph\fP to update the convolution weights on GPU\&.  It is the resposibility of this method to decrement the read count of both the gradientState and the sourceState before returning\&. BUG: prior to macOS 10\&.14, ios/tvos 12\&.0, the \fBMPSNNGraph\fP incorrectly decrements the readcount of the gradientState after this method is called\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer on which to do the update\&. MPSCNNConvolutionGradientNode\&.MPSNNTrainingStyle controls where you want your update to happen\&. Provide implementation of this function for GPU side update\&. 
+.br
+\fIgradientState\fP \fBA\fP state object produced by the \fBMPSCNNConvolution\fP and updated by \fBMPSCNNConvolutionGradient\fP containing weight gradients\&. 
+.br
+\fIsourceState\fP \fBA\fP state object containing the convolution weights 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+If NULL, no update occurs\&. If nonnull, the result will be used to update the weights in the \fBMPSNNGraph\fP 
+.RE
+.PP
+
+.SS "\- (BOOL \fBMPSCNNConvolutionDataSource\fP) updateWithGradientState: (\fBMPSCNNConvolutionGradientState\fP *__nonnull) gradientState(\fBMPSCNNConvolutionWeightsAndBiasesState\fP *__nonnull) sourceState\fC [optional]\fP"
+Callback for the \fBMPSNNGraph\fP to update the convolution weights on CPU\&. MPSCNNConvolutionGradientNode\&.MPSNNTrainingStyle controls where you want your update to happen\&. Provide implementation of this function for CPU side update\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIgradientState\fP \fBA\fP state object produced by the \fBMPSCNNConvolution\fP and updated by \fBMPSCNNConvolutionGradient\fP containing weight gradients\&. \fBMPSNNGraph\fP is responsible for calling [gradientState synchronizeOnCommandBuffer:] so that application get correct gradients for CPU side update\&. 
+.br
+\fIsourceState\fP \fBA\fP state object containing the convolution weights used\&. \fBMPSCNNConvolution\fP and \fBMPSCNNConvolutionGradient\fP reloadWeightsWithDataSource will be called right after this method is called\&. Note that the weights returned here may not match the weights in your data source due to conversion loss\&. These are the weights actually used, and should be what you use to calculate the new weights\&. Your copy may be incorrect\&. Write the new weights to your copy and return them out the left hand side\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+TRUE if success/no error, FALSE in case of failure\&. 
+.RE
+.PP
+
+.SS "\- (void * __nonnull \fBMPSCNNConvolutionDataSource\fP) weights \fC [required]\fP"
+Returns a pointer to the weights for the convolution\&.  The type of each entry in array is given by -dataType\&. The number of entries is equal to: 
+.PP
+.nf
+inputFeatureChannels * outputFeatureChannels * kernelHeight * kernelWidth
+
+.fi
+.PP
+ The layout of filter weight is as a 4D tensor (array) weight[ outputChannels ][ kernelHeight ][ kernelWidth ][ inputChannels / groups ]
+.PP
+Frequently, this function is a single line of code to return a pointer to memory allocated in -load\&.
+.PP
+Batch normalization parameters are set using -descriptor\&.
+.PP
+Note: For binary-convolutions the layout of the weights are: weight[ outputChannels ][ kernelHeight ][ kernelWidth ][ floor((inputChannels/groups)+31) / 32 ] with each 32 sub input feature channel index specified in machine byte order, so that for example the 13th feature channel bit can be extracted using bitmask = (1U << 13)\&. 
+.SS "\- (\fBMPSCNNWeightsQuantizationType\fP \fBMPSCNNConvolutionDataSource\fP) weightsQuantizationType \fC [optional]\fP"
+Quantizaiton type of weights\&. If it returns MPSCNNWeightsQuantizationTypeLookupTable, lookupTableForUInt8Kernel method must be implmented\&. if it returns MPSCNNWeightsQuantizationTypeLookupLinear, rangesForUInt8Kernel method must be implemented\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

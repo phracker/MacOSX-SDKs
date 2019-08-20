@@ -1,0 +1,237 @@
+.\" Copyright (c) 2015, Apple Inc.  All rights reserved.
+.\"
+.Dd Apr 20, 2015
+.Dt lskq 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm lskq
+.Nd display process kqueue state
+.Sh SYNOPSIS
+.Nm lskq
+.Op Fl vhe
+.Op Fl p Ar <pid> | Fl a
+.Sh DESCRIPTION
+The
+.Nm lskq
+command enumerates kqueues and registered kevents of running processes.
+.Sh OPTIONS
+.Pp
+.Bl -tag -width xxx
+.It Fl p Ar <pid>
+Show kqueues of process
+.Ar <pid> .
+.It Fl a
+Show kqueues for all running processes. Requires root.
+.It Fl v
+Verbose: show opaque user data and filter-specific extension fields.
+.It Fl e
+Ignore empty kqueues.
+.It Fl r
+Print fields in raw hex.
+.It Fl h
+Show help and exit.
+.El
+.Sh OUTPUT
+.Nm lskq
+prints one line of output for each registered kevent, consisting of process,
+kqueue, and kevent information. For kqueues with no registered kevents, a single
+line is output with an ident of `-'. See
+.Xr kevent 2
+for field semantics. The output columns are:
+.Bl -tag -width xxxxxxxxxxxx
+.It command
+shortened process name.
+.It pid
+process identifier.
+.It kq
+file descriptor corresponding to kqueue, or ``wq'' for the special workq kqueue.
+.It kqst
+kqueue status bitmask.
+.Bl -tag -width xxxxxxx -compact
+.It Sy k
+kqueue is in a
+.Fn kevent*
+wait set (KQ_SLEEP).
+.It Sy s
+kqueue is in a
+.Fn select
+wait set (KQ_SEL).
+.It Sy 3 6 q
+Type of kevents on this kqueue: KEV32, KEV64, or KEV_QOS.
+.El
+.It ident
+kevent identifier. The meaning depends on the kevent filter specified. Where
+possible,
+.Nm lskq
+prints both numeric and symbolic names.
+.It filter
+kevent filter type (EVFILT_*).
+.It fdtype
+file descriptor type, for filters operating on file descriptors.
+.It fflags
+kevent filter flags bitmask. The meaning of each field depends on the filter type.
+.Bl -tag -width xxxxxxx -compact
+.Pp
+.It EVFILT_READ:
+.It Sy l
+NOTE_LOWAT
+.Pp
+.It EVFILT_MACHPORT:
+.It Sy r
+MACH_RCV_MSG
+.Pp
+.It EVFILT_VNODE:
+.It Sy d
+NOTE_DELETE
+.It Sy w
+NOTE_WRITE
+.It Sy e
+NOTE_EXTEND
+.It Sy a
+NOTE_ATTRIB
+.It Sy l
+NOTE_LINK
+.It Sy r
+NOTE_RENAME
+.It Sy v
+NOTE_REVOKE
+.Pp
+.It EVFILT_PROC:
+.It Sy x
+NOTE_EXIT
+.It Sy t
+NOTE_EXITSTATUS
+.It Sy d
+NOTE_EXIT_DETAIL
+.It Sy f
+NOTE_FORK
+.It Sy e
+NOTE_EXEC
+.It Sy s
+NOTE_SIGNAL
+.It Sy r
+NOTE_REAP
+.Pp
+.It EVFILT_TIMER:
+.It Sy s u n
+NOTE_SECONDS, NOTE_USECONDS, NOTE_NSECONDS
+.It Sy a
+NOTE_ABSOLUTE
+.It Sy c
+NOTE_CRITICAL
+.It Sy b
+NOTE_BACKGROUND
+.It Sy l
+NOTE_LEEWAY
+.Pp
+.It EVFILT_USER:
+.It Sy t
+NOTE_TRIGGER
+.It Sy a
+NOTE_FFAND
+.It Sy o
+NOTE_FFOR
+.Pp
+.It EVFILT_WORKLOOP:
+.It Sy t w
+NOTE_WL_THREAD_REQUEST, NOTE_WL_SYNC_WAIT
+.It Sy !
+NOTE_WL_SYNC_WAKE
+.It Sy q
+NOTE_WL_UPDATE_QOS
+.It Sy O o
+NOTE_WL_UPDATE_OWNER, NOTE_WL_DISCOVER_OWNER
+.El
+.It flags
+kevent generic flags bitmask.
+.Bl -tag -width xxxxxxx -compact
+.It Sy a
+EV_ADD
+.It Sy n
+EV_ENABLE
+.It Sy d
+EV_DISABLE
+.It Sy x
+EV_DELETE
+.Pp
+.It Sy r
+EV_RECEIPT
+.It Sy 1
+EV_ONESHOT
+.It Sy c
+EV_CLEAR
+.It Sy s
+EV_DISPATCH
+.Pp
+.It Sy u
+EV_UDATA_SPECIFIC
+.It Sy p
+EV_FLAG0 (EV_POLL)
+.It Sy b
+EV_FLAG1 (EV_OOBAND)
+.It Sy o
+EV_EOF
+.It Sy e
+EV_ERROR
+.El
+.It evst
+kevent status bitmask.
+.Bl -tag -width xxxxxxx -compact
+.It Sy a
+KN_ACTIVE (event has triggered)
+.It Sy q
+KN_QUEUED (event has been added to the active list)
+.It Sy d
+KN_DISABLED
+.It Sy s
+KN_STAYQUEUED (event is marked as always-enqueued on the active list)
+.Pp
+.It Sy d
+KN_DROPPING
+.It Sy w
+KN_USEWAIT
+.It Sy c
+KN_ATTACHING
+.It Sy a
+KN_ATTACHED
+.Pp
+.It Sy s
+KN_DISPATCH
+.It Sy u
+KN_UDATA_SPECIFIC
+.It Sy p
+KN_SUPPRESSED
+.It Sy t
+KN_STOLENDROP
+.Pp
+.It Sy v
+KN_REQVANISH
+.It Sy n
+KN_VANISHED
+.El
+.It qos
+The QoS requested for the knote.
+.It data
+Filter-specific data.
+.El
+.Pp
+If the
+.Fl v
+(verbose) option is specified, the opaque user-data field and further
+filter-specific extension fields are printed in raw hexadecimal.
+.Sh NOTES
+The output of
+.Nm lskq
+is not an atomic snapshot of system state. In cases where
+.Nm lskq
+is able to detect an inconsistency, a warning will be printed.
+.Pp
+Not all flags are symbolicated. Use
+.Fl r
+(raw mode) to inspect additional flags.
+.Sh SEE ALSO
+.Xr kqueue 2 ,
+.Xr kevent 2 ,
+.Xr ddt 1 ,
+.Xr lsof 8 ,
+.Xr lsmp 1

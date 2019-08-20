@@ -1,0 +1,176 @@
+.Dd Nov 29, 2010
+.Dt XATTR 1
+.Os
+.Sh NAME
+.Nm xattr
+.Nd display and manipulate extended attributes
+.Sh SYNOPSIS
+.Nm
+.Op Fl lrsvx
+.Ar file ...
+.Nm
+.Fl p
+.Op Fl lrsvx
+.Ar attr_name
+.Ar file ...
+.Nm
+.Fl w
+.Op Fl rsx
+.Ar attr_name attr_value
+.Ar file ...
+.Nm
+.Fl d
+.Op Fl rsv
+.Ar attr_name
+.Ar file ...
+.Nm
+.Fl c
+.Op Fl rsv
+.Ar file ...
+.Nm
+.Fl h | -help
+.Sh DESCRIPTION
+The
+.Nm
+command can be used to display, modify or remove the extended attributes
+of one or more files, including directories and symbolic links.
+Extended attributes are arbitrary metadata stored with a file, but separate
+from the filesystem attributes (such as modification time or file size).
+The metadata is often a null-terminated UTF-8 string, but can also be arbitrary
+binary data.
+.Pp
+One or more files may be specified on the command line.
+For the first two forms of the command, when there are more than one file,
+the file name is displayed along with the actual results.
+When only one file is specified, the display of the file name is usually
+suppressed (unless the
+.Fl v
+option described below, is also specified).
+.Pp
+In the first form of the command (without any other mode option specified),
+the names of all extended attributes are listed.
+Attribute names can also be displayed using
+.Dq Li ls -l@ .
+.Pp
+In the second form, using the
+.Fl p
+option
+.Pq Dq print ,
+the value associated with the given attribute name is displayed.
+Attribute values are usually displayed as strings.
+However, if nils are detected
+in the data, the value is displayed in a hexadecimal representation.
+.Pp
+The third form, with the
+.Fl w
+option
+.Pq Dq write ,
+causes the given attribute name to be assigned the given value.
+.Pp
+The fourth form, with the
+.Fl d
+option
+.Pq Dq delete ,
+causes the given attribute name (and associated value), to be removed.
+.Pp
+In the fifth form, with the
+.Fl c
+option
+.Pq Dq clear ,
+causes all attributes (including their associated values), to be removed.
+.Pp
+Finally, the last form, with either the
+.Fl h
+or
+.Fl -help
+option, displays a short help message and exits immediately.
+.Sh OPTIONS
+.Bl -tag -width XX
+.It Fl l
+By default, the first two command forms either displays just the attribute
+names or values, respectively.
+The
+.Fl l
+option causes both the attribute names and corresponding values to be displayed.
+For hexadecimal display of values,
+the output is preceeded with the hexadecimal offset values and
+followed by ASCII display, enclosed by
+.Dq | .
+.It Fl r
+If a file argument is a directory, act as if the entire contents of the
+directory recursively were also specified (so that every file in the directory
+tree is acted upon).
+.It Fl s
+If a file argument is a symbolic link, act on the symbolic link itself, rather
+than the file that the symbolic link points at.
+.It Fl v
+Force the the file name to be displayed, even for a single file.
+.It Fl x
+Force the attribute value to be displayed in the hexadecimal representation.
+.Pp
+The
+.Fl w
+option normally assumes the input attribute value is a string.
+Specifying the
+.Fl x
+option causes
+.Nm
+to expect the input in hexadecimal (whitespace is ignored).
+The
+.Xr xxd 1
+command can be used to create hexadecimal representations from exising
+binary data, to pass to
+.Nm .
+.El
+.Sh EXIT STATUS
+The
+.Nm
+command exits with zero status on success.
+On error, non-zero is returned, and an error message is printed to the standard
+error.
+For system call errors, both the error code and error string are printed (see
+.Xr getxattr 2 ,
+.Xr listxattr 2 ,
+.Xr removexattr 2
+and
+.Xr setxattr 2
+for a complete list of possible error codes).
+.Pp
+Some attribute data may have a fixed length that is enforced by the system.
+For example,
+.Bd -literal -offset indent
+% xattr -w com.apple.FinderInfo 0 foo
+xattr: [Errno 34] Result too large: 'foo'
+.Ed
+.Pp
+The
+.Li com.apple.FinderInfo
+attribute must be 32 bytes in length.
+.Sh EXAMPLES
+This example copies the
+.Li com.apple.FinderInfo
+attribute from the
+.Li /usr
+directory to the
+.Li MyDir
+directory:
+.Bd -literal -offset indent
+% xattr -px com.apple.FinderInfo /usr
+00 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+% xattr -l MyDir
+% xattr -wx com.apple.FinderInfo \\
+  "`xattr -px com.apple.FinderInfo /usr`" MyDir
+% xattr -l MyDir
+com.apple.FinderInfo:
+00000000  00 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00  |........@.......|
+00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+00000020
+.Ed
+.Sh SEE ALSO
+.Xr ls 1 ,
+.Xr xxd 1 ,
+.Xr getxattr 2 ,  
+.Xr listxattr 2 ,  
+.Xr removexattr 2 ,  
+.Xr setxattr 2

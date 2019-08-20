@@ -1,0 +1,290 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 6 March 1997
+.ds Re Release 1.2.0
+.ds Dp May 22 14:54
+.ds Dm 0 May 22 14:
+.ds Xs 14825    12
+.TH GLUTESSCALLBACK 3G
+.SH NAME
+.B "gluTessCallback
+\- define a callback for a tessellation object
+
+.SH C SPECIFICATION
+void \f3gluTessCallback\fP(
+GLUtesselator* \fItess\fP,
+.nf
+.ta \w'\f3void \fPgluTessCallback( 'u
+	GLenum \fIwhich\fP,
+	GLvoid * \fICallBackFunc\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fICallBackFunc\fP\ \ 'u 
+\f2tess\fP
+Specifies the tessellation object (created with \%\f3gluNewTess\fP).
+.TP
+\f2which\fP
+Specifies the callback being defined. The following values are valid:
+\%\f3GLU_TESS_BEGIN\fP,
+\%\f3GLU_TESS_BEGIN_DATA\fP,
+\%\f3GLU_TESS_EDGE_FLAG\fP,
+\%\f3GLU_TESS_EDGE_FLAG_DATA\fP,
+\%\f3GLU_TESS_VERTEX\fP,
+\%\f3GLU_TESS_VERTEX_DATA\fP,
+\%\f3GLU_TESS_END\fP, 
+\%\f3GLU_TESS_END_DATA\fP, 
+\%\f3GLU_TESS_COMBINE\fP, 
+\%\f3GLU_TESS_COMBINE_DATA\fP,
+\%\f3GLU_TESS_ERROR\fP, and
+\%\f3GLU_TESS_ERROR_DATA\fP.
+.TP
+\f2CallBackFunc\fP
+Specifies the function to be called.
+.SH DESCRIPTION
+\%\f3gluTessCallback\fP is used to indicate a callback to be used by a tessellation object.
+If the specified callback is already defined, then it is replaced. If 
+\f2CallBackFunc\fP is NULL, then the existing callback becomes undefined.
+.P
+These callbacks are used by the tessellation object to describe how a 
+polygon specified by the user is broken into triangles. Note that there 
+are two versions of each callback: one with user-specified polygon data 
+and one without. If both versions of a particular callback are specified, 
+then the callback with user-specified polygon data will be used. Note 
+that the \f2polygon_data\fP parameter used by some of the functions is
+a copy of the pointer that was specified when 
+\%\f3gluTessBeginPolygon\fP was called. The legal callbacks are as follows:
+.TP 10
+\%\f3GLU_TESS_BEGIN\fP
+The begin callback is invoked like \f3glBegin\fP to indicate the start of 
+a (triangle) primitive. The function takes a single argument of type
+GLenum. If the \%\f3GLU_TESS_BOUNDARY_ONLY\fP property is set to
+\%\f3GL_FALSE\fP, then the argument is set to either
+\%\f3GL_TRIANGLE_FAN\fP, \%\f3GL_TRIANGLE_STRIP\fP, or \%\f3GL_TRIANGLES\fP. If
+the \%\f3GLU_TESS_BOUNDARY_ONLY\fP property is set to \%\f3GL_TRUE\fP,
+then the argument will be set to \%\f3GL_LINE_LOOP\fP. The function
+prototype for this callback is:
+.RS
+.Ex
+void begin ( GLenum type );
+.Ee
+.RE
+.TP
+\%\f3GLU_TESS_BEGIN_DATA\fP
+The same as the \%\f3GLU_TESS_BEGIN\fP callback except that it 
+takes an additional pointer argument. This pointer is identical to the 
+opaque pointer provided when
+\%\f3gluTessBeginPolygon\fP was called. The function prototype for this callback
+is:
+.RS
+.Ex
+void beginData ( GLenum type, void *polygon_data );
+.Ee
+.RE
+.TP
+\%\f3GLU_TESS_EDGE_FLAG\fP
+The edge flag callback is similar to \f3glEdgeFlag\fP. The function
+takes a single boolean flag that indicates which edges lie on the
+polygon boundary. If the flag is \%\f3GL_TRUE\fP, then each vertex
+that follows begins an edge that lies on the polygon boundary, that is,
+an edge that separates an interior region from an exterior one.
+If the flag is \%\f3GL_FALSE\fP, then each vertex that follows begins an edge
+that lies in the polygon interior. The edge flag callback (if defined) is 
+invoked before the first vertex callback.
+.IP
+Since triangle fans and triangle strips do not support edge flags, the begin 
+callback is not called with \%\f3GL_TRIANGLE_FAN\fP or \%\f3GL_TRIANGLE_STRIP\fP
+if a non-NULL edge flag callback is provided. (If the callback is
+initialized to NULL, there is no impact on performance). Instead, the fans and
+strips are converted to independent triangles. The function prototype
+for this callback is:
+.RS
+.Ex
+void edgeFlag ( GLboolean flag );
+.Ee
+.RE
+.TP
+\%\f3GLU_TESS_EDGE_FLAG_DATA\fP
+The same as the \%\f3GLU_TESS_EDGE_FLAG\fP callback except that it takes an additional pointer
+argument. This pointer is identical to the opaque pointer provided when
+\%\f3gluTessBeginPolygon\fP was called. The function prototype for this callback
+is:
+.RS
+.Ex
+void edgeFlagData ( GLboolean flag, void *polygon_data );
+.Ee
+.RE
+.TP
+\%\f3GLU_TESS_VERTEX\fP
+The vertex callback is invoked between the begin and end callbacks.
+It is similar to \f3glVertex\fP, and it defines the vertices of the triangles 
+created by the tessellation process. The function
+takes a pointer as its only argument.  This pointer is identical to
+the opaque pointer provided by the user when the vertex was described
+(see \%\f3gluTessVertex\fP). The function prototype for this callback is:
+.RS
+.Ex
+void vertex ( void *vertex_data );
+.Ee
+.RE
+.TP
+\%\f3GLU_TESS_VERTEX_DATA\fP
+The same as the \%\f3GLU_TESS_VERTEX\fP callback except that it takes an additional pointer 
+argument. This pointer is identical to the opaque pointer provided when
+\%\f3gluTessBeginPolygon\fP was called. The function prototype for this callback
+is:
+.RS
+.Ex
+void vertexData ( void *vertex_data, void *polygon_data );
+.Ee
+.RE
+.TP
+\%\f3GLU_TESS_END\fP
+The end callback serves the same purpose as \f3glEnd\fP. It indicates the 
+end of a primitive and it takes no arguments. The function prototype for this
+callback is:
+.RS
+.Ex
+void end ( void );
+.Ee
+.RE
+.TP
+\%\f3GLU_TESS_END_DATA\fP
+The same as the \%\f3GLU_TESS_END\fP callback except that it takes an additional pointer 
+argument. This pointer is identical to the opaque pointer provided when
+\%\f3gluTessBeginPolygon\fP was called. The function prototype for this callback
+is:
+.RS
+.Ex
+void endData ( void *polygon_data);
+.Ee
+.RE
+.TP 10
+\%\f3GLU_TESS_COMBINE\fP
+The combine callback is called to create a new vertex when the tessellation
+detects an intersection, or wishes to merge features. The function takes
+four arguments: an array of three elements each of type GLdouble, an array 
+of four pointers, an array of four elements each of type GLfloat, and a 
+pointer to a pointer. The prototype is:
+.RS
+.Ex
+void combine( GLdouble coords[3], void *vertex_data[4], 
+              GLfloat weight[4], void **outData );
+.Ee
+.RE
+.IP 
+The vertex is defined as a linear combination of up to four existing vertices, 
+stored in \f2vertex_data\fP. The coefficients of the linear
+combination are given by \f2weight\fP; these weights always add up to 1.
+All vertex pointers are valid even when some of the weights are 0.
+\f2coords\fP gives the location of the new vertex.
+.IP
+The user must allocate another vertex, interpolate parameters using 
+\f2vertex_data\fP and \f2weight\fP, and return the new vertex pointer in
+\f2outData\fP. This handle is supplied during rendering callbacks.
+The user is responsible for freeing the memory some time after 
+\%\f3gluTessEndPolygon\fP is called.
+.IP
+For example, if the polygon lies in an arbitrary plane in 3-space,
+and a color is associated with each vertex, the
+\%\f3GLU_TESS_COMBINE\fP callback might look like this:
+.RS
+.Ex
+void myCombine( GLdouble coords[3], VERTEX *d[4],
+                GLfloat w[4], VERTEX **dataOut )
+{
+   VERTEX *new = new_vertex();
+
+   new->x = coords[0];
+   new->y = coords[1];
+   new->z = coords[2];
+   new->r = w[0]*d[0]->r + w[1]*d[1]->r + w[2]*d[2]->r + w[3]*d[3]->r;
+   new->g = w[0]*d[0]->g + w[1]*d[1]->g + w[2]*d[2]->g + w[3]*d[3]->g;
+   new->b = w[0]*d[0]->b + w[1]*d[1]->b + w[2]*d[2]->b + w[3]*d[3]->b;
+   new->a = w[0]*d[0]->a + w[1]*d[1]->a + w[2]*d[2]->a + w[3]*d[3]->a;
+   *dataOut = new;
+}
+.Ee
+.RE
+.IP
+If the tessellation detects an intersection, then the \%\f3GLU_TESS_COMBINE\fP or 
+\%\f3GLU_TESS_COMBINE_DATA\fP callback (see below) must be defined, and it must 
+write a non-NULL pointer into \f2dataOut\fP. Otherwise the 
+\%\f3GLU_TESS_NEED_COMBINE_CALLBACK\fP error occurs, and no
+output is generated.
+.TP
+\%\f3GLU_TESS_COMBINE_DATA\fP
+The same as the \%\f3GLU_TESS_COMBINE\fP callback except that it takes an additional pointer 
+argument. This pointer is identical to the opaque pointer provided when
+\%\f3gluTessBeginPolygon\fP was called. The function prototype for this callback
+is:
+.RS
+.Ex
+void combineData ( GLdouble coords[3], void *vertex_data[4], 
+                   GLfloat weight[4], void **outData, 
+                   void *polygon_data );
+.Ee
+.RE
+.TP 10
+\%\f3GLU_TESS_ERROR\fP
+The error callback is called when an error is encountered. The one argument
+is of type GLenum; it indicates the specific error that occurred and will be
+set to one of \%\f3GLU_TESS_MISSING_BEGIN_POLYGON\fP, \%\f3GLU_TESS_MISSING_END_POLYGON\fP, 
+\%\f3GLU_TESS_MISSING_BEGIN_CONTOUR\fP, \%\f3GLU_TESS_MISSING_END_CONTOUR\fP, 
+\%\f3GLU_TESS_COORD_TOO_LARGE\fP, \%\f3GLU_TESS_NEED_COMBINE_CALLBACK\fP or
+\%\f3GLU_OUT_OF_MEMORY\fP. Character
+strings describing these errors can be retrieved with the
+\%\f3gluErrorString\fP call. The function prototype for this callback is:
+.RS
+.Ex
+void error ( GLenum errno );
+.Ee
+.RE
+.IP
+The GLU library will recover from the first four
+errors by inserting the missing call(s).
+\%\f3GLU_TESS_COORD_TOO_LARGE\fP indicates that some vertex coordinate exceeded
+the predefined constant \%\f3GLU_TESS_MAX_COORD\fP in absolute value, and
+that the value has been clamped. (Coordinate values must be small
+enough so that two can be multiplied together without overflow.)
+\%\f3GLU_TESS_NEED_COMBINE_CALLBACK\fP indicates that the tessellation
+detected an intersection between two edges in the input data, and the
+\%\f3GLU_TESS_COMBINE\fP or \%\f3GLU_TESS_COMBINE_DATA\fP callback was
+not provided. No output is generated. \%\f3GLU_OUT_OF_MEMORY\fP indicates
+that there is not enough memory so no output is generated.
+.TP
+\%\f3GLU_TESS_ERROR_DATA\fP
+The same as the \%\f3GLU_TESS_ERROR\fP callback except that it takes an additional pointer 
+argument. This pointer is identical to the opaque pointer provided when
+\%\f3gluTessBeginPolygon\fP was called. The function prototype for this callback
+is:
+.RS
+.Ex
+void errorData ( GLenum errno, void *polygon_data );
+.Ee
+.RE
+.SH EXAMPLE
+Polygons tessellated can be rendered directly like this:
+.sp
+.Ex
+gluTessCallback(tobj, GLU_TESS_BEGIN, glBegin);
+gluTessCallback(tobj, GLU_TESS_VERTEX, glVertex3dv);
+gluTessCallback(tobj, GLU_TESS_END, glEnd);
+gluTessCallback(tobj, GLU_TESS_COMBINE, myCombine);
+gluTessBeginPolygon(tobj, NULL);
+  gluTessBeginContour(tobj);
+    gluTessVertex(tobj, v, v);
+    ...
+  gluTessEndContour(tobj);
+gluTessEndPolygon(tobj);
+.Ee
+.sp
+Typically, the tessellated polygon should be stored in a display list so that
+it does not need to be retessellated every time it is rendered.
+.SH SEE ALSO
+\f3glBegin\fP, \f3glEdgeFlag\fP, \f3glVertex\fP, \%\f3gluNewTess\fP,
+\%\f3gluErrorString\fP, \%\f3gluTessVertex\fP, 
+\%\f3gluTessBeginPolygon\fP,
+\%\f3gluTessBeginContour\fP, \%\f3gluTessProperty\fP, \%\f3gluTessNormal\fP 
+

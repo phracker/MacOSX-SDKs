@@ -1,0 +1,209 @@
+.TH "MPSMatrixBatchNormalization" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSMatrixBatchNormalization
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSMatrixBatchNormalization\&.h>\fP
+.PP
+Inherits \fBMPSMatrixUnaryKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(void) \- \fBsetNeuronType:parameterA:parameterB:parameterC:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSCNNNeuronType\fP) \- \fBneuronType\fP"
+.br
+.ti -1c
+.RI "(float) \- \fBneuronParameterA\fP"
+.br
+.ti -1c
+.RI "(float) \- \fBneuronParameterB\fP"
+.br
+.ti -1c
+.RI "(float) \- \fBneuronParameterC\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:inputMatrix:meanVector:varianceVector:gammaVector:betaVector:resultMatrix:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBsourceNumberOfFeatureVectors\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBsourceInputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "float \fBepsilon\fP"
+.br
+.ti -1c
+.RI "BOOL \fBcomputeStatistics\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+\fBMPSMatrixBatchNormalization\&.h\fP  MetalPerformanceShaders\&.framework
+.PP
+\fBCopyright:\fP
+.RS 4
+Copyright (c) 2018 Apple Inc\&. All rights reserved\&.  Batch normalization of arrays stored as \fBMPSMatrix\fP objects\&.
+.RE
+.PP
+This depends on Metal\&.framework\&.
+.PP
+Applies a batch normalization to a matrix\&.
+.PP
+\fBA\fP \fBMPSMatrixBatchNormalization\fP object computes the batch normalization of a collection of feature vectors stored in an \fBMPSMatrix\fP\&.
+.PP
+Feature vectors are stored in a row of the supplied input matrix and the normalization is performed along columns: 
+.PP
+.nf
+y[i,j] = gamma[j] * (x[i,j] - mean(x[:,j])) / (variance(x[:,j]) + epsilon) + beta[j]
+
+.fi
+.PP
+.PP
+where gamma and beta are supplied weight and bias factors and epsilon is a small value added to the variance\&.
+.PP
+Optionally a neuron activation function may be applied to the result\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device"
+Make a copy of this kernel for a new device - 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSKernel\fP 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP The NSZone in which to allocate the object 
+.br
+\fIdevice\fP The device for the new \fBMPSKernel\fP\&. If nil, then use self\&.device\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to a copy of this \fBMPSKernel\fP\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSMatrix\fP *__nonnull) inputMatrix(\fBMPSVector\fP *__nonnull) meanVector(\fBMPSVector\fP *__nonnull) varianceVector(\fBMPSVector\fP *__nullable) gammaVector(\fBMPSVector\fP *__nullable) betaVector(\fBMPSMatrix\fP *__nonnull) resultMatrix"
+Encode a \fBMPSMatrixBatchNormalization\fP object to a command buffer\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&.
+.br
+\fIinputMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the input array\&.
+.br
+\fImeanVector\fP \fBA\fP valid \fBMPSVector\fP object containing batch mean values to be used to normalize the inputs if computeStatistics is NO\&. If computeStatistics is YES the resulting batch mean values will be returned in this array\&.
+.br
+\fIvarianceVector\fP \fBA\fP valid \fBMPSVector\fP object containing batch variance values to be used to normalize the inputs if computeStatistics is NO\&. If computeStatistics is YES the resulting batch variance values will be returned in this array\&.
+.br
+\fIgammaVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the gamma terms, or a null object to indicate that no scaling is to be applied\&.
+.br
+\fIbetaVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the beta terms, or a null object to indicate that no values are to be added\&.
+.br
+\fIresultMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the output array\&.
+.RE
+.PP
+Encodes the operation to the specified command buffer\&. resultMatrix must be large enough to hold a MIN(sourceNumberOfFeatureVectors, inputMatrix\&.rows - sourceMatrixOrigin\&.x) x MIN(inputMatrix\&.columns - sourceMatrixOrigin\&.y, sourceInputFeatureChannels) array\&.
+.PP
+Let numChannels = MIN(inputMatrix\&.columns - sourceMatrixOrigin\&.y, sourceInputFeatureChannels)
+.PP
+The gamma, beta, mean, and variance vectors must contain at least numChannels elements\&. 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  See \fBMPSKernel::initWithCoder\fP\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSMatrixBatchNormalization\fP object\&. 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSMatrixBatchNormalization\fP object\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSMatrixBatchNormalization\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (float) neuronParameterA "
+Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method 
+.SS "\- (float) neuronParameterB "
+Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method 
+.SS "\- (float) neuronParameterC "
+Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method 
+.SS "\- (\fBMPSCNNNeuronType\fP) neuronType "
+Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method 
+.SS "\- (void) setNeuronType: (\fBMPSCNNNeuronType\fP) neuronType(float) parameterA(float) parameterB(float) parameterC"
+Specifies a neuron activation function to be used\&.
+.PP
+This method can be used to add a neuron activation funtion of given type with associated scalar parameters \fBA\fP, B, and C that are shared across all output values\&. Note that this method can only be used to specify neurons which are specified by three (or fewer) parameters shared across all output values (or channels, in CNN nomenclature)\&. It is an error to call this method for neuron activation functions like MPSCNNNeuronTypePReLU, which require per-channel parameter values\&. An \fBMPSMatrixNeuron\fP kernel is initialized with a default neuron function of MPSCNNNeuronTypeNone\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIneuronType\fP Type of neuron activation function\&. For full list see \fBMPSCNNNeuronType\&.h\fP 
+.br
+\fIparameterA\fP parameterA of neuron activation that is shared across all output values\&. 
+.br
+\fIparameterB\fP parameterB of neuron activation that is shared across all output values\&. 
+.br
+\fIparameterC\fP parameterC of neuron activation that is shared across all output values\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- computeStatistics\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+If YES the batch statistics will be computed prior to performing the normalization\&. Otherwise the provided statistics will be used\&. Defaults to NO at initialization time\&. 
+.SS "\- epsilon\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+\fBA\fP small value to add to the variance when normalizing the inputs\&. Defaults to FLT_MIN upon initialization\&. 
+.SS "\- sourceInputFeatureChannels\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The input size to to use in the operation\&. This is equivalent to the number of columns in the primary (input array) source matrix to consider and the number of channels to produce for the output matrix\&. This property is modifiable and defaults to NSUIntegerMax\&. At encode time the larger of this property or the available input size is used\&. The value of NSUIntegerMax thus indicates that all available columns in the input array (beginning at sourceMatrixOrigin\&.y) should be considered\&. Defines also the number of output feature channels\&. Note: The value used in the operation will be MIN(inputMatrix\&.columns - sourceMatrixOrigin\&.y, sourceInputFeatureChannels) 
+.SS "\- sourceNumberOfFeatureVectors\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of input vectors which make up the input array\&. This is equivalent to the number of rows to consider from the primary source matrix\&. This property is modifiable and defaults to NSUIntegerMax\&. At encode time the larger of this property or the available number of inputs is used\&. The value of NSUIntegerMax thus indicates that all available input rows (beginning at sourceMatrixOrigin\&.x) should be considered\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.
