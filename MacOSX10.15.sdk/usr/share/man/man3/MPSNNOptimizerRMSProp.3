@@ -1,0 +1,229 @@
+.TH "MPSNNOptimizerRMSProp" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSNNOptimizerRMSProp
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSNNOptimizers\&.h>\fP
+.PP
+Inherits \fBMPSNNOptimizer\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:learningRate:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:decay:epsilon:optimizerDescriptor:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:inputGradientVector:inputValuesVector:inputSumOfSquaresVector:resultValuesVector:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputSumOfSquaresVectors:resultState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:batchNormalizationState:inputSumOfSquaresVectors:resultState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputSumOfSquaresVectors:resultState:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "double \fBdecay\fP"
+.br
+.ti -1c
+.RI "float \fBepsilon\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+The \fBMPSNNOptimizerRMSProp\fP performs an RMSProp Update RMSProp is also known as root mean square propagation\&.
+.PP
+s[t] = decay * s[t-1] + (1 - decay) * (g ^ 2) variable = variable - learningRate * g / (sqrt(s[t]) + epsilon)
+.PP
+where, g is gradient of error wrt variable s[t] is weighted sum of squares of gradients 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationGradientState(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationSourceState(nullable NSArray< \fBMPSVector\fP * > *) inputSumOfSquaresVectors(nonnull \fBMPSCNNNormalizationGammaAndBetaState\fP *) resultState"
+Encode an \fBMPSNNOptimizerRMSProp\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIbatchNormalizationGradientState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with gradients for this update\&. 
+.br
+\fIbatchNormalizationSourceState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with original gamma/beta for this update\&. 
+.br
+\fIinputSumOfSquaresVectors\fP An array \fBMPSVector\fP object which specifies the gradient sumOfSquares vectors which will be updated and overwritten\&. The index 0 corresponds to gamma, index 1 corresponds to beta, array can be of size 1 in which case beta won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNNormalizationGammaAndBetaState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied
+.PP
+.PP
+.nf
+        s[t]     = decay * s[t-1] + (1 - decay) * (g ^ 2)
+        variable = variable - learningRate * g / (sqrt(s[t]) + epsilon)
+
+        where,
+          g    is gradient of error wrt variable
+          s[t] is weighted sum of squares of gradients.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState(nullable NSArray< \fBMPSVector\fP * > *) inputSumOfSquaresVectors(nonnull \fBMPSCNNNormalizationGammaAndBetaState\fP *) resultState"
+Encode an \fBMPSNNOptimizerRMSProp\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIbatchNormalizationState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with gradients and original gamma/beta for this update\&. 
+.br
+\fIinputSumOfSquaresVectors\fP An array \fBMPSVector\fP object which specifies the gradient sumOfSquares vectors which will be updated and overwritten\&. The index 0 corresponds to gamma, index 1 corresponds to beta, array can be of size 1 in which case beta won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNNormalizationGammaAndBetaState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied
+.PP
+.PP
+.nf
+        s[t]     = decay * s[t-1] + (1 - decay) * (g ^ 2)
+        variable = variable - learningRate * g / (sqrt(s[t]) + epsilon)
+
+        where,
+          g    is gradient of error wrt variable
+          s[t] is weighted sum of squares of gradients.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNConvolutionGradientState\fP *__nonnull) convolutionGradientState(\fBMPSCNNConvolutionWeightsAndBiasesState\fP *__nonnull) convolutionSourceState(nullable NSArray< \fBMPSVector\fP * > *) inputSumOfSquaresVectors(nonnull \fBMPSCNNConvolutionWeightsAndBiasesState\fP *) resultState"
+Encode an \fBMPSNNOptimizerRMSProp\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIconvolutionGradientState\fP \fBA\fP valid \fBMPSCNNConvolutionGradientState\fP object which specifies the input state with gradients for this update\&. 
+.br
+\fIconvolutionSourceState\fP \fBA\fP valid \fBMPSCNNConvolutionWeightsAndBiasesState\fP object which specifies the input state with values to be updated\&. 
+.br
+\fIinputSumOfSquaresVectors\fP An array \fBMPSVector\fP object which specifies the gradient sumOfSquares vectors which will be updated and overwritten\&. The index 0 corresponds to weights, index 1 corresponds to biases, array can be of size 1 in which case biases won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNConvolutionWeightsAndBiasesState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied
+.PP
+.PP
+.nf
+        s[t]     = decay * s[t-1] + (1 - decay) * (g ^ 2)
+        variable = variable - learningRate * g / (sqrt(s[t]) + epsilon)
+
+        where,
+          g    is gradient of error wrt variable
+          s[t] is weighted sum of squares of gradients.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(nonnull \fBMPSVector\fP *) inputGradientVector(nonnull \fBMPSVector\fP *) inputValuesVector(nonnull \fBMPSVector\fP *) inputSumOfSquaresVector(nonnull \fBMPSVector\fP *) resultValuesVector"
+Encode an \fBMPSNNOptimizerRMSProp\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIinputGradientVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the input vector of gradients for this update\&. 
+.br
+\fIinputValuesVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the input vector of values to be updated\&. 
+.br
+\fIinputSumOfSquaresVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the gradient velocity vector which will be updated and overwritten\&. 
+.br
+\fIresultValuesVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the resultValues vector which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied
+.PP
+.PP
+.nf
+        s[t]     = decay * s[t-1] + (1 - decay) * (g ^ 2)
+        variable = variable - learningRate * g / (sqrt(s[t]) + epsilon)
+
+        where,
+          g    is gradient of error wrt variable
+          s[t] is weighted sum of squares of gradients.fi
+.PP
+ 
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSNNOptimizer\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(double) decay(float) epsilon(nonnull \fBMPSNNOptimizerDescriptor\fP *) optimizerDescriptor"
+Full initialization for the rmsProp update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&. 
+.br
+\fIdecay\fP The decay to update sumOfSquares 
+.br
+\fIepsilon\fP The epsilon which will be applied 
+.br
+\fIoptimizerDescriptor\fP The optimizerDescriptor which will have a bunch of properties to be applied
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSNNOptimizerRMSProp\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(float) learningRate"
+Convenience initialization for the RMSProp update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&. 
+.br
+\fIlearningRate\fP The learningRate which will be applied
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSNNOptimizerRMSProp\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- decay\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The decay at which we update sumOfSquares  Default value is 0\&.9 
+.SS "\- epsilon\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The epsilon at which we update values  This value is usually used to ensure to avoid divide by 0, default value is 1e-8 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

@@ -1,0 +1,131 @@
+.\"
+.\" Copyright (c) 2004 Apple Computer, Inc. All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.Dd September 3, 2004
+.Dt disklabel 8
+.Os
+.Sh NAME
+.Nm disklabel
+.Nd manipulate and query an Apple Label disk label
+.Sh SYNOPSIS
+.Nm
+.Fl create
+.Ar disk-device
+.Op Fl msize=size
+.Op Ar property=value
+.Op ...
+.Nm
+.Fl status
+.Ar disk-device
+.Nm
+.Fl properties
+.Ar disk-device
+.Op Ar property[=value]
+.Op ...
+.Nm
+.Fl destroy
+.Ar disk-device
+.Sh DESCRIPTION
+The
+.Nm
+utility manipulates ``Apple Label'' partition metadata.
+``Apple Label'' partitions allow for a disk device to have a consistent
+name, ownership, and permissions across reboots, even though
+.Os
+uses a dynamic pseudofilesystem for
+.Pa /dev .
+.Pp
+The ``Apple Label'' partition uses a set of metadata (as a plist)
+in a reserved area of the partition.  This metadata describes the
+owner, name, and so forth. 
+.Pp
+When
+.Fl create
+is used, the
+.Fl msize
+argument can specify the size of metadata area; the default
+is 128Kbytes.
+The default size unit is bytes, but the following suffixes
+may be used to multiply by the given factor:
+``b''
+(512),
+``k''
+(1024),
+``m''
+(1048576), and
+``g''
+(1073741824).
+.Pp
+Although any key-value pair can be specified for the properties,
+certain keys are used by the system:
+.Bl -tag -width owner-mode
+.It owner-uid
+The user (as either a string or numeric value) to own the device.
+.It owner-gid
+The group (as either a string or numeric value) associated with the device.
+.It owner-mode
+The permissions (as a numeric value) for the device.
+.It dev-name
+The name for the device.
+.El
+.Pp
+If the
+.Ar owner-uid
+and
+.Ar owner-gid
+properties are given as strings, the
+.Nm
+utility will attempt to look up the names (as users or groups, as appropriate),
+and will store the numeric values in the metadata.  If it cannot find
+the names, and the values are not given as numbers, it will print an error,
+and not store the key/value pairs in the metadata.
+.Pp
+The
+.Ar owner-mode
+property may be given in decimal, or in octal by using a preceding ``0''
+(e.g., ``0666'').
+.Pp
+Any property may be forced to be treated as a string by enclosing it
+in double-quotation marks; bear in mind that shell escapes will probably
+be necessary in this sitation.
+.Pp
+The
+.Fl properties
+directive can print out all keys (if no arguments are given),
+a requested set of keys (if a list of key names is given), or
+can modify (or add) keys (if a key-value pairs are given).
+.Pp
+.Nm
+also maintains a checksum of the metadata; the
+.Fl status
+directive verifies this checksum.
+.Sh EXAMPLES
+The following example will create a device with 1MByte of metadata
+area, owned by fred, with a device name of fred, and be writable by
+fred:
+.Pp
+.Dl "disklabel -create /dev/rdisk1s1 -msize=1M owner-uid=fred dev-name=fred owner-mode=0644"
+.Pp
+The following example will then print out the key-value pairs from the above:
+.Dl "disklabel -properties /dev/rdisk1s1"
+.Sh SEE ALSO
+.Xr pdisk 8

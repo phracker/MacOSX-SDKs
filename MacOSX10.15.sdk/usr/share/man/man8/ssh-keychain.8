@@ -1,0 +1,67 @@
+.Dd 9/11/15
+.Dt SSH-KEYCHAIN 8
+.Os Darwin
+.Sh NAME
+.Nm ssh-keychain.dylib
+.Nd smartcard/keychain support library
+.Sh DESCRIPTION
+The ssh-keychain.dylib library is used as a PKCS11 module replacement for the family of ssh tools. It provides
+certificates on SmartCards and/or in user keychains to the tools.
+.Sh OVERVIEW
+By default, all valid certificates from all SmartCards currently inserted into attached readers are provided. Manual
+configuration of
+.Nm
+is required if certificates in user keychains are desired, or if there is a need to limit which SmartCard
+certificates are provided.
+The public key hash is used to select which certificates should be provided.
+This hash is usually in hexadecimal string form, without the leading
+.Em 0x .
+To determine the hash for certificate on a SmartCard, the
+.Em sc_auth hash
+or
+.Em sc_auth identities
+commands can be used. For certificates in user keychains, it is the value of the
+.Em hpky
+attribute from
+.Em security find-certificate
+output.
+.Sh ENVIRONMENT
+Configuration passed through the environment always takes precedence over the configuration file. The
+variable
+.Em KEYCHAIN_CERTIFICATES
+is used to specify hashes. It should contain a semicolon-separated list of public key hashes of certificates
+which will be provided to the ssh tools.
+.Sh CONFIG FILE
+If no enviroment variable configuration is provided,
+.Nm
+looks for a configuration file located at
+.Em ~/.ssh/sshkeychain.plist .
+This file is a standard property-list with a dictionary root object. It should contain the key
+.Em KeychainCertificates
+with a value that is either a string or an array of strings. If a string, then the expected value is semicolon-separated list
+of public key hashes like the environment variable. If the value is an array, then each hash is an array entry.
+.Sh EXAMPLES
+.Bl -tag -width Ds
+.Bd -unfilled
+.It Ev Environment:
+KEYCHAIN_CERTIFICATES="AE31125DA4AAA294A4FED97B815D7F8DD1A78FF3;168D2C4CDDFCDADD465BAF3E6BCFE8193D8D42D1"
+ssh -o PKCS11Provider=/usr/lib/ssh-keychain.dylib machine
+.Ed
+.Bd -unfilled
+.It Ev Configuration plist:
+{
+    "KeychainCertificates" => [
+        0 => "AE31125DA4AAA294A4FED97B815D7F8DD1A78FF3"
+        1 => "168D2C4CDDFCDADD465BAF3E6BCFE8193D8D42D1"
+    ]
+}
+.Ed
+.El
+.Sh FILES
+.Bl -tag -width "~/.ssh/sshkeychain.plist" -compact
+.It Pa ~/.ssh/sshkeychain.plist
+.El
+.Sh SEE ALSO
+.Xr sc_auth 8 ,
+.Xr ssh-add 1 ,
+.Xr ssh_config 5

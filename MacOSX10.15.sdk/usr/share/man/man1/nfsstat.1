@@ -1,0 +1,231 @@
+.\"
+.\" Copyright (c) 1999-2011 Apple Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.\" Copyright (c) 1989, 1990, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"     @(#)nfsstat.1	8.1 (Berkeley) 6/6/93
+.\"
+.Dd January 11, 2011
+.Dt NFSSTAT 1
+.Os BSD 4.4
+.Sh NAME
+.Nm nfsstat
+.Nd display
+.Tn NFS
+statistics
+.Sh SYNOPSIS
+.Nm
+.Op Fl cseuv
+.Op Fl w Ar wait
+.Op Fl n Ar net|user
+.Op Fl m [ Ar mountpath ]
+.Sh DESCRIPTION
+.Nm
+displays statistics kept about
+.Tn NFS
+client and server activity, active user activity,
+exported directories, and mount information.
+In the absence of any options,
+.Nm
+displays NFS client and server statistics.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl c
+Show NFS client statistics.
+.It Fl e
+Show NFS server exported directory statistics.
+.It Fl m [ Ar mountpath ]
+Show NFS mount information.
+.It Fl s
+Show NFS server statistics.
+.It Fl u
+Show NFS server active user statistics.
+.It Fl w Ar wait
+Display a shorter summary at
+.Ar wait
+second intervals.
+.It Fl n Ar net|user
+Show network addresses as numbers, or show users as uid numbers.
+This option can appear multiple times.
+.It Fl v
+Show additional information (if available).
+.El
+.Sh OUTPUT
+The data fields that
+.Nm
+displays for each set of statistics are:
+.Bl -tag -width "xx"
+.\" ========
+.It Cm Client Information:
+Statistics for NFS file system mounts.
+.Bl -tag -width "xx"
+.It RPC Counts
+Counts of the RPC calls made to each of the NFS protocol
+procedures.
+.It RPC Info
+Statistics for NFS RPC calls:
+.Bl -tag -width "xxx"
+.It TimedOut
+RPC calls that timed out, perhaps to a slow or dead server.
+.It Invalid
+Invalid RPC replies.
+.It X Replies
+RPC replies received that did not have calls pending.
+.It Retries
+RPC calls that were retried.
+.It Requests
+Total number of RPC calls made.
+.El
+.It Cache Info
+Statistics on NFS client-side cache performance:
+.Bl -tag -width "xxx"
+.It Attr Hits/Misses
+Performance of the NFS file attribute cache.
+.It Lkup Hits/Misses
+Performance of the directory name lookup cache.
+.It BioR Hits/Misses
+Performance of block cache for reads.
+.It BioW Hits/Misses
+Performance of block cache for writes.
+.It BioRL Hits/Misses
+Performance of symbolic link cache.
+.It BioD Hits/Misses
+Performance of directory cache.
+.It DirE Hits/Misses
+Performance of directory offset cache.
+.El
+.El
+.\" ========
+.It Cm Server Information:
+Statistics for the NFS server.
+.Bl -tag -width "xx"
+.It RPC Counts
+Counts of RPC calls on each of the NFS server's procedures are recorded here.
+.It Server Ret-Failed
+RPC errors returned by the server.
+.It Server Faults
+Errors in the NFS server.
+.It Server Cache Stats
+Statistics from the NFS server's RPC duplicate request cache:
+.Bl -tag -width "xxx"
+.It Inprog
+Calls already in progress.
+.It Idem
+Cache hits for idempotent procedures.
+.It Non-idem
+Cache hits for non-idempotent procedures.
+.It Misses
+Cache Misses.
+.El
+.It Server Write Gathering
+These statistics describe the efficiency of
+the NFS server's write gathering feature.
+.Bl -tag -width "xxx"
+.It WriteOps
+Write operations to disk.
+.It WriteRPC
+Write operations received by the server.
+.It Opsaved
+Write operations that were gathered (WriteRPC - WriteOps)
+.El
+.El
+.\" ========
+.It Cm NFS Server Exported Directory Information:
+Statistics for each exported directory on the NFS server.
+.Bl -tag -width "xxx"
+.It NFS Requests
+Count of NFS requests processed by an exported directory.
+.It Bytes Read
+Count of bytes read from an exported directory.
+.It Bytes Written
+Count of bytes written to an exported directory.
+.El
+.\" ========
+.It Cm NFS Server Active User Information:
+List of active NFS users and statistics on the NFS server.
+.Bl -tag -width "xxx"
+.It NFS Requests
+Count of NFS requests received from an active user.
+.It Bytes Read
+Count of bytes read by an active user.
+.It Bytes Written
+Count of bytes written by an active user.
+.It Idle
+Amount of time an active user has been idle.
+.It User
+Name (or uid if
+.Fl n Ar user
+was given) of active user.
+.It IP Address
+Host name (or network address if
+.Fl n Ar net
+was given) of client machine.
+.El
+.\" ========
+.It Cm NFS Mount Information:
+Information about the given NFS mount (or all NFS mounts).
+.Bl -tag -width "xxx"
+.It The path mounted on and the server:/path that is mounted.
+.It Mount arguments originally passed in to the mount.
+.It Current mount parameter values and status information.
+.El
+.El
+.Sh SEE ALSO
+.Xr netstat 1 ,
+.Xr iostat 8 ,
+.Xr mount_nfs 8 ,
+.Xr nfsd 8
+.Sh HISTORY
+The
+.Nm nfsstat
+command appears in
+.Bx 4.4 .

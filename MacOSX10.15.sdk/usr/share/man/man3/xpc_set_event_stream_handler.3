@@ -1,0 +1,158 @@
+.\" Copyright (c) 2011 Apple Inc. All rights reserved.
+.Dd 1 July, 2011
+.Dt xpc_events 3
+.Os Darwin
+.Sh NAME
+.Nm xpc_events
+.Nd launch-on-demand for high-level events
+.Sh SYNOPSIS
+.Fd #include <xpc/xpc.h>
+.Ft void
+.Fo xpc_set_event_stream_handler
+.Fa "const char *name"
+.Fa "dispatch_queue_t targetq"
+.Fa "xpc_handler_t handler"
+.Fc
+.Sh DESCRIPTION
+XPC provides a mechanism by which launchd jobs may launch on-demand for certain
+higher-level events, such as IOKit events or BSD Notifications. These events are
+delivered to the job through a handler that is set early in its execution. The
+period between when the event is delivered to the job and when a handler is set
+is race-free, and any pending events will be queued up for consumption by the
+job. An event is consumed when it is delivered to the handler.
+.Sh REQUIREMENT TO SET STREAM HANDLER
+.Em IMPORTANT :
+If a launchd job registers for an event, it
+.Em MUST
+check in for the event with
+.Fn xpc_set_event_stream_handler
+during its initialization (e.g., in
+.Fn main ) .
+Failure to do so is a
+.Em serious programming error
+and may result in failure to deliver future events, unexpected relaunching of
+the job when it exits, or other system performance problems.
+.Sh EVENT STREAMS
+Providers of events are known as streams. Two example event streams are the
+IOKit stream and the BSD Notifications stream. Streams are denoted by a
+reverse-DNS naming scheme. For the aforementioned examples, the stream names are
+"com.apple.iokit.matching" and "com.apple.notifyd.matching", respectively. These
+are currently the only two supported event streams.
+.Sh EVENT NAMES
+A launchd job may be interested in multiple events from different event streams.
+Each of these events has a name provided by the job in the
+.Xr launchd.plist 5 .
+.Pp
+The occurrence of any of these events will launch the job on-demand if it is not
+already running.
+.Sh PLIST SCHEMA
+Events are specified through the
+.Xr launchd.plist 5
+with the LaunchEvents key. The value for this key is a dictionary. Each value of
+this dictionary is itself a dictionary corresponding to an event stream. The
+values of this inner dictionary are events that may cause the job to be launched
+on-demand. The keys of this inner dictionary are names chosen by the developer
+to identify the event.
+.Pp
+.Bd -literal -offset indent
+<key>LaunchEvents</key>
+<dict>
+	<key>com.apple.iokit.matching</key>
+	<dict>
+		<key>Device was attached</key>
+		<dict>
+			<key>idProduct</key>
+			<integer>2794</integer>
+			<key>idVendor</key>
+			<integer>725</integer>
+			<key>IOProviderClass</key>
+			<string>IOUSBDevice</string>
+			<key>IOMatchLaunchStream</key>
+			<true/>
+		</dict>
+	</dict>
+	<key>com.apple.notifyd.matching</key>
+	<dict>
+		<key>interesting-notification was posted</key>
+		<dict>
+			<key>Notification</key>
+			<string>com.apple.interesting-notification</string>
+		</dict>
+		<key>other-notification was posted</key>
+		<dict>
+			<key>Notification</key>
+			<string>com.apple.other-interesting-notification</string>
+		</dict>
+	</dict>
+</dict>
+.Ed
+.Pp
+The above specifies that the job will be launched when a node matching the given
+matching dictionary appears in the IORegistry, when a notification named
+"com.apple.interesting-notification" is posted using
+.Xr notify_post 3 ,
+or a notification named "com.apple.other-interesting-notification" is posted.
+.Pp
+.Em NOTE :
+The IOMatchLaunchStream key is required to be present and be a Boolean set to
+.Ft true
+for use with XPC Events. It will be filtered out of the rest of the dictionary
+when given to IOKit to match. The reasons for this are historical and not
+applicable to other event streams.
+.Pp
+Each event stream has a different plist schema.
+.Sh EVENT CONSUMPTION
+Events are consumed with the
+.Fn xpc_set_event_stream_handler
+API. The
+.Fa stream
+argument specifies from which event stream the given
+.Fa handler
+will receive events. The
+.Fa targetq
+parameter specifies on which queue the handler will be synchronized.
+The
+.Fa handler
+will only ever receive dictionaries. Each dictionary is guaranteed to have the
+.Ft XPC_EVENT_KEY_NAME
+key set. The value for this key is the string that was given as the name for the
+event in the
+.Xr launchd.plist 5 .
+So if the IOKit event in the above example was received, the value of this key
+would be "Device was attached". The name can be an arbitrary string, so that
+in the case of several events on the same stream (like notifications in the
+example above), the event handler can know which specific event fired.
+.Pp
+In addition to the standard payload, events from the IOKit stream also have the
+"IOMatchLaunchServiceID" key set to a
+.Ft uint64_t
+which specifies the unique IORegistry ID of the node which matched the given
+dictionary as obtained by
+.Fn IORegistryEntryGetRegistryEntryID .
+This value may be given to
+.Fn IORegistryEntryIDMatching
+to obtain the registry entry which caused the event to fire.
+.Pp
+BSD Notfication events have no additional payload.
+.Bd -literal -offset indent
+xpc_set_event_stream_handler("com.apple.iokit.matching", q, ^(xpc_object_t event) {
+	const char *name = xpc_dictionary_get_string(event, XPC_EVENT_KEY_NAME);
+	uint64_t id = xpc_dictionary_get_uint64(event, "IOMatchLaunchServiceID");
+
+	CFMutableDictionaryRef matching = IORegistryEntryIDMatching(id);
+	// Pass to IOServiceGetMatchingServices() or IOServiceAddNotification().
+});
+.Ed
+.Pp
+.Em IMPORTANT :
+.Fn xpc_set_event_stream_handler
+is NOT shareable. Two different subsystems in a process cannot safely both
+register for events from the same event stream. Therefore, libraries and
+frameworks should
+.Em NEVER
+call this API.
+.Sh SEE ALSO
+.Xr xpc_object 3 ,
+.Xr xpc_dictionary_create 3 ,
+.Xr xpc_array_create 3 ,
+.Xr notify 3

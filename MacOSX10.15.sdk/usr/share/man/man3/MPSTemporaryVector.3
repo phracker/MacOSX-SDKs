@@ -1,0 +1,87 @@
+.TH "MPSTemporaryVector" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSTemporaryVector
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSMatrixTypes\&.h>\fP
+.PP
+Inherits \fBMPSVector\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithBuffer:descriptor:\fP"
+.br
+.in -1c
+.SS "Class Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) + \fBtemporaryVectorWithCommandBuffer:descriptor:\fP"
+.br
+.ti -1c
+.RI "(void) + \fBprefetchStorageWithCommandBuffer:descriptorList:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBreadCount\fP"
+.br
+.in -1c
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) initWithBuffer: (nonnull id< MTLBuffer >) buffer(nonnull \fBMPSVectorDescriptor\fP *) descriptor"
+*** unavailable 
+.PP
+Reimplemented from \fBMPSVector\fP\&.
+.SS "+ (void) prefetchStorageWithCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSVectorDescriptor\fP * > *__nonnull) descriptorList"
+Help MPS decide which allocations to make ahead of time  The buffer cache that underlies the \fBMPSTemporaryVector\fP can automatically allocate new storage as needed as you create new temporary vectors\&. However, sometimes a more global view of what you plan to make is useful for maximizing memory reuse to get the most efficient operation\&. This class method hints to the cache what the list of matrices will be\&.
+.PP
+It is never necessary to call this method\&. It is purely a performance and memory optimization\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer on which the \fBMPSTemporaryVector\fP will be used 
+.br
+\fIdescriptorList\fP \fBA\fP NSArray of \fBMPSVectorDescriptor\fP objects, indicating vectors that will be created 
+.RE
+.PP
+
+.SS "+ (nonnull instancetype) temporaryVectorWithCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(nonnull \fBMPSVectorDescriptor\fP *) descriptor"
+Initialize a \fBMPSTemporaryVector\fP for use on a MTLCommandBuffer 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The MTLCommandBuffer on which the \fBMPSTemporaryMatrix\fP will be exclusively used 
+.br
+\fIdescriptor\fP \fBA\fP valid \fBMPSVectorDescriptor\fP describing the \fBMPSVector\fP format to create 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSTemporaryVector\fP\&. The object is not managed by a NSAutoreleasePool\&. The object will be released when the command buffer is committed\&. The underlying buffer will become invalid before this time due to the action of the readCount property\&. Please read and understand the use of the readCount property before using this object\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- (NSUInteger) readCount\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of times a temporary vector may be read by a \fBMPSMatrix\fP\&.\&.\&. kernel before its contents become undefined\&.
+.PP
+\fBMPSTemporaryVector\fP objects must release their underlying buffers for reuse immediately after last use\&. So as to facilitate \fIprompt\fP convenient memory recycling, each time a \fBMPSTemporaryVector\fP is read by a \fBMPSMatrix\fP\&.\&.\&. -encode\&.\&.\&. method, its readCount is automatically decremented\&. When the readCount reaches 0, the underlying buffer is automatically made available for reuse to MPS for its own needs and for other \fBMPSTemporaryVector\fP objects prior to return from the -encode\&.\&. function\&. The contents of the buffer become undefined at this time\&.
+.PP
+By default, the readCount is initialized to 1, indicating a matrix that may be overwritten any number of times, but read only once\&.
+.PP
+You may change the readCount as desired to allow \fBMPSMatrix\fP kernels to read the \fBMPSTemporaryVector\fP additional times\&. However, it is an error to change the readCount once it is zero\&. It is an error to read or write to a \fBMPSTemporaryVector\fP with a zero readCount\&. You may set the readCount to 0 yourself to cause the underlying buffer to be returned to MPS\&. Writing to a \fBMPSTemporaryVector\fP does not adjust the readCount\&.
+.PP
+The Metal API Validation layer will assert if a \fBMPSTemporaryVector\fP is deallocated with non-zero readCount to help identify cases when resources are not returned promptly\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

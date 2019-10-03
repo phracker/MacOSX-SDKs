@@ -1,0 +1,121 @@
+.\"Copyright (c) 2019 Apple Inc. All Rights Reserved.
+.Dd June 22, 2019
+.Dt AVCONVERT 1
+.Os "macOS"
+.Sh NAME
+.Nm avconvert
+.Nd movie conversion tool
+.Sh SYNOPSIS
+.Nm
+.Op Fl hv
+.Fl s Ar <source_media>
+.Fl o Ar <output_movie>
+.Fl p Ar <preset_name>
+.Sh DESCRIPTION
+.Nm
+is a tool that converts source media files to different file types for sharing on the web or loading onto devices.  The tool will not allow protected content to be converted.  Only one video and one audio track is preserved through the conversion, along with metadata tracks.  The tool will never resize the video higher than the source dimensions.  If the preset internal dimensions are larger than that of the source, the conversion will maintain the source dimensions.  The file extension provided for the output movie will determine the output file type.
+.Bl -tag -width "--disableMetadataFilter"
+.It Fl \-source | s Ar file
+The source media file to be converted.
+.It Fl \-output | o Ar file
+The output movie file to be created.
+.It Fl \-preset | p Ar name
+Use the specified preset for file conversion.  All presets encode using AVC (H.264) encoding unless otherwise specified in the preset name.  Use --help to get the full list.
+.Pp
+.Bl -tag -width "PresetHEVCHighestQualityWithAlpha" -offset indent -compact
+.It Sy Preset640x480
+A 480p Standard Definition preset with H.264 video and AAC audio.
+.It Sy Preset960x540
+A 540p preset with H.264 video and AAC audio.
+.It Sy Preset1280x720
+A 720p High Definition preset with H.264 video and AAC audio.
+.It Sy Preset1920x1080
+A 1080p High Definition preset with H.264 video and AAC audio.
+.It Sy Preset3840x2160
+A 2160p Ultra High Definition preset with H.264 video and AAC audio.
+.It Sy PresetAppleM4A
+An audio-only preset with AAC audio.
+.It Sy PresetAppleM4V480pSD
+A legacy 480p Standard Definition preset with H.264 video and AAC audio suitable for playing on Apple devices.
+.It Sy PresetAppleM4V720pHD
+A legacy 720p High Definition preset with H.264 video and AAC audio suitable for playing on Apple devices.
+.It Sy PresetAppleM4V1080pHD
+A legacy 1080p High Definition preset with H.264 video and AAC audio suitable for playing on Apple devices.
+.It Sy PresetAppleM4VAppleTV
+A legacy preset with H.264 video and AAC audio suitable for playing on older AppleTV models.
+.It Sy PresetAppleM4VCellular
+A legacy, smaller than Standard Definition, preset with H.264 video and AAC audio suitable for playing on Apple devices when streamed over a cellular network.
+.It Sy PresetAppleM4ViPod
+A legacy Standard Definition preset with H.264 video and AAC audio suitable for playing on an iPod.
+.It Sy PresetAppleM4VWiFi
+A legacy, smaller than Standard Definition, preset with H.264 video and AAC audio suitable for playing on Apple devices when streamed over a WiFi network.
+.It Sy PresetAppleProRes422LPCM
+A preset with Apple ProRes 422 video and LPCM audio.
+.It Sy PresetAppleProRes4444LPCM
+A preset with Apple ProRes 4444 video and LPCM audio.
+.It Sy PresetHEVC1920x1080
+A 1080p High Definition preset with HEVC video and AAC audio.
+.It Sy PresetHEVC1920x1080WithAlpha
+A 1080p High Definition preset with HEVC alpha video and AAC audio.  If a non-alpha source is selected, an error will occur.
+.It Sy PresetHEVC3840x2160
+A 2160p Ultra High Definition preset with HEVC video and AAC audio.
+.It Sy PresetHEVC3840x2160WithAlpha
+A 2160p Ultra High Definition preset with HEVC alpha video and AAC audio.  If a non-alpha source is selected, an error will occur.
+.It Sy PresetHEVCHighestQuality
+A high quality preset with HEVC video and AAC audio.
+.It Sy PresetHEVCHighestQualityWithAlpha
+A high quality preset with HEVC alpha video and AAC audio.  If a non-alpha source is selected, an error will occur.
+.It Sy PresetHighestQuality
+A high quality preset with H.264 video and AAC audio.
+.It Sy PresetLowQuality
+A low quality, smaller than Standard Definition, preset with H.264 video and AAC audio.
+.It Sy PresetMediumQuality
+A medium quality, smaller than Standard Definition, preset with H.264 video and AAC audio.
+.It Sy PresetPassthrough
+A preset that passes through the video and audio tracks, without conversion.
+.Ed
+.El
+.Sh OPTIONS
+.Pp
+.Bl -tag -width "--disableMetadataFilter"
+.It Fl \-disableFastStart
+Disable fast-start movie creation.  Reduces disk accesses if fast-start is not required.
+.It Fl \-disableMetadataFilter
+Disable the metadata filter.  Use with caution.  This will allow privacy sensitive source metadata to be preserved in the output file.  This may include information such as the location of the video, time when the video was recorded, video capture device information, etc.  If this option is not specified, the aforementioned source metadata is not present in the output file.
+.It Fl \-duration Ar num
+Trim the output movie to num seconds (decimal allowed).  Default is end of file.
+.It Fl \-help | h
+Print command usage and list available preset names.
+.It Fl \-multiPass
+Perform a higher quality multi-pass encode in the conversion.
+.It Fl \-progress | prog
+Display progress during the conversion (default with -v).
+.It Fl \-replace
+Overwrite the output file, if it already exists.
+.It Fl \-start Ar num
+Skip the first num seconds (decimal allowed) of the source movie.  Default is beginning of file.
+.It Fl \-verbose | v
+Print additional information about the conversion.
+.El
+.Sh EXAMPLES
+.Pp
+Convert the source movie from 4k HEVC to 720p AVC using the 1280x720 encoding preset:
+.Pp
+	avconvert --source 4k_hevc_movie.mov --output 720p_avc_movie.mov --preset Preset1280x720
+.Pp
+Convert the source movie from 4k AVC to 4K HEVC using the HEVCHighestQuality encoding preset:
+.Pp
+	avconvert -s 4k_avc_movie.mov -o 4k_hevc_movie.mov -p PresetHEVCHighestQuality
+.Pp
+Skip the first 3.5 seconds of the source movie and only convert the next 30 seconds:
+.Pp
+	avconvert --source source_movie.mov --output trimmed_movie.mov -p PresetMediumQuality --start 3.5 --duration 30
+.Pp
+Convert the source movie from a QuickTime movie file to an MPEG-4 file:
+.Pp
+	avconvert -s source_movie.mov -o output_movie.mp4 -p PresetLowQuality
+.Sh HISTORY
+.Nm
+command first appeared in Mac OS X 10.7.
+.Pp
+64-bit implementation introduced in Mac OS X 10.15.

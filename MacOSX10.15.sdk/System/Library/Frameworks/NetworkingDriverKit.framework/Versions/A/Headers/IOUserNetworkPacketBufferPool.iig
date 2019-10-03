@@ -1,0 +1,72 @@
+#ifndef _IOUSERNETWORKPACKETBUFFERPOOL_IIG
+#define _IOUSERNETWORKPACKETBUFFERPOOL_IIG
+
+#include <DriverKit/IOMemoryDescriptor.iig>
+#include <NetworkingDriverKit/IOUserNetworkPacket.iig>
+
+/*!
+@iig implementation
+#if KERNEL
+#include <IOSkywalkFamily/IOSkywalkPacketBufferPool.h>
+#include <NetworkingDriverKit/IOUserNetworkPacket_kext.h>
+#include <NetworkingDriverKit/IOUserNetworkPacketBufferPool_kext.h>
+#endif
+@iig end
+*/
+
+class KERNEL IOUserNetworkPacketBufferPool : public OSObject
+{
+public:
+    virtual bool
+    init() override;
+
+    virtual void
+    free() override;
+
+    static kern_return_t
+    Create(
+        OSObject * poolOwner,
+        const char name[1024],
+        uint32_t packetCount,
+        uint32_t bufferCount,
+        uint32_t bufferSize,
+        IOUserNetworkPacketBufferPool ** pool) LOCAL;
+
+    virtual kern_return_t
+    DeallocatePacket(
+        IOUserNetworkPacket * packet) LOCALONLY;
+
+    virtual kern_return_t
+    DeallocatePackets(
+        IOUserNetworkPacket ** packets,
+        uint32_t packetsCount) LOCALONLY;
+
+    virtual kern_return_t
+    CopyMemoryDescriptor(
+        IOMemoryDescriptor ** memory);
+
+    virtual kern_return_t
+    GetPacketCount(uint32_t * count) LOCAL;
+
+    virtual kern_return_t
+    GetBufferCount(uint32_t * count) LOCAL;
+};
+
+class EXTENDS (IOUserNetworkPacketBufferPool) IOUserNetworkPacketBufferPoolPrivate
+{
+    virtual kern_return_t
+    GetPacketWithState(
+        const IOUserNetworkPacketState * state,
+        IOUserNetworkPacket ** packet) LOCALONLY;
+
+    virtual kern_return_t
+    _CopyPacketWithIndex(
+        uint32_t index,
+        IOUserNetworkPacket ** packet);
+
+    virtual kern_return_t
+    _DeallocatePacket(
+        uint32_t packetIndex);
+};
+
+#endif /* ! _IOUSERNETWORKPACKETBUFFERPOOL_IIG */
