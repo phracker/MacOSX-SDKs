@@ -1,0 +1,351 @@
+.Dd September 15, 2010 
+.Dt pkgbuild 1 
+.Os Mac OS X
+.\"																				NAME 
+.Sh NAME
+.Nm pkgbuild
+.Nd Build an OS X Installer component package from on-disk files
+.\"																				SYNOPSIS
+.Sh SYNOPSIS
+.Nm
+.Op options
+.Cm --root Ar root-path
+.Op Cm --component-plist Ar plist-path
+.Ar package-output-path
+.Nm
+.Cm --analyze
+.Cm --root Ar root-path
+.Ar plist-output-path
+.Nm
+.Op options
+.Brq Cm --component Ar component-path
+.Ar package-output-path
+.\"																				DESCRIPTION
+.Sh DESCRIPTION
+A 
+.Dq component package
+contains payload to be installed by the OS X Installer. Although a component package
+can be installed on its own, it is typically incorporated into a product archive,
+along with a
+.Dq distribution
+and localized resources, using
+.Xr productbuild 1 .
+.Pp
+.Em To create a product archive for submission to the Mac App Store,
+do not use 
+.Nm .
+Instead, use
+.Xr productbuild 1
+directly.
+.Pp
+.Nm
+has three different modes, as shown in the 
+.Sx SYNOPSIS
+above:
+.Bl -enum
+.It
+.Em Package a complete destination root.
+When you use
+.Xr xcodebuild 1
+with the
+.Em install
+action, the result is a destination root, either under
+.Pa /tmp ,
+or in whatever location you specify with the Xcode
+.Ev DSTROOT
+setting. Use the
+.Cm --root
+option to specify that destination root directory to
+.Nm ,
+and the entire contents of the directory tree will be included in the output package.
+.It
+.Em Create a template component property list (analyze mode).
+You point
+.Nm
+to a destination root as above, but instead of outputting a package,
+.Nm
+outputs a component property list (see
+.Sx COMPONENT PROPERTY LIST ) .
+By editing this property list and specifying it with
+.Cm --component-plist
+when you subsequently build the package, you can control bundle-specific Installer behavior.
+.It
+.Em Package one or more individual bundles.
+If you don't have a destination root, you can use the
+.Cm --component
+option to specify one or more bundles that should be incorporated into the package.
+Note that only
+.Sy bundles
+can be specified with
+.Cm --component .
+.El
+.\"																				OPTIONS 
+.Sh ARGUMENTS AND OPTIONS
+.Bl -tag
+.It Cm --root Ar root-path
+Package the entire contents of the directory tree at
+.Ar root-path ,
+typically a destination root created by 
+.Xr xcodebuild 1 .
+.It Cm --component Ar component-path
+The bundle at
+.Ar component-path
+is added to the package. Valid only if you don't use
+.Cm --root .
+.It Cm --component-plist Ar plist-path
+If you specify
+.Cm --root ,
+you can use 
+.Cm --component-plist
+to identity the bundles within that destination root, and control how the OS X Installer
+handles those bundles. See more at
+.Sx COMPONENT PROPERTY LIST .
+If you add bundles and need to update your component property list, you can specify the
+old version with 
+.Cm --component-plist
+when running
+.Nm
+with 
+.Cm --analyze ,
+and the old settings will be propagated to the output for still-extant bundles.
+.It Cm --scripts Ar scripts-path
+Archive the entire contents of
+.Ar scripts-path
+as the package scripts. If this directory contains scripts named 
+.Pa preinstall
+and/or
+.Pa postinstall ,
+these will be run as the top-level scripts of the package. If you want to run scripts for
+specific bundles, you must specify those in a component property list; see more at
+.Sx COMPONENT PROPERTY LIST .
+Any other files under
+.Ar scripts-path
+will be used only if the top-level or component-specific scripts invoke them.
+.It Cm --nopayload
+Indicates that the package will contain only scripts, with no payload.
+.It Cm --identifier Ar pkg-identifier
+Specify a unique identifier for this package. The OS X Installer recognizes a package
+as being an upgrade to an already-installed package only if the package identifiers match,
+so it is advisable to set a meaningful, consistent identifier when you build the package.
+.Nm
+will infer an identifier when building a package from a single component, but will fail
+otherwise if the identifier has not been set.
+.It Cm --version Ar pkg-version
+Specify a version for the package. Packages with the same identifier are compared using
+this version, to determine if the package is an upgrade or downgrade. If you don't specify
+a version, a default of zero is assumed, but this may prevent proper upgrade/downgrade checking.
+.It Cm --install-location Ar install-path
+Specify the default install location for the contents of the package. For example, if
+you specify a single application component, you might specify an 
+.Ar install-path
+of
+.Pa /Applications .
+.Nm
+attempts to infer a sensible install path if this option is not used, but it may not
+choose correctly. Note that whether or not the default install location is actually used
+by the OS X Installer depends on the distribution file you deploy with the package.
+.It Cm --analyze
+Instead of creating a package, create a template component property list from the destination root given with
+.Cm --root .
+See
+.Sx COMPONENT PROPERTY LIST .
+.It Cm --prior Ar pkg-path
+In addition to the options above, you can also set the package identifier, version and install location 
+by pointing to a prior version of the same package. 
+.Nm
+will read the package at
+.Ar pkg-path
+and use the same package identifier and install location contained therein. The version
+number in the prior package will be converted to an integer and incremented, and the result
+used for the new package. Note that
+.Nm
+makes no attempt to verify that the prior package is in any way equivalent to the one being
+built, so you must make sure you point it to a logically equivalent package.
+.It Cm --filter Ar filter-expression
+By default,
+.Cm --root
+will include the entire contents of the given
+.Ar root-path
+in the package payload, except for any
+.Pa .svn
+or
+.Pa CVS
+directories, and any
+.Pa .DS_Store
+files. You can override these default filters by specifying one or more
+.Cm --filter
+options. Each
+.Ar filter-expression
+is an
+.Xr re_format 7
+.Dq extended 
+expression: any path in the root which matches any of the given expressions will be 
+excluded from the package payload. (Note that specifying even one
+.Cm --filter
+inhibits the default filters, so you must respecify the default filters if you
+still want them to be used.)
+.It Cm --ownership ( Li recommended | Li preserve | Li preserve-other )
+By default, when the payload is archived into the package, the recommended UID and GID
+will be applied to all files. (Generally, this will be root:wheel, which ensures that
+files installed in the system domain are root-owned, while files installed in the user
+home directory will be owned by that user.) If you have special ownership requirements,
+you should use
+.Xr chmod 1
+to adjust the ownership of the source files, and use
+.Cm --ownership preserve
+so that 
+.Nm
+archives the exact ownership of the on-disk files. Alternatively, if you have just a few
+files to adjust,
+.Cm --ownership preserve-other
+will apply the recommended UID and GID to those files that are owned by the user running
+.Nm ,
+but leave other files unchanged. Note that
+.Nm
+never changes the ownership of the actual on-disk files, only the ownership that is
+archived into the package.
+.It Cm --sign Ar identity-name
+Adds a digital signature to the resulting package. See
+.Sx SIGNED PACKAGES
+.It Cm --keychain Ar keychain-path
+Specify a specific keychain to search for the signing identity. See
+.Sx SIGNED PACKAGES
+.It Cm --cert Ar certificate-name
+Specify an intermediate certificate to be embedded in the package. See
+.Sx SIGNED_PACKAGES
+.It Cm --timestamp
+Include a trusted timestamp with the signature. See
+.Sx SIGNED_PACKAGES
+.It Cm --timestamp=none
+Disable trusted timestamp, regardless of identity. See
+.Sx SIGNED_PACKAGES
+.It Cm --quiet
+Inhibits status messages on stdout. Any error messages are still sent to stderr.
+.It Ar package-output-path
+The path to which the package will be written.
+.It Ar plist-output-path
+When
+.Cm --analyze
+is used, the path to which the template component property list will be written.
+.El
+.Pp
+.\"																				COMPONENT PROPERTY LIST 
+.Sh COMPONENT PROPERTY LIST
+When you package a destination root, you can use a component property list to
+specify how bundles in that root should be handled by the OS X Installer. This property
+list should be an array of dictionaries, where each dictionary specifies a single bundle. The
+dictionary keys are as follows:
+.Bl -column ".Sy BundlePostInstallScriptPath" A012345678901234567890123456789012345678901234567890123456789
+.It Sy Key Ta Sy Description
+.It Sy RootRelativeBundlePath Ta "Path to bundle relative to the destination root (string)"
+.It Sy BundleIsRelocatable Ta "Install bundle over previous version if moved by user? (bool)"
+.It Sy BundleIsVersionChecked Ta "Don't install bundle if newer version on disk? (bool)"
+.It Sy BundleHasStrictIdentifier Ta "Require identical bundle identifiers at install path? (bool)" 
+.It Sy BundleOverwriteAction Ta "How to treat existing on-disk version of bundle (string)" 
+.It Sy BundlePreInstallScriptPath Ta "Relative path to bundle-specific preinstall script"
+.It Sy BundlePostInstallScriptPath Ta "Relative path to bundle-specific postinstall script"
+.It Sy ChildBundles Ta "Bundles under this bundle (array of dictionaries)"
+.El
+.Pp
+The easiest way to create a component property list is to use the 
+.Cm --analyze
+option and point 
+.Nm
+at your current destination root. The output will be a component property list with default
+attributes, which you can then edit as needed. You can also specify a previous version of
+your component property list when using
+.Cm --analyze ,
+which will cause the attributes of previously existing bundles to be propagated forward.
+.Pp
+.Sy BundleOverwriteAction
+specifies how an existing version of the bundle on disk should be handled when the version in
+the package is installed. If you specify
+.Ar upgrade ,
+the bundle in the package atomically replaces any version on disk; this has the effect of 
+deleting old paths that no longer exist in the new version of the bundle.
+If you specify
+.Ar update ,
+the bundle in the package overwrites the version on disk, and any files not contained in the
+package will be left intact; this is appropriate when you are delivering an update-only package.
+Another effect of 
+.Ar update
+is that the package bundle will not be installed at all if there is not already a version on disk;
+this allows a package to deliver an update for an app that the user might have deleted.
+.Pp
+.Sy BundlePreInstallScriptPath
+and
+.Sy BundlePostInstallScriptPath
+are meaningful only if 
+.Cm --scripts
+was used to specify a scripts directory. The paths given by these keys must be relative to
+the scripts directory.
+.Pp
+.Sy ChildBundles
+can be used to represent nesting of bundles, but it does not change the meaning of 
+.Sy RootRelativeBundlePath
+within lower-level dictionaries (i.e. it is always relative to the destination root).
+If you write a component property list manually, you do not need to use
+.Sy ChildBundles
+at all; you can simply put all bundle dictionaries in the top-level array.
+.\"																				SIGNED PACKAGES 
+.Sh SIGNED PACKAGES
+When creating a package, you can optionally add a digital signature to the package.
+You will need to have a certificate and corresponding private key -- together called an
+.Dq identity
+-- in one of your accessible keychains. To add a signature, specify the name of the identity using the
+.Cm --sign
+option. The identity's name is the same as the
+.Dq Common Name
+of the certificate.
+.Pp
+If you want to search for the identity in a specific keychain, specify the path to the
+keychain file using the 
+.Cm --keychain
+option. Otherwise, the default keychain search path is used.
+.Pp
+.Nm
+will embed the signing certificate in the product archive, as well as any intermediate
+certificates that are found in the keychain. If you need to embed additional certificates
+to form a chain of trust between the signing certificate and a trusted root certificate
+on the system, use the
+.Cm --cert
+option to give the Common Name of the intermediate certificate. Multiple
+.Cm --cert
+options may be used to embed multiple intermediate certificates.
+.Pp
+The signature can optionally include a trusted timestamp. This is enabled by default when signing with
+a Developer ID identity, but it can be enabled explicitly using the
+.Cm --timestamp 
+option. A timestamp server must be contacted to embed a trusted timestamp. If you aren't
+connected to the Internet, you can use
+.Cm --timestamp=none
+to disable timestamps, even for a Developer ID identity.
+.Pp
+Note that if you are going to create a signed product with the resulting package, using
+.Xr productbuild 1 ,
+there is no reason to sign the individual package.
+.\"																				EXAMPLES 
+.Sh EXAMPLES
+.Bl -tag -width indent
+.It Li "pkgbuild --identifier com.sample.pkg.app --root /tmp/Sample.dst Sample.pkg"
+.Pp
+Build the package Sample.pkg using the entire contents of the destination root /tmp/Sample.dst.
+.It Li "pkgbuild --analyze --root /tmp/Sample.dst components.plist"
+.Pp
+Analyze the destination root /tmp/Sample.dst, and write a template component property list
+to components.plist.
+.It Li "pkgbuild --identifier com.sample.pkg.app --root /tmp/Sample.dst --component-plist components-edited.plist Sample.pkg"
+.Pp
+Build the package Sample.pkg using the destination root /tmp/Sample.dst,
+using the bundle-specific behaviors indicated in components-edited.plist.
+.It Li "pkgbuild --identifier com.sample.pkg.app --root /tmp/Sample.dst --sign sample-identity Sample.pkg"
+.Pp
+Build the package Sample.pkg using the destination root /tmp/Sample.dst, and sign the
+resulting package using the identity sample-identity. You will be prompted to allow
+.Nm
+to access the keychain item, unless Always Allow was chosen previously.
+.El
+.\"																				SEE ALSO 
+.Sh SEE ALSO 
+.Xr productbuild 1 ,
+.Xr xcodebuild 1

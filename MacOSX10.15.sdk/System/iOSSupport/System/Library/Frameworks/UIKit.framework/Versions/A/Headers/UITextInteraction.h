@@ -1,0 +1,45 @@
+#if (defined(USE_UIKIT_PUBLIC_HEADERS) && USE_UIKIT_PUBLIC_HEADERS) || !__has_include(<UIKitCore/UITextInteraction.h>)
+//
+//  UITextInteraction.h
+//  UIKit
+//
+//  Copyright © 2018 Apple Inc. All rights reserved.
+//
+
+#import <UIKit/UIKitDefines.h>
+#import <UIKit/UIInteraction.h>
+#import <UIKit/UITextInput.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@class UITextInteraction;
+
+typedef NS_ENUM (NSInteger, UITextInteractionMode) {
+    UITextInteractionModeEditable,
+    UITextInteractionModeNonEditable,
+};
+
+@protocol UITextInteractionDelegate <NSObject>
+@optional
+- (BOOL)interactionShouldBegin:(UITextInteraction *)interaction atPoint:(CGPoint)point;
+- (void)interactionWillBegin:(UITextInteraction *)interaction;
+- (void)interactionDidEnd:(UITextInteraction *)interaction;
+@end
+
+UIKIT_EXTERN API_AVAILABLE(ios(13.0)) API_UNAVAILABLE(tvos, watchos) @interface UITextInteraction : NSObject <UIInteraction>
+
+@property (nonatomic, weak) id <UITextInteractionDelegate> delegate;
+@property (nonatomic, weak) UIResponder <UITextInput> *textInput;
+
+@property (nonatomic, readonly) UITextInteractionMode textInteractionMode;
+@property (nonatomic, readonly) NSArray <UIGestureRecognizer *> *gesturesForFailureRequirements;
+
++ (instancetype)textInteractionForMode:(UITextInteractionMode)mode;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+#else
+#import <UIKitCore/UITextInteraction.h>
+#endif

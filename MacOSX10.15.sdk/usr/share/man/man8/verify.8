@@ -1,0 +1,251 @@
+.TH VERIFY 8 
+.ad
+.fi
+.SH NAME
+verify
+\-
+Postfix address verification server
+.SH "SYNOPSIS"
+.na
+.nf
+\fBverify\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBverify\fR(8) address verification server maintains a record
+of what recipient addresses are known to be deliverable or
+undeliverable.
+
+Addresses are verified by injecting probe messages into the
+Postfix queue. Probe messages are run through all the routing
+and rewriting machinery except for final delivery, and are
+discarded rather than being deferred or bounced.
+
+Address verification relies on the answer from the nearest
+MTA for the specified address, and will therefore not detect
+all undeliverable addresses.
+
+The \fBverify\fR(8) server is designed to run under control
+by the Postfix
+master server. It maintains an optional persistent database.
+To avoid being interrupted by "postfix stop" in the middle
+of a database update, the process runs in a separate process
+group.
+
+The \fBverify\fR(8) server implements the following requests:
+.IP "\fBupdate\fI address status text\fR"
+Update the status and text of the specified address.
+.IP "\fBquery\fI address\fR"
+Look up the \fIstatus\fR and \fItext\fR for the specified
+\fIaddress\fR.
+If the status is unknown, a probe is sent and an "in progress"
+status is returned.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The address verification server is not security\-sensitive. It does
+not talk to the network, and it does not talk to local users.
+The verify server can run chrooted at fixed low privilege.
+
+The address verification server can be coerced to store
+unlimited amounts of garbage. Limiting the cache expiry
+time
+trades one problem (disk space exhaustion) for another
+one (poor response time to client requests).
+
+With Postfix version 2.5 and later, the \fBverify\fR(8)
+server no longer uses root privileges when opening the
+\fBaddress_verify_map\fR cache file. The file should now
+be stored under the Postfix\-owned \fBdata_directory\fR.  As
+a migration aid, an attempt to open a cache file under a
+non\-Postfix directory is redirected to the Postfix\-owned
+\fBdata_directory\fR, and a warning is logged.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+.SH BUGS
+.ad
+.fi
+Address verification probe messages add additional traffic
+to the mail queue.
+Recipient verification may cause an increased load on
+down\-stream servers in the case of a dictionary attack or
+a flood of backscatter bounces.
+Sender address verification may cause your site to be
+blacklisted by some providers.
+
+If the persistent database ever gets corrupted then the world
+comes to an end and human intervention is needed. This violates
+a basic Postfix principle.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are not picked up automatically,
+as \fBverify\fR(8)
+processes are long\-lived. Use the command "\fBpostfix reload\fR" after
+a configuration change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.SH "PROBE MESSAGE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBaddress_verify_sender ($double_bounce_sender)\fR"
+The sender address to use in address verification probes; prior
+to Postfix 2.5 the default was "postmaster".
+.PP
+Available with Postfix 2.9 and later:
+.IP "\fBaddress_verify_sender_ttl (0s)\fR"
+The time between changes in the time\-dependent portion of address
+verification probe sender addresses.
+.SH "CACHE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBaddress_verify_map (see 'postconf -d' output)\fR"
+Lookup table for persistent address verification status
+storage.
+.IP "\fBaddress_verify_positive_expire_time (31d)\fR"
+The time after which a successful probe expires from the address
+verification cache.
+.IP "\fBaddress_verify_positive_refresh_time (7d)\fR"
+The time after which a successful address verification probe needs
+to be refreshed.
+.IP "\fBaddress_verify_negative_cache (yes)\fR"
+Enable caching of failed address verification probe results.
+.IP "\fBaddress_verify_negative_expire_time (3d)\fR"
+The time after which a failed probe expires from the address
+verification cache.
+.IP "\fBaddress_verify_negative_refresh_time (3h)\fR"
+The time after which a failed address verification probe needs to
+be refreshed.
+.PP
+Available with Postfix 2.7 and later:
+.IP "\fBaddress_verify_cache_cleanup_interval (12h)\fR"
+The amount of time between \fBverify\fR(8) address verification
+database cleanup runs.
+.SH "PROBE MESSAGE ROUTING CONTROLS"
+.na
+.nf
+.ad
+.fi
+By default, probe messages are delivered via the same route
+as regular messages.  The following parameters can be used to
+override specific message routing mechanisms.
+.IP "\fBaddress_verify_relayhost ($relayhost)\fR"
+Overrides the relayhost parameter setting for address verification
+probes.
+.IP "\fBaddress_verify_transport_maps ($transport_maps)\fR"
+Overrides the transport_maps parameter setting for address verification
+probes.
+.IP "\fBaddress_verify_local_transport ($local_transport)\fR"
+Overrides the local_transport parameter setting for address
+verification probes.
+.IP "\fBaddress_verify_virtual_transport ($virtual_transport)\fR"
+Overrides the virtual_transport parameter setting for address
+verification probes.
+.IP "\fBaddress_verify_relay_transport ($relay_transport)\fR"
+Overrides the relay_transport parameter setting for address
+verification probes.
+.IP "\fBaddress_verify_default_transport ($default_transport)\fR"
+Overrides the default_transport parameter setting for address
+verification probes.
+.PP
+Available in Postfix 2.3 and later:
+.IP "\fBaddress_verify_sender_dependent_relayhost_maps ($sender_dependent_relayhost_maps)\fR"
+Overrides the sender_dependent_relayhost_maps parameter setting for address
+verification probes.
+.PP
+Available in Postfix 2.7 and later:
+.IP "\fBaddress_verify_sender_dependent_default_transport_maps ($sender_dependent_default_transport_maps)\fR"
+Overrides the sender_dependent_default_transport_maps parameter
+setting for address verification probes.
+.SH "SMTPUTF8 CONTROLS"
+.na
+.nf
+.ad
+.fi
+Preliminary SMTPUTF8 support is introduced with Postfix 3.0.
+.IP "\fBsmtputf8_autodetect_classes (sendmail, verify)\fR"
+Detect that a message requires SMTPUTF8 support for the specified
+mail origin classes.
+.PP
+Available in Postfix version 3.2 and later:
+.IP "\fBenable_idna2003_compatibility (no)\fR"
+Enable 'transitional' compatibility between IDNA2003 and IDNA2008,
+when converting UTF\-8 domain names to/from the ASCII form that is
+used for DNS lookups.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "SEE ALSO"
+.na
+.nf
+smtpd(8), Postfix SMTP server
+cleanup(8), enqueue Postfix message
+postconf(5), configuration parameters
+syslogd(5), system logging
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+ADDRESS_VERIFICATION_README, address verification howto
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+.ad
+.fi
+This service was introduced with Postfix version 2.1.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

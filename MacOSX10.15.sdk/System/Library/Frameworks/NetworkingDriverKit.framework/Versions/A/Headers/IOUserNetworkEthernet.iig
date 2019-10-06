@@ -1,0 +1,130 @@
+#ifndef _IOUSERNETWORKETHERNET_IIG
+#define _IOUSERNETWORKETHERNET_IIG
+
+#include <DriverKit/IOService.iig>
+#include <DriverKit/OSAction.iig>
+#include <DriverKit/IODispatchQueue.iig>
+#include <DriverKit/IODataQueueDispatchSource.iig>
+
+#include <NetworkingDriverKit/IOUserNetworkTypes.h>
+#include <NetworkingDriverKit/IOUserNetworkPacketQueue.iig>
+#include <NetworkingDriverKit/IOUserNetworkPacketBufferPool.iig>
+
+struct _IOUserNetworkEthernetInterfaceDescriptor;
+
+/*!
+@iig implementation
+#if KERNEL
+#include <NetworkingDriverKit/IOUserNetworkPacketBufferPool_kext.h>
+#include <NetworkingDriverKit/IOUserNetworkPacketQueue_kext.h>
+#include <NetworkingDriverKit/IOUserNetworkEthernet_kext.h>
+#endif
+@iig end
+*/
+
+class KERNEL IOUserNetworkEthernet : public IOService
+{
+public:
+    virtual bool
+    init() override;
+
+    virtual void
+    free() override;
+
+    kern_return_t
+    SetTxPacketHeadroom(uint16_t numBytes) LOCALONLY;
+
+    kern_return_t
+    SetTxPacketTailroom(uint16_t numBytes) LOCALONLY;
+
+    kern_return_t
+    SetWakeOnMagicPacketSupport(bool isSupported) LOCALONLY;
+
+    kern_return_t
+    SetSoftwareVlanSupport(bool isSupported) LOCALONLY;
+
+    virtual kern_return_t
+    RegisterEthernetInterface(
+        IOUserNetworkMACAddress macAddress,
+        IOUserNetworkPacketBufferPool * pool,
+        IOUserNetworkPacketQueue ** queues,
+        uint32_t queueCount) LOCALONLY;
+
+    virtual kern_return_t
+    ReportLinkStatus(
+        IOUserNetworkLinkStatus linkStatus,
+        IOUserNetworkMediaType  activeMediaType);
+
+    virtual kern_return_t
+    ReportLinkQuality(IOUserNetworkLinkQuality linkQuality);
+
+    virtual kern_return_t
+    ReportDataBandwidths(
+        uint64_t    maxInputBandwidth,
+        uint64_t    maxOutputBandwidth,
+        uint64_t    effectiveInputBandwidth,
+        uint64_t    effectiveOutputBandwidth);
+
+    virtual kern_return_t
+    SetInterfaceEnable(bool isEnable) = 0;
+
+    virtual kern_return_t
+    SetPromiscuousModeEnable(bool enable) = 0;
+
+    virtual kern_return_t
+    SetMulticastAddresses(
+        const IOUserNetworkMACAddress * addresses,
+        uint32_t count) = 0;
+
+    virtual kern_return_t
+    SetAllMulticastModeEnable(bool enable) = 0;
+
+    virtual kern_return_t
+    ReportAvailableMediaTypes(
+        const IOUserNetworkMediaType * mediaTypes,
+        uint32_t count) LOCALONLY;
+
+    virtual kern_return_t
+    SelectMediaType(IOUserNetworkMediaType mediaType) = 0;
+
+    virtual kern_return_t
+    SetWakeOnMagicPacketEnable(bool enable) = 0;
+};
+
+class EXTENDS (IOUserNetworkEthernet) IOUserNetworkEthernetPrivate
+{
+    virtual kern_return_t
+    _RegisterEthernetInterface(
+        _IOUserNetworkEthernetInterfaceDescriptor descriptor,
+        IOUserNetworkPacketBufferPool * pool,
+        IOUserNetworkPacketQueue * queue1,
+        IOUserNetworkPacketQueue * queue2,
+        IOUserNetworkPacketQueue * queue3,
+        IOUserNetworkPacketQueue * queue4);
+
+    virtual kern_return_t
+    _SetMulticastAddresses(IOMemoryDescriptor * md) LOCAL;
+
+    virtual kern_return_t
+    _ReportAvailableMediaTypes(
+        const uint32_t mediaTypes[256], uint32_t mediaTypesCount);
+
+    virtual void
+    _DataAvailable(
+        OSAction * action) TYPE(IODataQueueDispatchSource::DataAvailable);
+};
+
+enum {
+    kIOUserNetworkFeatureFlagWOMP = 0x01,
+    kIOUserNetworkFeatureFlagSoftwareVlan = 0x02,
+};
+
+struct _IOUserNetworkEthernetInterfaceDescriptor {
+    IOUserNetworkMACAddress     macAddress;
+    uint8_t                 featureFlags;
+    uint8_t                 _reserved;
+    uint16_t                txPacketHeadroomBytes;
+    uint16_t                txPacketTailroomBytes;
+} __attribute__((packed));
+
+#endif /* ! _IOUSERNETWORKETHERNET_H */

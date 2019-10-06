@@ -1,0 +1,222 @@
+.\"
+.\" cupsd-logs man page for CUPS.
+.\"
+.\" Copyright © 2007-2019 by Apple Inc.
+.\" Copyright © 1997-2006 by Easy Software Products.
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH cupsd-logs 5 "CUPS" "26 April 2019" "Apple Inc."
+.SH NAME
+cupsd\-logs \- cupsd log files (access_log, error_log, and page_log)
+.SH DESCRIPTION
+.BR cupsd (8)
+normally maintains three log files: \fIaccess_log\fR to track requests that are submitted to the scheduler, \fIerror_log\fR to track progress and errors, and \fIpage_log\fR to track pages that are printed.
+Configuration directives in
+.BR cupsd.conf (5)
+and
+.BR cups-files.conf (5)
+control what information is logged and where it is stored.
+.SS ACCESS LOG FILE FORMAT
+The \fIaccess_log\fR file lists each HTTP resource that is accessed by a web browser or client.
+Each line is in an extended version of the so-called "Common Log Format" used by many web servers and web reporting tools:
+.nf
+
+    \fIhost group user date-time \fR"\fImethod resource version\fR" \fIstatus bytes
+      ipp-operation ipp-status\fR
+
+.fi
+For example:
+.nf
+
+    10.0.1.2 - - [01/Dec/2005:21:50:28 +0000] "POST / HTTP/1.1" 200 317
+      CUPS-Get-Printers successful-ok-ignored-or-substituted-attributes
+    localhost - - [01/Dec/2005:21:50:32 +0000] "GET /admin HTTP/1.1"
+      200 0 - -
+    localhost - - [01/Dec/2005:21:50:32 +0000] "POST / HTTP/1.1"
+      200 157 CUPS-Get-Printers
+      successful-ok-ignored-or-substituted-attributes
+    localhost - - [01/Dec/2005:21:50:32 +0000] "POST / HTTP/1.1"
+      200 1411 CUPS-Get-Devices -
+    localhost - - [01/Dec/2005:21:50:32 +0000] "GET /admin HTTP/1.1"
+      200 6667 - -
+
+.fi
+The \fIhost\fR field will normally only be an IP address unless you have enabled the HostNameLookups directive in the \fIcupsd.conf\fR file or if the IP address corresponds to your local machine.
+.LP
+The \fIgroup\fR field always contains "-".
+.LP
+The \fIuser\fR field is the authenticated username of the requesting user.
+If no username and password is supplied for the request then this field contains "-".
+.LP
+The \fIdate-time\fR field is the date and time of the request in local time and is in the format "[DD/MON/YYYY:HH:MM:SS +ZZZZ]".
+.LP
+The \fImethod\fR field is the HTTP method used: "GET", "HEAD", "OPTIONS", "POST", or "PUT".
+"GET" requests are used to get files from the server, both for the web interface and to get configuration and log files.
+"HEAD" requests are used to get information about a resource prior to a "GET".
+"OPTIONS" requests are used to upgrade connections to TLS encryption.
+"POST" requests are used for web interface forms and IPP requests.
+"PUT" requests are used to upload configuration files.
+.LP
+The \fIresource\fR field is the filename of the requested resource.
+.LP
+The \fIversion\fR field is the HTTP specification version used by the client.
+For CUPS clients this will always be "HTTP/1.1".
+.LP
+The \fIstatus\fR field contains the HTTP result status of the request, as follows:
+.RS 5
+.TP 5
+200
+Successful operation.
+.TP 5
+201
+File created/modified successfully.
+.TP 5
+304
+The requested file has not changed.
+.TP 5
+400
+Bad HTTP request; typically this means that you have a malicious program trying to access your server.
+.TP 5
+401
+Unauthorized, authentication (username + password) is required.
+.TP 5
+403
+Access is forbidden; typically this means that a client tried to access a file or resource they do not have permission to access.
+.TP 5
+404
+The file or resource does not exist.
+.TP 5
+405
+URL access method is not allowed; typically this means you have a web browser using your server as a proxy.
+.TP 5
+413
+Request too large; typically this means that a client tried to print a file larger than the MaxRequestSize allows.
+.TP 5
+426
+Upgrading to TLS-encrypted connection.
+.TP 5
+500
+Server error; typically this happens when the server is unable to open/create a file - consult the error_log file for details.
+.TP 5
+501
+The client requested encryption but encryption support is not enabled/compiled in.
+.TP 5
+505
+HTTP version number not supported; typically this means that you have a malicious program trying to access your server.
+.RE
+.LP
+The \fIbytes\fR field contains the number of bytes in the request.
+For POST requests the bytes field contains the number of bytes of non-IPP data that is received from the client.
+.LP
+The \fIipp-operation\fR field contains either "-" for non-IPP requests or the IPP operation name for POST requests containing an IPP request.
+.LP
+The \fIipp-status\fR field contains either "-" for non-IPP requests or the IPP status code name for POST requests containing an IPP response.
+.SS ERROR LOG FILE FORMAT
+The \fIerror_log\fR file lists messages from the scheduler - errors, warnings, etc. The LogLevel directive in the
+.BR cupsd.conf (5)
+file controls which messages are logged:
+.nf
+
+    level date-time message
+
+.fi
+For example:
+.nf
+
+    I [20/May/1999:19:18:28 +0000] [Job 1] Queued on 'DeskJet' by 'mike'.
+    D [20/May/1999:19:18:28 +0000] [Job 1] argv[0]="DeskJet"
+    D [20/May/1999:19:18:28 +0000] [Job 1] argv[1]="1"
+    D [20/May/1999:19:18:28 +0000] [Job 1] argv[2]="mike"
+    D [20/May/1999:19:18:28 +0000] [Job 1] argv[3]="myjob"
+    D [20/May/1999:19:18:28 +0000] [Job 1] argv[4]="1"
+    D [20/May/1999:19:18:28 +0000] [Job 1] argv[5]="media=
+      na_letter_8.5x11in sides=one-sided"
+    D [20/May/1999:19:18:28 +0000] [Job 1] argv[6]="/var/spool/cups/
+      d000001-001"
+    I [20/May/1999:19:21:02 +0000] [Job 2] Queued on 'DeskJet' by 'mike'.
+    I [20/May/1999:19:22:24 +0000] [Job 2] Canceled by 'mike'.
+
+.fi
+The \fIlevel\fR field contains the type of message:
+.TP 5
+A
+Alert message (LogLevel alert)
+.TP 5
+C
+Critical error message (LogLevel crit)
+.TP 5
+D
+Debugging message (LogLevel debug)
+.TP 5
+d
+Detailed debugging message (LogLevel debug2)
+.TP 5
+E
+Normal error message (LogLevel error)
+.TP 5
+I
+Informational message (LogLevel info)
+.TP 5
+N
+Notice message (LogLevel notice)
+.TP 5
+W
+Warning message (LogLevel warn)
+.TP 5
+X
+Emergency error message (LogLevel emerg)
+.LP
+The \fIdate-time\fR field contains the date and time of when the page started printing. The format of this field is identical to the data-time field in the \fIaccess_log\fR file.
+.LP
+The \fImessage\fR field contains a free-form textual message.
+Messages from job filters are prefixed with "[Job NNN]" where "NNN" is the job ID.
+.SS PAGE LOG FILE FORMAT
+The \fIpage_log\fR file lists the total number of pages (sheets) that are printed.
+By default, each line contains the following information:
+.nf
+
+    \fIprinter user job-id date-time \fBtotal \fInum-sheets job-billing
+      job-originating-host-name job-name media sides\fR
+
+.fi
+For example the entry for a two page job called "myjob" might look like:
+.nf
+
+    DeskJet root 1 [20/May/1999:19:21:06 +0000] total 2 acme-123
+      localhost myjob na_letter_8.5x11in one-sided
+
+.fi
+The PageLogFormat directive in the
+.BR cupsd.conf (5)
+file can be used to change this information.
+.LP
+The \fIprinter\fR field contains the name of the printer that printed the page.
+If you send a job to a printer class, this field will contain the name of the printer that was assigned the job.
+.LP
+The \fIuser\fR field contains the name of the user (the IPP requesting-user-name attribute) that submitted this file for printing.
+.LP
+The \fIjob-id\fR field contains the job number of the page being printed.
+.LP
+The \fIdate-time\fR field contains the date and time of when the page started printing.
+The format of this field is identical to the data-time field in the \fIaccess_log\fR file.
+.LP
+The \fInum-sheets\fR field provides the total number of pages (sheets) that have been printed on for the job.
+.LP
+The \fIjob-billing\fR field contains a copy of the job-billing or job-account-id attributes provided with the IPP Create-Job or Print-Job requests or "-" if neither was provided.
+.LP
+The \fIjob-originating-host-name\fR field contains the hostname or IP address of the client that printed the job.
+.LP
+The \fIjob-name\fR field contains a copy of the job-name attribute provided with the IPP Create-Job or Print-Job requests or "-" if none was provided.
+.LP
+The \fImedia\fR field contains a copy of the media or media-col/media-size attribute provided with the IPP Create-Job or Print-Job requests or "-" if none was provided.
+.LP
+The \fIsides\fR field contains a copy of the sides attribute provided with the IPP Create-Job or Print-Job requests or "-" if none was provided.
+.SH SEE ALSO
+.BR cupsd (8),
+.BR cupsd.conf (5),
+.BR cups-files.conf (5),
+CUPS Online Help (http://localhost:631/help)
+.SH COPYRIGHT
+Copyright \[co] 2007-2019 by Apple Inc.

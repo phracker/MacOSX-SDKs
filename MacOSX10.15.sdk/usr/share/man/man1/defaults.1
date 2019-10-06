@@ -1,0 +1,226 @@
+.\""Copyright (c) 2001-2011, Apple Inc. All Rights Reserved.
+.Dd Nov 3, 2003 
+.Dt DEFAULTS 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm defaults
+.Nd access the Mac OS X user defaults system
+.Sh SYNOPSIS
+.Nm
+.Op Fl currentHost | Fl host Ar hostname
+read
+.Oo 
+.Ar domain 
+.Op Ar key
+.Oc
+.Pp
+.Nm
+.Op Fl currentHost | Fl host Ar hostname
+read-type 
+.Ar domain key
+.Pp
+.Nm
+.Op Fl currentHost | Fl host Ar hostname
+write
+.Ar domain Li { Ar 'plist' | key 'value'
+}
+.Pp
+.Nm
+.Op Fl currentHost | Fl host Ar hostname
+rename
+.Ar domain old_key new_key
+.Pp
+.Nm
+.Op Fl currentHost | Fl host Ar hostname
+delete 
+.Oo
+.Ar domain
+.Op Ar key
+.Oc
+.Pp
+.Nm
+.Op Fl currentHost | Fl host Ar hostname
+.Li { Ar domains
+| find
+.Ar word | help
+}
+.Pp
+.Sh DESCRIPTION
+.Nm Defaults
+allows users to read, write, and delete Mac OS X user defaults from a command-line shell. Mac OS X applications and other programs use the defaults system to record user preferences and other information that must be maintained when the applications aren't running (such as default font for new documents, or the position of an Info panel). Much of this information is accessible through an application's Preferences panel, but some of it isn't, such as the position of the Info panel. You can access this information with
+.Nm
+.Pp
+.Sy Note:
+Since applications do access the defaults system while they're running, you shouldn't modify the defaults of a running application. If you change a default in a domain that belongs to a running application, the application won't see the change and might even overwrite the default.
+.Pp
+User defaults belong to
+.Ar domains ,
+which typically correspond to individual applications. Each domain has a dictionary of keys and values representing its defaults; for example, "Default\ Font" = "Helvetica". Keys are always strings, but values can be complex data structures comprising arrays, dictionaries, strings, and binary data. These data structures are stored as XML Property Lists.
+.Pp
+Though all applications, system services, and other programs have their own domains, they also share a domain named
+.Sy NSGlobalDomain .
+If a default isn't specified in the application's domain, but is specified in
+.Sy NSGlobalDomain ,
+then the application uses the value in that domain.
+.Pp
+The commands are as follows:
+.Bl -tag -width "read domain"
+.It Sy read
+Prints all of the user's defaults, for every domain, to standard output.
+.It Sy read Ar domain
+Prints all of the user's defaults for
+.Ar domain
+to standard output.
+.It Sy read Ar domain key
+Prints the value for the default of
+.Ar domain
+identified by
+.Ar key .
+.It Sy read-type Ar domain key
+Prints the plist type for the given
+.Ar domain
+identified by
+.Ar key .
+.It Sy write Ar domain key 'value'
+Writes
+.Ar value
+as the value for
+.Ar key
+in
+.Ar domain .
+.Ar value
+must be a property list, and must be enclosed in single quotes.
+For example:
+.Bd -literal -offset indent
+defaults write com.companyname.appname "Default Color" '(255, 0, 0)'
+.Ed
+.Pp
+sets the value for Default Color to an array containing the strings 255, 0, 0 (the red, green, and blue components). Note that the key is enclosed in quotation marks because it contains a space.
+.It Sy write Ar domain 'plist'
+Overwrites the defaults information in
+.Ar domain
+with that given as
+.Ar plist .
+.Ar plist
+must be a property list representation of a dictionary, and must be enclosed in single quotes.
+For example: 
+.Bd -literal -offset indent
+defaults write com.companyname.appname '{ "Default Color" = (255, 0, 0);
+				"Default Font" = Helvetica; }';
+.Ed
+.Pp
+erases any previous defaults for com.companyname.appname and writes the values for the two names into the defaults system.
+.It Sy delete Ar domain
+Removes all default information for
+.Ar domain .
+.It Sy delete Ar domain key
+Removes the default named
+.Ar key
+from
+.Ar domain .
+.It Sy domains
+Prints the names of all domains in the user's defaults system.
+.TP
+.It Sy find Ar word
+Searches for
+.Ar word
+in the domain names, keys, and values of the user's defaults, and prints out a list of matches.
+.It Sy help
+Prints a list of possible command formats.
+.El
+.Sh OPTIONS
+.Pp
+\fBSpecifying domains:\fR
+.Pp
+.Bl -tag -width "filepath"
+.It Ar domain
+If no flag is specified, \fIdomain\fR is a domain name of the form com.companyname.appname.
+Example:
+.Bd -literal -offset indent
+defaults read com.apple.TextEdit
+.Ed
+.It Fl app Ar application
+The name of an application may be provided instead of a domain using the \fB-app\fR flag. Example:
+.Bd -literal -offset indent
+defaults read -app TextEdit
+.Ed
+.It Ar filepath
+Domains may also be specified as a path to an arbitrary plist file, with or without the '.plist' extension. For example:
+.Bd -literal -offset indent
+defaults read ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist
+.Ed
+.Pp
+normally gives the same result as the two previous examples.
+In the following example:
+.Bd -literal -offset indent
+defaults write ~/Desktop/TestFile foo bar
+.Ed
+.Pp
+will write the key 'foo' with the value 'bar' into the plist file 'TestFile.plist' that is on the user's desktop. If the file does not exist, it will be created. If it does exist, the key-value pair will be added, overwriting the value of 'foo' if it already existed.
+.Pp
+WARNING: The defaults command will be changed in an upcoming major release to only operate on preferences domains. General plist manipulation utilities will be folded into a different command-line program.
+.It Fl g | globalDomain | Sy NSGlobalDomain
+Specify the global domain. '\fB-g\fR' and '\fB-globalDomain\fR' may be used as synonyms for 
+.Sy NSGlobalDomain .
+.El
+.Pp
+\fBSpecifying value types for preference keys:\fR
+.Pp
+.Bl -tag -width "-int[eger]"  
+.It " "
+If no type flag is provided,
+.Nm
+will assume the value is a string. For best results, use one of the type flags, listed below. 
+.It Fl string
+Allows the user to specify a string as the value for the given preference key.
+.It Fl data
+Allows the user to specify a bunch of raw data bytes as the value for the given preference key. 
+The data must be provided in hexidecimal.
+.It Fl int[eger]
+Allows the user to specify an integer as the value for the given preference key.
+.It Fl float
+Allows the user to specify a floating point number as the value for the given preference key.
+.It Fl bool[ean]
+Allows the user to specify a boolean as the value for the given preference key.
+Value must be TRUE, FALSE, YES, or NO.
+.It Fl date
+Allows the user to specify a date as the value for the given preference key.
+.It Fl array
+Allows the user to specify an array as the value for the given preference key:
+.Bd -literal -offset indent
+defaults write somedomain preferenceKey -array element1 element2 element3
+.Ed
+.Pp
+The specified array overwrites the value of the key if the key was present at the time of the write. If the key was not present, it is created with the new value.
+.Pp
+.It Fl array-add
+Allows the user to add new elements to the end of an array for a key which has an array as its value. Usage is the same as -array above. If the key was not present, it is created with the specified array as its value.
+.Pp
+.It Fl dict
+Allows the user to add a dictionary to the defaults database for a domain.  Keys and values are specified in order:
+.Bd -literal -offset indent
+defaults write somedomain preferenceKey -dict key1 value1 key2 value2
+.Ed
+.Pp
+The specified dictionary overwrites the value of the key if the key was present at the time of the write. If the key was not present, it is created with the new value.
+.Pp
+.It Fl dict-add
+Allows the user to add new key/value pairs to a dictionary for a key which has a dictionary as its value. Usage is the same as -dict above. If the key was not present, it is created with the specified dictionary as its value.
+.El
+.Pp
+\fBSpecifying a host for preferences:\fR
+.Pp
+Operations on the defaults database normally apply to any host the user may log in on, but may be restricted to apply only to a specific host. 
+.Bl -tag -width   
+.It " "
+If no host is provided, preferences operations will apply to any host the user may log in on.
+.It Fl currentHost
+Restricts preferences operations to the host the user is currently logged in on.
+.It Fl host Ar hostname
+Restricts preferences operations to \fIhostname\fR.
+.El
+.Pp
+.Sh BUGS
+Defaults can be structured in very complex ways, making it difficult for the user to enter them with this command.
+.Sh HISTORY
+First appeared in NeXTStep.

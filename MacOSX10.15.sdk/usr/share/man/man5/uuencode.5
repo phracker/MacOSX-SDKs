@@ -1,0 +1,100 @@
+.TH uuencode 5 "May, 2001" "Apple Computer, Inc."
+.SH NAME
+uuencode file format
+.NM uuencode
+.ND description of the uuencode file format
+.SH DESCRIPTION
+
+The 
+.XR uuencode 1
+command generates files in a format that allows them to be successfully
+transferred by systems which strip the high bit from an 8-bit byte.
+.XR uudecode 1
+decodes uuencoded files.
+
+.PP
+The uuencode file format consists of three sections: header, body, and trailer.
+The header is a line is of the form:
+
+.PP
+begin 644 "filename.ext"
+
+.PP
+where "644" is a
+.XR chmod 1
+-format permissions byte for the file and "filename.ext" is the name of
+the encoded file.
+
+.PP
+The body section is the encoded representation of the source file. Three
+bytes of input file data are encoded into four bytes of output data.
+.PP
+The 24 input bits are divided up into four pieces of six bits
+each. The integer value 32 (the ASCII value for the space character) is
+added to each of these pieces to move them outside of the range of control
+characters. To avoid using the space character in the encoding, pieces with
+value zero are encoded using backquote (ASCII value 96) instead of zero. The
+resulting character is one of the this set (ASCII values 96,33-95):
+
+.DQ `!"#$%&'()*+,-./012356789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_
+
+.PP
+A line itself contains three segments: a length character (encoded using
+the "add a space" algorithm described above), the body of the line,
+typically (although not required to be) 60 output characters long,
+representing 45 input bytes, and (of course) a linefeed.  The length
+character specifies the number of valid input bytes on the line (so, for
+a line which is 60 encoded bytes, the length value would be 45).
+Decoding programs should decode no further than the specified length on
+a single line.
+
+.PP
+The trailer, which must exist, consists of a single backquote
+("`", ASCII 96) character on a line by itself, directly followed by
+.DQ end
+on a line by itself.
+
+.PP
+.DQ .uue 
+is the canonical filename extension for uuencoded files.
+
+.SH BUGS
+uudecode does not read all permutations of the file format described in
+this man page.
+
+.PP
+Ancient versions of uuencode used a space character (ASCII 32) in the
+encoding to represent zero. Many (arguably broken) mailers and transport
+agents stripped, rewrapped, or otherwise mangled this format, so the space
+was later changed to the backquote, ASCII 96. Decoders may attempt to
+read the older format if they wish, though it's unlikely to be encountered
+in practice at this point in time.
+
+.PP
+The uuencode encoding method is highly ASCII-centric. In particular, the
+character set used doesn't work well on EBCDIC-based systems. (EBCDIC,
+generally used by IBM mainframes, is an old alternative character encoding;
+most computers use ASCII instead).
+
+.PP
+Many variants of uuencode on various platforms generate different forms
+of line checksums, using to represent the checksum one or more encoded
+characters after the last counted character in a line.  Because these
+formats are different and impossible to distinguish (with certainty),
+such characters should be ignored by decoding implementations.
+
+.PP
+The uuencode encoding format has no provisions for segmented files.
+Writers of segmenting utilities should be careful to avoid using
+character sequences that may naturally occur in the encoding (such
+as sequences of dashes ("---")) to divide sections.
+
+.SH SEE ALSO
+The MIME Base64 encoding (documented in RFC 2045) is a consistent,
+cross-platform-savvy message encoding which should be used in place of
+UUEncode wherever possible.
+
+.PP
+The Unix-Hater's Handbook (IDG, 1994) identifies the folly of the
+older zero-encoded-as-space versions of uuencode.
+

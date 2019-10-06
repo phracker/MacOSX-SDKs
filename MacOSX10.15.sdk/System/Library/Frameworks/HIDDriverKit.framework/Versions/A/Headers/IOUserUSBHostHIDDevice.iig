@@ -1,0 +1,336 @@
+/*
+ * Copyright (c) 1998-2006 Apple Computer, Inc. All rights reserved.
+ *
+ * @APPLE_LICENSE_HEADER_START@
+ *
+ * This file contains Original Code and/or Modifications of Original Code
+ * as defined in and that are subject to the Apple Public Source License
+ * Version 2.0 (the 'License'). You may not use this file except in
+ * compliance with the License. Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this
+ * file.
+ *
+ * The Original Code and all software distributed under the License are
+ * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+ * Please see the License for the specific language governing rights and
+ * limitations under the License.
+ *
+ * @APPLE_LICENSE_HEADER_END@
+ */
+
+#ifndef _HIDDRIVERKIT_IOUSERUSBHOSTHIDDEVICE_H
+#define _HIDDRIVERKIT_IOUSERUSBHOSTHIDDEVICE_H
+
+#include <USBDriverKit/IOUSBHostInterface.iig>
+#include <USBDriverKit/IOUSBHostPipe.iig>
+#include <DriverKit/OSAction.iig>
+#include <DriverKit/IOService.iig>
+#include <DriverKit/IOTimerDispatchSource.iig>
+#include <HIDDriverKit/IOUserHIDDevice.iig>
+
+class  OSString;
+struct IOUSBHostHIDDescriptorInfo;
+
+typedef enum {
+    USBIdlePolicyTypeInterface,
+    USBIdlePolicyTypePipe,
+} USBIdlePolicyType;
+
+class IOUserUSBHostHIDDevice : public IOUserHIDDevice
+{
+    
+public:
+
+    /*!
+     * @function    init
+     * @brief       init IOUserUSBHostHIDDevice object
+     * @discussion  method can be use to initlialize object data.
+     * @return      true if successful.
+     */
+
+    virtual bool init() override;
+    
+    /*!
+     * @function    Start
+     * @brief       Service start
+     * @discussion  method called when service instantiated.
+     *              concrete class required to call <code>RegisterService</code> to activate
+                    the service. If <code>Start</code> method of concrete class returning error
+                    it should not call <code>RegisterService</code> and should call <code>Stop</code>.
+     * @param       provider The IOService that is provider for this object.
+     * @return      KERN_SUCCESS is successful see IOReturn.h for error codes.
+     */
+
+    virtual kern_return_t Start(IOService * provider) override;
+
+    /*!
+     * @function    Stop
+     * @brief       Service stop
+     * @discussion  method called when device terminating.
+     * @param       provider The IOService that is provider for this object.
+     * @return      KERN_SUCCESS is successful see IOReturn.h for error codes.
+     */
+    
+    virtual kern_return_t Stop (IOService * provider) override;
+
+
+ 
+    /*!
+     * @function    free
+     * @brief       free service resources
+     * @discussion  method called when last reference to object removed.
+     */
+
+    virtual void free() override;
+
+    /*!
+     * @function    handleStart
+     * @brief       Handle service start
+     * @discussion  method called from <code>Start</code> and can be use to initlialize device.
+     * @param       provider The IOService that is provider for this object.
+     * @return      true on success.
+     */
+
+    virtual bool handleStart (IOService * provider) override;
+
+    /*!
+     * @function newDeviceDescription
+     * @abstract Create and return a new dicitonary that describe the device HID device
+     * @discussion A subclass must override this pure virtual function, and
+     * return a dictionary of key value pairs that describe device.
+     * Supported keys:
+     *  kIOHIDReportIntervalKey
+     *  kIOHIDVendorIDKey
+     *  kIOHIDProductIDKey
+     *  kIOHIDTransportKey
+     *  kIOHIDVersionNumberKey
+     *  kIOHIDCountryCodeKey
+     *  kIOHIDLocationIDKey
+     *  kIOHIDManufacturerKey
+     *  kIOHIDProductKey
+     *  kIOHIDSerialNumberKey
+     *  @param description Ponter to the description dictionary pointer
+     *  @result OSDictionary that contains device deccription dicitonary.
+     */
+    
+    virtual OSDictionary * newDeviceDescription () override;
+   
+    /*!
+     * @function newReportDescriptor
+     * @abstract Create and return a new memory descriptor that describes the
+     * report descriptor for the HID device.
+     * @discussion A subclass must override this pure virtual function, and
+     * return a memory descriptor that describes the HID report descriptor as
+     * defined by the USB Device Class Definition for Human Interface Devices
+     * Version 1.1 specification.
+     * @result OSData object that contains HID descriptor.
+     */
+
+    virtual OSData * newReportDescriptor() override;
+    
+    /*!
+     @function getReport
+     @abstract Get a report from the HID device.
+     @discussion A completion parameter may be added in the future.
+     @param report A memory descriptor that describes the memory to store
+     the report read from the HID device.
+     @param reportType The report type.
+     @param options The lower 8 bits will represent the Report ID.  The
+     other 24 bits are options to specify the request.
+     @param completionTimeout Specifies an amount of time (in ms) after which
+     the command will be aborted if the entire command has not been completed.
+     @param completion Function to call when request completes. If omitted then
+     getReport() executes synchronously, blocking until the request is complete.
+     @result kIOReturnSuccess on success, or an error return otherwise.
+     */
+    
+    virtual kern_return_t getReport(IOMemoryDescriptor      * report,
+                                    IOHIDReportType         reportType,
+                                    IOOptionBits            options,
+                                    uint32_t                 completionTimeout,
+                                    OSAction                * action) override;
+    
+    /*!
+     * @function setReport
+     * @abstract Send a report to the HID device.
+     * @discussion A completion parameter may be added in the future.
+     * @param report A memory descriptor that describes the report to send
+     * to the HID device.
+     * @param reportType The report type.
+     * @param options The lower 8 bits will represent the Report ID.  The
+     * other 24 bits are options to specify the request.
+     * @param completionTimeout Specifies an amount of time (in ms) after which
+     * the command will be aborted if the entire command has not been completed.
+     * @param action Action to call CompleteReport when request completes. If omitted then
+     * setReport() executes synchronously, blocking until the request is complete.
+     * @result kIOReturnSuccess on success, or an error return otherwise.
+     */
+    
+    virtual kern_return_t setReport(IOMemoryDescriptor      * report,
+                                    IOHIDReportType         reportType,
+                                    IOOptionBits            options,
+                                    uint32_t                completionTimeout,
+                                    OSAction                * action) override;
+
+    /*!
+     * @function setProtocol
+     * @abstract Set protocol
+     * @param protocol value.
+     * @result kIOReturnSuccess on success, or an error return otherwise.
+     */
+    
+    virtual kern_return_t  setProtocol (uint16_t protocol) LOCALONLY;
+
+protected:
+
+    /*!
+     * @function initInputReport
+     * @abstract initialize read of interrupt report
+     * @result kIOReturnSuccess on success, or an error return otherwise.
+     */
+    
+    virtual kern_return_t initInputReport () LOCALONLY;
+
+    /*!
+     * @function scheduleInputReportRetry
+     * @abstract initialize logic that retries interrupt report init
+     */
+    
+    virtual void scheduleInputReportRetry (kern_return_t reason) LOCALONLY;
+
+    /*!
+     * @function cancelInputReportRetry
+     * @abstract cancel logic that retries interrupt report init
+     */
+    
+    virtual void cancelInputReportRetry () LOCALONLY;
+
+
+    /*!
+     * @function CompleteInputReport
+     * @abstract Complete input report read
+     * @discussion Function call upon read completion of interrupt reports.
+     * <code>action</code> reference carry <code>IOUSBHIDCompletion</code>
+     * associated with read request
+     * @param action completion action
+     * @param status completion status
+     * @param actualByteCount number of bytes read
+     */
+
+    virtual void CompleteInputReport (OSAction      * action TARGET,
+                                      IOReturn      status,
+                                      uint32_t      actualByteCount,
+                                      uint64_t      completionTimestamp) TYPE(IOUSBHostPipe::CompleteAsyncIO);
+
+    
+    /*!
+     * @function TimerOccurred
+     * @abstract Timer handler
+     * @discussion Hadler called to retry scheduling input report read
+     * @param action timer action
+     * @param time time
+     */
+    
+    virtual void TimerOccurred  (OSAction       * action,
+                                 uint64_t       time) TYPE(IOTimerDispatchSource::TimerOccurred);
+
+    /*!
+     * @function setIdle
+     * @abstract Set idle time value on device.
+     * @discussion The idle rate determines how often a device resends data that
+     * has not changed since the last report. This is used to limit the reporting
+     * frequency of an interrupt IN endpoint.
+     * @param idleTimeMs Idle time in millisecond
+     * @result kIOReturnSuccess on success, or an error return otherwise.
+     */
+
+    virtual kern_return_t setIdle (uint16_t idleTimeMs) LOCALONLY;
+
+    
+    /*!
+     * @function setIdlePolicy
+     * @abstract Set idle timeout value for interface/pipe.
+     * @discussion Once the interface/pipe is considered idle, it will defer
+     * electrical suspend of the device for the specified duration
+     * @param idleTimeMs Idle time in millisecond
+     * @result kIOReturnSuccess on success, or an error return otherwise.
+     */
+    
+    virtual kern_return_t setIdlePolicy (USBIdlePolicyType type, uint16_t idleTimeMs) LOCALONLY;
+
+    /*!
+     * @function reset
+     * @abstract Reset USB device
+     * @discussion reset  USB device if fail to communicate
+     */
+    
+    virtual void reset () LOCALONLY;
+
+    /*!
+     * @function getReport
+     * @abstract Get a report from the HID device.
+     * @param report A memory descriptor that describes the memory to store
+     * the report read from the HID device.
+     * @param reportType The report type.
+     * @param options The lower 8 bits will represent the Report ID.  The
+     * other 24 bits are options to specify the request.
+     * @param completionTimeout Specifies an amount of time (in ms) after which
+     * the command will be aborted if the entire command has not been completed.
+     * @param completion Function to call when request completes. If omitted then
+     * getReport() executes synchronously, blocking until the request is complete.
+     * @result kIOReturnSuccess on success, or an error return otherwise.
+     */
+
+    kern_return_t getReport (IOMemoryDescriptor      * report,
+                             IOHIDReportType         reportType,
+                             IOOptionBits            options,
+                             uint32_t                completionTimeout,
+                             uint32_t                * bytesTransferred) LOCALONLY;
+    
+    /*!
+     * @function setReport
+     * @abstract Syncronous send a report to the HID device.
+     * @param report A memory descriptor that describes the report to send
+     * to the HID device.
+     * @param reportType The report type.
+     * @param options The lower 8 bits will represent the Report ID.  The
+     * other 24 bits are options to specify the request.
+     * @param completionTimeout Specifies an amount of time (in ms) after which
+     * the command will be aborted if the entire command has not been completed.
+     * @result kIOReturnSuccess on success, or an error return otherwise.
+     */
+
+    kern_return_t setReport (IOMemoryDescriptor      * report,
+                             IOHIDReportType         reportType,
+                             IOOptionBits            options,
+                             uint32_t                completionTimeout) LOCALONLY;
+    
+    
+    /*!
+     * @function setProperty
+     * @abstract Pass property from corresponding kernel object
+     * @param key property key.
+     * @param value property value.
+     */
+
+    virtual void setProperty (OSObject * key, OSObject * value) override;
+
+private:
+    
+    kern_return_t initPipes () LOCALONLY;
+    
+    kern_return_t getHIDDescriptorInfo (uint8_t type, const IOUSBHostHIDDescriptorInfo ** info, uint8_t * index) LOCALONLY;
+    
+    OSString * copyStringAtIndex (uint8_t index, uint16_t lang) LOCALONLY;
+    
+    virtual void CompleteZLP (OSAction       * action TARGET,
+                              IOReturn       status,
+                              uint32_t       actualByteCount,
+                              uint64_t       completionTimestamp) TYPE(IOUSBHostPipe::CompleteAsyncIO);
+
+};
+
+#endif	// _HIDDRIVERKIT_IOUSERUSBHOSTHIDDEVICE_H

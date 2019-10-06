@@ -1,0 +1,106 @@
+.\" Copyright (c) 2000, Apple Computer, Inc.  All rights reserved.
+.\"
+.Dd March 28, 2000
+.Dt LATENCY 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm latency
+.Nd monitors scheduling and interrupt latency
+.Sh SYNOPSIS
+.Nm latency
+.Op Fl p Ar priority
+.Op Fl h
+.Op Fl m
+.Op Fl st Ar threshold
+.Op Fl it Ar threshold
+.Op Fl c Ar code_file
+.Op Fl l Ar log_file
+.Op Fl R Ar raw_file
+.Op Fl n Ar kernel
+.Sh DESCRIPTION
+The
+.Nm latency
+utility provides scheduling and interrupt-latency statistics.
+Due to the kernel tracing facility it uses to operate,
+the command requires root privileges.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.\" ==========
+.It Fl c Ar code_file
+When the
+.Fl c
+option is specified, it takes a path to a code file 
+that contains the mappings for the system calls.
+This option overrides the default location of the system call code file,
+which is found in /usr/share/misc/trace.codes.
+.\" ==========
+.It Fl h
+Display high resolution interrupt latencies and write them to latencies.csv (truncate existing file) upon exit.
+.\" ==========
+.It Fl m
+Display per-CPU interrupt latency statistics.
+.\" ==========
+.It Fl it Ar threshold
+Set the interrupt latency threshold,
+expressed in microseconds.
+If the latency exceeds this value,
+and a log file has been specified,
+a record of what occurred during this time is recorded.
+.\" ==========
+.It Fl l Ar log_file
+Specifies a log file that is written to when
+either the interrupt or scheduling latency is exceeded.
+.\" ==========
+.It Fl n Ar kernel
+By default,
+.Nm latency
+acts on the default /System/Library/Kernels/kernel.development.
+This option allows you to specify an alternate booted kernel.
+.\" ==========
+.It Fl p Ar priority
+Specifies the priority level to observe scheduler latencies for.
+The default is realtime (
+.Ar 97
+). A range of priorities to monitor
+can also be provided, for example
+.Ar 31-47
+or
+.Ar 0-127
+.
+.\" ==========
+.It Fl st Ar threshold
+Set the scheduler latency threshold in microseconds.
+If latency exceeds this, and a log file has been specified,
+a record of what occurred during this time is recorded.
+.\" ==========
+.It Fl R Ar raw_file
+Specifies a raw trace file to use as input.
+.El
+.Pp
+The data columns displayed are as follows:
+.Bl -tag -width LAST_PATHNAME_WAITED_FOR
+.It SCHEDULER
+The number of context switches that fall within the described delay.
+.It INTERRUPTS
+The number of interrupts that fall within the described delay.
+.El
+.Pp
+The
+.Nm latency
+utility is also SIGWINCH savvy, so adjusting your window geometry will change
+the list of delay values displayed.
+.Sh SAMPLE USAGE
+.Pp
+latency -p 97 -st 20000 -it 1000 -l /var/tmp/latency.log
+.Pp
+The
+.Nm latency
+utility will watch threads with priority 97 for scheduling latencies.
+The threshold for the scheduler is set to 20000 microseconds.
+The threshold for interrupts is set to 1000 microseconds.
+Latencies that exceed these thresholds will be logged in /var/tmp/latency.log.
+.Sh SEE ALSO
+.Xr fs_usage 1 ,
+.Xr sc_usage 1 ,
+.Xr top 1

@@ -1,0 +1,154 @@
+.Dd May 24, 2010
+.Dt GEN_BRIDGE_METADATA 1
+.Os
+.Sh NAME
+.Nm gen_bridge_metadata
+.Nd Objective-C Bridges Metadata Generator
+.Sh SYNOPSIS
+.Nm gen_bridge_metadata
+.Op Ar options...
+.Ar headers...
+.Sh DESCRIPTION
+.Nm gen_bridge_metadata
+is a tool that generates bridging metadata information for a given framework or set of headers. The Objective-C bridges supported in Mac OS X, such as PyObjC (Python), read this information at runtime.
+.Pp
+As of Mac OS 10.7,
+.Nm gen_bridge_metadata
+uses an improved parser, based on
+.Nm clang .
+This means the generated
+files should be more correct and complete, and the true parsing allows the
+automatic extraction of metadata from existing
+.Fn __attribute__
+information supported by the compiler.
+File generation time should also be faster.
+.Pp
+Metadata files describe the parts of an Objective-C framework that the bridges cannot automatically handle. These are primarily the ANSI C elements of the framework -- functions, constants, enumerations, and so on -- but also include special cases such as functions or methods that accept pointer-like arguments. These special cases must be manually specified in separate files called exceptions. The
+.Nm gen_bridge_metadata
+tool can then read in the exceptions file when it generates the framework metadata.
+.Pp
+The file extension used for metadata files should be \fB.bridgesupport\fR.
+.Pp
+Certain elements, such as inline functions, cannot be described in the metadata files. It is therefore required to generate a dynamic library in order to make the bridges use them. The gen_bridge_metadata tool can take care of that for you. 
+.Pp
+The file extension for the dynamic libraries should be \fB.dylib\fR. 
+.Pp
+You should install metadata files in one of three filesystem locations. For example, for a framework named MyFramework that is installed as
+.Pa /Library/Frameworks/MyFramework.framework ,
+you can install the
+.Pa MyFramework.bridgesupport
+and
+.Pa MyFramework.dylib
+files in one of the following possible locations, in order of priority:
+.Bl -bullet
+.It
+.Pa /Library/Frameworks/MyFramework/Resources/BridgeSupport
+.It 
+.Pa /Library/BridgeSupport
+.It
+.Pa ~/Library/BridgeSupport
+.El
+.Sh OPTIONS
+The
+.Nm gen_bridge_metadata
+tool accepts the following command-line options:
+.Bl -tag -width "123" -compact
+.Pp
+.It Fl f Ar framework , Fl -framework Ar framework
+Generates metadata for the given
+.Ar framework . 
+This argument can accept both the name of a framework of an absolute path to a framework. When passing a framework name, the program will try to locate the framework in one of the standard framework locations. 
+.Pp
+.It Fl p , Fl -private
+Generates metadata based on the private headers of the given frameworks. This argument must be used with the 
+.Fl f
+argument.
+.Pp
+.It Fl F Ar format , Fl -format Ar format
+Selects the metadata format that will be generated. Possible values are:
+.Pp
+.Bl -tag -width "exceptions-template"
+.It Ar final
+The final metadata format. This is the default value.
+.It Ar dylib
+The dynamic library format. This is only required if you want to support inline functions. In order to use this format you need to pass a value for the
+.Fl o
+argument.
+.It Ar exceptions-template
+This will generate an exception template. Please consult 
+.Xr BridgeSupport 5
+for more details about the exception format. Once your exception file is finished you can pass it to the
+.Fl e
+argument in order to generate the final metadata.
+.El
+.Pp
+.It Fl e Ar file, Fl -exception Ar file
+Considers the given exception file when generating the final metadata format. The given exception file must conform to a certain format, described in
+.Xr bridgeSupport 5 .
+Exception files are manually written, but you can generate a template by passing 
+.Fl F Ar exceptions-template
+to the generator.
+.Pp
+.It Fl -64-bit
+(This option is included for backwards compatibility, as this is now the default behavior.)
+Writes both 32 and 64-bit annotations to the final metadata format and compiles
+the dylib both 32 and 64-bit (if a framework is specified and it only contains
+either 32 or 64-bit architectures, then the final metadata format and dylib
+will be created only for that architecture).
+In order to use this option you need to run the generator on a 64-bit machine.
+The generation will take a bit more than twice the time, as both 32 and 64-bit
+will need to be processed and merged into one.
+.Pp
+.It Fl -no-32-bit
+Do not write the 32-bit annotations to the final metadata format or compile
+the dylib 32-bit.
+May not be used with
+.Fl -no-64-bit .
+.Pp
+.It Fl -no-64-bit
+Do not write the 64-bit annotations to the final metadata format or compile
+the dylib 64-bit.
+May not be used with
+.Fl -no-32-bit .
+.Pp
+.It Fl c , Fl -cflags Ar flags
+Provides custom flags that will be passed to the C compiler. The generator compiles and executes several C and Objective-C programs during the generation of the final metadata format. Some flags are determined by default, but you might want to provide your own flags according to the piece of code you want to generate metadata for (for example, a framework part of a umbrella framework). 
+.Pp
+.It Fl C , Fl -cflags-64 Ar flags
+Provides custom flags that will be passed to the C compiler, when generating 64-bit annotations. By default the same flags are passed to the C compiler when generating both 32-bit and 64-bit annotations.
+.Pp
+.It Fl o , Fl -output Ar file
+Writes the output to the given file. This argument is mandatory when generating the 
+.Dq dylib
+format. For other formats, by default the output is redirected to the standard output.
+.Pp 
+.It Fl h , Fl -help
+Prints a summary of the options.
+.Pp
+.It Fl d , Fl -debug
+Turns on debugging messages. You probably don't want to enable this option, unless you are going to debug the metadata generator.
+.Pp
+.It Fl v , Fl -version
+Shows the version of the program. The version is also marked in generated metadata files, as the
+.Dq version
+attribute of the
+.Dq signatures
+top-level element.
+.El
+.Sh EXAMPLES
+This generates bridge support metadata for a custom framework:
+.Dl mkdir -p /Path/To/YourFramework.framework/Resources/BridgeSupport
+.Dl gen_bridge_metadata -f /Path/To/YourFramework.framework -o /Path/To/YourFramework.framework/Resources/BridgeSupport/YourFramework.bridgesupport
+.Pp
+If the custom framework has inline functions and you want to be able to call them, here is how you can generate a
+.Dq dylib 
+file:
+.Dl gen_bridge_metadata -f /Path/To/YourFramework.framework -F dylib -o /Path/To/YourFramework.framework/Resources/BridgeSupport/YourFramework.dylib
+.Pp
+It is also possible to generate bridge support metadata for a standalone C library (here, libcurl):
+.Dl gen_bridge_metadata -c '-lcurl -I/usr/include/curl' /usr/include/curl/*.h > /Library/BridgeSupport/curl.bridgesupport
+.Sh SEE ALSO
+.Xr BridgeSupport 5
+.Pa /System/Library/DTDs/BridgeSupport.dtd
+.Xr ruby 1
+.Xr python 1

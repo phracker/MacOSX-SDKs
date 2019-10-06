@@ -1,0 +1,1249 @@
+'\" t
+.\" @(#)jarsigner.1 1.7 00/06/13 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits r\351serv\351s.
+.\"
+.TH jarsigner 1 "23 Jun 2004"
+.SH NAME
+jarsigner \- JAR signing and verification tool 
+.SH SYNOPSIS
+.B jarsigner 
+[ 
+.I options
+]  
+.I jar-file alias
+.br
+.B jarsigner
+.BI \-verify
+[
+.I options 
+]
+.I jar-file alias
+.SH DESCRIPTION
+.IX "JAR signing and verification tool " "" "JAR signing and verification tool  \(em \fLjarsigner\fP"
+.IX "jarsigner" "" "\fLjarsigner\fP \(em JAR signing and verification tool "
+The
+.B jarsigner 
+tool is used for two purposes:
+.TP 5
+1. 
+to sign Java ARchive (JAR) files, and
+.TP 5
+2. 
+to verify the signatures and integrity of signed JAR files.
+.LP
+The JAR feature enables the packaging of class files, images,
+sounds, and other digital data in a single file for faster and
+easier distribution. A tool named 
+.B jar 
+enables developers to
+produce JAR files.
+.LP
+A digital signature is a string of bits that is computed from some
+data (the data being "signed") and the private key of an entity (a
+person, company, etc.). Like a handwritten signature, a digital
+signature has many useful characteristics:
+.TP 2
+\(bu
+Its authenticity can be verified, via a computation that uses
+the public key corresponding to the private key used to
+generate the signature.
+.TP 2
+\(bu
+It cannot be forged, assuming the private key is kept secret.
+.TP 2
+\(bu
+It is a function of the data signed and thus can't be claimed
+to be the signature for other data as well.
+.TP 2
+\(bu
+The signed data cannot be changed; if it is, the signature
+will no longer verify as being authentic.
+.LP
+In order for an entity's signature to be generated for a file, the
+entity must first have a public/private key pair associated with
+it, and also one or more certificates authenticating its public
+key. A certificate is a digitally signed statement from one
+entity, saying that the public key of some other entity has a
+particular value.
+.LP
+.B jarsigner 
+uses key and certificate information from a keystore to
+generate digital signatures for JAR files. A keystore is a
+database of private keys and their associated X.509 certificate
+chains authenticating the corresponding public keys. The 
+.B keytool
+utility is used to create and administer keystores.
+.LP
+.B jarsigner 
+uses an entity's private key to generate a signature.
+The signed JAR file contains, among other things, a copy of the
+certificate from the keystore for the public key corresponding to
+the private key used to sign the file. 
+.B jarsigner 
+can verify the
+digital signature of the signed JAR file using the certificate
+inside it (in its signature block file).
+.LP
+At this time, 
+.B jarsigner 
+can only sign JAR files created by the JDK
+.B jar 
+tool or zip files. (JAR files are the same as zip files,
+except they also have a 
+.B META-INF/MANIFEST.MF 
+file. Such a file
+will automatically be created when 
+.B jarsigner 
+signs a zip file.)
+.LP
+The default 
+.B jarsigner 
+behavior is to sign a JAR file. Use the
+.B -verify 
+option to instead have it verify a signed JAR file.
+.SS Compatibility with JDK 1.1
+.IX "jarsigner" "Compatibility with JDK 1.1" "\fLjarsigner\fP \(em JAR signing and verification tool "
+The 
+.B keytool 
+and
+.B jarsigner 
+tools completely replace
+the 
+.B javakey 
+tool provided in JDK 1.1. These new tools provide more
+features than 
+.BR javakey , 
+including the ability to protect the
+keystore and private keys with passwords, and the ability to
+verify signatures in addition to generating them. 
+.LP
+The new keystore architecture replaces the identity
+database that 
+.B javakey 
+created and managed. There is no
+backwards compatibility between the keystore format and
+the database format used by 
+.B javakey 
+in 1.1. However:
+.TP 2
+\(bu
+It is possible to import the information from an
+identity database into a keystore, via the 
+.B keytool -identitydb 
+command
+.TP 2
+\(bu
+.B jarsigner 
+can sign JAR files also previously signed
+using 
+.B javakey 
+.TP 2
+\(bu
+.B jarsigner 
+can verify JAR files signed using
+.B javakey  
+Thus, it recognizes and can work with
+signer aliases that are from a JDK 1.1 identity
+database rather than a JDK 1.2 keystore.
+.LP 
+The following table explains how JAR files that were
+signed in JDK 1.1.x are treated in the Java 2 Platform.
+.LP
+.nf
+.ft 3
+
+                         Trusted
+                        Identity
+                        imported     Policy File
+JAR File  Identity in   into 1.2       grants        Privileges
+  Type   1.1 database   keystore    privileges to     Granted
+                        from 1.1   Identity/Alias
+                        database
+                           (4)
+
+Signed                                             Default
+JAR      NO            NO         NO               privaleges
+                                                   granted to
+                                                   all code.
+												   
+Unsigned                                           Default
+JAR      NO            NO         NO               privileges
+                                                   granted to
+                                                   all code.
+
+Signed                                             Default
+JAR      NO            YES        NO               privileges
+                                                   granted to
+                                                   all code.
+
+Signed                                             Default
+JAR      YES/Untrusted NO         NO               privileges
+                                                   granted to
+                                                   all code. (3)
+
+Signed                                             Default
+JAR      YES/Untrusted NO         YES              privileges
+                                                   granted to
+                                                   all code.
+                                                   (1,3)
+
+Signed                                             Default 
+JAR      NO            YES        YES              privileges
+                                                   granted to
+                                                   all code plus
+                                                   privileges
+                                                   granted in
+                                                   policy file.
+												   
+Signed                                             Default 
+JAR      YES/Trusted   YES        YES              privileges
+                                                   granted to
+                                                   all code plus
+                                                   privileges
+                                                   granted in
+                                                   policy file.
+                                                   (2)
+
+Signed                                             All
+JAR      YES/Trusted   NO         NO               privileges
+
+Signed                                             All
+JAR      YES/Trusted   YES        NO               privileges
+                                                   (1)
+
+Signed                                             All
+JAR      YES/Trusted   NO         YES              privileges
+                                                   (1)
+
+.fi
+.ft 1
+.LP
+Notes:
+.TP 5
+1. 
+If an identity/alias is mentioned in the policy
+file, it must be imported into the keystore for the
+policy file to have any effect on privileges
+granted.
+.TP 5
+1. 
+If an identity/alias is mentioned in the policy
+file, it must be imported into the keystore for the
+policy file to have any effect on privileges
+granted.
+.TP 5
+2. 
+The policy file/keystore combination has precedence
+over a trusted identity in the identity database.
+.TP 5
+3. 
+Untrusted identities are ignored in the Java 2 platform.
+.TP 5
+4. 
+Only trusted identities can be imported into Java 2 SDK
+keystores.
+.SS Keystore Aliases
+.IX "jarsigner" "Keystore Aliases" "\fLjarsigner\fP \(em JAR signing and verification tool "
+.LP
+All keystore entities are accessed via unique aliases.
+.LP
+When using
+.B jarsigner 
+to sign a JAR file, you must
+specify the alias for the keystore entry containing the
+private key needed to generate the signature. For
+example, the following will sign the JAR file named
+.BR MyJARFile.jar , 
+using the private key associated with
+the alias 
+.B duke 
+in the keystore named 
+.B mystore
+in the
+"working" directory. Since no output file is specified,
+it overwrites 
+.B MyJARFile.jar 
+with the signed JAR file.
+.LP
+.ft 3
+.nf
+jarsigner -keystore /working/mystore -storepass 
+   myspass -keypass dukekeypasswd MyJARFile.jar duke
+.fi
+.ft 1
+.LP
+Keystores are protected with a password, so the store
+password (in this case 
+.BR myspass ) 
+must be specified. You
+will be prompted for it if you don't specify it on the
+command line. Similarly, private keys are protected in a
+keystore with a password, so the private key's password
+(in this case 
+.BR dukekeypasswd ) 
+must be specified, and
+you will be prompted for it if you don't specify it on
+the command line and it isn't the same as the store
+password.
+.SS Keystore Location
+.IX "jarsigner" "Keystore Location" "\fLjarsigner\fP \(em JAR signing and verification tool "
+.B jarsigner 
+has a 
+.B -keystore 
+option for specifying the name
+and location of the keystore to be used. The keystore is
+by default stored in a file named 
+.B .keystore 
+in the
+user's home directory, as determined by the 
+.B user.home
+system property. 
+.LP
+Note that the input stream from 
+the \-keystore option is passed to the
+.B KeyStore.load 
+method. 
+If NONE is specified as the URL, then a null stream is passed
+to the 
+.B KeyStore.load 
+method. NONE should be specified if the 
+KeyStore is not file-based, for example, if it resides on a 
+hardware token device. 
+.SS Keystore Implementation
+.IX "jarsigner" "Keystore Implementation" "\fLjarsigner\fP \(em JAR signing and verification tool "
+The KeyStore class provided in the 
+.B java.security 
+package supplies well-defined
+interfaces to access and modify the information 
+in a keystore. It is possible for
+there to be multiple different concrete 
+implementations, where each
+implementation is that for a particular type of keystore. 
+.LP
+Currently, there are two command-line tools that make
+use of 
+.BR KeyStore : 
+.B keytool 
+and
+.BR  jarsigner , 
+and also a
+GUI-based tool named 
+.BR policytool . 
+Since 
+.B KeyStore 
+is
+publicly available, JDK users can write additional
+security applications that use it.
+.LP
+There is a built-in default implementation, provided by
+Sun Microsystems. It implements the keystore as a file,
+utilizing a proprietary keystore type (format) named
+"JKS". It protects each private key with its individual
+password, and also protects the integrity of the entire
+keystore with a (possibly different) password.
+.LP
+Keystore implementations are provider-based. More
+specifically, the application interfaces supplied by
+.B KeyStore 
+are implemented in terms of a "Service Provider
+Interface" (SPI). That is, there is a corresponding
+abstract 
+.B KeystoreSpi 
+class, also in the 
+.B java.security
+package, which defines the Service Provider Interface
+methods that "providers" must implement. (The term
+"provider" refers to a package or a set of packages that
+supply a concrete implementation of a subset of services
+that can be accessed by the Java Security API.) Thus, to
+provide a keystore implementation, clients must
+implement a provider and supply a 
+.B KeystoreSpi 
+subclass
+implementation, as described in 
+.IR "How to Implement a Provider for the Java Cryptography Architecture" .
+.LP
+Applications can choose different types of keystore
+implementations from different providers, using the
+.B getInstance 
+factory method supplied in the 
+.B KeyStore
+class. A keystore type defines the storage and data
+format of the keystore information, and the algorithms
+used to protect private keys in the keystore and the
+integrity of the keystore itself. Keystore
+implementations of different types are not compatible.
+.LP
+.B keytool 
+works on any file-based keystore implementation.
+(It treats the keytore location that is passed to it at
+the command line as a filename and converts it to a
+.BR FileInputStream , 
+from which it loads the keystore
+information.) The
+.B jarsigner 
+and 
+.B policytool 
+tools, on the
+other hand, can read a keystore from any location that
+can be specified using a URL.
+.LP
+For
+.B jarsigner 
+and
+.BR keytool , 
+you can specify a keystore
+type at the command line, via the
+.B -storetype 
+option. For
+.BR policytool , 
+you can specify a keystore type via the
+"Change Keystore" command in the Edit menu.
+.LP
+If you don't explicitly specify a keystore type, the
+tools choose a keystore implementation based simply on
+the value of the 
+.B keystore.type 
+property specified in the
+security properties file.
+The security properties file
+is called 
+.BR java.security , 
+and it resides in the
+security properties directory, 
+.BR java.home/lib/security ,
+where 
+.B java.home 
+is the
+runtime environment's directory
+(the jre directory in the SDK or the
+top-level directory of the Java 2 Runtime Environment).
+.LP
+Each tool gets the 
+.B keystore.type 
+value and then examines
+all the currently-installed providers until it finds one
+that implements keystores of that type. It then uses the
+keystore implementation from that provider.
+.LP
+The 
+.B KeyStore 
+class defines a static method named
+.B getDefaultType 
+that lets applications and applets
+retrieve the value of the 
+.B keystore.type 
+property. The
+following line of code creates an instance of the
+default keystore type (as specified in the 
+.B keystore.type
+property):
+.LP
+.RS 5
+.B KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+.RE
+.LP
+The default keystore type is "jks" (the proprietary type
+of the keystore implementation provided by Sun). This is
+specified by the following line in the security
+properties file:
+.LP
+.RS 5
+.B keystore.type=jks
+.RE
+.LP
+To have the tools utilize a keystore implementation
+other than the default, change that line to specify a
+different keystore type.
+.LP
+For example, if you have a provider package that
+supplies a keystore implementation for a keystore type
+called "pkcs12", change the line to
+.LP
+.B keystore.type=pkcs12
+.LP
+Note: case doesn't matter in keystore type designations.
+For example, "JKS" would be considered the same as
+"jks".
+.SS Supported Algorithms and Key Sizes
+.IX "jarsigner" "Supported Algorithms and Key Sizes" "\fLjarsigner\fP \(em JAR signing and verification tool "
+.LP
+At this time,
+.B jarsigner 
+can sign a JAR file using either
+.TP 2
+\(bu
+DSA (Digital Signature Algorithm) with the SHA-1
+digest algorithm, or
+.TP 2
+\(bu
+the RSA algorithm with the MD5 digest algorithm.
+.LP
+That is, if the signer's public and private keys are DSA
+keys,
+.B jarsigner 
+will attempt to sign the JAR file using the
+SHA-1/DSA algorithm. If the signer's keys are RSA keys,
+.B jarsigner 
+will sign the JAR file using the MD5/RSA
+algorithm. This is only possible if there is a
+statically installed provider supplying an
+implementation for the MD5/RSA algorithm. (There is
+always a SHA-1/DSA algorithm available, from the default
+"SUN" provider.)
+.LP
+.SS The Signed JAR File
+.IX "jarsigner" "The Signed JAR File" "\fLjarsigner\fP \(em JAR signing and verification tool "
+.LP
+When
+.B jarsigner 
+is used to sign a JAR file, the output
+signed JAR file is exactly the same as the input JAR
+file, except that it has two additional files placed in
+the 
+.B META-INF 
+directory:
+.TP 2
+\(bu
+a signature file, with a 
+.B .SF 
+extension, and
+.TP 2
+\(bu
+a signature block file, with a 
+.B .DSA 
+extension.
+.LP
+The base file names for these two files come from the
+value of the 
+.B -sigFile 
+option. For example, if the option
+appears as
+.LP
+.B -sigFile MKSIGN
+.LP
+the files are named 
+.B MKSIGN.SF 
+and 
+.BR MKSIGN.DSA .
+.LP
+If no 
+.B -sigfile 
+option appears on the command line, the
+base file name for the 
+.B .SF 
+and 
+.B .DSA 
+files will be the
+first 8 characters of the alias name specified on the
+command line, all converted to upper case. If the alias
+name has fewer than 8 characters, the full alias name is
+used. If the alias name contains any characters that are
+not allowed in a signature file name, each such
+character is converted to an underscore ("_") character
+in forming the file name. Legal characters include
+letters, digits, underscores, and hyphens.
+.LP
+The Signature (\f3.SF\f1) 
+File
+.LP
+A signature file (the 
+.B .SF 
+file) looks similar
+to the manifest file that is always included
+in a JAR file generated by the 
+.B jar 
+tool. That
+is, for each source file included in the JAR
+file, the 
+.B .SF 
+file has three lines, just as in
+the manifest file, listing the following:
+.TP 2
+\(bu
+the file name,
+.TP 2
+\(bu
+the name of the digest algorithm used
+(SHA), and
+.TP 2
+\(bu
+a SHA digest value.
+.LP
+In the manifest file, the SHA digest value for
+each source file is the digest (hash) of the
+binary data in the source file. In the 
+.B .SF
+file, on the other hand, the digest value for
+a given source file is the hash of the three
+lines in the manifest file for the source
+file.
+.LP
+The signature file also, by default, includes
+a header containing a hash of the whole
+manifest file. The presence of the header
+enables verification optimization, as
+described in JAR File Verification.
+.LP
+The Signature Block (\f3.DSA\f1) File
+.LP
+The 
+.B .SF 
+file is signed and the signature is
+placed in the 
+.B .DSA 
+file. The 
+.B .DSA 
+file also
+contains, encoded inside it, a certificate
+authenticating the public key corresponding to
+the private key used for signing.
+.LP
+.SS JAR File Verification
+.IX "jarsigner" "JAR File Verification" "\fLjarsigner\fP \(em JAR signing and verification tool "
+.LP
+A successful JAR file verification occurs if the
+signature(s) are valid, and none of the files that were
+in the JAR file when the signatures were generated have
+been changed since then. JAR file verification involves
+the following steps:
+.TP 5
+1. 
+Verify the signature of the 
+.B .SF 
+file itself.
+.RS 
+.LP
+That is, the verification ensures that the
+signature stored in each signature block (\f3.DSA\f1)
+file was in fact generated using the private key
+corresponding to the public key whose certificate
+also appears in the 
+.B .DSA 
+file. It also ensures that
+the signature is a valid signature of the
+corresponding signature (\f3.SF\f1) 
+file, and thus the 
+.B .SF 
+file has not been tampered with.
+.RE
+.TP 5
+2. 
+Verify the digest listed in each entry in the 
+.B .SF
+file with each corresponding section in the
+manifest.
+.RS 
+.LP
+The 
+.B .SF 
+file by default includes a header
+containing a hash of the entire manifest file. When
+the header is present, then the verification can
+check to see whether or not the hash in the header
+indeed matches the hash of the manifest file. If
+that is the case, verification proceeds to the next
+step.
+.LP
+If that is not the case, a less optimized
+verification is required to ensure that the hash in
+each source file information section in the 
+.B .SF
+file equals the hash of its corresponding section
+in the manifest file (see The Signature (\f3.SF\f1)
+File).  
+.LP
+One reason the hash of the manifest file that is
+stored in the 
+.B .SF 
+file header may not equal the
+hash of the current manifest file would be because
+one or more files were added to the JAR file (using
+the 
+.B jar 
+tool) after the signature (and thus the 
+.B .SF
+file) was generated. When the 
+.B jar 
+tool is used to
+add files, the manifest file is changed (sections
+are added to it for the new files), but the 
+.B .SF
+file is not. A verification is still considered
+successful if none of the files that were in the
+JAR file when the signature was generated have been
+changed since then, which is the case if the hashes
+in the non-header sections of the 
+.B .SF 
+file equal
+the hashes of the corresponding sections in the
+manifest file.
+.RE
+.TP 5
+3. 
+Read each file in the JAR file that has an entry in
+the 
+.B .SF 
+file. While reading, compute the file's
+digest, and then compare the result with the digest
+for this file in the manifest section. The digests
+should be the same, or verification fails.
+.LP
+If any serious verification failures occur during the
+verification process, the process is stopped and a
+security exception is thrown. It is caught and displayed
+by 
+.BR jarsigner .
+.LP
+.SS Multiple Signatures for a JAR File
+.IX "jarsigner" "Multiple Signatures for a JAR File" "\fLjarsigner\fP \(em JAR signing and verification tool "
+.LP
+A JAR file can be signed by multiple people simply by
+running the 
+.B jarsigner 
+tool on the file multiple times, specifying
+the alias for a different person each time, as in:
+.LP
+.ft 3
+.nf
+jarsigner myBundle.jar susan
+jarsigner myBundle.jar kevin
+.fi
+.ft 1
+.LP
+When a JAR file is signed multiple times, there are
+multiple 
+.B .SF 
+and 
+.B .DSA 
+files in the resulting JAR file,
+one pair for each signature. Thus, in the example above,
+the output JAR file includes files with the following
+names:
+.LP
+.ft 3
+.nf
+SUSAN.SF
+SUSAN.DSA
+KEVIN.SF
+KEVIN.DSA
+.fi
+.ft 1
+.LP
+Note: It is also possible for a JAR file to 
+have mixed signatures, some generated by
+the JDK 1.1 javakey tool and others by 
+jarsigner. That is, jarsigner can be used
+to sign JAR files already previously signed using javakey. 
+.SH OPTIONS
+.LP
+The various
+.B jarsigner 
+options are listed and described below.
+Note:
+.TP 2
+\(bu
+All option names are preceded by a minus sign (-).
+.TP 2
+\(bu
+The options may be provided in any order.
+.TP 2
+\(bu
+Items in italics (option values) represent the actual values
+that must be supplied.
+.TP 2
+\(bu
+The
+.BR -keystore ,
+.BR -storepass ,
+.BR -keypass ,
+.BR -sigfile ,
+and
+.B -signedjar 
+options are only relevant when signing a JAR file,
+not when verifying a signed JAR file. Similarly, an alias is
+only specified on the command line when signing a JAR file.
+.TP 15
+.BI -keystore " url"
+Specifies the URL that tells the keystore location. This
+defaults to the file 
+.B .keystore 
+in the user's home directory,
+as determined by the 
+.B user.home 
+system property.
+.RS
+.LP
+A keystore is required when signing, so you must explicitly
+specify one if the default keystore does not exist (or you
+want to use one other than the default).
+.LP
+A keystore is not required when verifying, but if one is
+specified, or the default exists, and the 
+.B -verbose 
+option was
+also specified, additional information is output regarding
+whether or not any of the certificates used to verify the JAR
+file are contained in that keystore.
+.LP
+Note: the 
+.B -keystore 
+argument can actually be a file name (and
+path) specification rather than a URL, in which case it will
+be treated the same as a "file:" URL. That is,
+.LP
+.B -keystore filePathAndName
+.LP
+is treated as equivalent to
+.LP
+.B -keystore file:filePathAndName
+.LP
+.RE
+.TP
+.BI -storetype " storetype"
+Specifies the type of keystore to be instantiated. The
+default keystore type is the one that is specified as the
+value of the "keystore.type" property in the security
+properties file, which is returned by the static
+.B getDefaultType 
+method in 
+.BR java.security.KeyStore .
+.TP
+.BI -storepass " password"
+Specifies the password which is required to access the
+keystore. This is only needed when signing (not verifying) a
+JAR file. In that case, if a 
+.B -storepass 
+option is not
+provided at the command line, the user is prompted for the
+password.
+.RS 
+.LP
+Note: The password shouldn't be specified on the command line
+or in a script unless it is for testing purposes, or you are
+on a secure system. Also, when typing in a password at the
+password prompt, the password is echoed (displayed exactly as
+typed), so be careful not to type it in front of anyone.
+.RE
+.TP
+.BI -keypass " password"
+Specifies the password used to protect the private key of the
+keystore entry addressed by the alias specified on the
+command line. The password is required when using 
+.B jarsigner
+to sign a JAR file. If no password is provided on the command
+line, and the required password is different from the store
+password, the user is prompted for it.
+.RS 
+.LP
+Note: The password shouldn't be specified on the command line
+or in a script unless it is for testing purposes, or you are
+on a secure system. Also, when typing in a password at the
+password prompt, the password is echoed (displayed exactly as
+typed), so be careful not to type it in front of anyone.
+.RE
+.TP
+.BI -sigfile " file"
+Specifies the base file name to be used for the generated 
+.B .SF
+and 
+.B .DSA 
+files. For example, if file is 
+.BR DUKESIGN , 
+the
+generated 
+.B .SF 
+and 
+.B .DSA 
+files will be named 
+.B DUKESIGN.SF 
+and
+.BR DUKESIGN.DSA , 
+and will be placed in the 
+.B META-INF
+directory of the signed JAR file.
+.RS 
+.LP
+The characters in file must come from the set "a-zA-Z0-9_-".
+That is, only letters, numbers, underscore, and hyphen
+characters are allowed.
+Note: All lowercase characters will
+be converted to uppercase for the 
+.B .SF 
+and 
+.B .DSA 
+file names.
+.LP
+If no 
+.B -sigfile 
+option appears on the command line, the base
+file name for the 
+.B .SF 
+and 
+.B .DSA 
+files will be the first 8
+characters of the alias name specified on the command line,
+all converted to upper case. If the alias name has fewer than
+8 characters, the full alias name is used.  If the alias name
+contains any characters that are not legal in a signature
+file name, each such character is converted to an underscore
+("_") character in forming the file name.
+.RE
+.TP
+.BI -signedjar " file"
+Specifies the name to be used for the signed JAR file.
+.RS 
+.LP
+If no name is specified on the command line, the name used is
+the same as the input JAR file name (the name of the JAR file
+to be signed); in other words, that file is overwritten with
+the signed JAR file.
+.RE
+.TP
+.B -verify
+If this appears on the command line, the specified JAR file
+will be verified, not signed. If the verification is
+successful, "jar verified" will be displayed. If you try to
+verify an unsigned JAR file, or a JAR file signed with an
+unsupported algorithm (for example, RSA when you don't have an RSA
+provider installed), the following is displayed: "jar is
+unsigned. (signatures missing or not parsable)"
+.RS 
+.LP
+It is possible to verify JAR files signed using either
+.B jarsigner 
+or the JDK 1.1 
+.B javakey 
+tool, or both.
+.LP
+For further information on verification, see JAR File
+Verification.
+.RE
+.TP
+.B -certs
+If this appears on the command line, along with the 
+.B -verify
+and 
+.B -verbose 
+options, the output includes certificate
+information for each signer of the JAR file. This information
+includes:
+.RS
+.TP 2
+\(bu
+the name of the type of certificate (stored in the 
+.B .DSA
+file) that certifies the signer's public key
+.TP 2
+\(bu
+if the certificate is an X.509 certificate (more
+specifically, an instance of
+java.security.cert.X509Certificate): the distinguished
+name of the signer
+.LP
+The keystore is also examined. If no keystore value is
+specified on the command line, the default keystore file (if
+any) will be checked. If the public key certificate for a
+signer matches an entry in the keystore, then the following
+information will also be displayed:
+.TP 2
+\(bu
+in parentheses, the alias name for the keystore entry
+for that signer. If the signer actually comes from a JDK
+1.1 identity database instead of from a keystore, the
+alias name will appear in brackets instead of
+parentheses.
+.RE
+.TP
+.B -verbose
+If this appears on the command line, it indicates "verbose"
+mode, which causes
+.B jarsigner 
+to output extra information as
+to the progress of the JAR signing or verification.
+.TP
+.B -internalsf
+In the past, the 
+.B .DSA 
+(signature block) file generated when a
+JAR file was signed used to include a complete encoded copy
+of the 
+.B .SF 
+file (signature file) also generated. This
+behavior has been changed. To reduce the overall size of the
+output JAR file, the 
+.B .DSA 
+file by default doesn't contain a
+copy of the 
+.B .SF 
+file anymore. But if 
+.B -internalsf 
+appears on
+the command line, the old behavior is utilized. This option
+is mainly useful for testing; in practice, it should not be
+used, since doing so eliminates a useful optimization.
+.TP
+.B -sectionsonly
+If this appears on the command line, the 
+.B .SF 
+file (signature
+file) generated when a JAR file is signed does not include a
+header containing a hash of the whole manifest file. It just
+contains information and hashes related to each individual
+source file included in the JAR file, as described in The
+Signature (\f3.SF\f1) 
+File .
+.RS 
+.LP
+By default, this header is added, as an optimization. When
+the header is present, then whenever the JAR file is
+verified, the verification can first check to see whether or
+not the hash in the header indeed matches the hash of the
+whole manifest file. If so, verification proceeds to the next
+step. If not, it is necessary to do a less optimized
+verification that the hash in each source file information
+section in the 
+.B .SF 
+file equals the hash of its corresponding
+section in the manifest file.
+.LP
+For further information, see JAR File Verification.
+.LP
+This option is mainly useful for testing; in practice, it
+should not be used, since doing so eliminates a useful
+optimization.
+.RE
+.TP
+.BI \-provider " provider_class_name"
+Used to specify the name
+of the cryptographic service provider's master class
+file when the service provider is not listed in
+the security properties file.
+.TP
+.BI \-J javaoption
+Passes the specified javaoption string directly to the runtime system. 
+(\f3jarsigner\f1
+is actually a "wrapper"
+around the interpreter.) This option should not contain any
+spaces.
+It is useful for adjusting the execution environment
+or memory usage.
+For a list of possible flags, type 
+.B java \-h 
+or 
+.B java \-X 
+at the
+command line.
+.SH EXAMPLES
+.SS Signing a JAR File
+.IX "jarsigner" "Signing a JAR File" "\fLjarsigner\fP \(em JAR signing and verification tool "
+Suppose you have a JAR file named 
+.B bundle.jar 
+and you'd
+like to sign it using the private key of the user whose
+keystore alias is "jane" in the keystore named "mystore"
+in the "working" directory. Suppose the keystore
+password is "myspass" and the password for jane's
+private key is "j638klm". You can use the following to
+sign the JAR file and name the signed JAR file
+"sbundle.jar":
+.LP
+.ft 3
+.nf
+jarsigner \-keystore "/working/mystore" \-storepass myspass
+   \-keypass j638klm \-signedjar sbundle.jar bundle.jar jane
+.fi
+.ft 1
+.LP
+Note that there is no 
+.B \-sigfile 
+specified in the command
+above, so the generated 
+.B .SF 
+and 
+.B .DSA 
+files to be placed
+in the signed JAR file will have default names based on
+the alias name. That is, they will be named 
+.B JANE.SF 
+and
+.BR JANE.DSA .
+.LP
+If you want to be prompted for the store password and
+the private key password, you could shorten the above
+command to
+.LP
+.ft 3
+.nf
+jarsigner \-keystore /working/mystore
+   \-signedjar sbundle.jar bundle.jar jane
+.fi
+.ft 1
+.LP
+If the keystore to be used is the default keystore (the
+one named 
+.B .keystore 
+in your home directory), you don't
+need to specify a keystore, as in:
+.LP
+.ft 3
+.nf
+jarsigner \-signedjar sbundle.jar bundle.jar jane
+.fi
+.ft 1
+.LP
+Finally, if you want the signed JAR file to simply
+overwrite the input JAR file (bundle.jar), you don't
+need to specify a 
+.B -signedjar 
+option:
+.LP
+.ft 3
+.nf
+jarsigner bundle.jar jane
+.fi
+.ft 1
+.SS Verifying a Signed JAR File
+.IX "jarsigner" "Verifying a Signed JAR File" "\fLjarsigner\fP \(em JAR signing and verification tool "
+To verify a signed JAR file, that is, to verify that the
+signature is valid and the JAR file has not been
+tampered with, use a command such as the following:
+.LP
+.ft 3
+.nf
+jarsigner \-verify sbundle.jar
+.fi
+.ft 1
+.LP
+If the verification is successful,
+.LP
+.ft 3
+.nf
+jar verified.
+.fi
+.ft 1
+.LP
+is displayed. Otherwise, an error message appears.
+.LP
+You can get more information if you use the 
+.B \-verbose
+option. A sample use of 
+.B jarsigner 
+with the 
+.B \-verbose
+option is shown below, along with sample output:
+.LP
+.ft 3
+.nf
+jarsigner -verify -verbose sbundle.jar
+
+             198 Fri Sep 26 16:14:06 PDT 1997 META-INF/MANIFEST.MF
+             199 Fri Sep 26 16:22:10 PDT 1997 META-INF/JANE.SF
+            1013 Fri Sep 26 16:22:10 PDT 1997 META-INF/JANE.DSA
+      smk   2752 Fri Sep 26 16:12:30 PDT 1997 AclEx.class
+      smk    849 Fri Sep 26 16:12:46 PDT 1997 test.class
+
+        s = signature was verified
+        m = entry is listed in manifest
+        k = at least one certificate was found in keystore
+
+      jar verified.
+.fi
+.ft 1
+.LP
+.SS Verification with Certificate Information
+.IX "jarsigner" "Verification with Certificate Information" "\fLjarsigner\fP \(em JAR signing and verification tool "
+If you specify the 
+.B \-certs 
+option when verifying, along
+with the 
+.B \-verify 
+and 
+.B \-verbose 
+options, the output
+includes certificate information for each signer of the
+JAR file, including the certificate type, the signer
+distinguished name information (if it's an X.509
+certificate), and, in parentheses, the keystore alias
+for the signer if the public key certificate in the JAR
+file matches that in a keystore entry. For example,
+.LP
+.ft 3
+.nf
+example% jarsigner \-keystore /working/mystore \-verify \-verbose \-certs myTest.jar
+
+      198 Fri Sep 26 16:14:06 PDT 1997 META-INF/MANIFEST.MF
+      199 Fri Sep 26 16:22:10 PDT 1997 META-INF/JANE.SF
+     1013 Fri Sep 26 16:22:10 PDT 1997 META-INF/JANE.DSA
+      208 Fri Sep 26 16:23:30 PDT 1997 META-INF/JAVATEST.SF
+     1087 Fri Sep 26 16:23:30 PDT 1997 META-INF/JAVATEST.DSA
+smk   2752 Fri Sep 26 16:12:30 PDT 1997 Tst.class
+
+ X.509, CN=Test Group, OU=Java Software, O=Sun Microsystems, L=CUP, S=CA, C=US (javatest)
+ X.509, CN=Jane Smith, OU=Java Software, O=Sun, L=cup, S=ca, C=us (jane)
+
+ s = signature was verified
+ m = entry is listed in manifest
+ k = at least one certificate was found in keystore
+
+jar verified.
+.fi
+.ft 1
+.LP
+If the certificate for a signer is not an X.509
+certificate, there is no distinguished name information.
+In that case, just the certificate type and the alias
+are shown. For example, if the certificate is a PGP
+certificate, and the alias is "bob", you'd get
+.LP
+.ft 3
+.nf
+PGP, (bob)
+.fi
+.ft 1
+.LP
+.SS Verification of a JAR File that Includes Idnetity Database Signers
+.IX "jarsigner" "Verification of a JAR File" "\fLjarsigner\fP \(em JAR signing and verification tool "
+If a JAR file has been signed using the JDK 1.1 
+.B javakey
+tool, and thus the signer is an alias in an identity
+database, the verification output includes an "i"
+symbol. If the JAR file has been signed by both an alias
+in an identity database and an alias in a keystore, both
+"k" and "i" appear.
+.LP
+When the 
+.B \-certs 
+option is used, any identity database
+aliases are shown in square brackets rather than the
+parentheses used for keystore aliases. For example:
+.LP
+.ft 3
+.nf
+jarsigner \-keystore /working/mystore \-verify \-verbose \-certs writeFile.jar
+
+      198 Fri Sep 26 16:14:06 PDT 1997 META-INF/MANIFEST.MF
+      199 Fri Sep 26 16:22:10 PDT 1997 META-INF/JANE.SF
+     1013 Fri Sep 26 16:22:10 PDT 1997 META-INF/JANE.DSA
+      199 Fri Sep 27 12:22:30 PDT 1997 META-INF/DUKE.SF
+     1013 Fri Sep 27 12:22:30 PDT 1997 META-INF/DUKE.DSA
+smki   2752 Fri Sep 26 16:12:30 PDT 1997 writeFile.html
+
+ X.509, CN=Jane Smith, OU=Java Software, O=Sun, L=cup, S=ca, C=us (jane)
+ X.509, CN=Duke, OU=Java Software, O=Sun, L=cup, S=ca, C=us [duke]
+
+ s = signature was verified
+ m = entry is listed in manifest
+ k = at least one certificate was found in keystore
+ i = at least one certificate was found in identity scope
+
+jar verified.
+.fi
+.ft 1
+.LP
+Note that the alias "duke" is in brackets to denote that
+it is an identity database alias, not a keystore alias.
+.SH SEE ALSO
+.BR jar (1),
+.BR keytool (1)

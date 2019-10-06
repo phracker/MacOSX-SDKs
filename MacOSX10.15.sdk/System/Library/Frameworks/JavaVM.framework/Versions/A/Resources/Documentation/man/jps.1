@@ -1,0 +1,230 @@
+'\" t
+.\" @(#)jps.1 1.10 04/06/13 SMI;
+.\" Copyright 2004 Sun Microsystems, Inc. All rights reserved.
+.\" Copyright 2004 Sun Microsystems, Inc. Tous droits réservés.
+.\" 
+.TH jps 1 "13 June 2004"
+.SH NAME
+jps \- Java Virtual Machine Process Status Tool  
+.\"
+.SH SYNOPSIS
+.B jps 
+.RI [ options ]
+.RI [ hostid ]
+.SH DESCRIPTION
+The
+.B jps
+tool lists the instrumented HotSpot Java Virtual 
+Machines (JVMs) on the target system. The tool is limited 
+to reporting
+information on JVMs for which it has the access permissions. 
+.LP
+If
+.B jps
+is run without specifying a hostid, it will look for instrumented JVMs 
+on the local host. If started with a hostid, it will look for JVMs
+on the indicated host, using the specified protocol and port. 
+A jstatd process is assumed to be running on the target host. 
+.LP
+The 
+.B jps 
+command will report the local VM identifier, or lvmid, 
+for each instrumented JVM found on the target system. The lvmid is
+typically, but not necessarily, the operating system's 
+process identifier for the JVM process. With no options, 
+.B jps 
+will list each Java
+application's lvmid followed by the short form of the 
+application's class name or jar file name. The short form of 
+the class name or JAR
+file name omits the class's package information or the 
+JAR files path information. 
+.LP
+The 
+.B jps 
+command uses the java launcher to find the class name and 
+arguments passed to the main method. If the target JVM is started
+with a custom launcher, the class name (or JAR file name) 
+and the arguments to the main method will not be available. In 
+this case, the
+.B jps 
+command will output the string Unknown for the class name 
+or JAR file name and for the arguments to the main method. 
+.LP
+The list of JVMs produced by the jps command may be limited by 
+the permissions granted to the principal running the command. The
+command will only list the JVMs for which the principle has 
+access rights as determined by operating system specific access control
+mechanisms. 
+.LP
+.B NOTE -
+This utility is unsupported and may or may not be 
+available in future versions of the JDK. 
+It is not currently available on Widows 98 and Windows ME platforms.
+.SH PARAMETERS 
+.if t .TP 20
+.if n .TP 15
+.I options
+Command-line options.
+.if t .TP 20
+.if n .TP 15
+.I hostid
+The host identifier of the host for which the process report should be 
+generated. The hostid may include optional components that 
+indicate the communications protocol, port number, and other 
+implementation specific data. 
+.SH OPTIONS
+The
+.B jps 
+command supports a number of options that modify the output of the command.
+These options are subject to change or removal in the future.
+.if t .TP 20
+.if n .TP 15
+.BI \-q
+Suppress the output of the class name, JAR file name, and arguments 
+passed to the main method, producing only a list of local VM identifiers. 
+.if t .TP 20
+.if n .TP 15
+.BI \-m
+Output the arguments passed to the main method. The output may be null 
+for embedded JVMs. 
+.if t .TP 20
+.if n .TP 15
+.BI \-l
+Output the full package name for the application's main class or the full path name to the application's JAR file. 
+.if t .TP 20
+.if n .TP 15
+.BI \-v
+Output the arguments passed to the JVM. 
+.if t .TP 20
+.if n .TP 15
+.BI \-V
+Output the arguments passed to the JVM through the flags file (the .hotspotrc file or the file specified by the -XX:Flags=<filename> argument). 
+.if t .TP 20
+.if n .TP 15
+.BI \-J option
+Pass option to the java launcher called by javac. For example, 
+.B -J-Xms48m 
+sets the startup memory to 48 megabytes. It is a common
+convention for \f3-J\f1 to pass options to the underlying VM 
+executing applications written in Java. 
+.SH HOST IDENTIFIER
+The host identifier, or hostid is a string that indicates the 
+target system. The syntax of the hostid string largely corresponds 
+to the syntax of a URI: 
+.LP
+.RS
+.ft 3
+.nf
+[protocol:][[//]hostname][:port][/servername]
+.fi
+.ft 1
+.RE
+.if t .TP 20
+.if n .TP 15
+.B protocol
+The communications protocol. If the protocol is omitted and a 
+hostname is not specified, the default protocol is a platform 
+specific, optimized,
+local protocol. If the protocol is omitted and a hostname is 
+specified, then the default protocol is rmi. 
+.if t .TP 20
+.if n .TP 15
+.B hostname
+A hostname or IP address indicating the target host. If hostname is 
+omitted, then the target host is the local host. 
+.if t .TP 20
+.if n .TP 15
+.B port
+The default port for communicating with the remote server. If the 
+hostname is omitted or the protocol specifies an optimized, local 
+protocol, then port is ignored. Otherwise, treatment of the 
+port parameter is implementation specific. For the default 
+rmi protocol the port indicates the
+port number for the rmiregistry on the remote host. If 
+port is omitted, and protocol indicates rmi, then the 
+default rmiregistry port (1099) is used. 
+.if t .TP 20
+.if n .TP 15
+.B servername
+The treatment of this parameter depends on the implementation. For 
+the optimized, local protocol, this field is ignored. For the rmi protocol,
+this parameter is a string representing the name of the RMI remote 
+object on the remote host. See the -n option for the jstatd command. 
+.SH OUTPUT FORMAT
+The output of the jps command follows the following pattern: 
+.LP
+.RS
+.ft 3
+.nf
+lvmid [ [ classname | JARfilename | "Unknown"] [ arg* ] [ jvmarg* ] ]
+.fi
+.ft 1
+.RE
+.LP
+Where all output tokens are separated by white space. An arg 
+that includes embedded white space will introduce ambiguity when
+attempting to map arguments to their actual positional parameters.
+.LP
+.B NOTE-
+You are advised not to write scripts to parse jps output 
+since the format may change in future releases. If you choose to write
+scripts that parse jps output, expect to modify them for 
+future releases of this tool.
+.SH EXAMPLES
+This section provides examples of the jps command.
+.LP
+Listing the instrumented JVMs on the local host:
+.LP
+.RS
+.ft 3
+.nf
+jps
+18027 Java2Demo.JAR
+18032 jps
+18005 jstat
+.fi
+.ft 1
+.RE
+.TP
+Listing the instrumented JVMs on a remote host:
+.LP
+This example assumes that the jstat server and either the its 
+internal RMI registry or a separate external rmiregistry process are
+running on the remote host on the default port (port 1099). 
+It also assumes that the local host has appropriate permissions to 
+access the remote host. This example also includes the -l option 
+to output the long form of the class names or JAR file names. 
+.LP
+.RS
+.ft 3
+.nf
+jps -l remote.domain
+3002 /opt/j2sdk1.5.0/demo/jfc/Java2D/Java2Demo.JAR
+2857 sun.tools.jstatd.jstatd
+.fi
+.ft 1
+.RE
+.LP
+Listing the instrumented JVMs on a remote host with a 
+non-default port for the RMI registry:
+.LP
+This example assumes that the jstatd server, with an internal 
+RMI registry bound to port 2002, is running on the remote host. This
+example also uses the -m option to include the arguments passed 
+to the main method of each of the listed Java applications. 
+.LP
+.RS
+.ft 3
+.nf
+jps -m remote.domain:2002
+3002 /opt/j2sdk1.5.0/demo/jfc/Java2D/Java2Demo.JAR
+3102 sun.tools.jstatd.jstatd -p 2002
+.fi
+.ft 1
+.RE
+.SH SEE ALSO
+.BR java (1)
+.BR jstat (1)
+.BR jstatd (1)
+.BR rmiregistry (1)
