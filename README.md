@@ -2,7 +2,7 @@ MacOSX-SDKs
 ---
 **10.1.5 - 10.15**
 
-A collection of those pesky SDK folders.  Compiled from various releases of XCode.
+A collection of those pesky SDK folders.  Compiled from various releases of Xcode.
 
 If you don't need this entire repository, each SDK is available [here](https://github.com/phracker/MacOSX-SDKs/releases).
 
