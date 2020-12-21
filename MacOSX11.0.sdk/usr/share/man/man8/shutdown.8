@@ -1,0 +1,176 @@
+.\" Copyright (c) 1988, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"     @(#)shutdown.8	8.2 (Berkeley) 4/27/95
+.\" $FreeBSD: src/sbin/shutdown/shutdown.8,v 1.21 2002/12/23 16:04:50 ru Exp $
+.\"
+.Dd December 11, 1998
+.Dt SHUTDOWN 8
+.Os
+.Sh NAME
+.Nm shutdown
+.Nd "close down the system at a given time"
+.Sh SYNOPSIS
+.Nm shutdown
+.Op Fl
+.Oo
+.Fl h 
+.Op Fl u
+|
+.Fl r | Fl s | Fl k
+.Oc
+.Oo
+.Fl o
+.Op Fl n
+.Oc
+.Ar time
+.Op Ar warning-message ...
+.Sh DESCRIPTION
+The
+.Nm shutdown
+utility provides an automated shutdown procedure for super-users
+to nicely notify users when the system is shutting down,
+saving them from system administrators, hackers, and gurus, who
+would otherwise not bother with such niceties.
+.Pp
+The following options are available:
+.Bl -tag -width indent
+.It Fl h
+The system is halted at the specified
+.Ar time .
+.It Fl k
+Kick everybody off.
+The
+.Fl k
+option
+does not actually halt the system, but leaves the
+system multi-user with logins disabled (for all but super-user).
+.It Fl n
+If the
+.Fl o
+is specified, prevent the file system cache from being flushed by passing
+.Fl n
+option to
+.Xr halt 8
+or
+.Xr reboot 8 .
+This option should probably not be used.
+.It Fl o
+If
+.Fl h
+or
+.Fl r
+is specified,
+.Nm shutdown
+will execute
+.Xr halt 8
+or
+.Xr reboot 8
+instead of sending a signal to
+.Xr launchd 8 .
+.It Fl r
+The system is rebooted at the specified
+.Ar time .
+.It Fl s
+The system is put to sleep at the specified
+.Ar time .
+.It Fl u
+The system is halted up until the point of removing system power, but waits 
+before removing power for 5 minutes so that an external UPS 
+(uninterruptible power supply) can forcibly remove power. 
+This simulates a dirty shutdown to permit a later automatic power on. OS X uses
+this mode automatically with supported UPSs in emergency shutdowns.
+.It Ar time
+.Ar Time
+is the time at which
+.Nm shutdown
+will bring the system down and
+may be the word
+.Ar now
+(indicating an immediate shutdown) or
+specify a future time in one of two formats:
+.Ar +number ,
+or
+.Ar yymmddhhmm ,
+where the year, month, and day may be defaulted
+to the current system values.  The first form brings the system down in
+.Ar number
+minutes and the second at the absolute time specified.
+.It Ar warning-message
+Any other arguments comprise the warning message that is broadcast
+to users currently logged into the system.
+.It Fl
+If
+.Sq Fl
+is supplied as an option, the warning message is read from the standard
+input.
+.El
+.Pp
+At intervals, becoming more frequent as apocalypse approaches
+and starting at ten hours before shutdown, warning messages are displayed
+on the terminals of all users logged in.
+.Pp
+At shutdown time a message is written to the system log, containing the
+time of shutdown, the person who initiated the shutdown and the reason.
+Corresponding signal is then sent to
+.Xr launchd 8
+to respectively halt, reboot or bring the system down to single-user state
+(depending on the above options).
+.Pp
+A scheduled shutdown can be canceled by killing the
+.Nm shutdown
+process (a
+.Dv SIGTERM
+should suffice).
+.Sh SIGTERM TO SIGKILL INTERVAL
+Upon shutdown, all running processes are sent a SIGTERM followed by a SIGKILL.
+The
+.Dv SIGKILL
+will follow the
+.Dv SIGTERM
+by an intentionally indeterminate period of time.
+Programs are expected to take only enough time to flush all dirty data and exit.
+Developers are encouraged to file a bug with the OS vendor, should they encounter an issue with this functionality.
+.Sh SEE ALSO
+.Xr kill 1 ,
+.Xr login 1 ,
+.Xr wall 1 ,
+.Xr halt 8 ,
+.Xr launchd 8 ,
+.Xr reboot 8
+.Sh BACKWARD COMPATIBILITY
+The hours and minutes in the second time format may be separated by
+a colon (``:'') for backward compatibility.
+.Sh HISTORY
+The
+.Nm shutdown
+utility appeared in
+.Bx 4.0 .

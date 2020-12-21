@@ -1,0 +1,1 @@
+#error MJIT does not support '/Applications/Xcode.app/Contents/Developer/Toolchains/OSX11.0.xctoolchain/usr/bin/clang -arch x86_64' yet

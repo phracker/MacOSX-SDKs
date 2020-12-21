@@ -1,0 +1,168 @@
+.Dd March 2, 2011 
+.Dt pkgutil 1
+.Os Mac OS X
+.\"																				NAME 
+.Sh NAME
+.Nm pkgutil
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.Nd Query and manipulate Mac OS X Installer packages and receipts.
+.\"																				SYNOPSIS 
+.Sh SYNOPSIS
+.Nm
+.Op options
+.Op commands
+.\"																				DESCRIPTION 
+.Sh DESCRIPTION
+.Nm
+reads and manipulates Mac OS X Installer flat packages, and provides access to the
+.Dq receipt
+database used by the Installer. Options are processed first, and affect the operation of
+all commands. Multiple commands are performed sequentially in the given order.
+.Pp
+.Em The files and directories where receipts are stored are subject to change. Always use pkgutil to query or modify them.
+.\"																				OPTIONS 
+.Sh OPTIONS
+.Bl -tag
+.It Cm "--help, -h"
+A brief summary of commands and usage.
+.It Cm "--force, -f"
+Don't ask for confirmation before performing a potentially destructive or ambiguous operation.
+.It Cm "--verbose, -v"
+Output in a "human-readable" format with extra headers, footers, indentation,
+and other contextual information.
+.It Cm --volume Ar path
+Perform all operations on the specified volume or home directory.
+The root volume '/' will be used if unspecified.
+.It Cm --edit-pkg Ar package-id
+Specifies an existing receipt to be modified in-place by 
+.Cm --learn .
+.It Cm --only-files
+List only files (not directories) in  
+.Cm --files
+listing.
+.It Cm --only-dirs
+List only directories (not files) in  
+.Cm --files
+listing.
+.It Cm --regexp
+Try to match \fIpackage-id\fP arguments as a regular expression if an exact match isn't found. See 
+.Xr egrep 1
+and
+.Xr re_format 7
+for syntax.
+.El
+.\"																				DATABASE COMMANDS 
+.Sh RECEIPT DATABASE COMMANDS
+.Bl -tag
+.It Cm "--packages, --pkgs"
+List all installed package IDs on the specified
+.Cm --volume .
+.It Cm --pkgs-plist
+List all installed package IDs on the specified
+.Cm --volume 
+in Mac OS X
+.Xr plist 5
+format.
+.It Cm "--pkgs=REGEXP"
+List all installed package IDs matching
+.Ar REGEXP
+on the specified
+.Cm --volume .
+The equal sign (=) is \fBrequired\fP or the search string will be ignored and all package IDs will be returned.
+Be mindful of escaping characters in both your shell and the regular expression.
+(Eg, 'pkgutil --pkgs=\\\\.D' searches for package IDs matching the literal '.D' after escaping the backslash
+from your shell and then the dot from the regex to make it literal.) Regular expressions are more
+complex than simple shell globbing. A dot (.) matches any character, while '*' matches zero or more of the previous
+character. See
+.Xr re_format 7
+for a complete description of the syntax.
+.It Cm --files Ar package-id
+List all of the files installed under the \fIpackage-id\fP.
+.It Cm --export-plist Ar package-id
+Print all receipt information about the specified \fIpackage-id\fP in the standard Mac OS X 
+.Xr plist 5
+format.
+.It Cm --pkg-info Ar package-id
+Print extended information about the specified \fIpackage-id\fP.
+.It Cm --pkg-info-plist Ar package-id
+Print extended information about the specified \fIpackage-id\fP in Mac OS X
+.Xr plist 5
+format.
+.It Cm --forget Ar package-id
+Discard all receipt data about \fIpackage-id\fP, but do not touch the installed files.
+\fBDO NOT\fP use this command from an installer package script to fix broken package design.
+.It Cm --learn Ar path
+Update the ACLs of the given
+.Ar path
+in the receipt identified by
+.Cm --edit-pkg .
+This affects subsequent repair operations on the package. This command 
+.Em cannot
+be used from package postinstall scripts, but if a postinstall script changes the ACLs
+on the installed files, the receipt is automatically be updated to reflect those changes.
+This command will 
+.Em not
+update the filesystem permissions in the receipt.
+.It Cm --pkg-groups Ar package-id
+List all of the package groups this \fIpackage-id\fP is a member of.
+.It Cm --groups
+List all of the package groups on the specified
+.Cm --volume .
+.It Cm --groups-plist
+List all of the package groups on the specified
+.Cm --volume 
+in Mac OS X
+.Xr plist 5
+format.
+.It Cm --group-pkgs Ar group-id
+List all of the packages that are members of this \fIgroup-id\fP.
+.It Cm --file-info Ar path
+Show the metadata known about \fIpath\fP.
+.It Cm --file-info-plist Ar path
+Show the metadata known about \fIpath\fP in Mac OS X
+.Xr plist 5
+format.
+.El
+.\"																				FILE COMMANDS 
+.Sh FILE COMMANDS
+.Bl -tag
+.It Cm --expand Ar pkg-path dir-path
+Expand the flat package at
+.Ar pkg-path
+into a new directory specified by 
+.Ar dir-path .
+.It Cm --flatten Ar dir-path pkg-path
+Flatten the
+.Ar dir-path 
+into a new flat package created at 
+.Ar pkg-path .
+The directory to be flattened \fBmust\fP have the proper contents and layout for a flat package.
+This is not intended as a substitute for
+.Xr pkgbuild 1 .
+.It Cm --bom Ar path
+Extract any BOM files from the flat pkg at \fIpath\fP into /tmp and return the filename(s).
+Suggested use is as an argument to 
+.Xr lsbom 8 .
+Eg, "lsbom `pkgutil --bom \fIpath\fP`". Note that some flat package archives 
+may contain no BOM, one BOM, or several BOMs.
+.It Cm --payload-files Ar path
+List the files archived within the payload of the uninstalled flat package(s) contained at \fIpath\fP.
+This should be equivalent to "lsbom -s `pkgutil --bom \fIpath\fP`". Note that flat package
+archives may contain more than one package, and the destination location for the uninstalled package(s)
+is unknown to this command.
+.It Cm --check-signature Ar pkg-path
+Check the validity and trust of the signature on the package at
+.Ar pkg-path .
+In addition to the status of the signature, the associated certificate chain will be shown.
+.El
+.\"																				SEE ALSO 
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Xr installer 8
+.It
+.Xr pkgbuild 1
+.It
+.Xr productbuild 1
+.El

@@ -1,0 +1,134 @@
+.\""Copyright (c) 2002-2019, Apple Inc. All Rights Reserved.
+.Dd January 15, 2019
+.Dt PLUTIL 1
+.Os "macOS"
+.Sh NAME
+.Nm plutil
+.Nd property list utility
+.Sh SYNOPSIS
+.Nm
+.Op command_option
+.Op other_options
+.Ar file
+ ...
+.Sh DESCRIPTION
+.Nm
+can be used to check the syntax of property list files, or convert a plist file from one format to another.  Specifying - as an input file reads from stdin.
+.Pp
+The first argument indicates the operation to perform, one of:
+.Bl -tag -width "-convert fmt"
+.It Fl help
+Show the usage information for the command and exit.
+.It Fl p
+Print the property list in a human-readable fashion. The output format is not stable and not designed for machine parsing. The purpose of this command is to be able to easily read the contents of a plist file, no matter what format it is in.
+.It Fl lint
+Check the named property list files for syntax errors.
+This is the default command option if none is specified.
+.It Fl convert Ar fmt
+Convert the named 
+.Ar file
+to the indicated format and write back to the file system.  If the file can't be loaded due to invalid syntax, the operation fails. This is the only option to support 
+.Sy objc
+.Sy swift 
+formats.
+.It Fl convert Ar objc Fl header
+Converts the named file to Obj-C literal syntax and creates a 
+.Ar .h
+file. Useful for first time conversions to literal syntax and only supported with the 
+.Sy objc
+format.
+.It Fl insert Ar keypath Fl Ar type Ar value
+Insert a value into the property list before writing it out.
+.It Fl replace Ar keypath Fl Ar type Ar value
+Overwrite an existing value in the property list before writing it out.
+.It Fl remove Ar keypath
+Removes the value at
+.Ar keypath
+from the property list before writing it out.
+.It Fl extract Ar keypath Ar fmt
+Outputs the value at
+.Ar keypath
+in the property list as a new plist of type
+.Ar fmt .
+.El
+.Pp
+There are a few additional options:
+.Bl -tag -width "-e extension"
+.It Fl -
+Specifies that all further arguments are file names
+.It Fl s
+Don't print anything on success.
+.It Fl r
+For JSON, add whitespace and indentation to make the output more human-readable and sort the keys like
+.Sy -p ,
+does.
+.It Fl o Ar path
+Specify an alternate path name for the result of the
+.Ar -convert
+operation; this option is only useful with a single file to be converted.  Specifying - as the path outputs to stdout.
+.It Fl e Ar extension
+Specify an alternate extension for converted files, and the output file names are otherwise the same.
+.El
+.Sh ARGUMENTS
+.Ar fmt
+is one of:
+.Bl -tag -width "binary1" -compact -offset indent
+.It Sy xml1
+for version 1 of the XML plist format
+.It Sy binary1
+for version 1 of the binary plist format
+.It Sy json
+for the JSON format
+.It Sy swift
+to convert from plist to swift literal syntax
+.It Sy objc
+to convert from plist to Obj-C literal syntax
+.El
+.Pp
+.Ar keypath
+is a key-value coding key path, with one extension:
+a numerical path component applied to an array will act on the object at that index in the array or insert it into the array if the numerical path component is the last one in the key path.
+.Pp
+.Ar type
+is one of:
+.Bl -tag -width "integer " -compact -offset -indent
+.It Fl bool
+YES if passed "YES" or "true", otherwise NO
+.It Fl integer
+any valid 64 bit integer
+.It Fl float
+any valid 64 bit float
+.It Fl string
+UTF8 encoded string
+.It Fl date
+date in XML property list format, not supported if outputting JSON
+.It Fl data
+a base-64 encoded string
+.It Fl xml
+an XML property list, useful for inserting compound values
+.It Fl json
+JSON fragment, useful for inserting compound values
+.El
+.Pp
+.Ar value
+will be assigned to the
+.Ar keypath
+specified with the
+.Fl insert
+or
+.Fl replace
+flags.
+.Sh DIAGNOSTICS
+The
+.Nm
+command exits 0 on success, and 1 on failure.
+.Sh SEE ALSO 
+.Xr plist 5
+.Sh STANDARDS
+The 
+.Nm
+command obeys no one's rules but its own.
+.Sh HISTORY
+The
+.Nm
+command first appeared in macOS 10.2.

@@ -1,0 +1,202 @@
+.TH TLSMGR 8 
+.ad
+.fi
+.SH NAME
+tlsmgr
+\-
+Postfix TLS session cache and PRNG manager
+.SH "SYNOPSIS"
+.na
+.nf
+\fBtlsmgr\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBtlsmgr\fR(8) manages the Postfix TLS session caches.
+It stores and retrieves cache entries on request by
+\fBsmtpd\fR(8) and \fBsmtp\fR(8) processes, and periodically
+removes entries that have expired.
+
+The \fBtlsmgr\fR(8) also manages the PRNG (pseudo random number
+generator) pool. It answers queries by the \fBsmtpd\fR(8)
+and \fBsmtp\fR(8)
+processes to seed their internal PRNG pools.
+
+The \fBtlsmgr\fR(8)'s PRNG pool is initially seeded from
+an external source (EGD, /dev/urandom, or regular file).
+It is updated at configurable pseudo\-random intervals with
+data from the external source. It is updated periodically
+with data from TLS session cache entries and with the time
+of day, and is updated with the time of day whenever a
+process requests \fBtlsmgr\fR(8) service.
+
+The \fBtlsmgr\fR(8) saves the PRNG state to an exchange file
+periodically and when the process terminates, and reads
+the exchange file when initializing its PRNG.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBtlsmgr\fR(8) is not security\-sensitive. The code that maintains
+the external and internal PRNG pools does not "trust" the
+data that it manipulates, and the code that maintains the
+TLS session cache does not touch the contents of the cached
+entries, except for seeding its internal PRNG pool.
+
+The \fBtlsmgr\fR(8) can be run chrooted and with reduced privileges.
+At process startup it connects to the entropy source and
+exchange file, and creates or truncates the optional TLS
+session cache files.
+
+With Postfix version 2.5 and later, the \fBtlsmgr\fR(8) no
+longer uses root privileges when opening cache files. These
+files should now be stored under the Postfix\-owned
+\fBdata_directory\fR.  As a migration aid, an attempt to
+open a cache file under a non\-Postfix directory is redirected
+to the Postfix\-owned \fBdata_directory\fR, and a warning
+is logged.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to the syslog daemon.
+.SH BUGS
+.ad
+.fi
+There is no automatic means to limit the number of entries in the
+TLS session caches and/or the size of the TLS cache files.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are not picked up automatically,
+because \fBtlsmgr\fR(8) is a persistent processes.  Use the
+command "\fBpostfix reload\fR" after a configuration change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.SH "TLS SESSION CACHE"
+.na
+.nf
+.ad
+.fi
+.IP "\fBlmtp_tls_loglevel (0)\fR"
+The LMTP\-specific version of the smtp_tls_loglevel
+configuration parameter.
+.IP "\fBlmtp_tls_session_cache_database (empty)\fR"
+The LMTP\-specific version of the smtp_tls_session_cache_database
+configuration parameter.
+.IP "\fBlmtp_tls_session_cache_timeout (3600s)\fR"
+The LMTP\-specific version of the smtp_tls_session_cache_timeout
+configuration parameter.
+.IP "\fBsmtp_tls_loglevel (0)\fR"
+Enable additional Postfix SMTP client logging of TLS activity.
+.IP "\fBsmtp_tls_session_cache_database (empty)\fR"
+Name of the file containing the optional Postfix SMTP client
+TLS session cache.
+.IP "\fBsmtp_tls_session_cache_timeout (3600s)\fR"
+The expiration time of Postfix SMTP client TLS session cache
+information.
+.IP "\fBsmtpd_tls_loglevel (0)\fR"
+Enable additional Postfix SMTP server logging of TLS activity.
+.IP "\fBsmtpd_tls_session_cache_database (empty)\fR"
+Name of the file containing the optional Postfix SMTP server
+TLS session cache.
+.IP "\fBsmtpd_tls_session_cache_timeout (3600s)\fR"
+The expiration time of Postfix SMTP server TLS session cache
+information.
+.SH "PSEUDO RANDOM NUMBER GENERATOR"
+.na
+.nf
+.ad
+.fi
+.IP "\fBtls_random_source (see 'postconf -d' output)\fR"
+The external entropy source for the in\-memory \fBtlsmgr\fR(8) pseudo
+random number generator (PRNG) pool.
+.IP "\fBtls_random_bytes (32)\fR"
+The number of bytes that \fBtlsmgr\fR(8) reads from $tls_random_source
+when (re)seeding the in\-memory pseudo random number generator (PRNG)
+pool.
+.IP "\fBtls_random_exchange_name (see 'postconf -d' output)\fR"
+Name of the pseudo random number generator (PRNG) state file
+that is maintained by \fBtlsmgr\fR(8).
+.IP "\fBtls_random_prng_update_period (3600s)\fR"
+The time between attempts by \fBtlsmgr\fR(8) to save the state of
+the pseudo random number generator (PRNG) to the file specified
+with $tls_random_exchange_name.
+.IP "\fBtls_random_reseed_period (3600s)\fR"
+The maximal time between attempts by \fBtlsmgr\fR(8) to re\-seed the
+in\-memory pseudo random number generator (PRNG) pool from external
+sources.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdata_directory (see 'postconf -d' output)\fR"
+The directory with Postfix\-writable data files (for example:
+caches, pseudo\-random numbers).
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "SEE ALSO"
+.na
+.nf
+smtp(8), Postfix SMTP client
+smtpd(8), Postfix SMTP server
+postconf(5), configuration parameters
+master(5), generic daemon options
+master(8), process manager
+syslogd(8), system logging
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+TLS_README, Postfix TLS configuration and operation
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+This service was introduced with Postfix version 2.2.
+.SH "AUTHOR(S)"
+.na
+.nf
+Lutz Jaenicke
+BTU Cottbus
+Allgemeine Elektrotechnik
+Universitaetsplatz 3\-4
+D\-03044 Cottbus, Germany
+
+Adapted by:
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

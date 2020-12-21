@@ -1,0 +1,425 @@
+.TH MYSQL_TABLE 5 
+.ad
+.fi
+.SH NAME
+mysql_table
+\-
+Postfix MySQL client configuration
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap \-q "\fIstring\fB" mysql:/etc/postfix/\fIfilename\fR
+
+\fBpostmap \-q \- mysql:/etc/postfix/\fIfilename\fB <\fIinputfile\fR
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix mail system uses optional tables for address
+rewriting or mail routing. These tables are usually in
+\fBdbm\fR or \fBdb\fR format.
+
+Alternatively, lookup tables can be specified as MySQL databases.
+In order to use MySQL lookups, define a MySQL source as a lookup
+table in main.cf, for example:
+.nf
+    alias_maps = mysql:/etc/mysql\-aliases.cf
+.fi
+
+The file /etc/postfix/mysql\-aliases.cf has the same format as
+the Postfix main.cf file, and can specify the parameters
+described below.
+.SH "LIST MEMBERSHIP"
+.na
+.nf
+.ad
+.fi
+When using SQL to store lists such as $mynetworks,
+$mydestination, $relay_domains, $local_recipient_maps,
+etc., it is important to understand that the table must
+store each list member as a separate key. The table lookup
+verifies the *existence* of the key. See "Postfix lists
+versus tables" in the DATABASE_README document for a
+discussion.
+
+Do NOT create tables that return the full list of domains
+in $mydestination or $relay_domains etc., or IP addresses
+in $mynetworks.
+
+DO create tables with each matching item as a key and with
+an arbitrary value. With SQL databases it is not uncommon to
+return the key itself or a constant value.
+.SH "MYSQL PARAMETERS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBhosts\fR"
+The hosts that Postfix will try to connect to and query from.
+Specify \fIunix:\fR for UNIX domain sockets, \fIinet:\fR for TCP
+connections (default).  Example:
+.nf
+    hosts = host1.some.domain host2.some.domain:port
+    hosts = unix:/file/name
+.fi
+
+The hosts are tried in random order, with all connections over
+UNIX domain sockets being tried before those over TCP.  The
+connections are automatically closed after being idle for about
+1 minute, and are re\-opened as necessary. Postfix versions 2.0
+and earlier do not randomize the host order.
+
+NOTE: if you specify localhost as a hostname (even if you
+prefix it with \fIinet:\fR), MySQL will connect to the default
+UNIX domain socket.  In order to instruct MySQL to connect to
+localhost over TCP you have to specify
+.nf
+    hosts = 127.0.0.1
+.fi
+.IP "\fBuser, password\fR"
+The user name and password to log into the mysql server.
+Example:
+.nf
+    user = someone
+    password = some_password
+.fi
+.IP "\fBdbname\fR"
+The database name on the servers. Example:
+.nf
+    dbname = customer_database
+.fi
+.IP "\fBquery\fR"
+The SQL query template used to search the database, where \fB%s\fR
+is a substitute for the address Postfix is trying to resolve,
+e.g.
+.nf
+    query = SELECT replacement FROM aliases WHERE mailbox = '%s'
+.fi
+
+By default, every query must return a result set (instead
+of storing its results in a table); with "\fBrequire_result_set
+= no\fR" (Postfix 3.2 and later), the absence of a result
+set is treated as "not found".
+
+This parameter supports the following '%' expansions:
+.RS
+.IP "\fB%%\fR"
+This is replaced by a literal '%' character.
+.IP "\fB%s\fR"
+This is replaced by the input key.
+SQL quoting is used to make sure that the input key does not
+add unexpected metacharacters.
+.IP "\fB%u\fR"
+When the input key is an address of the form user@domain, \fB%u\fR
+is replaced by the SQL quoted local part of the address.
+Otherwise, \fB%u\fR is replaced by the entire search string.
+If the localpart is empty, the query is suppressed and returns
+no results.
+.IP "\fB%d\fR"
+When the input key is an address of the form user@domain, \fB%d\fR
+is replaced by the SQL quoted domain part of the address.
+Otherwise, the query is suppressed and returns no results.
+.IP "\fB%[SUD]\fR"
+The upper\-case equivalents of the above expansions behave in the
+\fBquery\fR parameter identically to their lower\-case counter\-parts.
+With the \fBresult_format\fR parameter (see below), they expand the
+input key rather than the result value.
+.IP "\fB%[1\-9]\fR"
+The patterns %1, %2, ... %9 are replaced by the corresponding
+most significant component of the input key's domain. If the
+input key is \fIuser@mail.example.com\fR, then %1 is \fBcom\fR,
+%2 is \fBexample\fR and %3 is \fBmail\fR. If the input key is
+unqualified or does not have enough domain components to satisfy
+all the specified patterns, the query is suppressed and returns
+no results.
+.RE
+.IP
+The \fBdomain\fR parameter described below limits the input
+keys to addresses in matching domains. When the \fBdomain\fR
+parameter is non\-empty, SQL queries for unqualified addresses
+or addresses in non\-matching domains are suppressed
+and return no results.
+
+This parameter is available with Postfix 2.2. In prior releases
+the SQL query was built from the separate parameters:
+\fBselect_field\fR, \fBtable\fR, \fBwhere_field\fR and
+\fBadditional_conditions\fR. The mapping from the old parameters
+to the equivalent query is:
+
+.nf
+    SELECT [\fBselect_field\fR]
+    FROM [\fBtable\fR]
+    WHERE [\fBwhere_field\fR] = '%s'
+          [\fBadditional_conditions\fR]
+.fi
+
+The '%s' in the \fBWHERE\fR clause expands to the escaped search string.
+With Postfix 2.2 these legacy parameters are used if the \fBquery\fR
+parameter is not specified.
+
+NOTE: DO NOT put quotes around the query parameter.
+.IP "\fBresult_format (default: \fB%s\fR)\fR"
+Format template applied to result attributes. Most commonly used
+to append (or prepend) text to the result. This parameter supports
+the following '%' expansions:
+.RS
+.IP "\fB%%\fR"
+This is replaced by a literal '%' character.
+.IP "\fB%s\fR"
+This is replaced by the value of the result attribute. When
+result is empty it is skipped.
+.IP "\fB%u\fR
+When the result attribute value is an address of the form
+user@domain, \fB%u\fR is replaced by the local part of the
+address. When the result has an empty localpart it is skipped.
+.IP "\fB%d\fR"
+When a result attribute value is an address of the form
+user@domain, \fB%d\fR is replaced by the domain part of
+the attribute value. When the result is unqualified it
+is skipped.
+.IP "\fB%[SUD1\-9]\fR"
+The upper\-case and decimal digit expansions interpolate
+the parts of the input key rather than the result. Their
+behavior is identical to that described with \fBquery\fR,
+and in fact because the input key is known in advance, queries
+whose key does not contain all the information specified in
+the result template are suppressed and return no results.
+.RE
+.IP
+For example, using "result_format = smtp:[%s]" allows one
+to use a mailHost attribute as the basis of a transport(5)
+table. After applying the result format, multiple values
+are concatenated as comma separated strings. The expansion_limit
+and parameter explained below allows one to restrict the number
+of values in the result, which is especially useful for maps that
+must return at most one value.
+
+The default value \fB%s\fR specifies that each result value should
+be used as is.
+
+This parameter is available with Postfix 2.2 and later.
+
+NOTE: DO NOT put quotes around the result format!
+.IP "\fBdomain (default: no domain list)\fR"
+This is a list of domain names, paths to files, or
+dictionaries. When specified, only fully qualified search
+keys with a *non\-empty* localpart and a matching domain
+are eligible for lookup: 'user' lookups, bare domain lookups
+and "@domain" lookups are not performed. This can significantly
+reduce the query load on the MySQL server.
+.nf
+    domain = postfix.org, hash:/etc/postfix/searchdomains
+.fi
+
+It is best not to use SQL to store the domains eligible
+for SQL lookups.
+
+This parameter is available with Postfix 2.2 and later.
+
+NOTE: DO NOT define this parameter for local(8) aliases,
+because the input keys are always unqualified.
+.IP "\fBexpansion_limit (default: 0)\fR"
+A limit on the total number of result elements returned
+(as a comma separated list) by a lookup against the map.
+A setting of zero disables the limit. Lookups fail with a
+temporary error if the limit is exceeded.  Setting the
+limit to 1 ensures that lookups do not return multiple
+values.
+.IP "\fBoption_file\fR"
+Read options from the given file instead of the default my.cnf
+location. This reads options from the \fB[client]\fR option
+group, optionally followed by options from the group given
+with \fBoption_group\fR.
+.sp
+This parameter is available with Postfix 2.11 and later.
+.IP "\fBoption_group (default: Postfix >=3.2: client, <= 3.1: empty)\fR"
+Read options from the given group of the mysql options file,
+after reading options from the \fB[client]\fR group.
+.sp
+Postfix 3.2 and later read \fB[client]\fR option group
+settings by default. To disable this specify no \fBoption_file\fR
+and specify "\fBoption_group =\fR" (i.e. an empty value).
+.sp
+Postfix 3.1 and earlier don't read \fB[client]\fR option
+group settings unless a non\-empty \fBoption_file\fR or
+\fBoption_group\fR value are specified. To enable this,
+specify, for example, "\fBoption_group = client\fR".
+.sp
+This parameter is available with Postfix 2.11 and later.
+.IP "\fBrequire_result_set (default: yes)\fR"
+If "\fByes\fR", require that every query returns a result
+set.  If "\fBno\fR", treat the absence of a result set as
+"not found".
+.sp
+This parameter is available with Postfix 3.2 and later.
+.IP "\fBtls_cert_file\fR"
+File containing client's X509 certificate.
+.sp
+This parameter is available with Postfix 2.11 and later.
+.IP "\fBtls_key_file\fR"
+File containing the private key corresponding to \fBtls_cert_file\fR.
+.sp
+This parameter is available with Postfix 2.11 and later.
+.IP "\fBtls_CAfile\fR"
+File containing certificates for all of the X509 Certification
+Authorities the client will recognize.  Takes precedence over
+\fBtls_CApath\fR.
+.sp
+This parameter is available with Postfix 2.11 and later.
+.IP "\fBtls_CApath\fR"
+Directory containing X509 Certification Authority certificates
+in separate individual files.
+.sp
+This parameter is available with Postfix 2.11 and later.
+.IP "\fBtls_verify_cert (default: no)\fR"
+Verify that the server's name matches the common name in the
+certificate.
+.sp
+This parameter is available with Postfix 2.11 and later.
+.SH "USING MYSQL STORED PROCEDURES"
+.na
+.nf
+.ad
+.fi
+Postfix 3.2 and later support calling a stored procedure
+instead of using a SELECT statement in the query, e.g.
+
+.nf
+    \fBquery\fR = CALL lookup('%s')
+.fi
+
+The previously described '%' expansions can be used in the
+parameter(s) to the stored procedure.
+
+By default, every stored procedure call must return a result
+set, i.e. every code path must execute a SELECT statement
+that returns a result set (instead of storing its results
+in a table). With "\fBrequire_result_set = no\fR", the
+absence of a result set is treated as "not found".
+
+A stored procedure must not return multiple result sets.
+That is, there must be no code path that executes multiple
+SELECT statements that return a result (instead of storing
+their results in a table).
+
+The following is an example of a stored procedure returning
+a single result set:
+
+.nf
+CREATE [DEFINER=`user`@`host`] PROCEDURE
+`lookup`(IN `param` VARCHAR(255))
+    READS SQL DATA
+    SQL SECURITY INVOKER
+    BEGIN
+        select goto from alias where address=param;
+    END
+.fi
+.SH "OBSOLETE MAIN.CF PARAMETERS"
+.na
+.nf
+.ad
+.fi
+For compatibility with other Postfix lookup tables, MySQL
+parameters can also be defined in main.cf.  In order to do that,
+specify as MySQL source a name that doesn't begin with a slash
+or a dot.  The MySQL parameters will then be accessible as the
+name you've given the source in its definition, an underscore,
+and the name of the parameter.  For example, if the map is
+specified as "mysql:\fImysqlname\fR", the parameter "hosts"
+would be defined in main.cf as "\fImysqlname\fR_hosts".
+
+Note: with this form, the passwords for the MySQL sources are
+written in main.cf, which is normally world\-readable.  Support
+for this form will be removed in a future Postfix version.
+.SH "OBSOLETE QUERY INTERFACE"
+.na
+.nf
+.ad
+.fi
+This section describes an interface that is deprecated as
+of Postfix 2.2. It is replaced by the more general \fBquery\fR
+interface described above. If the \fBquery\fR parameter
+is defined, the legacy parameters described here ignored.
+Please migrate to the new interface as the legacy interface
+may be removed in a future release.
+
+The following parameters can be used to fill in a
+SELECT template statement of the form:
+
+.nf
+    SELECT [\fBselect_field\fR]
+    FROM [\fBtable\fR]
+    WHERE [\fBwhere_field\fR] = '%s'
+          [\fBadditional_conditions\fR]
+.fi
+
+The specifier %s is replaced by the search string, and is
+escaped so if it contains single quotes or other odd characters,
+it will not cause a parse error, or worse, a security problem.
+.IP "\fBselect_field\fR"
+The SQL "select" parameter. Example:
+.nf
+    \fBselect_field\fR = forw_addr
+.fi
+.IP "\fBtable\fR"
+The SQL "select .. from" table name. Example:
+.nf
+    \fBtable\fR = mxaliases
+.fi
+.IP "\fBwhere_field\fR
+The SQL "select .. where" parameter. Example:
+.nf
+    \fBwhere_field\fR = alias
+.fi
+.IP "\fBadditional_conditions\fR
+Additional conditions to the SQL query. Example:
+.nf
+    \fBadditional_conditions\fR = AND status = 'paid'
+.fi
+.SH "SEE ALSO"
+.na
+.nf
+postmap(1), Postfix lookup table maintenance
+postconf(5), configuration parameters
+ldap_table(5), LDAP lookup tables
+pgsql_table(5), PostgreSQL lookup tables
+sqlite_table(5), SQLite lookup tables
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+MYSQL_README, Postfix MYSQL client guide
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+MySQL support was introduced with Postfix version 1.0.
+.SH "AUTHOR(S)"
+.na
+.nf
+Original implementation by:
+Scott Cotton, Joshua Marcus
+IC Group, Inc.
+
+Further enhancements by:
+Liviu Daia
+Institute of Mathematics of the Romanian Academy
+P.O. BOX 1\-764
+RO\-014700 Bucharest, ROMANIA
+
+Stored\-procedure support by John Fawcett.
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

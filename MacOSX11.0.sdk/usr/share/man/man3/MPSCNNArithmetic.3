@@ -1,0 +1,165 @@
+.TH "MPSCNNArithmetic" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNArithmetic
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNMath\&.h>\fP
+.PP
+Inherits \fBMPSCNNBinaryKernel\fP\&.
+.PP
+Inherited by \fBMPSCNNAdd\fP, \fBMPSCNNDivide\fP, \fBMPSCNNMultiply\fP, and \fBMPSCNNSubtract\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "float \fBprimaryScale\fP"
+.br
+.ti -1c
+.RI "float \fBsecondaryScale\fP"
+.br
+.ti -1c
+.RI "float \fBbias\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBprimaryStrideInFeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBsecondaryStrideInFeatureChannels\fP"
+.br
+.ti -1c
+.RI "float \fBminimumValue\fP"
+.br
+.ti -1c
+.RI "float \fBmaximumValue\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  The \fBMPSCNNArithmetic\fP filter takes two source images, a primary source image and a secondary source image, and outputs a single destination image\&. It applies an element-wise arithmetic operator to each pixel in a primary source image and a corresponding pixel in a secondary source image over a specified region\&.
+.PP
+The supported arithmetic operators are the following:
+.IP "\(bu" 2
+Addition
+.IP "\(bu" 2
+Subtraction
+.IP "\(bu" 2
+Multiplication
+.IP "\(bu" 2
+Division
+.PP
+.PP
+This filter takes additional parameters: primaryScale, secondaryScale, and bias\&. The default value for primaryScale and secondaryScale is 1\&.0f\&. The default value for bias is 0\&.0f\&. This filter applies primaryScale, secondaryScale, and bias to the primary source pixel (x) and secondary source pixel (y) in the following way:
+.IP "\(bu" 2
+Addition: result = ((primaryScale * x) + (secondaryScale * y)) + bias
+.IP "\(bu" 2
+Subtraction: result = ((primaryScale * x) - (secondaryScale * y)) + bias
+.IP "\(bu" 2
+Multiplicaton: result = ((primaryScale * x) * (secondaryScale * y)) + bias
+.IP "\(bu" 2
+Division: result = ((primaryScale * x) / (secondaryScale * y)) + bias
+.PP
+.PP
+To clamp the result of an arithmetic operation, where result = clamp(result, minimumValue, maximumValue), set the minimumValue and maximumValue appropriately\&. The default value of minimumValue is -FLT_MAX\&. The default value of maximumValue is FLT_MAX\&.
+.PP
+This filter also takes the following additional parameters:
+.IP "\(bu" 2
+primaryStrideInPixelsX, primaryStrideInPixelsY, primaryStrideInFeatureChannels
+.IP "\(bu" 2
+secondaryStrideInPixelsX, secondaryStrideInPixelsY, secondaryStrideInFeatureChannels These parameters can be used to control broadcasting for the data stored in the primary and secondary source images\&. For example, setting all strides for the primary source image to 0 will result in the primarySource image being treated as a scalar value\&. The only supported values are 0 or 1\&. The default value of these parameters is 1\&.
+.PP
+.PP
+The number of output feature channels remains the same as the number of input feature channels\&.
+.PP
+You must use one of the sub-classes of \fBMPSImageArithmetic\fP\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeBatchToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) primaryImages(\fBMPSImageBatch\fP *__nonnull) secondaryImages(\fBMPSCNNArithmeticGradientStateBatch\fP *__nonnull) destinationStates(\fBMPSImageBatch\fP *__nonnull) destinationImages"
+Encode call that operates on a state for later consumption by a gradient kernel in training  This is the older style of encode which reads the offset, doesn't change it, and ignores the padding method\&. Multiple images are processed concurrently\&. All images must have \fBMPSImage\&.numberOfImages\fP = 1\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIprimaryImages\fP An array of \fBMPSImage\fP objects containing the primary source images\&. 
+.br
+\fIsecondaryImages\fP An array \fBMPSImage\fP objects containing the secondary source images\&. 
+.br
+\fIdestinationStates\fP An array of MPSCNNArithmeticGradientStateBatch to be consumed by the gradient layer 
+.br
+\fIdestinationImages\fP An array of \fBMPSImage\fP objects to contain the result images\&. destinationImages may not alias primarySourceImages or secondarySourceImages in any manner\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) primaryImage(\fBMPSImage\fP *__nonnull) secondaryImage(\fBMPSCNNArithmeticGradientState\fP *__nonnull) destinationState(\fBMPSImage\fP *__nonnull) destinationImage"
+Encode call that operates on a state for later consumption by a gradient kernel in training  This is the older style of encode which reads the offset, doesn't change it, and ignores the padding method\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer 
+.br
+\fIprimaryImage\fP \fBA\fP \fBMPSImage\fP to use as the source images for the filter\&. 
+.br
+\fIsecondaryImage\fP \fBA\fP \fBMPSImage\fP to use as the source images for the filter\&. 
+.br
+\fIdestinationState\fP \fBMPSCNNArithmeticGradientState\fP to be consumed by the gradient layer 
+.br
+\fIdestinationImage\fP \fBA\fP valid \fBMPSImage\fP to be overwritten by result image\&. destinationImage may not alias primarySourceImage or secondarySourceImage\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryKernel\fP\&.
+.PP
+Reimplemented in \fBMPSCNNAdd\fP, \fBMPSCNNSubtract\fP, \fBMPSCNNMultiply\fP, and \fBMPSCNNDivide\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "\- (float) bias\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- maximumValue\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+maximumValue is used to clamp the result of an arithmetic operation: result = clamp(result, minimumValue, maximumValue)\&. The default value of maximumValue is FLT_MAX\&. 
+.SS "\- minimumValue\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+minimumValue is to clamp the result of an arithmetic operation: result = clamp(result, minimumValue, maximumValue)\&. The default value of minimumValue is -FLT_MAX\&. 
+.SS "\- (float) primaryScale\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- (NSUInteger) primaryStrideInFeatureChannels\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- (float) secondaryScale\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- (NSUInteger) secondaryStrideInFeatureChannels\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.
