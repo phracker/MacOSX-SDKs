@@ -1,0 +1,75 @@
+.Dd 20 Mar 2014
+.Os "macOS"
+.Dt hdik 8
+.Sh NAME
+.Nm hdik
+.Nd lightweight tool to attach and mount disk images in-kernel
+.Sh SYNOPSIS
+.Nm hdik
+.Ar imagefile
+.Op options
+.Nm
+.Fl e
+.Ar device
+.Sh DESCRIPTION
+.Nm
+is a simple tool that can be used to attach disk images directly to the
+DiskImages driver.  The end result is functionally similar to passing
+.Fl kernel
+to 
+.Xr hdiutil 1 Ns 's
+.Sy attach
+verb.
+.Nm
+does not rely upon the presence of DiskImages or other high-level frameworks.
+.Pp
+The DiskImages driver only supports a selection of disk image formats:
+UDRW, UDRO, UDZO, ULFO, SPARSE (UDSP).  It also supports shadow files.
+.Xr hdiutil 1 Ns 's
+.Sy imageinfo
+verb indicates whether a particular image is kernel compatible.
+.Pp
+.Nm
+requires root access to perform its functions.
+.Pp
+In the first form, an image to attach must be provided:
+.Bl -tag -width "123456789A"
+.It Ar imagefile
+path to the disk image file to attach.
+.El
+.Pp
+In its second form, 
+.Nm
+issues an eject command to the specified
+.Ar device .
+The argument is the full device node path (e.g.
+.Pa /dev/disk2 Ns ).
+Any volumes mounted from the device must be unmounted first, or the command
+will fail.  See
+.Xr umount 8 .
+.Sh OPTIONS
+.Bl -tag -width "123456789A"
+.It Fl shadow Op Ar shadowfile 
+Use a shadow file in conjunction with the data in the image.  This option
+prevents modification of the original image and allows read-only images
+to be used as read/write images.  When blocks are being read from the
+image, blocks present in the shadow file override blocks in the base image.
+When blocks are being written, the writes will be redirected to the shadow
+file.  If not specified, 
+.Fl shadow 
+defaults to <imagename>.shadow.  If the
+shadow file does not exist, it is created.
+.It Fl nomount
+Suppress automatic mounting of filesystems contained within the image.  This
+will result in /dev entries being created, but will not mount any volumes.
+.It Fl drivekey Ar keyname=value
+Specify a key/value pair for the IOHDIXHDDrive object created (shows up
+in the IOKit registry of devices which is viewable with 
+.Xr ioreg 8) .
+.El
+.Sh SEE ALSO
+.Ns Xr hdiutil 1 ,
+.Ns Xr diskarbitrationd 8 ,
+.Ns Xr diskutil 8 ,
+.Ns Xr umount 8 ,
+.Ns Xr ioreg 8

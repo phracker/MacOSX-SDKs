@@ -1,0 +1,98 @@
+.\" Copyright (c) 2010 Kungliga Tekniska Högskolan
+.\" (Royal Institute of Technology, Stockholm, Sweden).
+.\" All rights reserved.
+.\"
+.\" Portions Copyright (c) 2010 Apple Inc. All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" 3. Neither the name of the Institute nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $Id$
+.\"
+.Dd Sep  1, 2010
+.Dt gss 5
+.Os HEIMDAL
+.Sh NAME
+.Nm gss
+.Nd how to configure gss framework
+.Sh DESCRIPTION
+The
+.Nm
+GSS.frameworks have several configuration domains, all can configured with
+.Xr defaults 1 .
+.Pp
+Configuration can be stored both in the user's configuration (
+.Pa ~/Library/Preferences )
+and system (
+.Pa /Library/Preferences ).
+.Sh CONFIGURATION OPTIONS
+Use
+.Xr gsstool 1
+to list the supported options and their settings:
+.D1 gsstool supported-mech --options
+.Pp
+Common options are:
+.Bl -tag -width Ds
+.It NTLM 'Force NTLMv1'
+Force client to use NTLMv1
+.It NTLM NTLMv1
+Enable support for NTLMv1 in both client and server
+.It NTLM NTLMv2
+Enable support for NTLMv2 in both client and server
+.It NTLM 'NTLM session key'
+Require backends to support for NTLMv2 session key, Lion and earlier
+dont support this.  Session keys is required for NTLM MIC that stops
+reflection attacks.
+.It NTLM 'AllowedHosts'
+What hosts that NTLM is allowed to be used for. When there a host that
+is not on the list, NTLM will not be used. File globbing is used when
+matching and it's case insensitive.  When there is no configuration,
+all hosts are allowed.
+.Bd -literal
+defaults write com.apple.GSS.NTLM AllowedHosts -array host.local '*.my.domain'
+.Ed
+.El
+.Sh NTLM options
+If you want to disable NTLM support completely in both the acceptor
+(server) and initiator (client), you need disable both NTLMv1 and
+NTLMv2, and set their values to boolean false or 0.
+.Bd -literal
+defaults write com.apple.GSS.NTLM NTLMv1 -bool false
+defaults write com.apple.GSS.NTLM NTLMv2 -bool false
+.Ed
+.Sh APPLE MAC OS X
+You can use the defaults write command to change the options, for
+simple boolean options, use this:
+.D1 defaults write com.apple.GSS.NTLM NTLMv1 -bool false
+.Pp
+You can also turn on debugging (output in syslog) using:
+.D1 defaults write com.apple.GSS DebugLevel -int 10
+.D1 open -a Console
+.Sh SEE ALSO
+.Xr defaults 1 ,
+.Xr gss_mo 3 ,
+.Xr heimdal_debug 1

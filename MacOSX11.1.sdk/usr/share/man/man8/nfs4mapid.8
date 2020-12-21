@@ -1,0 +1,112 @@
+.\"
+.\" Copyright (c) 2014-2017 Apple Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.Dd February 20, 2014
+.Dt NFS4MAPID 8
+.Os 
+.Sh NAME
+.Nm nfs4mapid
+.Nd shows NFSv4 mappings from uids or gids to
+over the wire string names and string names to uids or gids.
+.Sh SYNOPSIS
+.Nm nfs4mapid
+.Op Fl G 
+.Ar string name
+.Nm nfs4mapid
+.Op Fl G
+.Ar GUID
+.Nm nfs4mapid
+.Fl u Ar uid
+.Nm nfs4mapid
+.Fl g Ar gid
+.Sh DESCRIPTION
+In the first form,
+.Nm nfs4mapid
+shows translations from
+.Tn NFSv4
+string representations of users, and with the 
+.Fl G
+option, groups, to the corresponding local uids and gids.
+In the second form shows the translations from
+.Tn opendirectoy
+GUIDS to
+.Tn NFSv4
+strings. The well known strings names (which are distinguished by a trailing 
+.Sq @
+), such as
+.Qq OWNER@
+and
+.Qq GROUP@
+are represented locally by GUIDs and may not map to uids
+or gids. To map those GUIDS to
+.Tn NFSv4
+strings use this form. The first form can be used to map the well
+known ids to GUIDs.
+.Nm nfs4mapid
+does this by looking at the trailing 
+.Sq @
+sign. Note that
+.Tn NFSv4
+well known names are always groups and are used in ACEs.
+In the third form, it shows the mapping from uids to the
+.Tn NFSv4
+user@domain form.
+Similarly, in the last form it shows the mapping from gids to
+the
+.Tn NFSv4
+group@domain.
+.Nm nfs4mapid
+will also show the intermediate GUID translation if used. The 
+.Tn NFSv4
+domain name should be set with
+.Xr dscl 1 .
+See
+.Xr opendirectory 8 
+for instructions.
+.Bl -tag -width Ds
+.It Fl G
+Map an
+.Tn NFSv4
+string to a gid.
+.It Fl u
+Map a uid to an
+.Tn NFSv4
+user@domain string.
+.It Fl g
+Map a gid to an
+.Tn NFSv4
+group@domain string.
+.El
+.Sh NOTES
+.Nm
+uses a privileged nfs client system call to pass the translation request down to the kernel, so results will be the same as a request coming from an NFSv4 server. Because of this,
+.Nm
+must be run with root privileges.
+.Sh SEE ALSO
+.Xr dscl 1 ,
+.Xr nfs 5 ,
+.Xr opendirectoryd 8 ,
+.Xr mount_nfs 8 ,
+.Sh HISTORY
+The
+.Nm
+utility first appeared in OSX 10.10

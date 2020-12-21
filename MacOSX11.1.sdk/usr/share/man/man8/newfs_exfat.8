@@ -1,0 +1,83 @@
+.\" Copyright (c) 2009-2010 Apple Inc.  All rights reserved.
+.\"
+.Dd January 19, 2010
+.Dt NEWFS_EXFAT 8
+.Os Darwin
+.Sh NAME
+.Nm newfs_exfat
+.Nd construct a new ExFAT file system
+.Sh SYNOPSIS
+.Nm
+.Op Fl N
+.Op Fl R
+.Op Fl I Ar volume-serial-number
+.Op Fl S Ar bytes-per-sector
+.Op Fl a Ar sectors-per-FAT
+.Op Fl b Ar bytes-per-cluster
+.Op Fl c Ar sectors-per-cluster
+.Op Fl n Ar number-of-FATs
+.Op Fl s Ar total-sectors
+.Op Fl v Ar volume-name
+.Ar special
+.Sh DESCRIPTION
+The
+.Nm
+utility creates an ExFAT file system on device
+.Ar special .
+If the
+.Fl R
+option is not given, and the device is already formatted as ExFAT, it will
+preserve the partition offset, bytes per cluster, FAT offset and size, number
+of FATs, offset to start of clusters, number of clusters, volume serial number,
+and volume name (label).  If a volume name was specified via the
+.Fl v
+option, that name is used instead of the volume's previous name.
+.Pp
+The options are as follow:
+.Bl -tag -width indent
+.It Fl N
+Don't create a file system: just print out parameters.
+.It Fl R
+Do not check whether the device is currently formatted as ExFAT.  Always derive
+the partition offset, bytes per cluster, FAT offset and size, and offset to
+start of clusters based on the device type and size.
+.It Fl I Ar volume-serial-number
+Volume ID, a 32-bit integer.
+.It Fl S Ar bytes-per-sector
+Number of bytes per sector.  Acceptable values are powers of 2
+in the range 512 through 4096.
+.It Fl a Ar sectors-per-FAT
+Number of sectors per FAT.
+.It Fl b Ar bytes-per-cluster
+File system block size (bytes per cluster).  Acceptable values are powers of 2
+in the range 512 through 33554432.
+.It Fl c Ar sectors-per-cluster
+Sectors per cluster.  Acceptable values are powers of 2 in the range
+1 through 65536.
+.It Fl n Ar number-of-FATs
+Number of FATs.  Acceptable values are 1 or 2.  The default is 1.  Using any
+value other than 1 is discouraged, and may be incompatible with other devices.
+.It Fl s Ar total-sectors
+The total number of sectors in the device.
+.It Fl v Ar volume-name
+Volume name (label).  The name will be converted to UTF-16, and must be no
+longer than 11 UTF-16 characters.  ASCII control characters and some punctuation
+characters are not allowed (similar to DOS 8.3-style names).  NOTE: The volume
+name may be an empty (zero-length) string.
+.El
+.Sh EXAMPLES
+.Dl newfs_exfat /dev/disk0s1
+Create a file system, using default parameters (or existing ExFAT layout),
+on /dev/rdisk0s1.
+.Dl newfs_exfat -v Hello disk2s1
+Create a file system with the name "Hello" on /dev/rdisk2s1.
+.Pp
+.Sh SEE ALSO
+.Xr mount_exfat 8 ,
+.Xr fsck_exfat 8
+.Sh DIAGNOSTICS
+Exit status is 0 on success and 1 on error.
+.Sh HISTORY
+The
+.Nm
+command appeared in Mac OS X 10.6.3.

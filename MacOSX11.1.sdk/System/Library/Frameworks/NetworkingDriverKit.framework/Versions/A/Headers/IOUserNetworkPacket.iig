@@ -1,0 +1,173 @@
+/*
+ * Copyright (c) 2019-2020 Apple, Inc. All rights reserved.
+ *
+ * @APPLE_OSREFERENCE_LICENSE_HEADER_START@
+ *
+ * This file contains Original Code and/or Modifications of Original Code
+ * as defined in and that are subject to the Apple Public Source License
+ * Version 2.0 (the 'License'). You may not use this file except in
+ * compliance with the License. The rights granted to you under the License
+ * may not be used to create, or enable the creation or redistribution of,
+ * unlawful or unlicensed copies of an Apple operating system, or to
+ * circumvent, violate, or enable the circumvention or violation of, any
+ * terms of an Apple operating system software license agreement.
+ *
+ * Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this file.
+ *
+ * The Original Code and all software distributed under the License are
+ * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+ * Please see the License for the specific language governing rights and
+ * limitations under the License.
+ *
+ * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+ */
+
+#ifndef _IOUSERNETWORKPACKET_IIG
+#define _IOUSERNETWORKPACKET_IIG
+
+#include <DriverKit/OSObject.iig>
+
+class IOUserNetworkPacketQueue;
+class IOUserNetworkPacketBufferPool;
+
+typedef uint32_t IOUserNetworkPacketDirection;
+enum {
+    kIOUserNetworkPacketDirectionNone = 0x00000000,
+    kIOUserNetworkPacketDirectionTx   = 0x00000001,
+    kIOUserNetworkPacketDirectionRx   = 0x00000002
+};
+
+struct IOUserNetworkPacketState {
+    uint64_t memoryOffset;
+    uint64_t dataDKVA;
+    uint64_t dataIOVA;
+    uint32_t packetIndex;
+    uint32_t dataLength;
+    uint16_t dataOffset;
+    uint8_t  direction;
+    uint8_t  linkHeaderLength;
+    uint8_t  __reserved[4];
+} __attribute__((packed, aligned(8)));
+
+/*!
+@iig implementation
+#if KERNEL
+#include <IOSkywalkFamily/IOSkywalkNetworkPacket.h>
+#include <NetworkingDriverKit/IOUserNetworkPacket_kext.h>
+#endif
+@iig end
+*/
+
+class KERNEL IOUserNetworkPacket : public OSObject
+{
+public:
+    virtual bool
+    init() override;
+
+    virtual void
+    free() override;
+
+    /** @deprecated, use  setDataLength instead */
+    virtual kern_return_t
+    SetDataLength(uint32_t length) LOCALONLY;
+
+    /** @deprecated use  getDataLength instead */
+    virtual kern_return_t
+    GetDataLength(uint32_t * length) const LOCALONLY;
+
+    /** @deprecated use  setDataOffset instead */
+    virtual kern_return_t
+    SetDataOffset(uint16_t offset) LOCALONLY;
+
+    /** @deprecated use  getDataOffset instead */
+    virtual kern_return_t
+    GetDataOffset(uint16_t * offset) const LOCALONLY;
+
+    /** @deprecated */
+    virtual kern_return_t
+    SetHeadroom(uint8_t headroom) LOCALONLY;
+
+    /** @deprecated */
+    virtual kern_return_t
+    GetHeadroom(uint8_t * headroom) const LOCALONLY;
+
+    /** @deprecated*/
+    virtual kern_return_t
+    SetLinkHeaderLength(uint8_t length) LOCALONLY;
+
+    /** @deprecated */
+    virtual kern_return_t
+    GetLinkHeaderLength(uint8_t * length) const LOCALONLY;
+
+    /** @deprecated use getMemorySegmentOffset instead */
+    virtual kern_return_t
+    GetMemorySegmentOffset(uint64_t * offset) const LOCALONLY;
+
+    /** @deprecated use getPacketBufferPool instead */
+    virtual kern_return_t
+    GetPacketBufferPool(
+        IOUserNetworkPacketBufferPool ** pool) const LOCALONLY;
+
+    virtual uint64_t
+    getDataVirtualAddress() const LOCALONLY;
+
+    virtual uint64_t
+    getDataIOVirtualAddress() const LOCALONLY;
+
+    virtual IOUserNetworkPacketBufferPool *
+    getPacketBufferPool() const LOCALONLY;
+
+    virtual uint64_t
+    getMemorySegmentOffset() const LOCALONLY;
+
+    virtual kern_return_t
+    setDataLength(uint32_t length) LOCALONLY final;
+
+    virtual uint32_t
+    getDataLength() const LOCALONLY final;
+
+    virtual kern_return_t
+    setDataOffset(uint16_t offset) LOCALONLY final;
+
+    virtual uint16_t
+    getDataOffset() const LOCALONLY final;
+
+    virtual kern_return_t
+    setDataOffsetAndLength(
+        uint16_t offset,
+        uint32_t length) LOCALONLY final;
+};
+
+class EXTENDS (IOUserNetworkPacket) IOUserNetworkPacketPrivate
+{
+    virtual kern_return_t
+    _PrepareWithQueue(
+        IOUserNetworkPacketQueue * queue,
+        IOUserNetworkPacketDirection direction,
+        const IOUserNetworkPacketState * state) LOCALONLY;
+
+    virtual kern_return_t
+    _CompleteWithQueue(
+        IOUserNetworkPacketQueue * queue,
+        IOUserNetworkPacketDirection direction,
+        IOUserNetworkPacketState * state) LOCALONLY;
+
+    virtual kern_return_t
+    _SetPacketBufferPool(
+        IOUserNetworkPacketBufferPool * pool) LOCALONLY;
+
+    virtual kern_return_t
+    _SetPacketIndex(uint32_t index) LOCALONLY;
+
+    virtual kern_return_t
+    _GetPacketIndex(uint32_t * index) const LOCALONLY;
+
+    virtual kern_return_t
+    _Print(uint64_t mappedPoolAddress) const LOCALONLY;
+};
+
+#endif /* ! _IOUSERNETWORKPACKET_IIG */

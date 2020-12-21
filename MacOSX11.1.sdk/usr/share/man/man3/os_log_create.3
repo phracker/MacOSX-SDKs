@@ -1,0 +1,43 @@
+.\" Copyright (c) 2015 Apple Inc. All rights reserved.
+.Dd June 2, 2016
+.Dt os_log_create 3
+.Os Darwin
+.Sh NAME
+.Nm os_log_create
+.Nd create an object that tracks the state of logging for a given system.
+.Sh SYNOPSIS
+.In os/log.h
+.Ft os_log_t
+.Fn os_log_create "const char *subsystem" "const char *category"
+.Sh DESCRIPTION
+Use
+.Nm
+to create an object that can be passed to
+.Xr os_log 3
+calls.
+Log messages to this object will be marked with the object's subsystem and category name.
+The behavior of log messages to this object can be configured using the
+.Xr log 1
+command or with a logging configuration profile (see
+.Xr os_log 5 ) .
+.Pp
+The logging runtime maintains a global collection of all os_log_t objects, one per subsystem/category pair.
+The os_log_t for a given subsystem/category is created upon the first call to
+.Nm
+and any subsequent calls return the same object.
+These objects are never deallocated, so dynamic creation (e.g. on a per-operation basis) is generally inappropriate.
+.Sh EXAMPLES
+Create a new os_log_t object and log a message:
+.Bd -literal -offset indent
+#include <os/log.h>
+
+/* create a log object for the subsystem, specifically the "connections" category" */
+os_log_t log = os_log_create("com.example.widget", "connections");
+
+/* log a connection related message */
+os_log(log, "connection state changed: %d interface: %s", if, interface);
+.Ed
+.Sh SEE ALSO
+.Xr log 1 ,
+.Xr os_log 3 ,
+.Xr os_log 5

@@ -1,0 +1,331 @@
+.\"
+.\" Copyright (c) 2006-2017 Apple Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.Dd July 21, 2009
+.Dt NFS.CONF 5 
+.Os
+.Sh NAME
+.Nm nfs.conf
+.Nd The configuration file for
+.Tn NFS
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+file contains options used to specify
+.Tn NFS
+server and client configuration and tuning.
+.Pp
+Each line contains an option field and a value field, separated by
+an equals character '='.  For example:
+.Bd -literal -offset indent
+some.nfs.option = value
+.Ed
+.Pp
+Each line specifies a single option/value pair.
+Whitespace can be used freely before and after fields.
+A hash character '#' begins a comment that extends to the end of the line.
+Lines containing only whitespace or comments are ignored.
+The file format is intended to be easily read using functions like
+.Xr fparseln 3 .
+.Pp	
+Values are typically integers.  For options that enable/disable
+functionality the value zero (0) indicates the option is off/disabled
+and the value one (1) (or any other non-zero value) indicates the
+option is on/enabled.
+.Pp	
+The options are:
+.Bl -tag -width -indent
+.It Cm nfs.client.default_nfs4domain
+Sets the default
+.Tn NFSv4
+domain name. If not set then string mappings are handed to
+.Cm opendirectoryd
+for resolution as is. Otherwise, if the domain name part of the string matches the
+.Tn NFSv4
+domain set here, then the domain part is stripped off and then
+given to
+.Cm opendirectoryd
+for resolution.
+See
+.Xr nfs 5
+for details.
+.It Cm nfs.client.access_cache_timeout
+How long (in seconds) that
+.Xr access 2
+information is cached.  The default is 60 seconds.
+.It Cm nfs.client.access_for_getattr
+This option specifies if
+.Xr access 2
+information should be opportunistically fetched every time attributes
+are fetched.  A GETATTR request will only return attributes, but since
+ACCESS requests usually also return current attributes, a single ACCESS
+request may be used to fetch both
+.Xr access 2
+information and attributes.  Enabling this may improve performance,
+but only if the ACCESS check on the server is inexpensive.  This may
+not be the case with many modern operating systems.  The default is 0 (off).
+.It Cm nfs.client.allow_async
+Allow the use of the -o
+.Cm async
+mount option.
+This option must be enabled in order for the
+.Cm async
+mount option to be honored because (accidental) use of the
+.Cm async
+mount option may result in data loss if the server crashes.
+The default is 0 (off).
+.It Cm nfs.client.callback_port
+This option can be used to specify a port that the NFSv4 callback
+RPC service should be available on.  The default value is unspecified,
+which means that any available port will be used.
+.It Cm nfs.client.initialdowndelay
+When an NFS server is not responding, this option specifies how long
+to wait (in seconds) before the initial notification is posted.  The default
+is 12 seconds.
+.It Cm nfs.client.iosize
+This option specifies what size (in bytes) the NFS client reports for
+the recommended I/O request size returned in
+.Xr stat 2
+and
+.Xr statfs 2
+calls.  The default value is 1048576 bytes.
+.It Cm nfs.client.mount.options
+Mount options to be used for NFS file systems mounted via
+.Xr mount 8
+/
+.Xr mount_nfs 8 .
+The value is in the same format as the argument for the
+.Fl o
+mount option (a comma-separated string of options like:
+option1,option2=val,option3).  The default value is empty.  These
+options are processed by
+.Xr mount_nfs 8
+prior to processing any other command-line options.  Therefore, mount
+options set in the NFS configuration file may be added to or overriden
+by additional command-line options.
+.It Cm nfs.client.nextdowndelay
+When an NFS server is not responding, this option specifies how long
+to wait (in seconds) between notifications.  The default is 30 seconds.
+.It Cm nfs.client.nfsiod_thread_max
+The maximum number of NFS client asynchronous I/O (nfsiod) threads to
+use.  The default is 16.
+.It Cm nfs.client.statfs_rate_limit
+The maximum number of times per second that an NFS client will send a
+"statfs" RPC request to an NFS server to retrieve up-to-date file
+system information.  Requests for this information that occur faster
+than this rate will receive cached values.  The default value is 10
+times per second.  A value of zero means no limit.
+.It Cm nfs.client.is_mobile
+This option specifies if an NFS client is on a mobile machine. On a mobile machine, hard mounted file systems can be automatically forcibly unmounted if the following is met:
+.Bl -bullet -compact
+.It
+The mount was automounted. 
+.It
+The server is not responding.
+.It
+No files are open for writing.
+.It
+No files are memory mapped.
+.It
+There are no dirty pages associated with the mount.
+.El
+The default for this option is to let the system detect this. A non-zero value for this option treats this machine as a laptop with respect to NFS behavior and allows automatic forcible unmounting of unresponsive volumes described above. Conversely, a zero value treats the machine as a desktop for traditional NFS behavior, where hard mounts never time out. Setting a zero value is useful for laptops that are being used as desktops.
+.It Cm nfs.lockd.grace_period
+This option specifies the grace period (in seconds) during which lockd
+will only accept requests from hosts which are reclaiming locks which
+existed before the restart.  The default value is 45 seconds.
+.It Cm nfs.lockd.host_monitor_cache_timeout
+This option tells rpc.lockd how long (in seconds) to cache state records
+for monitored hosts.  Setting it to zero will disable the cache which
+will make lock and unlock requests from a single client more expensive
+because of additional interaction with the client's statd.  The default
+value is 60 seconds.
+.It Cm nfs.lockd.port
+This option can be used to specify a port that the NFS LOCK service
+(lockd) should be available on.  The default value is unspecified,
+which means that any available port will be used.
+.It Cm nfs.lockd.send_using_tcp
+This option tells lockd to use TCP sockets when contacting other
+hosts.  The default value is 0, which means lockd will use UDP.
+.It Cm nfs.lockd.send_using_mnt_transport
+This option tells lockd to use the socket type of the corresponding
+nfs mount. Locking a file on a udp mount will use udp and locking
+a file on a nfs mount mounted with tcp will use tcp. Note that
+\fBnfs.lockd.send_using_tcp\fP will override this option. The default
+value is 0, which means lockd will use UDP provided \fBnfs.lockd.send_using_tcp\fP
+is not set or set to 0.
+.It Cm nfs.lockd.shutdown_delay_client
+This option species how long (in seconds) the lockd daemon should
+remain running after the unmounting of the last NFS file system for
+which it may need to perform file locking requests.  The default value
+is 180 seconds.  (Note: lockd may also remain running if it is needed
+by the NFS server.)
+.It Cm nfs.lockd.shutdown_delay_server
+This option species how long (in seconds) the lockd daemon should
+remain running after the NFS server daemon,
+.Xr nfsd 8 ,
+is stopped.  The default value is 180 seconds.  (Note: lockd may also
+remain running if it is needed by any NFS file system mounts.)
+.It Cm nfs.lockd.tcp
+This option specifies whether the LOCK server should support connections
+using TCP.  The default value is 1 (enabled).
+.It Cm nfs.lockd.udp
+This option specifies whether the LOCK server should support connections
+using UDP.  The default value is 1 (enabled).
+.It Cm nfs.lockd.verbose
+This option controls how much logging lockd performs.  It currently
+maps directly to the
+.Xr rpc.lockd 8
+.Fl d Ar debug_level
+option.  The default value is 0.
+.It Cm nfs.server.async
+This option specifies that the NFS server should report unstable writes
+as stable writes.  The default is 0 (off).  While enabling this option
+can improve write performance, it will also put data integrity at risk
+because the NFS client will be told that data is on stable storage
+before it actually is.  The data may be lost if the NFS server crashes.
+.It Cm nfs.server.bonjour
+This option controls whether the NFS service is advertised via Bonjour.
+The default value is 1 (on).
+.It Cm nfs.server.bonjour.local_domain_only
+This option controls whether the NFS service's Bonjour advertisement is
+restricted to the local domain only.
+The default value is 0 (off).
+.It Cm nfs.server.export_hash_size
+This option specifies the size of the NFS server export hash table.  The
+default value is 64.
+.It Cm nfs.server.fsevents
+This option controls whether the NFS server will generate fsevents for
+operations performed on an exported file system.  The default value
+is 1 (enabled).
+.It Cm nfs.server.mount.port
+This option can be used to specify a port that the MOUNT service
+(mountd) should be available on.  The default value is unspecified,
+which means that any available port will be used.
+.It Cm nfs.server.mount.regular_files
+This option controls whether MOUNT requests for non-directory objects
+will be allowed.  The default value is 0 (off).
+.It Cm nfs.server.mount.require_resv_port
+This option controls whether MOUNT requests are required to originate
+from a reserved port (port < 1024).  The default value is 1 (yes).
+Many NFS server implementations require this because of the false
+belief that this requirement increases security.
+.It Cm nfs.server.nfsd_threads
+This option controls how many NFS server (nfsd) threads are made
+available to service NFS requests.  The default value is 8.
+.It Cm nfs.server.port
+This option can be used to specify a port that the NFS service (nfsd)
+should be available on.  The default value is 2049.
+.It Cm nfs.server.reqcache_size
+This option specifies the size of the NFS server request cache.  The
+default value is 64.
+.It Cm nfs.server.request_queue_length
+This option specifies the maximum number of NFS requests that the NFS
+server can queue up internally on the NFS server's UDP socket.  The
+default value is 128.  Note: using a large value risks getting all the
+mbufs in the system placed on that queue which can cause all networking
+to hang.
+.It Cm nfs.server.require_resv_port
+This option controls whether NFS requests are required to originate
+from a reserved port (port < 1024).  The default value is 0 (no).  Many
+NFS server implementations require this because of the false belief
+that this requirement increases security.
+.It Cm nfs.server.rquota.port
+This option can be used to specify a port that the RQUOTA service
+(rquotad) should be available on.  The default value is unspecified,
+which means that any available port will be used.
+.It Cm nfs.server.rquota.tcp
+This option specifies whether the RQUOTA server should support connections
+using TCP.  The default value is 1 (enabled).
+.It Cm nfs.server.rquota.udp
+This option specifies whether the RQUOTA server should support connections
+using UDP.  The default value is 1 (enabled).
+.It Cm nfs.server.tcp
+This option specifies whether the NFS server should support connections
+using TCP.  The default value is 1 (enabled).
+.It Cm nfs.server.udp
+This option specifies whether the NFS server should support connections
+using UDP.  The default value is 1 (enabled).
+.It Cm nfs.server.user_stats
+This option controls whether the NFS server maintains active user
+statistics.  The default value is 1 (enabled).
+.It Cm nfs.server.verbose
+This option controls how much logging nfsd performs.  The default value
+is 0 - where only messages up to priority LOG_WARNING are logged.
+Setting the verbose level to 1 will add LOG_NOTICE messages which
+includes logging failed mount attempts.  A verbose level of 2 will
+increase the log level to LOG_INFO which includes logging successful
+mount attempts.  A log level of 3 or more will add LOG_DEBUG messages
+and cause increasing amounts of debug information to be logged.  nfsd's
+verbose level can also be adjusted temporarily using the command:
+.Cm nfsd verbose .
+Note: the
+.Xr syslog 8
+configuration may need to be adjusted in order to see the increased
+verbosity.
+.It Cm nfs.server.wg_delay
+This option controls how long (in microseconds) NFSv2 writes will be
+gathered up before being processed.  The default value is 1000.  Setting
+this option to 0 will disable write gathering for NFSv2.
+.It Cm nfs.server.wg_delay_v3
+This option controls how long (in microseconds) NFSv3 writes will be
+gathered up before being processed.  The default value is 0 (disabled).
+NFSv3's support of unstable writes effectively eliminates the need for
+doing write gathering to increase performance.
+.It Cm nfs.statd.port
+This option can be used to specify a port that the STATUS service
+(statd) should be available on.  The default value is unspecified,
+which means that any available port will be used.
+.It Cm nfs.statd.send_using_tcp
+This option tells statd to use TCP sockets when contacting other
+hosts.  The default value is 0, which means statd will use UDP.
+.It Cm nfs.statd.simu_crash_allowed
+This option controls whether statd allows SM_SIMU_CRASH requests.  The
+default value is 0 (not allowed).
+.It Cm nfs.statd.tcp
+This option specifies whether the STATUS server should support connections
+using TCP.  The default value is 1 (enabled).
+.It Cm nfs.statd.udp
+This option specifies whether the STATUS server should support connections
+using UDP.  The default value is 1 (enabled).
+.It Cm nfs.statd.verbose
+This option controls how much logging statd performs.  The default value is 0.
+.El
+.Sh FILES
+.Bl -tag -width "/etc/nfs.conf" -compact
+.It Pa /etc/nfs.conf
+The
+.Tn NFS
+configuration file.
+.El
+.Sh SEE ALSO
+.Xr nfs 5 ,
+.Xr nfsd 8 ,
+.Xr rpc.lockd 8 ,
+.Xr rpc.rquotad 8 ,
+.Xr rpc.statd 8 ,
+.Xr mount_nfs 8 ,
+.Xr opendirectoryd 8
+.\" .Sh BUGS              \" Document known, unremedied bugs
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner

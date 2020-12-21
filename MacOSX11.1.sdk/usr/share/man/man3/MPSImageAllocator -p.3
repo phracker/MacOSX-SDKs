@@ -1,0 +1,118 @@
+.TH "<MPSImageAllocator >" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+<MPSImageAllocator >
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSImage\&.h>\fP
+.PP
+Inherits <NSObject>, and <NSSecureCoding>\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBimageForCommandBuffer:imageDescriptor:kernel:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageBatch\fP *__nonnull) \- \fBimageBatchForCommandBuffer:imageDescriptor:kernel:count:\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+\fBA\fP class that allocates new \fBMPSImage\fP or \fBMPSTemporaryImage\fP  Sometimes it is prohibitively costly for MPS to figure out how big an image should be in advance\&. In addition, you may want to have some say over whether the image is a temporary image or not\&. In such circumstances, the MPSImageAllocator is used to provide the developer with an opportunity for just in time feedback about how the image should be allocated\&.
+.PP
+Two standard MPSImageAllocators are provided: MPSImageDefaultAllocator and MPSTemporaryImageDefaultAllocator\&. You may of course provide your own allocator instead\&.
+.PP
+Example: 
+.PP
+.nf
+// Note: MPSImageDefaultAllocator is already provided
+//       by the framework under that name\&.  It is provided here
+//       as sample code for writing your own variant\&.
+-(MPSImage * __nonnull)  imageForCommandBuffer: (__nonnull id <MTLCommandBuffer>) cmdBuf
+                               imageDescriptor: (MPSImageDescriptor * __nonnull) descriptor
+                                        kernel: (MPSKernel * __nonnull) kernel
+{
+    MPSImage * result = [[MPSImage alloc] initWithDevice: cmdBuf\&.device
+                                         imageDescriptor: descriptor ];
+
+    // make sure the object sticks around at least as lomg as the command buffer
+    [result retain];
+    [cmdBuf addCompletedHandler: ^(id <MTLCommandBuffer> c){[result release];}];
+
+    // return autoreleased result
+    return [result autorelease];
+};
+
+-(BOOL) supportsSecureCoding{ return YES; }
+-(void)encodeWithCoder:(NSCoder * __nonnull)aCoder
+{
+    [super encodeWithCoder: aCoder];
+
+    // encode any data owned by the class at this level
+}
+
+-(nullable instancetype) initWithCoder: (NSCoder*__nonnull) aDecoder
+{
+    self =  [super initWithCoder: aDecoder ];
+    if( nil == self )
+        return self;
+
+    // use coder to load any extra data kept by this object here
+
+    return self;
+}
+
+.fi
+.PP
+.PP
+Please see [\fBMPSImage\fP defaultAllocator] and [\fBMPSTemporaryImage\fP defaultAllocator] for implentations of the protocol already provided by MPS\&.
+.PP
+When considering whether to write your own MPSImageAllocator, you should know the existing \fBMPSImage\fP and \fBMPSTemporaryImage\fP default allocators are optimized to make image batch allocation much faster than one \fBMPSImage\fP at a time in a loop\&. When possible, it can be better to use the MPS provided allocators and override the behavior in a padding policy instead, if the changes can be contained in the \fBMPSImageDescriptor\fP\&. This will help reduce CPU encode time\&. However, custom padding policies can inhibit optimizations in the \fBMPSNNGraph\fP, particularly node fusion, resulting in more work for the GPU\&. In cases where the custom padding method does not change filter properties but only adjusts the result image (e\&.g\&. adjust result feature channel format) then MPSNNPaddingMethodCustomWhitelistForNodeFusion may be used to signal that node fusion is acceptable\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (\fBMPSImageBatch\fP * __nonnull MPSImageAllocator) imageBatchForCommandBuffer: (__nonnull id< MTLCommandBuffer >) cmdBuf(\fBMPSImageDescriptor\fP *__nonnull) descriptor(\fBMPSKernel\fP *__nonnull) kernel(NSUInteger) count\fC [optional]\fP"
+Efficiently create an array of MPSImages with a common descriptor  See class description for sample implementation 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcmdBuf\fP The MTLCommandBuffer on which the image will be initialized\&. cmdBuf\&.device encodes the MTLDevice\&. 
+.br
+\fIdescriptor\fP \fBA\fP \fBMPSImageDescriptor\fP containing the image format to use\&. This format is the result of your MPSPadding policy\&. 
+.br
+\fIkernel\fP The kernel that will overwrite the image returned by the filter\&. Note that the MPS implementations of this protocol don't need this field\&. It is provided for your convenience\&. 
+.br
+\fIcount\fP The number of images in the batch
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSImage\fP or \fBMPSTemporaryImage\fP\&. It will be automatically released when the command buffer completes\&. 
+.RE
+.PP
+
+.SS "\- (\fBMPSImage\fP * __nonnull MPSImageAllocator) imageForCommandBuffer: (__nonnull id< MTLCommandBuffer >) cmdBuf(\fBMPSImageDescriptor\fP *__nonnull) descriptor(\fBMPSKernel\fP *__nonnull) kernel\fC [required]\fP"
+Create a new \fBMPSImage\fP  See class description for sample implementation 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcmdBuf\fP The MTLCommandBuffer on which the image will be initialized\&. cmdBuf\&.device encodes the MTLDevice\&. 
+.br
+\fIdescriptor\fP \fBA\fP \fBMPSImageDescriptor\fP containing the image format to use\&. This format is the result of your MPSPadding policy\&. 
+.br
+\fIkernel\fP The kernel that will overwrite the image returned by the filter\&. Note that the MPS implementations of this protocol don't need this field\&. It is provided for your convenience\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSImage\fP or \fBMPSTemporaryImage\fP\&. It will be automatically released when the command buffer completes\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.
