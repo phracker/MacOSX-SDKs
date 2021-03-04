@@ -1,0 +1,86 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 1/11/07               \" DATE 
+.Dt ReportCrash 8      \" Program name and manual section number 
+.Os Mac OS X
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm ReportCrash
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Generates crash reports
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm 
+analyzes crashing processes and saves a crash report to disk.
+A crash report contains information that can help a developer diagnose the cause of a crash.
+.Nm 
+also records the identity of the crashing process and the location of the saved crash report
+in the system.log and the ASL log database. 
+.Pp
+.Nm 
+is invoked automatically by launchd when a crash is detected.
+For applications and other processes running in the per-user launchd context, 
+.Nm
+runs as a LaunchAgent and saves crash reports in the user's ~/Library/Logs/DiagnosticReports/ directory.
+For daemons, other processes running in the system launchd context and other privileged processes, 
+.Nm 
+runs as a LaunchDaemon and saves crash reports in the system's /Library/Logs/DiagnosticReports directory where they are only readable by admin users.
+If there are too many crash reports saved for a particular process, older reports will automatically be removed in order to conserve disk space.
+.Pp
+.Nm launchtl 
+can be used to disable and re-enable crash reporting.
+To disable crash reporting:
+.Bd -literal -offset indent
+launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.ReportCrash.Root.plist
+.Ed
+.Pp
+To re-enable crash reporting:
+.Bd -literal -offset indent
+launchctl load -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.ReportCrash.Root.plist
+.Ed
+.Pp
+For application crashes (but not background process crashes) 
+.Nm
+will display a dialog notifying the user that the application unexpectedly quit and offering to reopen the application or send the report to Apple.
+For developers, the behavior of this dialog can be adjusted using /Developer/Applications/Utilities/CrashReporterPrefs.app which is installed as part of the developer tools.
+.Pp
+Crash reports which are sent to Apple are submitted anonymously by the 
+.Nm SubmitDiagInfo
+process. 
+The reports are used by Apple to improve its products.
+Users who need support should use http://www.apple.com/support or other authorized support channels.
+Developers who are ADC members should report bugs using http://bugreporter.apple.com in order to allow for two way communication between Apple and the bug reporter.
+.Pp
+More information about interpreting the contents of crash reports can be found in Technote 2123: https://developer.apple.com/library/content/technotes/tn2004/tn2123.html
+.Pp
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr launchd 8 ,
+.Xr launchd.plist 8 ,
+.Xr launchctl 8 ,
+.Xr spindump 8 ,
+.Xr SubmitDiagInfo 8 
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner

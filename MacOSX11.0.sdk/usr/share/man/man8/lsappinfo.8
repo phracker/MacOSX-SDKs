@@ -1,0 +1,977 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "LSAPPINFO" "8" "April 2013" "" ""
+.
+.SH "NAME"
+\fBlsappinfo\fR \- Control and query CoreApplicationServices about the app state on the system
+.
+.SH "SYNOPSIS"
+\fBlsappinfo\fR \fB[options]\fR [ command [command \fBoptions\fR] ] \.\.\.
+.
+.SH "COMMON COMMANDS"
+.
+.IP "\(bu" 4
+\fBfront\fR Show the front application\.
+.
+.IP "\(bu" 4
+\fBfind\fR [ \fIkey\fR=\fIvalue\fR ]+
+.
+.br
+Show the ASN of all applications which have the given \fIkey\fR/\fIvalue\fR present in their application information\. For \fIkey\fR the actual CFString value for the key can be used, or any of the aliases described below under Key Strings\. For \fIvalue\fR, see the rules below under Key Values\.
+.
+.IP "\(bu" 4
+\fBinfo\fR [\fB\-only\fR \fIinformation\-item\-key\fR] [\-app \fIapp\-specifier\fR] [\fB\-long\fR][\fIapp\-specifier\fR]
+.
+.br
+Show the information for the application app\-specifier
+.
+.IP "\(bu" 4
+\fBlist\fR
+.
+.br
+Show the application list and information about each running application
+.
+.IP "\(bu" 4
+\fBlisten\fR [+\fBnotificationcode\fR]* [\-\fBnotificationcode\fR]* [\fB\-addasn\fR \fIasn\fR] [\fB\-removeasn\fR \fIasn\fR] [ \fB\-id\fR \fI#\fR ] \fIduration\fR [\-\-]
+.
+.br
+Listen for the given notifications ( those with \'+\', excluding those with \'\-\' ) and display each one and its payload\. Notifications are displayed when they receive when this tool is executing a \fBwait\fR or \fBforever\fR command\.
+.
+.IP "\(bu" 4
+\fBlaunch\fR [[\fBlaunch\-modifier\fR=\fIvalue\fR]+ [\fBlaunch\-option\fR=\fIvalue\fR]+ [\fB\-arg\fR \fIargument\fR] [\fIpath\-to\-bundle\fR] [\-\-]
+.
+.br
+Launch an application with CoreApplicationServices in LaunchServices\. At the minimum, the execpath must be included as one of the \fBlaunch\-options\fR or \-poseas and a \fIpath\-to\-bundle\fR\. This is a fairly low level operation and does not handle a number of conditions that the higher level functions do\.
+.
+.IP "\(bu" 4
+\fBmetainfo\fR
+.
+.br
+Show the meta information, which is the session\-wide information which CoreApplicationServices maintains for each login session\.
+.
+.IP "\(bu" 4
+\fBprocessList\fR
+.
+.br
+Show the application list, in ascending ASN order\.
+.
+.IP "\(bu" 4
+\fBrestart\fR
+.
+.br
+Ask the launchservicesd to restart\. The requestor must be privileged\.
+.
+.IP "\(bu" 4
+\fBsharedmemory\fR
+.
+.br
+Show the shared memory information page for this session\.
+.
+.IP "\(bu" 4
+\fBunlisten\fR [ \fB\-id\fR \fIID\fR ] [ \fB\-all\fR ]
+.
+.br
+Unlisten to all notifications on notification \fIID\fR\.
+.
+.IP "\(bu" 4
+\fBvisibleProcessList\fR
+.
+.br
+Show the visible ( front\-to\-back ) application list\.
+.
+.IP "" 0
+.
+.SH "UNCOMMON COMMANDS"
+.
+.IP "\(bu" 4
+\fBallocateASN\fR Ask launchservicesd to allocate an ASN, and print it out\.
+.
+.IP "\(bu" 4
+\fBcreateFile\fR \fIPATH\fR Create a file at the given path
+.
+.IP "\(bu" 4
+\fBfile\fR \fIpath\fR Open the file at \fIpath\fR and read lines, treating each one as if it were passed to \fBlsappinfo\fR on the command line\.
+.
+.IP "\(bu" 4
+\fBforever\fR Wait forever before executing the next command
+.
+.IP "\(bu" 4
+\fBlog\fR [ \fB\-d\fR | \fB\-i\fR | \fB\-n\fR | \fB\-w\fR | \fB\-e\fR | \fB\-c\fR | \fB\-a\fR ] [ \fB\-B\fR ] [ \fB\-sender *processname*\fR ] [ \fIstring\fR \.\.\. \fB\-\-\fR ] If an option is given, dump any LaunchServices logging information on the system until the process is terminated with control\-C\. If a string is provided, log that string to syslog\.
+.
+.IP "\(bu" 4
+\fBremoveFile\fR \fIPATH\fR Remove the file at the given path
+.
+.IP "\(bu" 4
+\fBserver\fR [ \fB\-xpcservicename\fR \fIARG\fR ] [ \fB\-local\fR ] [ \fB\-duration *DURATION*\fR ] [ \fB\-file *FILEPATH*\fR ] [ \fB\-gone\fR \fIFILEGONEPATH\fR ] [ \fB\-forever\fR ] Start up the launchservicesd server in process, with the optional given xpc service name or if \fB\-local\fR then processing xpc requests from future commands for this same process\. Terminate the server after the given \fIDURATION\fR seconds, or when the file at \fIFILEPATH\fR exists, or the file at path \fIFILEPATHFONE\fR is deleted, or never if \fB\-forever\fR\.
+.
+.IP "\(bu" 4
+\fBsetinfo\fR [\fB\-app\fR \fIapp\-specifier\fR] [\fBapp\-info\-item\fR=\fIvalue\fR]+ [\fB\-\-\fR] Set the values for the given application information items in the specified application\.
+.
+.IP "\(bu" 4
+\fBsetmetainfo\fR [\fBmeta\-info\-item\fR=\fIvalue\fR]+ [\-\-]
+.
+.IP "\(bu" 4
+\fBwait\fR [ \fB\-duration\fR \fIduration\fR ] [ \fB\-file\fR \fIFILEPATH\fR ] [ \fB\-gone\fR \fIFILEPATHGONE\fR ] \fIduration\fR Wait for duration seconds before executing the next command, or if \fIFILEPATH\fR is given until that file exists, or if \fIFILEPATHGONE\fR is given until that file no longer exists\.
+.
+.IP "\(bu" 4
+\fBwritePIDToFile\fR \fIPATH\fR Write the current processes pid to a file at \fIPATH\fR\.
+.
+.IP "" 0
+.
+.SH "OPTIONS"
+.
+.IP "\(bu" 4
+\fB\-v\fR | \fB\-\-verbose\fR Be more verbose about many operations
+.
+.IP "\(bu" 4
+\fB\-q\fR | \fB\-\-quiet\fR Be less verbose about many operations
+.
+.IP "\(bu" 4
+\fB\-defaultSession\fR Use kLSDefaultSessionID as the sessionID passed to all calls (the default)
+.
+.IP "\(bu" 4
+\fB\-currentSession\fR Use kLSCurrentSessionID as the sessionID passed to all calls
+.
+.IP "\(bu" 4
+\fB\-debug\fR | \fB\-info\fR | \fB\-notice\fR | \fB\-warning\fR | \fB\-err\fR | \fB\-critical\fR | \fB\-alert\fR | \fB\-emergency\fR Set the log level for this process to the given level
+.
+.IP "" 0
+.
+.SH "APPLICATION SPECIFIERS"
+There are different ways to indicate what application the commands operate on, collectively called the app\-specifier\. This may be one of the following\.
+.
+.IP "\(bu" 4
+"ASN:0x\fIAAAA\fR:0x\fIBBBB\fR:" where \fIAAAA\fR and \fIBBBB\fR are the values for an application ASN\.
+.
+.IP "\(bu" 4
+"0x\fIBBBB\fR" where \fIBBBB\fR are the values from the lower part of an application ASN for which the upper part of the ASN is 0x0
+.
+.IP "\(bu" 4
+"\fI#\fR" where \fI#\fR is a decimal value above 10, representing the application with the pid \fI#\fR
+.
+.IP "\(bu" 4
+"\fIname\fR" where \fIname\fR is the display name of a running application
+.
+.IP "\(bu" 4
+"\fIbundleid\fR" where \fIbundleid\fR is the bundle id of a running application
+.
+.IP "\(bu" 4
+"me" the asn of the \fBlsappinfo\fR tool
+.
+.IP "" 0
+.
+.SH "KEY STRINGS"
+Any string from this set will map to the corresponding constant from the LaunchServices header files\.
+.
+.IP "" 4
+.
+.nf
+
+kCFBundleNameKey
+kLSASNKey
+kLSASNToBringForwardAtNextApplicationExitKey
+kLSAllowedToBecomeFrontmostKey
+kLSApplicationBackgroundOnlyTypeKey
+kLSApplicationBackgroundPriorityKey
+kLSApplicationCountKey
+kLSApplicationDesiresAttentionKey,
+kLSApplicationForegroundPriorityKey
+kLSApplicationForegroundTypeKey
+kLSApplicationHasRegisteredKey
+kLSApplicationHasSignalledItIsReadyKey
+kLSApplicationInStoppedStateKey
+kLSApplicationInThrottledStateAfterLaunchKey
+kLSApplicationInformationSeedKey
+kLSApplicationIsHiddenKey
+kLSApplicationListSeedKey
+kLSApplicationReadyToBeFrontableKey
+kLSApplicationTypeKey
+kLSApplicationTypeToRestoreKey
+kLSApplicationUIElementTypeKey
+kLSApplicationVersionKey
+kLSApplicationWasTerminatedByTALKey
+kLSApplicationWouldBeTerminatedByTALKey
+kLSArchitectureKey
+kLSBundleIdentifierLowerCaseKey
+kLSBundlePathDeviceIDKey
+kLSBundlePathINodeKey
+kLSBundlePathKey
+kLSCheckInTimeKey
+kLSDebugLevelKey
+kLSDisplayNameKey
+kLSExecutableFormatCFMKey
+kLSExecutableFormatKey
+kLSExecutableFormatMachOKey
+kLSExecutableFormatPoundBangKey
+kLSExecutablePathDeviceIDKey
+kLSExecutablePathINodeKey
+kLSExecutablePathKey
+kLSExitStatusKey
+kLSFileCreatorKey
+kLSFileTypeKey
+kLSFlavorKey
+kLSFrontApplicationSeedKey
+kLSHiddenApplicationCountKey
+kLSLaunchTimeKey
+kLSLaunchedByLaunchServicesKey
+kLSLaunchedByLaunchServicesThruForkExecKey
+kLSLaunchedByLaunchServicesThruLaunchDKey
+kLSLaunchedByLaunchServicesThruSessionLauncherKey
+kLSLaunchedInQuarantineKey
+kLSMenuBarOwnerApplicationSeedKey
+kLSModifierLaunchedForPersistenceKey
+kLSModifierRefConKey
+kLSNotifyBecameFrontmostAnotherLaunchKey
+kLSNotifyBecameFrontmostFirstActivationKey
+kLSNotifyLaunchRequestLaunchModifiersKey
+kLSOriginalExecutablePathDeviceIDKey
+kLSOriginalExecutablePathINodeKey
+kLSOriginalExecutablePathKey
+kLSOriginalPIDKey
+kLSPIDKey
+kLSParentASNKey
+kLSParentASNWasInferredKey
+kLSPersistenceSuppressRelaunchAtLoginKey
+kLSPreviousASNKey
+kLSPreviousPresentationModeKey
+kLSPreviousValueKey
+kLSRecordingAppleEventsKey
+kLSRequiresCarbonKey
+kLSSessionIDKey
+kLSShellExecutablePathKey
+kLSUIDsInSessionKey
+kLSUIPresentationModeAllHiddenValue
+kLSUIPresentationModeAllSuppressedValue
+kLSUIPresentationModeContentHiddenValue
+kLSUIPresentationModeContentSuppressedValue
+kLSUIPresentationModeKey
+kLSUIPresentationModeNormalValue
+kLSUIPresentationOptionsKey
+kLSUnhiddenApplicationCountKey
+kLSVisibleApplicationCountKey
+kLSVisibleApplicationListSeedKey
+kLSWantsToComeForwardAtRegistrationTimeKey
+launchedThrottled
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Likewise, these short strings also make to the corresponding constants\.
+.
+.IP "" 4
+.
+.nf
+
+allowedtobecomefrontmost
+applicationTypeToRestore
+applicationWasTerminatedByTAL
+applicationtype
+arch
+asn
+bundleid
+bundlelastcomponent
+bundlename
+bundlenamelc
+bundlepath
+changecount
+creator
+debuglevel
+displayname
+execpath
+executablepath
+filecreator
+filename
+filetype
+hidden
+isconnectedtowindowserver
+isready
+isregistered
+isstopped
+isthrottled
+launchedForPersistence
+launchedinquarantine
+name
+parentasn
+pid
+presentationmode
+presentationoptions
+psn
+recordingAppleEvents
+session
+shellpath
+supressRelaunch
+version
+.
+.fi
+.
+.IP "" 0
+.
+.SH "KEY VALUES"
+In numerous places a key can be set to a value\. The format of value can be any of the following
+.
+.IP "\(bu" 4
+"\fIstring\fR" A string, surrounded by double quotes\.
+.
+.IP "\(bu" 4
+\fInumeric\-digits\fR | \-\fInumeric\-digits\fR | \fInumeric\-digits\fR\.\fInumeric\-digits\fR[E]\fInumeric\-digits\fR A numeric value, either an integer type or a double floating point type\.
+.
+.IP "\(bu" 4
+$\fIhex\-digits\fR A numeric value given by the hex value hex\-digits\.
+.
+.IP "\(bu" 4
+"ASN:0x\fIAAAA\fR:0x\fIBBBB\fR:" An ASN, where \fIAAAA\fR and \fIBBBB\fR are the values for an application ASN\.
+.
+.IP "\(bu" 4
+App:\fIstr\fR An ASN, where \fIstr\fR matches one of the application\-specifier formats\.
+.
+.IP "\(bu" 4
+( [[\fIstr\fR,] \fIstr\fR] ) A CFArrayRef, where each \fIstr\fR is converted as if it were a key value\.
+.
+.IP "\(bu" 4
+true The kCFBooleanTrue value\.
+.
+.IP "\(bu" 4
+false The kCFBooleanFalse value\.
+.
+.IP "\(bu" 4
+null The kCFNull value\.
+.
+.IP "\(bu" 4
+Any of the application information item, or launch modifier strings The equivalent, exported LaunchServices CFStringRef key for the item or launch modifier\.
+.
+.IP "" 0
+.
+.SH "APPLICATION INFORMATION ITEM KEYS"
+.
+.IP "\(bu" 4
+\fBasn\fR An application ASN, which is unique identifier assigned to each application when the application is launched and persists until the application exits, and likely is unique for the entire time a user is logged in\. When displayed, an ASN looks like "ASN:0x0\-0x1f01f:"\.
+.
+.IP "\(bu" 4
+\fBparentasn\fR The ASN of the application which launched this application\.
+.
+.IP "\(bu" 4
+\fBbundlename\fR The bundle name, if one exists, for the application\.
+.
+.IP "\(bu" 4
+\fBbundlenamelc\fR The bundle name, if one exists, for the application, but with every upper case character converted into the equivalent lower case character\.
+.
+.IP "\(bu" 4
+\fBbundlepath\fR The bundle path, if the application is bundled
+.
+.IP "\(bu" 4
+\fBexecutablepath\fR The executable path of the application
+.
+.IP "\(bu" 4
+\fBfiletype\fR The file type of the application, if it has one\.
+.
+.IP "\(bu" 4
+\fBfilecreator\fR The creator type of the application, if it has one\.
+.
+.IP "\(bu" 4
+\fBpid\fR The pid of the application\.
+.
+.IP "\(bu" 4
+\fBfilename\fR The filename of the executable (the last component of the executable path), converted into a lowercase string
+.
+.IP "\(bu" 4
+\fBbundlelastcomponent\fR The last component of the bundle path, converted into a lowercase string\.
+.
+.IP "\(bu" 4
+\fBdisplayname\fR | \fBname\fR The display name of this application
+.
+.IP "\(bu" 4
+\fBbundleid\fR The bundle identifier of the application, if one exists\.
+.
+.IP "\(bu" 4
+\fBapplicationtype\fR The type of the application (generally "Foreground", "Background", or "UIElement")
+.
+.IP "\(bu" 4
+\fBallowedtobecomefrontmost\fR The application is allowed to be frontmost\.
+.
+.IP "\(bu" 4
+\fBversion\fR The version string for the application, if it has one
+.
+.IP "\(bu" 4
+\fBpresentationmode\fR The UIPresentationMode for this application (only for foreground applications), generally one of "Normal", "ContentSupressed", "ContentHidden", "Suppressed", "AllHidden"
+.
+.IP "\(bu" 4
+\fBpresentationoptions\fR
+.
+.IP "\(bu" 4
+\fBsession\fR A number indicating which audit session this application is running in\.
+.
+.IP "\(bu" 4
+\fBhidden\fR If this application is a foreground application, then if it is hidden, "true", or "false" if it is not hidden
+.
+.IP "\(bu" 4
+\fBchangecount\fR A number which changes whenever any items in the application\'s information dictionary is changed\.
+.
+.IP "\(bu" 4
+\fBdebuglevel\fR
+.
+.IP "\(bu" 4
+\fBisregistered\fR If this application has registered, then "true", otherwise "false"\.
+.
+.IP "\(bu" 4
+\fBisready\fR If this application has entered its main runloop and is able to respond to requests to hide or show itself, "true", otherwise "false"\.
+.
+.IP "\(bu" 4
+\fBisstopped\fR If this application was launched stopped, and if it has not been started yet, then "true", otherwise "false" or not present\.
+.
+.IP "\(bu" 4
+\fBlaunchedinquarantine\fR If this application was launched in a quarantined state, then "true", otherwise "false" or not present\.
+.
+.IP "\(bu" 4
+\fBarch\fR The architecture of the code running this application, generally "x86_64" or "i386"\.
+.
+.IP "\(bu" 4
+\fBrecordingAppleEvents\fR If this application is recording AppleEvents, then "true", otherwise "false" or not present\.
+.
+.IP "\(bu" 4
+\fBsupressRelaunch\fR If this application should not be re\-launched after a logout and login, then "true", otherwise "false" or not present\.
+.
+.IP "\(bu" 4
+\fBapplicationTypeToRestore\fR
+.
+.IP "\(bu" 4
+\fBapplicationWasTerminatedByTAL\fR
+.
+.IP "\(bu" 4
+\fBisthrottled\fR If this application was launched in the throttled state, and if it has not been unthrottled, then "true", otherwise false or not present\.
+.
+.IP "\(bu" 4
+\fBapplicationWouldBeTerminatedByTALKey\fR
+.
+.IP "\(bu" 4
+\fBlaunchedhidden\fR If the application was launched hidden, then "true", otherwise "false" or not present\. This is not whether the application is currently hidden, just whether at the time it was launched the request was to have it hide itself\.
+.
+.IP "\(bu" 4
+\fBlaunchandhideothers\fR If the application was launched and asked to hide all other application, then "true", otherwise "false" or not present\. This is not whether the application is currently hidden, just whether at the time it was launched the request was to have it hide all other applications\.
+.
+.IP "\(bu" 4
+\fBlaunchForPersistence\fR If the application was launched with launchForPersistence=true, then "true", otherwise "false" or not present\.
+.
+.IP "" 0
+.
+.SH "LAUNCHMODIFIER KEYS"
+.
+.IP "\(bu" 4
+\fBasync\fR=[true|false] Launch asynchronously
+.
+.IP "\(bu" 4
+\fBrefcon\fR=[\fI#\fR] Launch with the given numeric refcon\.
+.
+.IP "\(bu" 4
+\fBnofront\fR=[true|false] If true, do not bring the application to the front when it finishes launching
+.
+.IP "\(bu" 4
+\fBstopped\fR=[true|false] Launch the process but do not start it\.
+.
+.IP "\(bu" 4
+\fBlaunchandhide\fR=[true|false] Launch the process and cause it to hide itself when it finishes launching
+.
+.IP "\(bu" 4
+\elaunchandhideothers`=[true|false] Launch the process and couse it to hide all other applications when it finishes launching
+.
+.IP "\(bu" 4
+\fBlaunchForPersistence\fR=[true|false]
+.
+.IP "\(bu" 4
+\fBlaunchWithASLRDisabled\fR=[true|false]
+.
+.IP "" 0
+.
+.SH "NOTIFICATION CODES"
+Notifications are sent out by LaunchServices when various conditions arrive\. Each notification has a type, called the notification\-code, a dictionary of data items which are specific to the notification, a time the notification was sent, and an optional affected ASN\.
+.
+.IP "\(bu" 4
+\fBlaunch\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application is launched
+.
+.IP "\(bu" 4
+\fBcreation\fR
+.
+.IP "" 0
+.
+.P
+Sent when an entry for an application is created on the system and associated with an ASN\.
+.
+.IP "\(bu" 4
+\fBbirth\fR
+.
+.IP "" 0
+.
+.P
+Sent when an
+.
+.IP "\(bu" 4
+\fBdeath\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application exits\.
+.
+.IP "\(bu" 4
+\fBabnormaldeath\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application exits with a non\-zero exit status\.
+.
+.IP "\(bu" 4
+\fBchildDeath\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application exits, with affected ASN set to the parent ASN of the application which exited\.
+.
+.IP "\(bu" 4
+\fBabnormalChildDeath\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application exits with a non\-zero exit status, with affected ASN set to the parent ASN of the application which exited\.
+.
+.IP "\(bu" 4
+\fBlaunchFailure\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application launch fails, after a launch notification has been sent out\.
+.
+.IP "\(bu" 4
+\fBappCreation\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application is "created", which happens immediately after the application is created and certain items are added into the application information dictionary\.
+.
+.IP "\(bu" 4
+\fBchildAppCreation\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application is "created", which happens immediately after the application is created and certain items are added into the application information dictionary, with affected ASN set to the asn of the parent ASN of this application\.
+.
+.IP "\(bu" 4
+\fBappReady\fR
+.
+.IP "" 0
+.
+.P
+Sent when an applications signals to LaunchServices that it is ready to accept hide/show events, generally when it has entered its main runloop\.
+.
+.IP "\(bu" 4
+\fBchildAppReady\fR
+.
+.IP "" 0
+.
+.P
+Sent when an applications signals to LaunchServices that it is ready to accept hide/show events, generally when it has entered its main runloop, with affected ASN set to the parent ASN of the application which signalled ready\.
+.
+.IP "\(bu" 4
+\fBreadyToAcceptAppleEvents\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application signals that it is ready to accept AppleEvents\.
+.
+.IP "\(bu" 4
+\fBlaunchTimedOut\fR
+.
+.IP "\(bu" 4
+\fBlaunchFinished\fR
+.
+.IP "\(bu" 4
+\fBallTALAppsRegistered\fR
+.
+.IP "" 0
+.
+.P
+Sent when talagentd decides that all applications which were launched for persistence have registered\.
+.
+.IP "\(bu" 4
+\fBbecameFrontmost\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application is made into the front application\.
+.
+.IP "\(bu" 4
+\fBlostFrontmost\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application which previously was the front application is no longer the front application\.
+.
+.IP "\(bu" 4
+\fBorderChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when the front\-to\-back order of the application list changes\.
+.
+.IP "\(bu" 4
+\fBbringForwardRequest\fR
+.
+.IP "" 0
+.
+.P
+Someone has requested that the application with affected ASN make itself frontmost\.
+.
+.IP "\(bu" 4
+\fBmenuBarAcquired\fR
+.
+.IP "" 0
+.
+.P
+Sent when the application which is responsible for drawing the menu bar (generally the frontmost foreground application) changes
+.
+.IP "\(bu" 4
+\fBmenuBarLost\fR
+.
+.IP "" 0
+.
+.P
+Sent when the application which was responsible for drawing the menu bar (generally the frontmost foreground application) is no longer responsible
+.
+.IP "\(bu" 4
+\fBhidden\fR
+.
+.IP "" 0
+.
+.P
+Sent when the application is hidden
+.
+.IP "\(bu" 4
+\fBshown\fR
+.
+.IP "" 0
+.
+.P
+Sent when the application is shown
+.
+.IP "\(bu" 4
+\fBshowRequest\fR
+.
+.IP "" 0
+.
+.P
+Someone has requested that the application with the affected application asn should show (un\-hide) itself\.
+.
+.IP "\(bu" 4
+\fBhideRequest\fR
+.
+.IP "" 0
+.
+.P
+Someone has requested that the application with the affected application asn should hide itself\.
+.
+.IP "\(bu" 4
+\fBpullwindowsforward\fR
+.
+.IP "" 0
+.
+.P
+Someone has requested that the application with the affected application asn should show itself and pull all of its windows forward\.
+.
+.IP "\(bu" 4
+\fBappInfoChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when the information for the application is changed\.
+.
+.IP "\(bu" 4
+\fBappInfoKeyAdded\fR
+.
+.IP "" 0
+.
+.P
+Sent when a key is added to the information for the application\. The data for the notification will include the key being added and its value\.
+.
+.IP "\(bu" 4
+\fBappInfoKeyChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when a value for an item in the application information is changed\. The data for the notification will include the key being changes and its new and old value\.
+.
+.IP "\(bu" 4
+\fBappInfoKeyRemoved\fR
+.
+.IP "" 0
+.
+.P
+Sent when the value for an item in the application information is removed\. The data for the notification will include the key being removed and its value\.
+.
+.IP "\(bu" 4
+\fBappTypeChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when the "ApplicationType" key in the application information is changed\.
+.
+.IP "\(bu" 4
+\fBappNameChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when the application name in the application information is changed\.
+.
+.IP "\(bu" 4
+\fBwantsAttentionChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when the LSWantsAttention key in the application information is changed\.
+.
+.IP "\(bu" 4
+\fBpresentationModeChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application changes its presentation mode\.
+.
+.IP "\(bu" 4
+\fBpidChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application changes its pid\. In practice this can never happen, except when LaunchServices launches a process which itself forks or spawns a new process, and then checks\-in from that new pid\.
+.
+.IP "\(bu" 4
+\fBfrontPresentationModeChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when the presentation mode of the system changes, generally when the foreground application changes its own presentation mode or when the front application changes and the old and new applications have different presentation modes\.
+.
+.IP "\(bu" 4
+\fBpresentationModeChangedBecauseFrontApplicationChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when the presentation mode of the system changes only because the front application changed and the old and new applications have different presentation modes\.
+.
+.IP "\(bu" 4
+\fBlaunchrequest\fR
+.
+.IP "\(bu" 4
+\fBstarted\fR
+.
+.IP "" 0
+.
+.P
+Sent when a formally stopped application is started\.
+.
+.IP "\(bu" 4
+\fBsessionLauncherRegister\fR
+.
+.IP "" 0
+.
+.P
+Sent when the ASN of the session launcher application registers with LaunchServices\.
+.
+.IP "\(bu" 4
+\fBsessionLauncherUnregistered\fR
+.
+.IP "" 0
+.
+.P
+Sent when the application registered as the session launcher unregisters or exits\.
+.
+.IP "\(bu" 4
+\fBnextAppToBringForwardAtQuitRegistered\fR
+.
+.IP "" 0
+.
+.P
+Sent when the meta\-information item for the next application to bring forward ASN is changed
+.
+.IP "\(bu" 4
+\fBnextAppToBringForwardAtQuitUnregistered\fR
+.
+.IP "\(bu" 4
+\fBsystemProcessRegistered\fR
+.
+.IP "" 0
+.
+.P
+Sent when the system process (generally loginwindow) registers with LaunchServices\.
+.
+.IP "\(bu" 4
+\fBsystemProcessUnregistered\fR
+.
+.IP "" 0
+.
+.P
+Sent when the system process (generally loginwindow) unregisters with LaunchServices\.
+.
+.IP "\(bu" 4
+\fBfrontReservationCreated\fR
+.
+.IP "" 0
+.
+.P
+Sent when a front\-reservation is created\.
+.
+.IP "\(bu" 4
+\fBfrontReservationDestroyed\fR
+.
+.IP "" 0
+.
+.P
+Sent when a front reservation is destroyed\.
+.
+.IP "\(bu" 4
+\fBpermittedFrontASNsChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when the array of permitted\-front\-applications changes\.
+.
+.IP "\(bu" 4
+\fBsuppressRelaunch\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application changes its "LSSupressRelaunch" key\.
+.
+.IP "\(bu" 4
+\fBterminatedByTALChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application changes its "TerminatedByTAL" key\.
+.
+.IP "\(bu" 4
+\fBlaunchedThrottledChanged\fR
+.
+.IP "" 0
+.
+.P
+Sent when an application changes * \fBapplicationWouldBeTerminatedByTALChanged\fR * \fBapplicationProgressValueChanged\fR * \fBapplicationVisualNotification\fR * \fBwakeup\fR
+.
+.P
+Request that the application with affected ASN resume running its main runloop\.
+.
+.IP "\(bu" 4
+\fBsessionCreated\fR
+.
+.IP "" 0
+.
+.P
+Sent when a session is created, generally when the first application registers inside the session\. Affected ASN is always NULL, since this does not refer to any particular application\.
+.
+.IP "\(bu" 4
+\fBsessionDestroyed\fR
+.
+.IP "" 0
+.
+.P
+Sent when a session is destroyed\. Affected ASN is always NULL, since this does not refer to any particular application\.
+.
+.IP "\(bu" 4
+\fBinvalid\fR
+.
+.IP "" 0
+.
+.P
+This represents an invalid notification code, and is never sent\.
+.
+.IP "\(bu" 4
+\fBall\fR
+.
+.IP "" 0
+.
+.P
+This represents all notification codes, and is never sent, but gets used when specifying which notifications to listen for\.
+.
+.SH "EXAMPLES"
+.
+.IP "\(bu" 4
+List all of the running applications
+.
+.IP "" 0
+.
+.P
+\fBlsappinfo\fR list
+.
+.IP "\(bu" 4
+Show all the notifications which are being sent out
+.
+.IP "" 0
+.
+.P
+\fBlsappinfo\fR listen +all forever
+.
+.IP "\(bu" 4
+Show the notifications sent out whenever the front application is changed, for the next 60 seconds
+.
+.IP "" 0
+.
+.P
+\fBlsappinfo\fR listen +becameFrontmost wait 60
+.
+.IP "\(bu" 4
+Launch TextEdit\.app, asyncronously, and don\'t bring it to the front
+.
+.IP "" 0
+.
+.P
+\fBlsappinfo\fR launch nofront=true async=true /Applications/TextEdit\.app/
+.
+.IP "\(bu" 4
+Find the ASN for the running application "TextEdit", by bundle id
+.
+.IP "" 0
+.
+.P
+\fBlsappinfo\fR find bundleid=com\.apple\.TextEdit
+.
+.IP "\(bu" 4
+Find the ASN for the running application "TextEdit", by name
+.
+.IP "" 0
+.
+.P
+\fBlsappinfo\fR find name="TextEdit"
+.
+.IP "\(bu" 4
+Show the information for the running application "TextEdit"
+.
+.IP "" 0
+.
+.P
+\fBlsappinfo\fR info "TextEdit"

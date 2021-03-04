@@ -1,0 +1,243 @@
+.\"	$NetBSD: tftp.1,v 1.18 2003/08/07 11:16:14 agc Exp $
+.\"
+.\" Copyright (c) 1990, 1993, 1994
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"     @(#)tftp.1	8.2 (Berkeley) 4/18/94
+.\" $FreeBSD: src/usr.bin/tftp/tftp.1,v 1.20 2007/11/07 07:56:57 ru Exp $
+.\"
+.Dd June 11, 2003
+.Dt TFTP 1
+.Os
+.Sh NAME
+.Nm tftp
+.Nd "trivial file transfer program"
+.Sh SYNOPSIS
+.Nm
+.Op Fl e
+.Op Ar host
+.Op Ar port
+.Sh DESCRIPTION
+The
+.Nm
+utility is the user interface to the Internet
+.Tn TFTP
+(Trivial File Transfer Protocol),
+which allows users to transfer files to and from a remote machine.
+The remote
+.Ar host
+(and optional
+.Ar port )
+may be specified on the command line, in which case
+.Nm
+uses
+.Ar host
+(and
+.Ar port )
+as the default for future transfers (see the
+.Cm connect
+command below).
+.Pp
+The optional
+.Fl e
+argument sets a binary transfer mode as well as setting the extended options
+as if
+.Cm tout ,
+.Cm tsize ,
+and
+.Cm blksize 65464 ,
+had been given.
+.Sh COMMANDS
+Once
+.Nm
+is running, it issues the prompt
+.Ql tftp\*[Gt]
+and recognizes the following commands:
+.Pp
+.Bl -tag -width verbose -compact
+.It Cm \&? Ar command-name ...
+Print help information.
+.Pp
+.It Cm ascii
+Shorthand for
+.Ic mode Cm ascii .
+.Pp
+.It Cm binary
+Shorthand for
+.Ic mode Cm binary .
+.Pp
+.It Cm blksize Ar blk-size
+Set the tftp blksize option to
+.Ar blk-size
+octets (8-bit bytes).  Since the number of blocks in a tftp
+.Cm get
+or
+.Cm put
+is 65535, the default block size of 512 bytes only allows a maximum of
+just under 32 megabytes to be transferred.  The value given for
+.Ar blk-size
+must be between 8 and 65464, inclusive.
+Note that many servers will not respect this option.
+.Pp
+.It Cm connect Ar host-name Op Ar port
+Set the
+.Ar host
+(and optionally
+.Ar port )
+for transfers.
+Note that the
+.Tn TFTP
+protocol, unlike the
+.Tn FTP
+protocol,
+does not maintain connections between transfers; thus, the
+.Cm connect
+command does not actually create a connection,
+but merely remembers what host is to be used for transfers.
+You do not have to use the
+.Cm connect
+command; the remote host can be specified as part of the
+.Cm get
+or
+.Cm put
+commands.
+.Pp
+.It Cm get Ar filename
+.It Cm get Ar remotename localname
+.It Cm get Ar file1 file2 ...  fileN
+Get one or more files from the remote host.
+When using the
+.Ar host
+argument, the
+.Ar host
+will be used as default host for future transfers.
+If
+.Ar localname
+is specified, the file is stored locally as
+.Ar localname ,
+otherwise the original filename is used.
+Note that it is not possible to download two files at a time, only
+one, three, or more than three files, at a time.
+.Pp
+To specify an IPv6 numeric address for a host, wrap it using square
+brackets like
+.Dq Li [3ffe:2900:e00c:ffee::1234] : Ns Ar file
+to disambiguate the
+colons used in the IPv6 address from the colon separating the host and
+the filename.
+.Pp
+.It Cm mode Ar transfer-mode
+Set the mode for transfers;
+.Ar transfer-mode
+may be one of
+.Cm ascii
+or
+.Cm binary .
+The default is
+.Cm ascii .
+.Pp
+.It Cm put Ar file
+.It Cm put Ar localfile remotefile
+.It Cm put Ar file1 file2 ... fileN remote-directory
+Put a file or set of files to the specified
+remote file or directory.
+The destination
+can be in one of two forms:
+a filename on the remote host, if the host has already been specified,
+or a string of the form
+.Ar hosts:filename
+to specify both a host and filename at the same time.
+If the latter form is used,
+the hostname specified becomes the default for future transfers.
+When
+.Ar remotename
+is specified, the file is stored remotely as
+.Ar remotename ,
+otherwise the original filename is used.
+If the
+.Ar remote-directory
+argument is used, the remote host is assumed to be a
+.Ux
+machine.
+To specify an IPv6 numeric address for a
+.Ar host ,
+see the example under the
+.Cm get
+command.
+.Pp
+.It Cm quit
+Exit
+.Nm .
+An end of file also exits.
+.Pp
+.It Cm rexmt Ar retransmission-timeout
+Set the per-packet retransmission timeout, in seconds.
+.Pp
+.It Cm status
+Show current status.
+.Pp
+.It Cm timeout Ar total-transmission-timeout
+Set the total transmission timeout, in seconds.
+.Pp
+.It Cm tout
+Toggle the tftp "timeout" option.  If enabled, the client will pass its
+.Ar retransmission-timeout
+to the server.
+Note that many servers will not respect this option.
+.Pp
+.It Cm trace
+Toggle packet tracing.
+.Pp
+.It Cm tsize
+Toggle the tftp "tsize" option.  If enabled, the client will pass and
+request the filesize of a file at the beginning of a file transfer.
+Note that many servers will not respect this option.
+.Pp
+.It Cm verbose
+Toggle verbose mode.
+.El
+.Sh HISTORY
+The
+.Nm
+command appeared in
+.Bx 4.3 .
+IPv6 support was implemented by WIDE/KAME project in 1999.
+TFTP options were implemented by Wasabi Systems, Inc., in 2003,
+and first appeared in
+.Nx 2.0 .
+.Sh SECURITY CONSIDERATIONS
+Because there is no user-login or validation within
+the
+.Tn TFTP
+protocol, the remote site will probably have some
+sort of file-access restrictions in place.
+The
+exact methods are specific to each site and therefore
+difficult to document here.
+.Pp
+Files larger than 33488896 octets (65535 blocks) cannot be transferred
+without client and server supporting blocksize negotiation (RFC1783).

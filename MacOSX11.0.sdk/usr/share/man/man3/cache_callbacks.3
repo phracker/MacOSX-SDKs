@@ -1,0 +1,102 @@
+.\" Copyright (c) 2009 Apple Inc. All rights reserved.
+.Dd May 7, 2009
+.Dt cache_callbacks 3
+.Os Darwin
+.Sh NAME
+.Nm cache_callbacks
+.Nd Pre-defined cache callbacks used to configure a cache
+.Sh SYNOPSIS
+.Fd #include <cache.h>
+.Fd #include <cache_callbacks.h>
+.Ft uintptr_t 
+.Fo cache_key_hash_cb_cstring
+.Fa "void *key, void *unused"
+.Fc
+.Ft uintptr_t 
+.Fo cache_key_hash_cb_integer
+.Fa "void *key, void *unused"
+.Fc
+.Ft bool 
+.Fo cache_key_is_equal_cb_cstring
+.Fa "void *key1, void *key2, void *unused"
+.Fc
+.Ft bool 
+.Fo cache_key_is_equal_cb_integer
+.Fa "void *key1, void *key2, void *unused"
+.Fc
+.Ft void 
+.Fo cache_release_cb_free
+.Fa "void *key_or_value, void *unused"
+.Fc
+.Ft void 
+.Fo cache_value_make_purgeable_cb
+.Fa "void *value, void *unused"
+.Fc
+.Ft bool 
+.Fo cache_value_make_nonpurgeable_cb
+.Fa "void *value, void *unused"
+.Fc
+.Ft uintptr_t 
+.Fo cache_hash_byte_string
+.Fa "const char *data, size_t bytes"
+.Fc
+.Sh DESCRIPTION
+.Pp
+These functions are intended to be used as callbacks to configure how a cache functions.
+They should be set in the cache_attributes_t passed into 
+.Xr cache_create .  They support common key types and offer support for using purgeable
+memory to allocate cache values.
+.Pp
+.Fn cache_key_hash_cb_cstring
+A 
+.Fn key_hash_cb
+function for NULL-terminated cstring keys.
+.Pp
+.Fn cache_key_hash_cb_integer
+A 
+.Fn key_hash_cb
+function for integer keys.
+.Pp 
+.Fn cache_key_is_equal_cb_cstring
+A 
+.Fn key_is_equal_cb
+function for cstring keys.
+.Pp
+.Fn cache_key_is_equal_cb_integer
+A 
+.Fn key_is_equal_cb
+function for integer keys.
+.Pp
+.Fn cache_release_cb_free
+Can be used for 
+.Fn key_release_cb 
+or
+.Fn value_release_cb
+for keys/values allocated from 
+.Xr malloc 
+and family.
+.Pp
+.Fn cache_value_make_purgeable_cb
+Can be used for
+.Fn value_make_purgeable 
+with values allocated from the purgeable malloc zone (see malloc/malloc.h).  Calls
+.Fn malloc_make_purgeable 
+on 
+.Fa value
+when it is unreferenced in order to reduce paging under memory pressure.
+.Pp
+.Fn value_make_purgeable 
+with values allocated from the purgeable malloc zone (see malloc/malloc.h).  Calls
+.Fn malloc_make_purgeable 
+on 
+.Fa value
+when it is unreferenced in order to reduce paging under memory pressure.
+.Pp
+.Fn cache_hash_byte_string
+Calculates a hash from a bytes string
+.Fa data
+of length 
+.Fa bytes .
+.Sh SEE ALSO
+.Xr libcache 3
+.Xr cache_create 3

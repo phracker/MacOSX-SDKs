@@ -1,0 +1,123 @@
+.\" see 'man mdoc' for syntax examples
+.\" this should go in /usr/share/man/man1/
+.Dd May 26, 2017
+.Dt profiles.old 1
+.Os macOS
+.Sh NAME
+.Nm profiles
+.Nd Profiles Tool
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Oo
+.Op Fl I \*(Ba R \*(Ba i
+.Op Fl F Ar file_path_to_profile \*(Ba -
+.Oc
+.Oo
+.Op Fl L
+.Op Fl U Ar username
+.Oc
+.Oo
+.Op Fl r
+.Op Fl p Ar profile_id
+.Op Fl u Ar uuid
+.Op Fl o Ar output_file_path
+.Op Fl Y Ar shortname
+.Oc
+.Op Fl PHDdCchfvxVzYeN
+.Pp
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+allows you to install, remove or list configuration profiles, or to install provisioning profiles.  Some commands may only work with elevated privileges, or for the current user. 
+.Pp                      \" Inserts a space
+.Bl -tag -width "-u"
+.It Fl I
+Install a configuration profile for a particular user from a profile file.
+.It Fl i
+Install a provisioning profile from a profile file.
+.It Fl V
+Verify a provisioning profile from a profile file.
+.It Fl R
+Remove a configuration profile for a particular user from a profile file.
+.It Fl r
+Remove a provisioning profile given a identifier and uuid.
+.It Fl L
+List configuration profile information for a particular user, or the current user if no Username was specified.
+.It Fl F
+Specify the file path to the profile file.   Use '-' as the file path to input the configuration profile (not provisioning profile) XML plist via stdin.
+.It Fl U
+Specify the short username.   If installing or removing a profile as root (or sudo), the designated user must be logged in.
+.It Fl H
+Returns whether configuration profiles are installed.
+.It Fl P
+List configuration profile information for everyone.
+.It Fl C
+List configuration profile information for the computer.
+.It Fl c
+List provisioning profile information.
+.It Fl p
+A profile identifier used to locate the configuration or provisioning profile.
+.It Fl u
+A uuid identifier used to locate the provisioning profile.  The uuid must be in its canonical 36 character form.
+.It Fl z
+The profile removal password.   If not specified and the profile requires a removal password, you will be prompted.
+.It Fl o
+The output file path for profile information (-L, -P, -C, -c) as a plist file.   The path argument must be specified to use this option, Use 'stdout' to send this informaton to the console.  File output will be written as an XML plist file, or you can use 'stdout-xml' to write XML to the console.  The toplevel key will contain the user name, or _computerLevel for device or provisioning profile information.
+.It Fl h
+Displays help information.
+.It Fl v
+Enables verbose mode.   A 'pass' or 'fail' indicator may also be displayed based on the command return status to stdout.
+.It Fl x
+Displays tool version number.   The version is in the format x.yy, where x will change if new or incompatible commands are added.  The version initially starts at 2.00
+.It Fl f
+Automatically confirm any questions, or when used with -s, will retry startup profiles at each startup until successfully installed.
+.It Fl s
+Sets profile for startup. (Requires root privileges)
+.It Fl S
+Sync up and remove any configuration profiles that aren't assigned to any current local user. (Requires root privileges)
+.It Fl Y
+Specify the shortname of a local user that will be enrolled with MDM if the configuration profile being installed contains a MDM payload. Will only be used if the profile is being installed as root.
+.It Fl W
+Attempt to renew the certificates in an installed profile.
+.It Fl e
+Print the Device Enrollment configuration, if any, for the computer. Can be combined with the -o option to write output to a plist.
+.It Fl N
+Re-enable the user notifications for DEP enrollment.
+.El
+.Pp
+.Sh EXAMPLES
+.Pp
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It "profiles -I -F /testfile.configprofile"
+Installs the profile file 'testfile.mobileconfig' into current user.
+.It "profiles -R -F /profiles/testfile2.configprofile"
+Removes the profile file '/profiles/testfile2.mobileconfig' into the current user.
+.It "profiles -H"
+Returns whether or not configuration profiles are installed on the system.
+.It "profiles -P"
+Displays information on all installed configuration profiles on the system.
+.It "profiles -L"
+Displays information for installed profiles for the current user.
+.It "profiles -L -o /outputfile"
+Displays information for installed profiles for the current user and sends the output as a dictionary to /outputfile.plist.
+.It "profiles -Lv"
+Displays extended information for installed configuration profiles for the current user.
+.It "profiles -R -p com.example.profile1 -z pass"
+Removes any installed profiles with the identifier com.example.profile1 in the current user and using a removal password of 'pass'.
+.It "profiles -s -F /startupprofile.mobileconfig -f"
+Sets up the profile as a startup profile to be triggered at the next system startup time.   If the profile can't be installed, it will try again at next startup time.
+.It "profiles -I -F - < /configprofile.mobileconfig"
+Installs the configuration profile read in from stdin.   The stdin data must be a fully formed XML plist containing the configuration profile information.
+.El                      \" Ends the list
+.Pp
+.Sh CAVEATS
+Certain configuration profiles may be marked as a device profile (system) using the PayloadScope key.  However, the profiles tool will ignore the PayloadScope key and install the profile based on how the profile is installed; either a user profile if installed from a user, or a device profile if installed from root (or sudo).   If you are installing a profile as root, you may use the -U parameter to install or remove the profile for that active user.
+.Pp
+Specific payload dictionary information is not available since it may contain sensitive information.  Non-sensitive information can be viewed using the System Report.
+.Pp
+Because this command line tool was not designed to ask for missing information, some profiles may fail to install properly.  The only recourse is to insert the missing information before installing the configuration profile.  The System Preferences application's Profiles pane is designed to handle the querying of missing information.
+.Pp
+Configuration profiles installed to the wrong user domain (user vs system) may not behave in the way you expect since the information may not be useful to that particular domain.  For example, adding a Mail payload to the system domain will not do anything since Mail payloads must have a user account.   Additionally, since profiles are stored by the user shortname and only stored on the local client, care should be taken to not install a profile that could be used by a same named local user.
+.Pp
+The profiles tool should only be used from the /usr/bin folder since certain operations are privileged and may fail if moved.
+.Sh SEE ALSO
+.Xr profiles 1

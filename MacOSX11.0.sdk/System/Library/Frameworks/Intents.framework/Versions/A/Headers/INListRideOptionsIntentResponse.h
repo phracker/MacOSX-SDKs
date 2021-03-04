@@ -1,0 +1,50 @@
+//
+//  INListRideOptionsIntentResponse.h
+//  Intents
+//
+//  Copyright (c) 2016-2020 Apple Inc. All rights reserved.
+//
+
+#import <Intents/INIntentResponse.h>
+
+@class INPaymentMethod;
+@class INRideOption;
+
+typedef NS_ENUM(NSInteger, INListRideOptionsIntentResponseCode) {
+    INListRideOptionsIntentResponseCodeUnspecified = 0,
+    INListRideOptionsIntentResponseCodeReady,
+    INListRideOptionsIntentResponseCodeInProgress API_DEPRECATED("INListRideOptionsIntentResponseCodeInProgress is deprecated.", ios(10.0, 11.0), watchos(3.2, 4.0)),
+    INListRideOptionsIntentResponseCodeSuccess,
+    INListRideOptionsIntentResponseCodeFailure,
+    INListRideOptionsIntentResponseCodeFailureRequiringAppLaunch,
+    INListRideOptionsIntentResponseCodeFailureRequiringAppLaunchMustVerifyCredentials,
+    INListRideOptionsIntentResponseCodeFailureRequiringAppLaunchNoServiceInArea,
+    INListRideOptionsIntentResponseCodeFailureRequiringAppLaunchServiceTemporarilyUnavailable,
+    INListRideOptionsIntentResponseCodeFailureRequiringAppLaunchPreviousRideNeedsCompletion,
+    INListRideOptionsIntentResponseCodeFailurePreviousRideNeedsFeedback API_AVAILABLE(ios(11.0), watchos(4.0)),
+} API_AVAILABLE(ios(10.0), watchos(3.2)) API_UNAVAILABLE(macos, tvos);
+
+NS_ASSUME_NONNULL_BEGIN
+
+API_AVAILABLE(ios(10.0), watchos(3.2))
+API_UNAVAILABLE(macos, tvos)
+@interface INListRideOptionsIntentResponse : INIntentResponse
+
+- (id)init NS_UNAVAILABLE;
+
+// The app extension has the option of capturing its private state as an NSUserActivity and returning it as the 'currentActivity'.
+// If the the app is launched, an NSUserActivity will be passed in with the private state.  The NSUserActivity may also be used to query the app's UI extension (if provided) for a view controller representing the current intent handling state.
+// In the case of app launch, the NSUserActivity will have its activityType set to the name of the intent. This intent object will also be available in the NSUserActivity.interaction property.
+- (instancetype)initWithCode:(INListRideOptionsIntentResponseCode)code userActivity:(nullable NSUserActivity *)userActivity NS_DESIGNATED_INITIALIZER;
+
+@property (readonly, NS_NONATOMIC_IOSONLY) INListRideOptionsIntentResponseCode code;
+
+@property (readwrite, copy, nullable, NS_NONATOMIC_IOSONLY) NSArray<INRideOption *> *rideOptions;
+
+@property (readwrite, copy, nullable, NS_NONATOMIC_IOSONLY) NSArray<INPaymentMethod *> *paymentMethods;
+
+@property (readwrite, copy, nullable, NS_NONATOMIC_IOSONLY) NSDate *expirationDate;
+
+@end
+
+NS_ASSUME_NONNULL_END

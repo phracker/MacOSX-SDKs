@@ -1,0 +1,64 @@
+.TH "MPSCNNConvolutionGradientState" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNConvolutionGradientState
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNConvolution\&.h>\fP
+.PP
+Inherits \fBMPSNNGradientState\fP, and <MPSImageSizeEncodingState>\&.
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "__nonnull id< MTLBuffer > \fBgradientForWeights\fP"
+.br
+.ti -1c
+.RI "__nonnull id< MTLBuffer > \fBgradientForBiases\fP"
+.br
+.ti -1c
+.RI "\fBMPSCNNConvolution\fP * \fBconvolution\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+The \fBMPSCNNConvolutionGradientState\fP is returned by resultStateForSourceImage:sourceStates method on \fBMPSCNNConvolution\fP object\&. Note that resultStateForSourceImage:sourceStates:destinationImage creates the object on autoreleasepool\&. It will be consumed by \fBMPSCNNConvolutionGradient\fP\&. This used by \fBMPSCNNConvolutionTranspose\fP encode call that returns \fBMPSImage\fP on left hand side to correctly size the destination\&. Note that state objects are not usable across batches i\&.e\&. when batch is done you should nuke the state object and create new one for next batch\&.
+.PP
+This state exposes the gradient with respect to weights and biases, as computed by the \fBMPSCNNConvolutionGradient\fP kernel, as a metal buffer to be used during weights and biases update\&. The standard weights and biases update formula is: 
+.PP
+.nf
+      weights(t+1) = f(weights(t), gradientForWeights(t)) and
+      biases(t+1) = f(biases(t), gradientForBiases(t)),
+
+.fi
+.PP
+.PP
+where the weights(t)/biases(t) are the wegihts and the biases at step t that are provided by data source provider used to create \fBMPSCNNConvolution\fP and MPSCNNConvoltuionGradient objects\&. There are multiple ways user can update weights and biases as described below:
+.PP
+1) For check pointing, i\&.e\&. updating weights/biases and storing: once the command buffer on which \fBMPSCNNConvolutionGradient\fP is enqueued is done (e\&.g\&. in command buffer completion callback), the application can simply use float* delta_w = (float*)((char*)[gradientForWeights contents]); float* delta_b = (float*)((char*)[gradientForBiases contents]); to update the weights and biases in the data provider directly\&. The application can instead provide a metal kernel that reads from gradientForWeights and gradientForBiases buffer and the buffer created using data provided by the data source to do any kind of update it will like to do, then read back the updated weights/biases and store to the data source\&. Note that lifetime of the gradientForWeights and gradientForBiases buffer is the same as the \fBMPSCNNConvolutionGradientState\fP\&. So it's the applications's responsibility to make sure the buffer is alive (retained) when the update kernel is running if the command buffer doesn't retain the buffer\&. Also, in order to gaurantee that the buffer is correctly synchronized for CPU side access, it is the application's responsibility to call [gradientState synchronizeOnCommandBuffer:] before accessing data from the buffer\&.
+.PP
+2) For a CPU side update, once the weights and biases in the data source provider are updated as above, the original \fBMPSCNNConvolution\fP and \fBMPSCNNConvolutionGradient\fP objects need to be updated with the new weigths and biases by calling the -(void) reloadWeightsAndBiasesFromDataSource method\&. Again application needs to call [gradientState synchronizeOnCommandBuffer:] before touching data on CPU side\&.
+.PP
+3) The above CPU side update requires command buffer to be done\&. If the application doesn't want to update its data source provider object and would prefer to directly enqueue an update of the internal \fBMPSCNNConvolution\fP and \fBMPSCNNConvolutionGradient\fP weights/biases buffers on the GPU without CPU side involvement, it needs to do following: i) get gradientForWeights and gradientForBiases buffers from this gradient state object and set it as source of update kernel ii) create a temporary buffer, dest, of same size and set it as destination of update kernel iii) enqueue update kernel on command buffer iv) call reloadWeightsAndBiasesWithCommandBuffer:dest:weightsOffset:biasesOffset on \fBMPSCNNConvolution\fP and \fBMPSCNNConvolutionGradient\fP objects\&. This will reload the weights from application's update kernel in dest on GPU without CPU side involvement\&. 
+.SH "Property Documentation"
+.PP 
+.SS "\- convolution\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The convolution filter that produced the state\&. 
+.SS "\- gradientForBiases\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+\fBA\fP buffer that contains the loss function gradients with respect to biases\&. 
+.SS "\- gradientForWeights\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+\fBA\fP buffer that contains the loss function gradients with respect to weights\&. Each value in the buffer is a float\&. The layout of the gradients with respect to the weights is the same as the weights layout provided by data source i\&.e\&. it can be interpreted as 4D array 
+.PP
+.nf
+ gradientForWeights[outputFeatureChannels][kernelHeight][kernelWidth][inputFeatureChannels/groups]
+.fi
+.PP
+ 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

@@ -1,0 +1,191 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 05/03/20               \" DATE
+.Dt METALVALIDATION 1
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm Metal Validation
+.Nd Metal Runtime Validation
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Ev MTL_DEBUG_LAYER
+.br
+.Ev MTL_DEBUG_LAYER_ERROR_MODE
+.br
+.Ev MTL_DEBUG_LAYER_WARNING_MODE
+.br
+.Ev MTL_DEBUG_LAYER_VALIDATE_LOAD_ACTIONS
+.br
+.Ev MTL_DEBUG_LAYER_VALIDATE_STORE_ACTIONS
+.br
+.Ev MTL_DEBUG_LAYER_VALIDATE_UNRETAINED_RESOURCES
+.br
+.Ev MTL_SHADER_VALIDATION
+.br
+.Ev MTL_SHADER_VALIDATION_ENABLE_ERROR_REPORTING
+.br
+.Ev MTL_SHADER_VALIDATION_DEVICE_MEMORY
+.br
+.Ev MTL_SHADER_VALIDATION_TEXTURE_USAGE
+.br
+.Ev MTL_SHADER_VALIDATION_THREADGROUP_MEMORY
+.br
+.Ev MTL_SHADER_VALIDATION_COMPILER_INLINING
+.br
+.Ev MTL_SHADER_VALIDATION_FAIL_MODE
+.br
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+Unless otherwise noted all environment variables listed must be set before any
+Metal device is created in the process.
+Any changes to these values after device creation will not take effect.
+.br
+.sp
+Metal provides two modes of validation, API and GPU.
+.sp
+API validation validates CPU API usage correctness such as calling draw without a pipeline set.
+.sp
+GPU validation validates GPU API correctness such as accessing invalid GPU memory.
+.br
+.Sh ENVIRONMENT
+.Bl -tag -width 4n
+.It Sy MTL_DEBUG_LAYER
+.br
+Defaults to 0.
+.br
+All environment variables prefixed with MTL_DEBUG_LAYER only apply when MTL_DEBUG_LAYER is non-zero.
+.br
+Any value other than 0 will enable API validation.
+.It Sy MTL_DEBUG_LAYER_ERROR_MODE
+.br
+Defaults to "assert"
+.br
+Valid values are "assert", "ignore" and "nslog"
+.br
+Sets the behavior for when a debug layer error occurs.
+.sp
+Setting "assert" will cause the debug layer to log and then assert on error.
+.sp
+Setting "ignore" will cause the debug layer to ignore errors, this may cause undefined behavior.
+.sp
+Setting "nslog" will cause the debug layer to log errors using NSLog, this may cause undefined behavior.
+.It Sy MTL_DEBUG_LAYER_WARNING_MODE
+.br
+Defaults to "ignore"
+.br
+Valid values are "assert", "ignore" and "nslog"
+.br
+Sets the behavior for when a debug layer warning occurs.
+.sp
+Setting "assert" will cause the debug layer to log and then assert on warnings.
+.sp
+Setting "ignore" will cause the debug layer to ignore warnings.
+.sp
+Setting "nslog" will cause the debug layer to log warnings using NSLog.
+.It Sy MTL_DEBUG_LAYER_VALIDATE_LOAD_ACTIONS
+.br
+Defaults to 0
+.br
+Setting this value to "1" will convert any MTLLoadActionDontCare to MTLLoadActionClear of fuchsia.
+This can be used to debug incorrect load action modes or assumptions on DontCare behavior.
+.It Sy MTL_DEBUG_LAYER_VALIDATE_STORE_ACTIONS
+.br
+Defaults to 0
+.br
+Setting this value to "1" will write an alternating red and white checkerboard into each render target with
+a store action of MTLStoreActionDontCare.
+This can be used to debug incorrect store action modes or assumptions on DontCare behavior.
+.It Sy MTL_DEBUG_LAYER_VALIDATE_UNRETAINED_RESOURCES
+.br
+Defaults to 1
+.br
+This option takes a bitfield of modes to enable. The bitfield values are:
+.sp
+0x1 : Enabling this flag will cause command buffer to tag any objects bound to the command buffer, which are not retained internally.
+If a tagged object is deallocated before the command buffer completes, an error is raised.
+.sp
+0x2 : Enabling this flag will cause command buffer to tag objects that are internally retained by the command buffer.
+This should usually not be needed, because an object cannot be deallocated while the command buffer itself isn't complete.
+.sp
+0x4 : Enabling this flag will cause deallocated tagged objects to be considered an error even before committing the command buffer.
+This will lead to more immediate error (ie: in the call stack of the dealloc) rather than at commit, which is more debuggable.
+.It Sy MTL_SHADER_VALIDATION
+.br
+Defaults to 0
+.br
+All environment variables prefixed with MTL_SHADER_VALIDATION only apply when MTL_SHADER_VALIDATION is non zero.
+.br
+Any value other than 0 will enable GPU validation.
+.br
+Sets the behavior of API usage errors. Using a value of "4" for this setting may result
+in undefined behavior as otherwise fatal errors wil be ignored.
+.It Sy MTL_SHADER_VALIDATION_ENABLE_ERROR_REPORTING
+.br
+Defaults to 1
+.br
+Setting this value to "0" will disable shader validation error reporting
+but not instrumentation or detection.
+.It Sy MTL_SHADER_VALIDATION_DEVICE_MEMORY
+.br
+Defaults to 1
+.br
+Setting this value to "0" will disable instrumentation of device & constant memory access.
+The result of accessing invalid global memory on the GPU will be undefined.
+.sp
+If this value is set to any non-zero value, shader validation will instrument
+all global memory accesses and result of accessing invalid memory is determined by
+.Ev MTL_SHADER_VALIDATION_FAIL_MODE
+.It Sy MTL_SHADER_VALIDATION_TEXTURE_USAGE
+.br
+Defaults to 1
+.br
+Setting this value to "0" will disable instrumentation of texture member functions.
+The result of accessing nil texture objects on the GPU will be undefined.
+.sp
+If this value is set to any non-zero value, shader validation will instrument
+all texture member functions (e.g read, write, get_width) and the result of accessing
+a nil texture object is determined by
+.Ev MTL_SHADER_VALIDATION_FAIL_MODE
+.It Sy MTL_SHADER_VALIDATION_THREADGROUP_MEMORY
+.br
+Defaults to 1
+.br
+Setting this value to "0" will disable instrumentation of threadgroup memory access
+The result of accessing invalid threadgroup memory on the GPU will be undefined.
+.sp
+If this value is set to any non-zero value, shader validation will instrument
+all threaadgroup memory accesses and result of accessing invalid memory is determined by
+.It Sy MTL_SHADER_VALIDATION_COMPILER_INLINING
+.br
+Defaults to "default"
+.br
+Valid options are "default", "none", "partial", "full".
+.sp
+Determines the amount of code inlining that will occur.
+.br
+Increasing inlining may result in improved runtime performance at the cost of compile time performance.
+.br
+Decreasing inlining may result in improved compile time performance at the cost of runtime performance.
+.It Sy MTL_SHADER_VALIDATION_FAIL_MODE
+.br
+Defaults to "zerofill"
+.br
+Valid options are "zerofill", "allow".
+.sp
+Sets the behavior for how invalid accesses should be handled. Setting this value to
+"zerofill" causes invalid reads to return 0. Invalid writes are dropped.
+.sp
+Setting this value to "allow" allows the invalid read or write, which may result in
+command buffer failure depending on platform, but has reduced compile & runtime
+performance impact.
+.El
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic information here.
+.\" .It Diagnostic Tag
+.\" Diagnostic information here.
+.\" .El
+.\" .Sh BUGS              \" Document known, unremedied bugs
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner
