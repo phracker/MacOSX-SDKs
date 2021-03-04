@@ -1,0 +1,34 @@
+//
+//  NSFileProviderRequest.h
+//  FileProvider
+//
+//  Copyright © 2018-2020 Apple Inc. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <FileProvider/NSFileProviderDefines.h>
+#import <FileProvider/NSFileProviderManager.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+FILEPROVIDER_API_AVAILABILITY_V3
+@interface NSFileProviderRequest : NSObject
+/**
+ The request was made by the sync system, e.g. to update a file to its latest version after a remote update was pushed.
+ */
+@property (nonatomic, readonly) BOOL isSystemRequest;
+
+/**
+ The request was made by Finder or one of its helpers.
+ */
+@property (nonatomic, readonly) BOOL isFileViewerRequest;
+
+/**
+ The URL of the requesting executable. This will always be nil unless both an MDM profile key is set, and the
+ provider's application is installed by an MDM profile.
+*/
+@property (nonatomic, readonly, copy, nullable) NSURL *requestingExecutable API_UNAVAILABLE(ios);
+
+@end
+
+NS_ASSUME_NONNULL_END

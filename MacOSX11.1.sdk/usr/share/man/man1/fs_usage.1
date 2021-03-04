@@ -1,0 +1,178 @@
+.\" Copyright (c) 2000, Apple Computer, Inc.  All rights reserved.
+.\"
+.Dd November 7, 2002
+.Dt FS_USAGE 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm fs_usage
+.Nd report system calls and page faults related to filesystem activity in
+real-time
+.Sh SYNOPSIS
+.Nm fs_usage [-e] [-w] [-f mode] [-b] [-t seconds] [-R rawfile [-S start_time] [-E end_time]] [pid | cmd [pid | cmd] ...]
+.Sh DESCRIPTION
+The
+.Nm fs_usage
+utility presents an ongoing display of system call usage information
+pertaining to filesystem activity.
+It requires root privileges due to the kernel tracing facility it uses to
+operate.
+By default, the activity monitored includes all system processes except the
+running
+.Nm fs_usage
+process, Terminal, telnetd, telnet, sshd, rlogind, tcsh, csh, sh, and zsh.
+These defaults can be overridden such that output is limited to include or
+exclude a list of processes specified by the user.
+.Pp
+The output presented by
+.Nm fs_usage
+is formatted according to the size of your window.
+A narrow window will display fewer columns of data.
+Use a wide window for maximum data display.
+You may override the window formatting restrictions
+by forcing a wide display with the
+.Fl w
+option.
+In this case, the data displayed will wrap
+when the window is not wide enough.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.\" ==========
+.It Fl e
+Specifying the
+.Fl e
+option generates output that excludes sampling
+of the running fs_usage tool.
+If a list of process IDs or commands is also given,
+then those processes are also excluded from the sampled output.
+.\" ==========
+.It Fl w
+Specifying the
+.Fl w
+option forces a wider, more detailed output,
+regardless of the window size.
+.\" ==========
+.It Fl f
+Specifying the
+.Fl f
+option turns on output filtering based on the
+.Pa mode
+provided.
+Multiple filtering options can be specified.
+By default, no output filtering occurs.
+The supported modes are:
+.Pp
+.Pa  network	
+Network-related events are displayed.
+.Pp
+.Pa filesys	
+Filesystem-related events are displayed.
+.Pp
+.Pa pathname	
+Pathname-related events are displayed.
+.Pp
+.Pa exec		
+Exec and spawn events are displayed.
+.Pp
+.Pa diskio	
+Disk I/O events are displayed.
+.Pp
+.Pa cachehit	
+In addition, show cache hits.
+.\" ==========
+.It Fl b
+Specifying the
+.Fl b
+option annotates disk I/O events with BootCache info (if available).
+.\" ==========
+.It Fl t Ar seconds
+Specifies a run timeout in seconds.  
+.Nm fs_usage
+will run for no longer than the timeout specified.
+.\" ==========
+.It Fl R Ar raw_file
+Specifies a raw trace file to process.
+.\" ==========
+.It Fl S Ar start_time
+If 
+.Fl R
+is selected, specifies the start time in microseconds to
+begin processing entries from the raw trace file. Entries
+with timestamps before the specified start time will be
+skipped.
+.\" ==========
+.It Fl E Ar end_time
+If 
+.Fl R
+is selected, specifies the ending time in microseconds to
+stop processing entries from the raw trace file.  Entries
+with timestamps beyond the specified ending time will be
+skipped.
+.\" ==========
+.It  pid | cmd
+The sampled data can be limited to a list of process IDs or commands.
+When a command name is given, all processes with that name will be sampled.
+Using the
+.Fl e
+option has the opposite effect,
+excluding sampled data relating to the given list
+of process IDs or commands.
+.El
+.Pp
+The data columns displayed are as follows:
+.Bl -tag -width Ds
+.Pp
+.It TIMESTAMP
+TOD when call occurred.
+Wide mode will have microsecond granularity.
+.It CALL
+The name of the network or filesystem related call, page-in, page-out,
+or physical disk access.
+.It FILE DESCRIPTOR
+Of the form F=x, x is a file descriptor.
+Depending on the type of system call,
+this will be either an input value or a return value.
+.It BYTE COUNT
+Of the form B=x, x is the number of bytes requested by the call.
+.It [ERRNO]
+On error, the errno is displayed in brackets.
+.It PATHNAME
+Pathname of the file accessed (up to the last 28 bytes).
+.It FAULT ADDRESS
+Of the form A=0xnnnnnnnn,
+where 0xnnnnnnnn is the address being faulted.
+.It DISK BLOCK NUMBER
+Of the form D=0xnnnnnnnn,
+where 0xnnnnnnnn is the block number
+of the physical disk block being read or written.
+.It OFFSET    
+Of the form O=0xnnnnnnnn, where 0xnnnnnnnn is a file offset.
+.It SELECT RETURN
+Of the form S=x, x is the number of ready descriptors returned
+by the select() system call.
+If S=0, the time limit expired.
+.It TIME INTERVAL(W)
+The elapsed time spent in the system call.
+A 
+.Sq Li W
+after the elapsed time indicates the process was scheduled out
+during this file activity.
+In this case, the elapsed time includes the wait time.
+.It PROCESS NAME
+The process that made the system call.  Wide mode will append the
+thread id to the process name (i.e Mail.nnn).
+.El
+.Pp
+.Sh SAMPLE USAGE
+.Pp
+fs_usage -w -f filesys Mail
+.Pp
+.Nm fs_usage
+will display file system related data
+for all instances of processes named Mail.
+Maximum data output will be displayed in the window.
+.Sh SEE ALSO
+.Xr dyld 1 ,
+.Xr latency 1 ,
+.Xr sc_usage 1 ,
+.Xr top 1

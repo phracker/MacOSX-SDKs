@@ -1,0 +1,90 @@
+#! /bin/sh
+
+SED="/usr/bin/sed"
+prefix="/usr"
+datarootdir="/usr/php"
+exec_prefix="${prefix}"
+version="7.3.24-(to be removed in future macOS)"
+vernum="70324"
+include_dir="${prefix}/include/php"
+includes="-I$include_dir -I$include_dir/main -I$include_dir/TSRM -I$include_dir/Zend -I$include_dir/ext -I$include_dir/ext/date/lib"
+ldflags=" -L$SDKROOT/usr/lib -L$SDKROOT/usr/local/libressl/lib "
+libs="-lresolv  -lcrypto -lssl -lcrypto -lexslt -ltidy -lresolv -ledit -lncurses -lldap -llber -liconv -liconv -lpng -lz -ljpeg -lcrypto -lssl -lcrypto -lbz2 -lz -lcrypto -lssl -lcrypto -lm  -lxml2 -lz -licucore -lm -lkrb5 -lcurl -lxml2 -lz -licucore -lm -lxml2 -lz -licucore -lm -lnetsnmp -lxml2 -lz -licucore -lm -lxml2 -lz -licucore -lm -lxml2 -lz -licucore -lm -lxml2 -lz -licucore -lm -lxml2 -lz -licucore -lm -lxml2 -lz -licucore -lm -lxslt -lxml2 -lz -licucore -lm "
+extension_dir='/usr/lib/php/extensions/no-debug-non-zts-20180731'
+man_dir=`eval echo /usr/share/man`
+program_prefix=""
+program_suffix=""
+exe_extension=""
+php_cli_binary=NONE
+php_cgi_binary=NONE
+configure_options=" '--prefix=/usr' '--mandir=/usr/share/man' '--infodir=/usr/share/info' '--disable-dependency-tracking' '--sysconfdir=/private/etc' '--with-libdir=lib' '--enable-cli' '--with-iconv=$SDKROOT/usr' '--with-config-file-path=/etc' '--with-libxml-dir=$SDKROOT/usr' '--with-openssl=$SDKROOT/usr/local/libressl' '--with-kerberos=$SDKROOT/usr' '--with-zlib=$SDKROOT/usr' '--enable-bcmath' '--with-bz2=$SDKROOT/usr' '--enable-calendar' '--disable-cgi' '--with-curl=$SDKROOT/usr' '--enable-dba' '--with-ndbm=$SDKROOT/usr' '--enable-exif' '--enable-fpm' '--enable-ftp' '--with-gd' '--with-png-dir=/usr/local' '--with-jpeg-dir=/usr/local' '--enable-gd-native-ttf' '--with-icu-dir=$SDKROOT/usr' '--with-ldap=$SDKROOT/usr' '--with-ldap-sasl=$SDKROOT/usr' '--with-libedit=$SDKROOT/usr' '--enable-mbstring' '--enable-mbregex' '--with-mysqli=mysqlnd' '--without-pcre-jit' '--without-pear' '--with-pear=no' '--with-pdo-mysql=mysqlnd' '--with-mysql-sock=/var/mysql/mysql.sock' '--disable-phpdbg' '--with-readline=$SDKROOT/usr' '--enable-shmop' '--with-snmp=$SDKROOT/usr' '--enable-soap' '--enable-sockets' '--enable-sysvmsg' '--enable-sysvsem' '--enable-sysvshm' '--with-tidy=$SDKROOT/usr' '--enable-wddx' '--with-xmlrpc' '--with-iconv-dir=$SDKROOT/usr' '--with-xsl=$SDKROOT/usr' '--with-apxs2=/usr/local/bin/apxs' 'YACC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bison'"
+php_sapis=" apache2handler cli fpm"
+
+# Set php_cli_binary and php_cgi_binary if available
+for sapi in $php_sapis; do
+  case $sapi in
+  cli)
+    php_cli_binary="${exec_prefix}/bin/${program_prefix}php${program_suffix}${exe_extension}"
+    ;;
+  cgi)
+    php_cgi_binary="${exec_prefix}/bin/${program_prefix}php-cgi${program_suffix}${exe_extension}"
+    ;;
+  esac
+done
+
+# Determine which (if any) php binary is available
+if test "$php_cli_binary" != "NONE"; then
+  php_binary="$php_cli_binary"
+else
+  php_binary="$php_cgi_binary"
+fi
+
+# Remove quotes
+configure_options=`echo $configure_options | $SED -e "s#'##g"`
+
+case "$1" in
+--prefix)
+  echo $prefix;;
+--includes)
+  echo $includes;;
+--ldflags)
+  echo $ldflags;;
+--libs)
+  echo $libs;;
+--extension-dir)
+  echo $extension_dir;;
+--include-dir)
+  echo $include_dir;;
+--php-binary)
+  echo $php_binary;;
+--php-sapis)
+  echo $php_sapis;;
+--configure-options)
+  echo $configure_options;;
+--man-dir)
+  echo $man_dir;;
+--version)
+  echo $version;;
+--vernum)
+  echo $vernum;;
+*)
+  cat << EOF
+Usage: $0 [OPTION]
+Options:
+  --prefix            [$prefix]
+  --includes          [$includes]
+  --ldflags           [$ldflags]
+  --libs              [$libs]
+  --extension-dir     [$extension_dir]
+  --include-dir       [$include_dir]
+  --man-dir           [$man_dir]
+  --php-binary        [$php_binary]
+  --php-sapis         [$php_sapis]
+  --configure-options [$configure_options]
+  --version           [$version]
+  --vernum            [$vernum]
+EOF
+  exit 1;;
+esac
+
+exit 0

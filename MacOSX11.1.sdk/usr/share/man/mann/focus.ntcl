@@ -1,0 +1,405 @@
+'\"
+'\" Copyright (c) 1990-1994 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH focus n 4.0 Tk "Tk Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+focus \- Manage the input focus
+.SH SYNOPSIS
+.nf
+\fBfocus\fR
+\fBfocus \fIwindow\fR
+\fBfocus \fIoption\fR ?\fIarg arg ...\fR?
+.fi
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBfocus\fR command is used to manage the Tk input focus.
+At any given time, one window on each display is designated as
+the \fIfocus window\fR;  any key press or key release events for the
+display are sent to that window.
+It is normally up to the window manager to redirect the focus among the
+top-level windows of a display.  For example, some window managers
+automatically set the input focus to a top-level window whenever
+the mouse enters it;  others redirect the input focus only when
+the user clicks on a window.
+Usually the window manager will set the focus
+only to top-level windows, leaving it up to the application to
+redirect the focus among the children of the top-level.
+.PP
+Tk remembers one focus window for each top-level (the most recent
+descendant of that top-level to receive the focus);  when the window
+manager gives the focus
+to a top-level, Tk automatically redirects it to the remembered
+window.  Within a top-level Tk uses an \fIexplicit\fR focus model
+by default.  Moving the mouse within a top-level does not normally
+change the focus;  the focus changes only when a widget
+decides explicitly to claim the focus (e.g., because of a button
+click), or when the user types a key such as Tab that moves the
+focus.
+.PP
+The Tcl procedure \fBtk_focusFollowsMouse\fR may be invoked to
+create an \fIimplicit\fR focus model:  it reconfigures Tk so that
+the focus is set to a window whenever the mouse enters it.
+The Tcl procedures \fBtk_focusNext\fR and \fBtk_focusPrev\fR
+implement a focus order among the windows of a top-level;  they
+are used in the default bindings for Tab and Shift-Tab, among other
+things.
+.PP
+The \fBfocus\fR command can take any of the following forms:
+.TP
+\fBfocus\fR
+Returns the path name of the focus window on the display containing
+the application's main window,  or an empty string if no window in
+this application has the focus on that display.   Note:  it is
+better to specify the display explicitly using \fB\-displayof\fR
+(see below) so that the code will work in applications using multiple
+displays.
+.TP
+\fBfocus \fIwindow\fR
+If the application currently has the input focus on \fIwindow\fR's
+display, this command resets the input focus for \fIwindow\fR's display
+to \fIwindow\fR and returns an empty string.
+If the application does not currently have the input focus on
+\fIwindow\fR's display, \fIwindow\fR will be remembered as the focus
+for its top-level;  the next time the focus arrives at the top-level,
+Tk will redirect it to \fIwindow\fR.
+If \fIwindow\fR is an empty string then the command does nothing.
+.TP
+\fBfocus \-displayof\fR \fIwindow\fR
+Returns the name of the focus window on the display containing \fIwindow\fR.
+If the focus window for \fIwindow\fR's display is not in this
+application, the return value is an empty string.
+.TP
+\fBfocus \-force \fIwindow\fR
+Sets the focus of \fIwindow\fR's display to \fIwindow\fR, even if
+the application does not currently have the input focus for the display.
+This command should be used sparingly, if at all.
+In normal usage, an application should not claim the focus for
+itself;  instead, it should wait for the window manager to give it
+the focus.
+If \fIwindow\fR is an empty string then the command does nothing.
+.TP
+\fBfocus \-lastfor\fR \fIwindow\fR
+Returns the name of the most recent window to have the input focus
+among all the windows in the same top-level as \fIwindow\fR.
+If no window in that top-level has ever had the input focus, or
+if the most recent focus window has been deleted, then the name
+of the top-level is returned.  The return value is the window that
+will receive the input focus the next time the window manager gives
+the focus to the top-level.
+.SH "QUIRKS"
+.PP
+When an internal window receives the input focus, Tk does not actually
+set the X focus to that window;  as far as X is concerned, the focus
+will stay on the top-level window containing the window with the focus.
+However, Tk generates FocusIn and FocusOut events just as if the X
+focus were on the internal window.   This approach gets around a
+number of problems that would occur if the X focus were actually moved;
+the fact that the X focus is on the top-level is invisible unless
+you use C code to query the X server directly.
+.SH "EXAMPLE"
+To make a window that only participates in the focus traversal ring
+when a variable is set, add the following bindings to the widgets
+\fIbefore\fR and \fIafter\fR it in that focus ring:
+.CS
+button .before \-text "Before"
+button .middle \-text "Middle"
+button .after  \-text "After"
+checkbutton .flag \-variable traverseToMiddle \-takefocus 0
+pack .flag \-side left
+pack .before .middle .after
+bind .before <Tab> {
+   if {!$traverseToMiddle} {
+      \fBfocus\fR .after
+      break
+   }
+}
+bind .after <Shift\-Tab> {
+   if {!$traverseToMiddle} {
+      \fBfocus\fR .before
+      break
+   }
+}
+\fBfocus\fR .before
+.CE
+
+.SH KEYWORDS
+events, focus, keyboard, top-level, window manager

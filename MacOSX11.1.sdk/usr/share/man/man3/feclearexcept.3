@@ -1,0 +1,111 @@
+.\" Copyright (c) 2011, Apple Inc.
+.Dd May 9, 2011
+.Dt FECLEAREXCEPT 3
+.Os OS X
+.Sh NAME
+.Nm feclearexcept, fegetexceptflag, feraiseexcept, fesetexceptflag, fetestexcept
+.Nd functions providing access to the floating-point status flags.
+.Sh SYNOPSIS
+.Fd #include <fenv.h>
+.Fd #pragma STDC FENV_ACCESS ON
+.Ft int
+.Fn feclearexcept "int excepts"
+.Ft int
+.Fn feraiseexcept "int excepts"
+.Ft int
+.Fn fetestexcept "int excepts"
+.Ft int
+.Fn fegetexceptflag "fexcept_t *flagp" "int excepts"
+.Ft int
+.Fn fesetexceptflag "fexcept_t *flagp" "int excepts"
+.Sh DESCRIPTION
+These functions provide access to the floating-point status flags.  The
+.Vt int
+input argument
+.Fa excepts
+for the functions represents a subset of floating-point exceptions, and can be
+either zero or the bitwise OR of one or more floating-point exception macros
+defined in <fenv.h>, for example
+.Dv FE_OVERFLOW |
+.Dv FE_INEXACT .
+For other argument values the behavior of these functions is undefined.
+.Pp
+The
+.Fn feclearexcept
+function attempts to clear the supported floating-point flags corresponding
+to the exceptions specified by its argument.  It returns zero if 
+.Fa excepts
+is zero or if the flags corresponding to all specified exceptions were
+successfully cleared.  Otherwise, it returns a nonzero value.
+.Pp
+The
+.Fn feraiseexcept
+function attempts to raise the supported floating-point exceptions specified
+by its argument.  Its effect is similar to that of arithmetic operations
+raising the same exceptions; if traps are enabled for the exceptions that
+are raised, they will be taken.  The order in which these exceptions are
+raised is unspecified.  On OS X and iOS, raising overflow or underflow
+using this function will additionally raise the inexact exception.
+.Pp
+The
+.Fn feraiseexcept
+function returns zero if
+.Fa excepts
+is zero or if the specified exceptions were successfully raised.  Otherwise a
+nonzero value is returned.
+.Pp
+The
+.Fn fetestexcept
+function determines if any of the floating-point flags corresponding to the
+exceptions specified by its argument are currently set.  It returns the bitwise
+OR of the floating-point exception macros corresponding to the currently set
+flags indicated by
+.Fa excepts .
+For example, if the underflow and inexact flags are set in the floating-point
+environment, the result of
+.Fn fetestexcept "FE_INEXACT | FE_INVALID"
+will be
+.Dv FE_INEXACT .
+.Pp
+The
+.Fn fegetexceptflag
+function attempts to store an implementation-defined representation of the
+states of the floating-point status flags corresponding to the exceptions
+specified by
+.Fa excepts
+in the object pointed to by the argument
+.Fa flagp .
+It returns zero if the representation is successfully stored, and a nonzero
+value otherwise.
+.Pp
+The
+.Fn fesetexceptflag
+function attempts to set the floating-point status flags corresponding to the
+exceptions specified by 
+.Fa excepts
+to the states stored in the object pointed to by
+.Fa flagp .
+This function does not raise floating-point exceptions--it only sets the state
+of the flags.  The value of
+.Fa *flagp
+shall have been set by a previous call to
+.Fn fegetexceptflag
+whose second argument represented a superset of the exceptions represented by
+.Fa excepts .
+.Pp
+The
+.Fn fesetexceptflag
+function returns zero if the
+.Fa excepts
+argument is zero or if all the specified flags were successfully set.  Otherwise
+it returns a nonzero value.
+.Sh SEE ALSO
+.Xr fenv 3 ,
+.Xr fegetenv 3 ,
+.Xr fegetround 3 ,
+.Xr feholdexcept 3 ,
+.Xr fesetenv 3 ,
+.Xr fesetround 3 ,
+.Xr feupdateenv 3
+.Sh STANDARDS
+These functions conform to ISO/IEC 9899:TC3.

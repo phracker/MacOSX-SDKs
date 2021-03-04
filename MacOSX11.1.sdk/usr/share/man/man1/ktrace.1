@@ -1,0 +1,533 @@
+.\" Copyright (c) 2016-2020, Apple Inc.  All rights reserved.
+.\"
+.Dd February 10, 2020
+.Dt KTRACE 1
+.Os "Darwin"
+.Sh NAME
+.Nm ktrace
+.Nd configure, record, and print events from kernel trace
+.Sh SYNOPSIS
+.Bl -hang -compact -width "ktrace -"
+.\"
+.It Nm Cm info
+.\"
+.It Nm Cm trace
+.
+.de trace-opts
+.Op Fl ACNnrSstu
+.Op Fl R Ar path | Fl E
+.Op Fl C Ar codes-path Op Ar ...
+.Op Fl T Ar timeout
+.Op Fl f Ar filter-desc
+.Op Fl b Ar buffer-size-mb
+.Op Fl x Ar pid-or-process-name Oo Ar ... Oc | Fl p Ar pid-or-process-name Oo Ar ... Oc
+.Op Fl Fl json | Fl Fl csv | Fl Fl ndjson | Fl Fl json-64
+.Op Fl c Ar command Op ...
+..
+.trace-opts
+.\"
+.It Nm Cm dump
+.Op Fl E
+.Op Fl f Ar filter-desc
+.Op Fl l Ar compression-level
+.Op Fl T Ar timeout
+.Op Fl p Ar pid-or-process-name
+.Op Fl Fl stackshot-flags Ar extra-flags
+.Op Ar path
+.\"
+.It Nm Cm init
+.Fl b Ar buffer-size-mb |
+.Fl n Ar n-events
+.\"
+.It Nm Cm setopt
+.Op Fl f Ar filter-desc
+.Op Fl w
+.Op Fl x Ar pid-or-process-name Oo Ar ... Oc | Fl p Ar pid-or-process-name Oo Ar ... Oc
+.\"
+.It Nm Cm enable
+.\"
+.It Nm Cm disable
+.\"
+.It Nm Cm remove
+.\"
+.It Nm Cm reset
+.\"
+.It Nm Cm decode Ar debugid Op Ar debugid Op Ar ...
+.\"
+.It Nm Cm emit
+.Ar debugid
+.Op arg1 Op arg2 Op arg3 Op arg4
+.\"
+.It Nm Cm symbolicate
+.Ar path
+.\"
+.It Nm Cm compress
+.Op Fl l fast|balanced|small
+.Ar path
+.\"
+.It Nm Cm artrace
+.Op Fl nr
+.Op Fl t Ar timeout
+.Op Fl i Ar interval
+.Op Fl o Ar filename
+.Op Fl b Ar buffer-size-mb
+.Op Fl f Ar filter-desc
+.Op Fl F Ar filter-desc
+.Op Fl p Ar pid-or-process-name
+.Oo Fl Fl kperf Ns = Ns Ar sampler-name Ns
+.Op , Ns Ar sampler-name Ns @ Ns
+.Ar timer-period Ns | Ns
+.Ar timer-frequency Ns | Ns
+.Ar kdebug-filter-desc
+.Oc
+.Op Fl Fl remote Ns Op Ns = Ns Ar remote-device
+.Op Fl Fl type Ns = Ns Ar full Ns | Ns Ar profile Ns | Ns Ar lite Ns | Ns Ar morelite
+.Op Fl Fl stackshot-flags Ar extra-flags
+.Op Fl c Ar command Op ...
+.\"
+.El
+.Sh DESCRIPTION
+.Nm
+can configure the system to trace events, or record them to a file, and print a
+human-readable representation of the events.
+.
+.Sh SUBCOMMANDS
+.Nm
+uses a subcommand syntax to separate different functionality into logical
+groups.
+Each subcommand takes its own set of options, though a few options may be used
+in multiple subcommands.
+.Bl -tag -width "disable -"
+.\" INFO
+.It Cm info
+Print information about the current configuration of kernel trace.
+.\" TRACE
+.It Xo
+.Cm trace
+.trace-opts
+.Xc
+.Pp
+Print events to
+.Xr stdout 4
+in a human-readable format, automatically providing wall clock time, process
+names, and event names for each event.
+Without the
+.Fl R
+or
+.Fl E
+options,
+.Nm
+initializes the trace buffers to a reasonable size and enables tracing until it
+terminates.
+.Bl -tag -width Ds
+.It Fl R Ar path
+Print events from the trace file at
+.Ar path .
+.It Fl E
+Use an existing configuration, instead of creating a new configuration.
+This is necessary to use the
+.Cm trace
+subcommand with other
+.Nm
+subcommands, like
+.Cm init
+and
+.Cm setopt .
+.It Fl N
+Don't display names of events.
+.It Fl C
+Print timestamps in continuous time.
+.It Fl n
+Display thread names.
+.It Fl r
+Just configure and start trace running in windowed or ring buffer mode -- do
+not print the events.
+.Nm Cm trace Fl E
+can later be used to read the in-memory events.
+.It Fl S
+Print arguments as strings for tracepoints known to include strings
+.It Fl s
+Attempt to symbolicate addresses found in arguments to symbols.
+.It Fl t
+Print times as Mach absolute timestamps, instead of the default local wall clock
+time.
+.It Fl A
+Print times as seconds since the start of trace.
+.It Fl u
+Attempt to symbolicate addressess to uuid-offset tuples.
+.It Fl C Ar codes-path
+Use a custom codes file to provide event ID to name mappings.
+See
+.Xr trace 1
+for more details on the format of codes files.
+.It Fl b Ar buffer-size-mb
+Set a custom buffer size in megabytes.
+.It Fl f Ar filter-desc
+Apply a filter description to the trace session, controlling which events are
+traced.
+See
+.Sx FILTER DESCRIPTIONS
+for details on the syntax of a filter.
+If no filter description is provided, all events will be traced.
+.It Fl T Ar timeout
+End tracing after
+.Ar timeout
+has elapsed.
+Suffixes like
+.Li ns
+or
+.Li ms
+are supported, but seconds are the default if just a number is supplied.
+.It Fl x Ar pid-or-process-name Oo Ar ... Oc | Fl p Ar pid-or-process-name Oo Ar ... Oc
+Restrict the processes that can trace events.
+Either exclude
+.Pq Fl x
+or only trace events
+.Pq Fl p
+from the provided processes by name or pid.
+These options are mutually exlusive.
+Processes that cannot be attached to are always excluded on release kernels.
+Similarly, events in the Mach scheduling subclass are included, regardless of
+the this option, to allow tools to maintain thread scheduling state machines.
+.It Fl Fl json
+Print events as an array of JSON objects.
+.It Fl Fl csv
+Print events as CSV entries.
+.It Fl Fl ndjson
+Print events as a stream of newline-delimited JSON objects.
+.It Fl Fl json-64
+Print events as JSON objects, with 64-bit numbers.
+.It Fl c Ar command Op ...
+Run the command specified by
+.Ar command
+and stop tracing when it exits.
+All arguments after this option are passed to the command.
+.El
+.\" DUMP
+.It Cm dump Oo Fl E Oc Oo Fl f Ar filter-desc Oc Oo Fl l Ar compression-level Oc Oo Fl T Ar timeout Oc Oo Fl Fl stackshot-flags Ar extra-flags Oc Oo Ar path Oc Oo Fl p Ar pid-or-process-name Oc
+.Pp
+Write trace to a file at
+.Ar path
+for later inspection with
+.Nm
+.Cm trace Fl R .
+If no
+.Ar path
+is specified, the tool writes to a new, numbered file in the working directory,
+starting with
+.Li trace001.ktrace .
+The command continues to write events until
+.Nm
+is terminated, the optional timeout triggers, or the trace buffers fill up when
+using an existing configuration with wrapping disabled.
+If a compression level is specified, the file is compressed as it is written.
+Using non-default values for this option may increase the overhead of collecting
+events.
+.Bl -tag -width Ds
+.It Fl E
+Use an existing configuration, instead of creating a new configuration.
+.It Fl f Ar filter-desc
+Apply a filter description to events written to the file, controlling which
+events are traced.
+See
+.Sx FILTER DESCRIPTIONS
+for details on the syntax of a filter.
+If no filter description is provided, all events will be traced.
+.It Fl p Ar pid-or-process-name
+Only record events that occur for the process identified by
+.Ar pid
+or
+.Ar process-name .
+Only the first 16 characters of the name are observed, due to a kernel
+limitation.
+.Sx FILTER DESCRIPTIONS
+for details on the syntax of a filter.
+If no filter description is provided, all events will be traced.
+.It Fl p
+Enable kperf sampling.
+.It Fl T Ar timeout
+End tracing after
+.Ar timeout
+has elapsed.
+Suffixes like
+.Li ns
+or
+.Li ms
+are supported, but seconds are the default if just a number is supplied.
+.It Fl Fl stackshot-flags Ar extra-flags
+Pass the provided
+.Ar extra-flags
+integer as additional flags when recording stackshots.
+.El
+.\" INIT
+.It Cm init Fl b Ar buffer-size-mb | Fl n Ar n-events
+.Pp
+Initialize trace to allocate
+.Ar buffer-size-mb
+megabytes of space or
+.Ar n-events
+events for its trace buffers.
+This subcommand must be provided before using the
+.Cm setopt ,
+.Cm enable ,
+or
+.Cm disable
+subcommands initially or after using the
+.Cm remove
+subcommand.
+.\" SETOPT
+.It Cm setopt Oo Fl f Ar filter-desc Oc Oo Fl w Oc Oo Fl x Ar pid-or-process-name Oo Ar ... Oc | Fl p Ar pid-or-process-name Oo Ar ... Oc Oc
+.Pp
+Set options on the existing trace configuration.
+The trace configuration must already be initialized.
+.Bl -tag -width Ds
+.It Fl f Ar filter-desc
+Apply a filter description to the current configuration, controlling which
+events are traced.
+See
+.Sx FILTER DESCRIPTIONS
+for details on the syntax of a filter.
+If no filter description is provided, all events will be traced.
+.It Fl w
+Configure trace to operate in
+.Dq windowed
+mode, where the trace buffer acts as a ring buffer, removing old events to make
+room for new ones.
+By default, tracing ends when the buffer runs out of space for new events.
+.It Fl x Ar pid-or-process-name Oo Ar ... Oc | Fl p Ar pid-or-process-name Oo Ar ... Oc
+Restrict the processes that can trace events.
+Either exclude
+.Pq Fl x
+or only trace events
+.Pq Fl p
+from the provided processes by name or pid.
+These options are mutually exlusive.
+Processes that cannot be attached to are always excluded on release kernels.
+Similarly, events in the Mach scheduling subclass are included, regardless of
+the this option, to allow tools to maintain thread scheduling state machines.
+.El
+.\" ENABLE
+.It Cm enable
+Start tracing events.
+.\" DISABLE
+.It Cm disable
+Stop tracing events.
+Tracing can be started again after it has been disabled, using the same
+configuration.
+.\" REMOVE
+.It Cm remove
+Remove the current trace configuration and free the memory associated with
+tracing.
+.\" RESET
+.It Cm reset
+Reset tracing and associated subsystems, including kperf, to their default
+state.
+.\" DECODE
+.It Cm decode Ar debugid Op debugid Op Ar ...
+Print the components that make up the provided
+.Ar debugids .
+.\" EMIT
+.It Cm emit Ar debugid Op arg1 Op arg2 Op arg3 Op arg4
+.Pp
+Emit an event into the trace stream with the provided
+.Ar debugid
+and arguments.
+.\" SYMBOLICATE
+.It Cm symbolicate Ar path
+Symbolicate the trace file located at
+.Ar path .
+.\" COMPRESS
+.It Cm compress Oo Fl l No fast|balanced|small Oc Ar path
+Compress the trace file located at
+.Ar path
+using the small compression level, unless otherwise specified with the
+.Fl l
+option.
+.\" ARTRACE
+.It Cm artrace Oo Fl nr Oc Oo Fl t Ar timeout Oc Oo Fl i Ar interval Oc Oo Fl o Ar filename Oc Oo Fl b Ar buffer-size-mb Oc Oo Fl f Ar filter-desc Oc Oo Fl F Ar filter-desc Oc Oo Fl p Ar pid-or-process-name Oc Oo Fl Fl remote Ns Oo = Ns Ar device-name Oc Oc Oo Fl Fl type Ns = Ns Ar full Ns | Ns Ar profile Ns | Ns Ar lite Ns | Ns Ar morelite Oc Oo Fl Fl kperf Ns = Ns Ar sampler-name , Ns Ar sampler-name Ns @ Ns Ar timer-period Ns | Ns Ar timer-frequency Ns | Ns Ar kdebug-filter-desc Oc Oo Fl d Ar group Oc Oo Fl e Ar group Oc Oo Fl Fl stackshot-flags Ar extra-flags Oc Oo Fl c Ar command Oo ... Oc Oc
+Profile the system, writing trace events to an automatically named file.
+By default, this measures scheduler, VM, and system call usage, and samples
+threads on-core periodically.
+.Bl -tag -width Ds
+.It Fl o Ar path
+Specify the name of the file to be created.
+.It Fl f Ar filter-desc
+Trace the classes and subclasses specified by the filter description.
+See
+.Sx FILTER DESCRIPTIONS
+for details on the syntax of a filter.
+.It Fl F Ar filter-desc
+Exclude events from the default set.
+Use this options with care, since analysis tools may rely on certain events
+being present.
+.It Fl t Ar timeout
+Stop tracing and exit after
+.Ar timeout
+option is provided, stop tracing and exit after
+.Ar timeout
+has elapsed.
+The timeout value may have
+.Li us ,
+.Li ms ,
+or
+.Li s
+appended to indicate the time units.
+.It Fl i Ar interval
+Set the interval that the profiling timer fires
+.Po supports the same time suffixes as
+.Fl t
+.Pc .
+.It Fl n
+Disable the profiling timer entirely.
+.It Fl b Ar buffer-size-mb
+Set the trace buffer size.
+.It Fl r
+Configure tracing and leave it running in ring buffer mode.
+.It Fl p Ar pid-or-process-name
+Only record events that occur for the process identified by
+.Ar pid
+or
+.Ar process-name .
+Only the first 16 characters of the name are observed, due to a kernel
+limitation.
+.It Fl d Ar group
+Disable the group named
+.Ar group .
+See
+.Sx GROUPS
+for a list of groups.
+.It Fl e Ar group
+Enable the group named
+.Ar group .
+See
+.Sx GROUPS
+for a list of groups.
+.It Fl Fl remote Ns Op Ns = Ns Ar device-name
+Also trace on the provided
+.Ar device-name
+or the local bridge if not specified.
+.It Fl Fl type Ns = Ns Ar full Ns | Ns Ar profile Ns | Ns Ar lite Ns | Ns Ar morelite
+Trace using the specified type.
+.Ar full
+is the default, while
+.Ar profile
+just enables the profiling timer, but does not closely track scheduling events.
+The
+.Ar lite
+and
+.Ar morelite
+trace types are meant for long-running, low overhead analysis and prioritize
+analyzing threads that are blocked for relatively long periods of time, at the
+cost of an unbiased sample towards threads that cause a CPU to come out of idle.
+.Pp
+The
+.Ql lite
+modes work by lazily sampling threads as they are unblocked, and only those
+threads that block for more than a set threshold.
+Further, the typical profiling timer is disabled, in lieu of sampling the CPUs
+opportunistically, on other interrupts.
+The
+.Ar morelite
+mode has a more restrictive typefilter than
+.Ar lite .
+.It Fl Fl stackshot-flags Ar extra-flags
+Pass the provided
+.Ar extra-flags
+integer as additional flags when recording stackshots.
+.It Fl c Ar command Op ...
+Run the command specified by
+.Ar command
+and stop tracing when it exits.
+All arguments after this option are passed to
+the command.
+.It Fl Fl kperf Ns = Ns Ar sampler-name Ns Oo , Ns Ar sampler-name Oc Ns @ Ns Ar timer-period Ns | Ns Ar timer-frequency Ns | Ns Ar kdebug-filter-desc
+Sample using kperf according to the given sampling description.
+For the syntax of sampling descriptions, see
+.Sx SAMPLING DESCRIPTIONS .
+.El
+.El
+.
+.Sh FILTER DESCRIPTIONS
+A filter description is a comma-separated list of class and subclass specifiers
+that indicate which events should be traced.
+A class specifier starts with
+.Ql C
+and contains a single byte, specified in either decimal or hex.
+A subclass specifier starts with
+.Ql S
+and takes two bytes.
+The high byte is the class and the low byte is the subclass of that class.
+.Pp
+For example, this filter description would enable classes 1 and 37 and the
+subclasses 33 and 35 of class 5:
+.Ql C1,C0x25,S0x0521,S0x0523 .
+The
+.Ql ALL
+filter description enables events from all classes.
+.Sh SAMPLING DESCRIPTIONS
+A sampling description is similar to a filter description, but it configures
+sampling.
+It's composed of two parts: a samplers section and a trigger section, separated
+by
+.Li @ .
+The overall form is
+.Ar sampler-name Ns
+.Op , Ns Ar sampler-name Ns
+@ Ns
+.Ar timer-period Ns | Ns
+.Ar timer-frequency Ns | Ns
+.Ar kdebug-filter-desc .
+The valid names of samplers are
+.Ql ustack ,
+.Ql kstack ,
+.Ql thinfo ,
+.Ql thsnapshot ,
+.Ql meminfo ,
+.Ql thsched ,
+.Ql thdispatch ,
+.Ql tksnapshot ,
+.Ql sysmem ,
+and
+.Ql thinstrscycles .
+.Pp
+For example, to sample user stacks every 10 milliseconds, use
+.Ql ustack@10ms .
+To sample thread scheduling information and system memory every time the
+.Ql 0xfeedfac0
+event is emitted, use
+.Ql thsched,sysmem@D0xfeedfac0 .
+.Sh GROUPS
+.Bl -tag -width indent
+.It syscall-sampling
+Sample backtraces on system calls.
+.It fault-sampling
+Sample backtraces on page faults.
+.It graphics
+Include graphics events.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh CAVEATS
+Once trace has been initialized with the
+.Cm init
+subcommand
+.Po or the
+.Cm trace
+and
+.Cm artrace
+subcommands with the
+.Fl r
+flag
+.Pc ,
+it remains in use until the space is reclaimed with the
+.Cm remove
+subcommand.
+This prevents background diagnostic tools from making use of trace.
+.
+.Sh SEE ALSO
+.Xr fs_usage 1 ,
+.Xr ktrace 5 ,
+and
+.Xr trace 1
+.Xr trace 1
