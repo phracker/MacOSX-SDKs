@@ -20,7 +20,7 @@ Modern versions of Xcode (7.3+) need you to edit the `MinimumSDKVersion` in this
 
 Set the SDKROOT environment variable:
 ```
-export SDKROOT-path-to-old-sdk
+export SDKROOT=path-to-old-sdk
 ```
 
 If you put an old SDK in a nonstandard path, Apple's hacks in /usr/bin which redirect to calling Apple's
