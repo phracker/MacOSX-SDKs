@@ -1,0 +1,782 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/doctools/doctools_lang_cmdref.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2007-2010 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "doctools_lang_cmdref" n 1.0 doctools "Documentation tools"
+.BS
+.SH NAME
+doctools_lang_cmdref \- doctools language command reference
+.SH SYNOPSIS
+\fBarg\fR \fItext\fR
+.sp
+\fBarg_def\fR \fItype\fR \fIname\fR ?\fImode\fR?
+.sp
+\fBbullet\fR
+.sp
+\fBcall\fR \fIargs\fR
+.sp
+\fBcategory\fR \fItext\fR
+.sp
+\fBclass\fR \fItext\fR
+.sp
+\fBcmd\fR \fItext\fR
+.sp
+\fBcmd_def\fR \fIcommand\fR
+.sp
+\fBcomment\fR \fIplaintext\fR
+.sp
+\fBconst\fR \fItext\fR
+.sp
+\fBcopyright\fR \fItext\fR
+.sp
+\fBdef\fR \fItext\fR
+.sp
+\fBdescription\fR
+.sp
+\fBenum\fR
+.sp
+\fBemph\fR \fItext\fR
+.sp
+\fBexample\fR \fItext\fR
+.sp
+\fBexample_begin\fR
+.sp
+\fBexample_end\fR
+.sp
+\fBfile\fR \fItext\fR
+.sp
+\fBfun\fR \fItext\fR
+.sp
+\fBimage\fR \fIname\fR ?\fIlabel\fR?
+.sp
+\fBinclude\fR \fIfilename\fR
+.sp
+\fBitem\fR
+.sp
+\fBkeywords\fR \fIargs\fR
+.sp
+\fBlb\fR
+.sp
+\fBlist_begin\fR \fIwhat\fR
+.sp
+\fBlist_end\fR
+.sp
+\fBlst_item\fR \fItext\fR
+.sp
+\fBmanpage_begin\fR \fIcommand\fR \fIsection\fR \fIversion\fR
+.sp
+\fBmanpage_end\fR
+.sp
+\fBmethod\fR \fItext\fR
+.sp
+\fBmoddesc\fR \fItext\fR
+.sp
+\fBnamespace\fR \fItext\fR
+.sp
+\fBnl\fR
+.sp
+\fBopt\fR \fItext\fR
+.sp
+\fBopt_def\fR \fIname\fR ?\fIarg\fR?
+.sp
+\fBoption\fR \fItext\fR
+.sp
+\fBpackage\fR \fItext\fR
+.sp
+\fBpara\fR
+.sp
+\fBrb\fR
+.sp
+\fBrequire\fR \fIpackage\fR ?\fIversion\fR?
+.sp
+\fBsection\fR \fIname\fR
+.sp
+\fBsectref\fR \fIid\fR ?\fItext\fR?
+.sp
+\fBsectref-external\fR \fItext\fR
+.sp
+\fBsee_also\fR \fIargs\fR
+.sp
+\fBstrong\fR \fItext\fR
+.sp
+\fBsubsection\fR \fIname\fR
+.sp
+\fBsyscmd\fR \fItext\fR
+.sp
+\fBterm\fR \fItext\fR
+.sp
+\fBtitledesc\fR \fIdesc\fR
+.sp
+\fBtkoption_def\fR \fIname\fR \fIdbname\fR \fIdbclass\fR
+.sp
+\fBtype\fR \fItext\fR
+.sp
+\fBuri\fR \fItext\fR ?\fItext\fR?
+.sp
+\fBusage\fR \fIargs\fR
+.sp
+\fBvar\fR \fItext\fR
+.sp
+\fBvset\fR \fIvarname\fR \fIvalue\fR
+.sp
+\fBvset\fR \fIvarname\fR
+.sp
+\fBwidget\fR \fItext\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+This document specifies both names and syntax of all the commands
+which together are the doctools markup language, version 1.
+As this document is intended to be a reference the commands are listed
+in alphabetical order, and the descriptions are relatively short.
+A beginner should read the much more informally written
+\fIdoctools language introduction\fR first.
+.SH COMMANDS
+.TP
+\fBarg\fR \fItext\fR
+Text markup. The argument text is marked up as the \fIargument\fR of
+a command. Main uses are the highlighting of command arguments in
+free-form text, and for the argument parameters of the markup commands
+\fBcall\fR and \fBusage\fR.
+.TP
+\fBarg_def\fR \fItype\fR \fIname\fR ?\fImode\fR?
+Text structure. List element. Argument list. Automatically closes the
+previous list element. Specifies the data-\fItype\fR of the described
+argument of a command, its \fIname\fR and its i/o-\fImode\fR. The
+latter is optional.
+.TP
+\fBbullet\fR
+\fIDeprecated\fR. Text structure. List element. Itemized list. See
+\fBitem\fR for the canonical command to open a list item in an
+itemized list.
+.TP
+\fBcall\fR \fIargs\fR
+Text structure. List element. Definition list. Automatically closes
+the previous list element. Defines the term as a command and its
+arguments.
+The first argument is the name of the command described by the
+following free-form text, and all arguments coming after that are
+descriptions of the command's arguments.
+It is expected that the arguments are marked up with \fBarg\fR,
+\fBmethod\fR, \fBoption\fR etc., as is appropriate, and that the
+command itself is marked up with \fBcmd\fR.
+It is expected that the formatted term is not only printed in place,
+but also in the table of contents of the document, or synopsis,
+depending on the output format.
+.TP
+\fBcategory\fR \fItext\fR
+Document information. Anywhere. This command registers its plain text
+arguments as the category this document belongs to. If this command is
+used multiple times the last value specified is used.
+.TP
+\fBclass\fR \fItext\fR
+Text markup. The argument is marked up as the name of a
+\fIclass\fR. The text may have other markup already applied to
+it. Main use is the highlighting of class names in free-form text.
+.TP
+\fBcmd\fR \fItext\fR
+Text markup. The argument text is marked up as the name of a
+\fITcl command\fR. The text may have other markup already applied
+to it. Main uses are the highlighting of commands in free-form text,
+and for the command parameters of the markup commands \fBcall\fR and
+\fBusage\fR.
+.TP
+\fBcmd_def\fR \fIcommand\fR
+Text structure. List element. Command list. Automatically closes the
+previous list element. The argument specifies the name of the
+\fITcl command\fR to be described by the list element. Expected to
+be marked up in the output as if it had been formatted with \fBcmd\fR.
+.TP
+\fBcomment\fR \fIplaintext\fR
+Text markup. The argument text is marked up as a comment standing
+outside of the actual text of the document. Main use is in free-form
+text.
+.TP
+\fBconst\fR \fItext\fR
+Text markup. The argument is marked up as a \fIconstant\fR value. The
+text may have other markup already applied to it. Main use is the
+highlighting of constants in free-form text.
+.TP
+\fBcopyright\fR \fItext\fR
+Document information. Anywhere. The command registers the plain text
+argument as a copyright assignment for the manpage. When invoked more
+than once the assignments are accumulated.
+.TP
+\fBdef\fR \fItext\fR
+Text structure. List element. Definition list. Automatically closes
+the previous list element. The argument text is the term defined by
+the new list element. Text markup can be applied to it.
+.TP
+\fBdescription\fR
+Document structure. This command separates the header from the
+document body.  Implicitly starts a section named "DESCRIPTION" (See
+command \fBsection\fR).
+.TP
+\fBenum\fR
+Text structure. List element. Enumerated list. Automatically closes
+the previous list element.
+.TP
+\fBemph\fR \fItext\fR
+Text markup. The argument text is marked up as emphasized. Main use is
+for general highlighting of pieces of free-form text without attaching
+special meaning to the pieces.
+.TP
+\fBexample\fR \fItext\fR
+Text structure, Text markup. This command marks its argument up as an
+\fIexample\fR. Main use is the simple embedding of examples in
+free-form text. It should be used if the example does \fInot\fR need
+special markup of its own. Otherwise use a sequence of
+\fBexample_begin\fR ... \fBexample_end\fR.
+.TP
+\fBexample_begin\fR
+Text structure. This commands starts an example. All text until the
+next \fBexample_end\fR belongs to the example. Line breaks, spaces,
+and tabs have to be preserved literally. Examples cannot be nested.
+.TP
+\fBexample_end\fR
+Text structure. This command closes the example started by the last
+\fBexample_begin\fR.
+.TP
+\fBfile\fR \fItext\fR
+Text markup. The argument is marked up as a \fIfile\fR or
+\fIdirectory\fR, i.e. in general a \fIpath\fR. The text may have
+other markup already applied to it. Main use is the highlighting of
+paths in free-form text.
+.TP
+\fBfun\fR \fItext\fR
+Text markup. The argument is marked up as the name of a
+\fIfunction\fR. The text may have other markup already applied to
+it. Main use is the highlighting of function names in free-form text.
+.TP
+\fBimage\fR \fIname\fR ?\fIlabel\fR?
+Text markup. The argument is the symbolic name of an \fIimage\fR
+and replaced with the image itself, if a suitable variant is found
+by the backend. The second argument, should it be present, will be
+interpreted the human-readable description of the image, and put
+into the output in a suitable position, if such is supported by the
+format. The HTML format, for example, can place it into the \fIalt\fR
+attribute of image references.
+.TP
+\fBinclude\fR \fIfilename\fR
+Templating. The contents of the named file are interpreted as text
+written in the doctools markup and processed in the place of the
+include command. The markup in the file has to be self-contained. It
+is not possible for a markup command to cross the file boundaries.
+.TP
+\fBitem\fR
+Text structure. List element. Itemized list. Automatically closes the
+previous list element.
+.TP
+\fBkeywords\fR \fIargs\fR
+Document information. Anywhere. This command registers all its plain text
+arguments as keywords applying to this document. Each argument is a single
+keyword. If this command is used multiple times all the arguments accumulate.
+.TP
+\fBlb\fR
+Text. The command is replaced with a left bracket. Use in free-form text.
+Required to avoid interpretation of a left bracket as the start of a markup
+command.
+.TP
+\fBlist_begin\fR \fIwhat\fR
+Text structure. This command starts a list. The exact nature of the
+list is determined by the argument \fIwhat\fR of the command. This
+further determines which commands are have to be used to start the
+list elements. Lists can be nested, i.e. it is allowed to start a new
+list within a list element.
+.sp
+The allowed types (and their associated item commands) are:
+.RS
+.TP
+\fBarguments\fR
+\fBarg_def\fR.
+.TP
+\fBcommands\fR
+\fBcmd_def\fR.
+.TP
+\fBdefinitions\fR
+\fBdef\fR and \fBcall\fR.
+.TP
+\fBenumerated\fR
+\fBenum\fR
+.TP
+\fBitemized\fR
+\fBitem\fR
+.TP
+\fBoptions\fR
+\fBopt_def\fR
+.TP
+\fBtkoptions\fR
+\fBtkoption_def\fR
+.RE
+.sp
+Additionally the following names are recognized as shortcuts for some
+of the regular types:
+.RS
+.TP
+\fBargs\fR
+Short for \fBarguments\fR.
+.TP
+\fBcmds\fR
+Short for \fBcommands\fR.
+.TP
+\fBenum\fR
+Short for \fBenumerated\fR.
+.TP
+\fBitem\fR
+Short for \fBitemized\fR.
+.TP
+\fBopts\fR
+Short for \fBoptions\fR.
+.RE
+.sp
+At last the following names are still recognized for backward
+compatibility, but are otherwise considered to be \fIdeprecated\fR.
+.RS
+.TP
+\fBarg\fR
+\fIDeprecated\fR. See \fBarguments\fR.
+.TP
+\fBbullet\fR
+\fIDeprecated\fR. See \fBitemized\fR.
+.TP
+\fBcmd\fR
+\fIDeprecated\fR. See \fBcommands\fR.
+.TP
+\fBopt\fR
+\fIDeprecated\fR. See \fBoptions\fR.
+.TP
+\fBtkoption\fR
+\fIDeprecated\fR. See \fBtkoptions\fR.
+.RE
+.sp
+.TP
+\fBlist_end\fR
+Text structure. This command closes the list opened by the last
+\fBlist_begin\fR command coming before it.
+.TP
+\fBlst_item\fR \fItext\fR
+\fIDeprecated\fR. Text structure. List element. Definition list. See
+\fBdef\fR for the canonical command to open a general list item in a
+definition list.
+.TP
+\fBmanpage_begin\fR \fIcommand\fR \fIsection\fR \fIversion\fR
+Document structure. The command to start a manpage. The arguments are
+the name of the \fIcommand\fR described by the manpage, the
+\fIsection\fR of the manpages this manpage resides in, and the
+\fIversion\fR of the module containing the command. All arguments have
+to be plain text, without markup.
+.TP
+\fBmanpage_end\fR
+Document structure. Command to end a manpage/document. Anything in the document
+coming after this command is in error.
+.TP
+\fBmethod\fR \fItext\fR
+Text markup. The argument text is marked up as the name of an
+\fIobject\fR \fImethod\fR, i.e. subcommand of a Tcl command. The
+text may have other markup already applied to it. Main uses are the
+highlighting of method names in free-form text, and for the command
+parameters of the markup commands \fBcall\fR and \fBusage\fR.
+.TP
+\fBmoddesc\fR \fItext\fR
+Document information. Header. Registers the plain text argument as a short
+description of the module the manpage resides in.
+.TP
+\fBnamespace\fR \fItext\fR
+Text markup. The argument text is marked up as a namespace name. The
+text may have other markup already applied to it. Main use is the
+highlighting of namespace names in free-form text.
+.TP
+\fBnl\fR
+\fIDeprecated\fR. Text structure. See \fBpara\fR for the canonical
+command to insert paragraph breaks into the text.
+.TP
+\fBopt\fR \fItext\fR
+Text markup. The argument text is marked up as \fIoptional\fR. The text may
+have other markup already applied to it. Main use is the highlighting of
+optional arguments, see the command arg \fBarg\fR.
+.TP
+\fBopt_def\fR \fIname\fR ?\fIarg\fR?
+Text structure. List element. Option list. Automatically closes the
+previous list element. Specifies \fIname\fR and arguments of the
+\fIoption\fR described by the list element. It is expected that the
+name is marked up using \fBoption\fR.
+.TP
+\fBoption\fR \fItext\fR
+Text markup. The argument is marked up as \fIoption\fR. The text may
+have other markup already applied to it. Main use is the highlighting
+of options, also known as command-switches, in either free-form text,
+or the arguments of the \fBcall\fR and \fBusage\fR commands.
+.TP
+\fBpackage\fR \fItext\fR
+Text markup. The argument is marked up as the name of a
+\fIpackage\fR. The text may have other markup already applied to
+it. Main use is the highlighting of package names in free-form text.
+.TP
+\fBpara\fR
+Text structure. This command breaks free-form text into
+paragraphs. Each command closes the paragraph coming before it and
+starts a new paragraph for the text coming after it. Higher-level
+forms of structure are sections and subsections.
+.TP
+\fBrb\fR
+Text. The command is replaced with a right bracket. Use in free-form text.
+Required to avoid interpretation of a right bracket as the end of a markup
+command.
+.TP
+\fBrequire\fR \fIpackage\fR ?\fIversion\fR?
+Document information. Header. This command registers its argument
+\fIpackage\fR as the name of a package or application required by the
+described package or application. A minimum version can be provided as
+well. This argument can be marked up. The usual markup is \fBopt\fR.
+.TP
+\fBsection\fR \fIname\fR
+Text structure. This command starts a new named document section. The
+argument has to be plain text. Implicitly closes the last paragraph
+coming before it and also implicitly opens the first paragraph of the
+new section.
+.TP
+\fBsectref\fR \fIid\fR ?\fItext\fR?
+Text markup. Formats a reference to the section identified by \fIid\fR.
+If no \fItext\fR is specified the title of the referenced section is
+used in the output, otherwise \fItext\fR is used.
+.TP
+\fBsectref-external\fR \fItext\fR
+Text markup. Like \fBsectref\fR, except that the section is assumed to
+be in a different document and therefore doesn't need to be identified,
+nor are any checks for existence made. Only the text to format is needed.
+.TP
+\fBsee_also\fR \fIargs\fR
+Document information. Anywhere. The command defines direct cross-references
+to other documents. Each argument is a plain text label identifying the
+referenced document. If this command is used multiple times all the arguments
+accumulate.
+.TP
+\fBstrong\fR \fItext\fR
+\fIDeprecated\fR. Text markup. See \fBemph\fR for the canonical
+command to emphasize text.
+.TP
+\fBsubsection\fR \fIname\fR
+Text structure. This command starts a new named subsection of a
+section. The argument has to be plain text. Implicitly closes the last
+paragraph coming before it and also implicitly opens the first
+paragraph of the new subsection.
+.TP
+\fBsyscmd\fR \fItext\fR
+Text markup. The argument text is marked up as the name of an external
+command. The text may have other markup already applied to it. Main
+use is the highlighting of external commands in free-form text.
+.TP
+\fBterm\fR \fItext\fR
+Text markup. The argument is marked up as unspecific terminology.  The
+text may have other markup already applied to it. Main use is the
+highlighting of important terms and concepts in free-form text.
+.TP
+\fBtitledesc\fR \fIdesc\fR
+Document information. Header. Optional. Registers the plain text
+argument as the title of the manpage. Defaults to the value registered
+by \fBmoddesc\fR.
+.TP
+\fBtkoption_def\fR \fIname\fR \fIdbname\fR \fIdbclass\fR
+Text structure. List element. Widget option list. Automatically closes
+the previous list element. Specifies the \fIname\fR of the option as
+used in scripts, the name used by the option database (\fIdbname\fR),
+and its class (\fIdbclass\fR), i.e. its type. It is expected that the
+name is marked up using \fBoption\fR.
+.TP
+\fBtype\fR \fItext\fR
+Text markup. The argument is marked up as the name of a
+\fIdata type\fR. The text may have other markup already applied to
+it. Main use is the highlighting of data types in free-form text.
+.TP
+\fBuri\fR \fItext\fR ?\fItext\fR?
+Text markup. The argument is marked up as an \fIuri\fR (i.e. a
+\fIuniform resource identifier\fR. The text may have other markup
+already applied to it. Main use is the highlighting of uris in
+free-form text. The second argument, should it be present, will be
+interpreted the human-readable description of the uri. In other words,
+as its label. Without an explicit label the uri will be its own label.
+.TP
+\fBusage\fR \fIargs\fR
+Text markup. See \fBcall\fR for the full description, this command is
+syntactically identical, as it is in its expectations for the markup
+of its arguments.
+In contrast to \fBcall\fR it is however not allowed to generate output
+where this command occurs in the text. The command is \fIsilent\fR.
+The formatted text may only appear in a different section of the
+output, for example a table of contents, or synopsis, depending on the
+output format.
+.TP
+\fBvar\fR \fItext\fR
+Text markup. The argument is marked up as the name of a
+\fIvariable\fR. The text may have other markup already applied to
+it. Main use is the highlighting of variables in free-form text.
+.TP
+\fBvset\fR \fIvarname\fR \fIvalue\fR
+Templating. In this form the command sets the named document variable
+to the specified \fIvalue\fR. It does not generate output. I.e. the
+command is replaced by the empty string.
+.TP
+\fBvset\fR \fIvarname\fR
+Templating. In this form the command is replaced by the value of the
+named document variable
+.TP
+\fBwidget\fR \fItext\fR
+Text markup. The argument is marked up as the name of a
+\fIwidget\fR. The text may have other markup already applied to
+it. Main use is the highlighting of widget names in free-form text.
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIdoctools\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH "SEE ALSO"
+doctools_intro, doctools_lang_faq, doctools_lang_intro, doctools_lang_syntax
+.SH KEYWORDS
+doctools commands, doctools language, doctools markup, markup, semantic markup
+.SH CATEGORY
+Documentation tools
+.SH COPYRIGHT
+.nf
+Copyright (c) 2007-2010 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

@@ -1,0 +1,491 @@
+.\"
+.\" Copyright (c) 2017 Apple Inc.  All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\"
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\"
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\"
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.Dd May 25, 2017
+.Dt NFS 5
+.Os
+.Sh NAME
+.Nm NFS
+.Nd Network File System
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+.Tn NFS
+is the standard
+.Ux
+file sharing protocol suite.
+.Tn MacOS
+supports version two,
+.Tn NFSv2
+.Po
+.Tn RFC 1094
+.Pc ,
+version three,
+.Tn NFSv3
+.Po
+.Tn RFC 1813
+.Pc ,
+and in addition for the client,
+version four,
+.Tn NFSv4
+.Po
+.Tn RFC 3530
+.Pc .
+.Tn NFSv2
+and
+.Tn NFSv3
+also rely on adjunct protocols for mounting,
+.Tn Mountd
+.Po
+.Tn RFC 1094, RFC 1813
+.Pc
+and for locking,
+.Tn NLM
+.Po
+OpenGroup XNFS
+.Pc .
+.Tn NFSv4
+subsumes both mount and locking operations in to it's protocol.
+.Tn MacOS
+systems support
+.Tn TCP
+over
+.Tn IPv4
+and
+.Tn IPv6 .
+In addition for versions two and three of the protocol,
+.Tn UDP
+is supported over
+.Tn IPv4
+and
+.Tn IPv6 ,
+however its use is discouraged. Version two of the protocol is
+considered legacy and should only be used if higher versions of the
+protocol are unavailable.
+.Ss MacOS Extended Attribute Considerations
+.Tn MacOS
+makes heavy use of extended attributes, resource forks, and possibly ACLs.
+.Tn NFSv2
+and
+.Tn NFSv3
+do not support these operations over the wire. The getting and setting of ACLs are not supported but extended attributes and resource forks for
+.Tn MacOS
+clients are supported by storing extended attributes and resource forks in an
+.Qq Apple Double
+.Pq also known as a dot under bar file
+files on the server. On the other hand
+.Tn NFSv4
+can optionally support ACLs. And can optionally support the storing of resource forks and extended attributes as
+.Tn NFSv4
+named attributes.
+Previous versions of
+.Tn NFSv4
+on
+.Tn MacOS
+would use
+.Tn NFSv4
+named attributes if supported by the server for storing extended attributes and resource forks, however this version of
+.Tn NFSv4
+defaults to using
+.Qq Apple Double
+files. If a server exports files systems with both
+.Tn NFSv3
+and
+.Tn NFSv4
+.Pq the usual default case
+and supports named attributes as well, then there is a potential for data loss, since changing an extended attribute or resource fork from an
+.Tn NFSv3
+client is not visible to an
+.Tn NFSv4
+client and visa versa.
+If the server is known to only have
+.Tn NFSv4
+clients or is only exporting file systems with
+.Tn NFSv4
+then
+.Tn MacOS
+clients should use the
+.Ar namedattr
+option.
+See
+.Xr mount_nfs 8 .
+If converting from
+.Tn NFSv3
+to
+.Tn NFSv4
+only with named attribute support, the following
+procedure can be use to convert the
+.Qq Apple Double
+files to
+.Tn NFSv4
+named attributes.
+.Pp
+Be sure that the file system on the server has no
+other
+.Tn MacOS
+.Tn NFS
+mounts. Then allow one
+.Tn MacOS
+.Tn NFSv4
+client that has been mounted with the
+.Ar namedattr
+mount option
+.Po
+.Ic mount
+.Fl o
+.Ar vers=4,namedattr
+.Pc ,
+to mount the export(s) on the server.
+Then at the mount point on the client run the
+.Ic dot_clean
+.Fl m
+command.
+This will read the
+.Qq Apple Double
+files and convert them to native extended attributes
+on the server and then remove the
+.Qq Apple Double
+file.
+.\" #if 0
+.\" If it is decided that
+.\" .Tn NFSv3
+.\" support is needed then the reverse can be accomplished by again
+.\" mounting with
+.\" .Tn NFSv4
+.\" with
+.\" .Ar namedattr
+.\" option and running
+.\" .Ic dot_clean
+.\" .Fl U .
+.\" This will create
+.\" .Qq Apple Double
+.\" files that encapsulate all the servers native extended attributes .\" that
+.\" the
+.\" .Tn MacOS
+.\" clients can support.
+.\" After this operation the
+.\" .Tn NFSv4
+.\" mount should be immediately unmounted and all clients should mount .\" with
+.\" .Tn NFSv3
+.\" or
+.\" .Tn NFSv4
+.\" with out the
+.\" .Ar namedattr
+.\" option.
+.\" #endif
+.Ss MacOS ACL support.
+ACLs
+.Pq access control list
+are enforced at the server not the client. As mentioned above
+.Tn NFSv3/NFSv2
+do not support ACLs. So it is possible to get access or permission errors even though the
+.Tn BSD
+permission bits indicate that a file system operation should succeed.
+.Tn MacOS
+.Tn NFSv4
+clients can optionally support ACLs if the
+.Ar acl
+or
+.Ar aclonly
+options are given at mount time. The reason that ACLs are not enabled by default is that there interpretation can be different from one server to another. Particularly in the way
+.Bx
+mode bits are interpreted.
+A simplified explanation for
+.Tn MacOS ,
+is that it interprets ACLs by running over the list of ACEs
+.Pq access control entries
+in order and if all requests for access have been granted and no request for access has been denied then the access is granted. If no request has been denied but some request have not been granted then fall back to the
+.Bx
+access permissions. A complete description of ACLs can be found in
+.Qq Appendix B, File System Details
+in the
+.Em File System Programming Guide .
+Also see
+.Ar acl ,
+.Ar noacl ,
+and
+.Ar aclonly
+in
+.Xr mount_nfs 8
+for more details.
+Future version of
+.Tn MacOS
+may enable ACL support by default.
+.Ss NFSv4 Name mapping.
+Unlike
+.Tn NFSv3/NFSv2
+identities for owners and groups are represented by strings instead of 32 bit numbers. Thus
+.Tn NFSv4
+clients and servers have to convert these over the wire string identities to the local identities and local identities to strings. These strings are principally used in
+.Tn GETATTR ,
+.Tn SETATTR ,
+and
+ACEs for security identities.
+Note that the
+.Tn RPC
+credential is used for permission and access checking for whether an operation will be allowed. Those credentials are found in the
+.Tn RPC
+header, such as a kerberos identity that is associated with the
+RPCSEC_GSS context.
+These strings are of the form
+.Qq identity@NFSv4Domain ,
+where the
+.Qq NFSv4Domain
+follows
+.Tn DNS
+domain naming conventions.
+.Ss MacOS NFSv4 name mapping rules.
+When processing identities by default we first check and see if the idenity string from the server is a string of digits if so we use that as the uid/gid to ask
+.Tn Open Directory
+to map that to a local idenitity. If that fails or the idenity string is not a string of digits we next check for well known names that
+.Tn NFSv4
+supports. These names are of the form
+.Qq identity@
+with no domain part. If we match any of the following
+.Bl -column -offset indent "AUTHENTICATED@" "AUTHENTICATED@" "AUTHENTICATED@"
+.It OWNER@ Ta GROUP@ Ta EVERYONE@
+.It INTERACTIVE@ Ta NETWORK@ Ta DIALUP@
+.It BATCH@ Ta ANONYMOUS@ Ta AUTHENTICATED@
+.It SERVICE@
+.El
+.Pp
+These identities are mapped to
+.Tn Open Directory
+internal identities. Along with any other identity that ends in an
+.Qq @ ,
+which are mapped to nobody. These well known identities are used as generic security idenitifiers in
+.Tn ACEs .
+These identities are mapped back to the above strings when going back over the wire to the server. If the identites do not match the strings ending in
+.Qq @
+then we attempt to map the identities as follows.
+.Tn MacOS
+clients support a zero configuration option by not specifying a default
+.Tn NFSv4
+domain. String identies coming from the server are handed as is to
+.Tn Open Directory
+to translate the string identity to the local identity. This works if the
+.Tn NFSv4
+domain is the same as an
+.Tn Open Directory
+node name.
+Local identies are similarly translated to the fully scoped
+.Tn Open Directory
+names on the way out.
+If
+.Tn Open Directory
+returns an error in trying to  map the identities we then by default try to use the following fall back idenities:
+.Bl -column -offset indent "AUTHENTICATED@" "AUTHENTICATED@"
+.It root@any_domain Ta wheel@any_domain
+.It nobody@any_domain Ta nfsnobody@any_domain
+.El
+.Pp
+Root and wheel identities are translated by
+.Tn Open Directory
+with uid/gid of zero and nobody and nfsnobody are traslated to
+uid/gid of -2
+.Po
+.Tn MacOS
+internal representation for the nobody uid/gid
+.Pc .
+.Pp
+This is useful in situations where the client and server do not share a common naming database.
+It is recommended where sites have a large number of
+.Tn MacOS
+clients, set their
+.Tn NFSv4
+domain to be the
+.Tn LDAP
+node that is being used to bind
+.Tn Open Directory
+so that there is no other configuration needed for the Mac
+clients.
+.Pp
+For environments which have a different
+.Tn NFSv4
+domain name from the bound
+.Tn LDAP
+node name, the
+.Tn NFSv4
+domain name needs to be set by editing
+.Pa /etc/nfs.conf
+and adding the line
+.Dl nfs.client.default_nfs4domain = <my_nfsv4_domain>
+See
+.Xr nfs.conf 5 .
+The rules for mapping are then as follows. If a string identity comes in over the wire whose domain portion matches the client's
+.Tn NFSv4
+domain, then its stripped off and that unscoped name is this given to
+.Tn Open Directory
+to map to a local identity. On the way back to the server any
+.Tn Open Directory
+node name is stripped off and the
+.Tn NFSv4
+domain name is appended. If the identity coming from the server does not match the
+.Tn NFSv4
+domain name, then its passed to
+.Tn Open Directory
+as is and the rules described above for having no
+.Tn NFSv4
+domain name set are followed.
+.Sh Examples
+The server has set its
+.Tn NFSv4
+domain that is not the same as any
+.Tn MacOS
+client
+.Tn Open Directory
+node, so that the identity mapping is not set up correctly.
+Users will see output like the following example:
+.Bd -literal -unfilled
+3-$ ls -l /tmp/mp
+total 16851
+-rw-r--r--  1 nobody  nobody       29 Oct 12  2015 Foo.txt
+drwxr-xr-x  3 nobody  nobody        4 Jan 31 16:27 Q102/
+drwxrwxrwx  3 nobody  nobody        7 Jan 24 16:59 acl/
+-rw-r--r--  1 nobody  wheel         0 Feb  8 11:54 file1
+-rw-r--r--  1 root    wheel         0 Feb  8 12:00 file2
+-rw-r--r--  1 nobody  nobody        0 Feb  9 11:06 fooby
+drwx------  2 nobody  nobody        5 Sep 22  2015 keyring-GbeUpi/
+drwx------  2 65432   nobody        5 Sep  8  2015 keyring-OX5G6P/
+.Ed
+.Pp
+Most of the mappings comeback as
+.Qq nobody/nobody .
+Note
+.Qq file1
+comes back with group wheel. This is an example of fall back identity mapping. Similarly for
+.Qq file2
+for both the user and group return root and wheel respectfully. The directory
+.Qq keyring-OX5G6P
+has ownership of 65432 this is because the server could not map that id locally and so sent it over the wire as a string of digits.
+After correcting the
+.Tn NFSv4
+domain on the server we have:
+.Bd -literal -unfilled
+4-$ ls -l /tmp/mp
+total 16851
+-rw-r--r--  1 lbricker  staff        29 Oct 12  2015 Foo.txt
+drwxr-xr-x  3 lbricker  staff         4 Jan 31 16:27 Q102/
+drwxrwxrwx  3 lbricker  staff         7 Jan 24 16:59 acl/
+-rw-r--r--  1 lbricker  staff         0 Feb  8 11:54 file1
+-rw-r--r--  1 root      nobody        0 Feb  8 12:00 file2
+-rw-r--r--  1 lbricker  nobody        0 Feb  9 11:06 fooby
+drwx------  2 lbricker  staff         5 Sep 22  2015 keyring-GbeUpi/
+drwx------  2 65432     staff         5 Sep  8  2015 keyring-OX5G6P/
+.Ed
+.Pp
+What is surprising is that file1 and file2's group is now nobody. The reason is that the server is sending those group ids as
+.Qq root@<open_directroy_node> .
+.Tn Open Directory
+will not find that mapping so it will map it to nobody
+.Po
+had
+.Qq wheel@<open_directory_node
+had been used, wheel would have been returned
+.Pc .
+In the previous example the server sent
+.Qq root@bogus.nfsv4.com .
+.Tn Open Directory
+will now return an error since it can not find a valid
+.Tn Open Directory
+node
+.Qq bogus.nfsv4.com
+and thus use the fall back to a gid of 0.
+.Pp
+Debugging
+.Tn NFSv4
+name mapping can be done with the
+.Ic nfs4mapid
+command. See
+.Xr nfs4mapid 8 .
+This allows testing of name/identity translations by using a system call into the kernel that calls the same routines as the
+.Tn MacOS
+nfs client uses. For example we determine the group translations above.
+.Bd -literal -unfilled
+83-$ sudo nfs4mapid -G root@nod.apple.com
+group root@nod.apple.com maps to id -2
+    mapping done through guid ABCDEFAB-CDEF-ABCD-EFAB-CDEFFFFFFFFE
+84-$ sudo nfs4mapid -G wheel@nod.apple.com
+group wheel@nod.apple.com maps to id 0
+    mapping done through guid ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000000
+85-$ sudo nfs4mapid -G wheel@foobar.com
+group wheel@foobar.com maps to id 0
+    mapping done through guid ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000000
+86-$ sudo nfs4mapid -G root@foobar.com group
+root@foobar.com maps to id 0
+    mapping done through guid ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000000
+.Ed
+.Sh See Also
+.Rs
+.%B File System Programming Guide
+.%T Appendix B, File System Details
+.%O https://developer.apple.com
+.%I Apple
+.Re
+.Pp
+.Xr dot_clean 1 ,
+.Xr nfs.conf 5 ,
+.Xr nfs4mapid 8 ,
+.Xr mount_nfs 8 ,
+.Xr opendirectoryd 8 ,
+.Sh Standards
+.Bl -tag -width "[RFC3530]"
+.It [RFC1094]
+.Rs
+.%A B. Nowicki
+.%B NFS: Network File System Protocol specification
+.%R RFC1094
+.%D March 1989
+.%O http://www.rfc-editor.org/info/rfc1094
+.Re
+.It [RFC1813]
+.Rs
+.%A B. Callaghan
+.%A B. Pawlowski
+.%A P. Staubach
+.%B NFS Version 3 Protocol Specification
+.%R RFC1813
+.%D June 1995
+.%O http://www.rfc-editor.org/info/rfc1813
+.Re
+.It [RFC3530]
+.Rs
+.%A S. Shepler
+.%A B. Callaghan
+.%A D. Robinson
+.%A R. Thurlow
+.%A C. Beame
+.%A M. Eisler
+.%A D. Noveck
+.%D April 2003
+.%B Network File System (NFS) version 4 Protocol
+.%R RFC3530
+.%O http://www.rfc-editor.org/info/rfc3530
+.Re
+.It [XNFS]
+.Rs
+.%I Open Group Technical Standard
+.%B Protocols for Interworking: XNFS, Version 3W
+.%D February, 1998
+.%O ISBN: 1-85912-184-5
+.Re
+.El

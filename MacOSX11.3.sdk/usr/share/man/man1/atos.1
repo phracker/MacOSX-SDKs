@@ -1,0 +1,111 @@
+.\" Copyright (c) 1998-2017  Apple Inc. All rights reserved.
+.Dd May 9, 2017
+.Dt "atos" 1
+.Os
+.Sh NAME
+.Nm atos
+.Nd convert numeric addresses to symbols of binary images or processes
+.Sh SYNOPSIS
+.Nm atos
+.Op Fl o Ar <binary-image-file>
+.Op Fl p Ar <pid> | Ar <partial-executable-name>
+.Op Fl arch Ar architecture
+.Op Fl l Ar <load-address>
+.Op Fl s Ar <slide>
+.Op Fl printHeader
+.Op Fl fullPath
+.Op Fl f Ar <address-input-file>
+.Op <address> ...
+.Sh DESCRIPTION
+The
+.Nm
+command converts numeric addresses to their symbolic equivalents.  If full debug symbol information is available,
+for example in a .app.dSYM sitting beside a .app, then the output of atos will include file name and source line
+number information.
+.Pp
+The input addresses may be given in one of three ways:
+.Bl -enum
+.It
+A list of addresses at the end of the argument list.
+.It
+Using the
+.Fl f Ar <address-input-file>
+argument to specify the path of an input file containing whitespace-separated numeric addresses.
+.It
+If no addresses were directly specified, 
+.Nm
+enters an interactive mode, reading addresses from stdin.
+.El
+.Pp
+The symbols are found in either a binary image file or in a currently executing process, as specified by:
+.Bl -tag -width indent
+.It Fl o Ar <binary-image-file>
+The path to a binary image file in which to look up symbols.
+.It Fl p Ar <pid> | Ar <partial-executable-name>
+The process ID or the partial name of a currently executing process in which to look up symbols.
+.El
+.Pp
+Multiple process IDs or paths can be specified if necessary, and the two can be mixed in any order.
+When working with a Mach-O binary image file, 
+.Nm
+considers only addresses and symbols defined in that binary image file, at their default locations (unless the -l or -s option is given). 
+When working with a running process, 
+.Nm
+considers addresses and symbols defined in all binary images currently loaded by that process, at their loaded locations.
+.Pp
+The following additional options are available.
+.Bl -tag -width indent
+.It Fl arch Ar architecture
+The particular architecure of a binary image file in which to look up symbols.
+.It Fl l Ar <load-address>
+The load address of the binary image.  This value is always assumed to be in hex, even without a "0x" prefix.  The input addresses are assumed to be in a binary image with that load address.  Load addresses for binary
+images can be found in the Binary Images: section at the bottom of crash, sample, leaks, and malloc_history reports.
+.It Fl s Ar <slide>
+The slide value of the binary image -- this is the difference between the load address of a binary image, and the address at which the binary image was built.  
+This slide value is subtracted from the input addresses.  
+It is usually easier to directly specify the load address with the
+.Fl l
+argument than to manually calculate a slide value.
+.It Fl printHeader
+If a process was specified, the first line of atos output should be a header of the form "Looking up symbols in process <pid> named:  <process-name>".
+This is primarily used when
+.Nm
+is invoked as part of a stackshot(1) run, for verification of the process ID and name.
+.It Fl fullPath
+Print the full path of the source files.
+.El
+.Sh EXAMPLE
+A stripped, optimized version of Sketch was built as an x86_64 position-independent executable (PIE) into /BuildProducts/Release.
+Full debug symbol information is available in Sketch.app.dSYM, which sits alongside Sketch.app.  When Sketch.app was run,
+the Sketch binary (which was built at 0x100000000) was loaded at 0x10acde000.  Running 'sample Sketch' showed 3 addresses that
+we want to get symbol information for -- 0x10acea1d3, 0x10ace4bea, and 0x10ace4b7a.
+.Pp
+First notice that the .dSYM is next to the .app:
+.Bd -literal
+% ls -1 /BuildProducts/Release/
+Sketch.app
+Sketch.app.dSYM
+.Ed
+.Pp
+Now, to symbolicate, we run atos with the
+.Fl o
+flag specifying the path to the actual Sketch executable (not the .app wrapper), the
+.Fl arch Ar x86_64
+flag, and the
+.Fl l Ar 0x10acde000
+flag to specify the load address.
+.Bd -literal
+% atos -o /BuildProducts/Release/Sketch.app/Contents/MacOS/Sketch -arch x86_64 -l 0x10acde000  0x10acea1d3 0x10ace4bea 0x10ace4b7a
+-[SKTGraphicView drawRect:] (in Sketch) (SKTGraphicView.m:445)
+-[SKTGraphic drawHandlesInView:] (in Sketch) (NSGeometry.h:110)
+-[SKTGraphic drawHandleInView:atPoint:] (in Sketch) (SKTGraphic.m:490)
+.Ed
+.Pp
+.Sh GETTING SYMBOLS FOR A DIFFERENT MACHINE ARCHITECTURE
+It is possible to get symbols for addresses from a different machine architecture than the system on which
+.Nm
+is running.  For example, when running
+.Nm
+on an Intel-based system, one may wish to get the symbol for an address that came from a backtrace of a process running on an ARM device.  To do so, use the
+.Fl arch
+flag to specify the desired architecture (such as i386 or arm) and pass in a corresponding symbol-rich Mach-O binary image file with a binary image of the corresponding architecture (such as a Universal Binary).

@@ -1,0 +1,891 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/grammar_fa/fa.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2004-2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "grammar::fa" n 0.4 grammar_fa "Finite automaton operations and usage"
+.BS
+.SH NAME
+grammar::fa \- Create and manipulate finite automatons
+.SH SYNOPSIS
+package require \fBTcl  8.4\fR
+.sp
+package require \fBsnit  1.3\fR
+.sp
+package require \fBstruct::list \fR
+.sp
+package require \fBstruct::set \fR
+.sp
+package require \fBgrammar::fa::op  ?0.2?\fR
+.sp
+package require \fBgrammar::fa  ?0.4?\fR
+.sp
+\fB::grammar::fa\fR \fIfaName\fR ?\fB=\fR|\fB:=\fR|\fB<--\fR|\fBas\fR|\fBdeserialize\fR \fIsrc\fR|\fBfromRegex\fR \fIre\fR ?\fIover\fR??
+.sp
+\fBfaName\fR \fIoption\fR ?\fIarg arg ...\fR?
+.sp
+\fIfaName\fR \fBdestroy\fR
+.sp
+\fIfaName\fR \fBclear\fR
+.sp
+\fIfaName\fR \fB=\fR \fIsrcFA\fR
+.sp
+\fIfaName\fR \fB-->\fR \fIdstFA\fR
+.sp
+\fIfaName\fR \fBserialize\fR
+.sp
+\fIfaName\fR \fBdeserialize\fR \fIserialization\fR
+.sp
+\fIfaName\fR \fBstates\fR
+.sp
+\fIfaName\fR \fBstate\fR \fBadd\fR \fIs1\fR ?\fIs2\fR ...?
+.sp
+\fIfaName\fR \fBstate\fR \fBdelete\fR \fIs1\fR ?\fIs2\fR ...?
+.sp
+\fIfaName\fR \fBstate\fR \fBexists\fR \fIs\fR
+.sp
+\fIfaName\fR \fBstate\fR \fBrename\fR \fIs\fR \fIsnew\fR
+.sp
+\fIfaName\fR \fBstartstates\fR
+.sp
+\fIfaName\fR \fBstart\fR \fBadd\fR \fIs1\fR ?\fIs2\fR ...?
+.sp
+\fIfaName\fR \fBstart\fR \fBremove\fR \fIs1\fR ?\fIs2\fR ...?
+.sp
+\fIfaName\fR \fBstart?\fR \fIs\fR
+.sp
+\fIfaName\fR \fBstart?set\fR \fIstateset\fR
+.sp
+\fIfaName\fR \fBfinalstates\fR
+.sp
+\fIfaName\fR \fBfinal\fR \fBadd\fR \fIs1\fR ?\fIs2\fR ...?
+.sp
+\fIfaName\fR \fBfinal\fR \fBremove\fR \fIs1\fR ?\fIs2\fR ...?
+.sp
+\fIfaName\fR \fBfinal?\fR \fIs\fR
+.sp
+\fIfaName\fR \fBfinal?set\fR \fIstateset\fR
+.sp
+\fIfaName\fR \fBsymbols\fR
+.sp
+\fIfaName\fR \fBsymbols@\fR \fIs\fR ?\fId\fR?
+.sp
+\fIfaName\fR \fBsymbols@set\fR \fIstateset\fR
+.sp
+\fIfaName\fR \fBsymbol\fR \fBadd\fR \fIsym1\fR ?\fIsym2\fR ...?
+.sp
+\fIfaName\fR \fBsymbol\fR \fBdelete\fR \fIsym1\fR ?\fIsym2\fR ...?
+.sp
+\fIfaName\fR \fBsymbol\fR \fBrename\fR \fIsym\fR \fInewsym\fR
+.sp
+\fIfaName\fR \fBsymbol\fR \fBexists\fR \fIsym\fR
+.sp
+\fIfaName\fR \fBnext\fR \fIs\fR \fIsym\fR ?\fB-->\fR \fInext\fR?
+.sp
+\fIfaName\fR \fB!next\fR \fIs\fR \fIsym\fR ?\fB-->\fR \fInext\fR?
+.sp
+\fIfaName\fR \fBnextset\fR \fIstateset\fR \fIsym\fR
+.sp
+\fIfaName\fR \fBis\fR \fBdeterministic\fR
+.sp
+\fIfaName\fR \fBis\fR \fBcomplete\fR
+.sp
+\fIfaName\fR \fBis\fR \fBuseful\fR
+.sp
+\fIfaName\fR \fBis\fR \fBepsilon-free\fR
+.sp
+\fIfaName\fR \fBreachable_states\fR
+.sp
+\fIfaName\fR \fBunreachable_states\fR
+.sp
+\fIfaName\fR \fBreachable\fR \fIs\fR
+.sp
+\fIfaName\fR \fBuseful_states\fR
+.sp
+\fIfaName\fR \fBunuseful_states\fR
+.sp
+\fIfaName\fR \fBuseful\fR \fIs\fR
+.sp
+\fIfaName\fR \fBepsilon_closure\fR \fIs\fR
+.sp
+\fIfaName\fR \fBreverse\fR
+.sp
+\fIfaName\fR \fBcomplete\fR
+.sp
+\fIfaName\fR \fBremove_eps\fR
+.sp
+\fIfaName\fR \fBtrim\fR ?\fIwhat\fR?
+.sp
+\fIfaName\fR \fBdeterminize\fR ?\fImapvar\fR?
+.sp
+\fIfaName\fR \fBminimize\fR ?\fImapvar\fR?
+.sp
+\fIfaName\fR \fBcomplement\fR
+.sp
+\fIfaName\fR \fBkleene\fR
+.sp
+\fIfaName\fR \fBoptional\fR
+.sp
+\fIfaName\fR \fBunion\fR \fIfa\fR ?\fImapvar\fR?
+.sp
+\fIfaName\fR \fBintersect\fR \fIfa\fR ?\fImapvar\fR?
+.sp
+\fIfaName\fR \fBdifference\fR \fIfa\fR ?\fImapvar\fR?
+.sp
+\fIfaName\fR \fBconcatenate\fR \fIfa\fR ?\fImapvar\fR?
+.sp
+\fIfaName\fR \fBfromRegex\fR \fIregex\fR ?\fIover\fR?
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+This package provides a container class for
+\fIfinite automatons\fR (Short: FA).
+It allows the incremental definition of the automaton, its
+manipulation and querying of the definition.
+While the package provides complex operations on the automaton
+(via package \fBgrammar::fa::op\fR), it does not have the
+ability to execute a definition for a stream of symbols.
+Use the packages
+\fBgrammar::fa::dacceptor\fR and
+\fBgrammar::fa::dexec\fR for that.
+Another package related to this is \fBgrammar::fa::compiler\fR. It
+turns a FA into an executor class which has the definition of the FA
+hardwired into it. The output of this package is configurable to suit
+a large number of different implementation languages and paradigms.
+.PP
+For more information about what a finite automaton is see section
+\fBFINITE AUTOMATONS\fR.
+.SH API
+The package exports the API described here.
+.TP
+\fB::grammar::fa\fR \fIfaName\fR ?\fB=\fR|\fB:=\fR|\fB<--\fR|\fBas\fR|\fBdeserialize\fR \fIsrc\fR|\fBfromRegex\fR \fIre\fR ?\fIover\fR??
+Creates a new finite automaton with an associated global Tcl command
+whose name is \fIfaName\fR. This command may be used to invoke various
+operations on the automaton. It has the following general form:
+.RS
+.TP
+\fBfaName\fR \fIoption\fR ?\fIarg arg ...\fR?
+\fIOption\fR and the \fIarg\fRs determine the exact behavior of the
+command. See section \fBFA METHODS\fR for more explanations. The
+new automaton will be empty if no \fIsrc\fR is specified. Otherwise
+it will contain a copy of the definition contained in the \fIsrc\fR.
+The \fIsrc\fR has to be a FA object reference for all operators except
+\fBdeserialize\fR and \fBfromRegex\fR. The \fBdeserialize\fR
+operator requires \fIsrc\fR to be the serialization of a FA instead,
+and \fBfromRegex\fR takes a regular expression in the form a of a
+syntax tree. See \fB::grammar::fa::op::fromRegex\fR for more detail on
+that.
+.RE
+.PP
+.SH "FA METHODS"
+.PP
+All automatons provide the following methods for their manipulation:
+.TP
+\fIfaName\fR \fBdestroy\fR
+Destroys the automaton, including its storage space and associated
+command.
+.TP
+\fIfaName\fR \fBclear\fR
+Clears out the definition of the automaton contained in \fIfaName\fR,
+but does \fInot\fR destroy the object.
+.TP
+\fIfaName\fR \fB=\fR \fIsrcFA\fR
+Assigns the contents of the automaton contained
+in \fIsrcFA\fR to \fIfaName\fR, overwriting any
+existing definition.
+This is the assignment operator for automatons. It copies the
+automaton contained in the FA object \fIsrcFA\fR over the automaton
+definition in \fIfaName\fR. The old contents of \fIfaName\fR are
+deleted by this operation.
+.sp
+This operation is in effect equivalent to
+.sp
+.nf
+
+    \fIfaName\fR \fBdeserialize\fR [\fIsrcFA\fR \fBserialize\fR]
+
+.fi
+.TP
+\fIfaName\fR \fB-->\fR \fIdstFA\fR
+This is the reverse assignment operator for automatons. It copies the
+automation contained in the object \fIfaName\fR over the automaton
+definition in the object \fIdstFA\fR.
+The old contents of \fIdstFA\fR are deleted by this operation.
+.sp
+This operation is in effect equivalent to
+.sp
+.nf
+
+    \fIdstFA\fR \fBdeserialize\fR [\fIfaName\fR \fBserialize\fR]
+
+.fi
+.TP
+\fIfaName\fR \fBserialize\fR
+This method serializes the automaton stored in \fIfaName\fR. In other
+words it returns a tcl \fIvalue\fR completely describing that
+automaton.
+This allows, for example, the transfer of automatons over arbitrary
+channels, persistence, etc.
+This method is also the basis for both the copy constructor and the
+assignment operator.
+.sp
+The result of this method has to be semantically identical over all
+implementations of the \fBgrammar::fa\fR interface. This is what
+will enable us to copy automatons between different implementations of
+the same interface.
+.sp
+The result is a list of three elements with the following structure:
+.RS
+.IP [1]
+The constant string \fBgrammar::fa\fR.
+.IP [2]
+A list containing the names of all known input symbols. The order of
+elements in this list is not relevant.
+.IP [3]
+The last item in the list is a dictionary, however the order of the
+keys is important as well. The keys are the states of the serialized
+FA, and their order is the order in which to create the states when
+deserializing. This is relevant to preserve the order relationship
+between states.
+.sp
+The value of each dictionary entry is a list of three elements
+describing the state in more detail.
+.RS
+.IP [1]
+A boolean flag. If its value is \fBtrue\fR then the state is a
+start state, otherwise it is not.
+.IP [2]
+A boolean flag. If its value is \fBtrue\fR then the state is a
+final state, otherwise it is not.
+.IP [3]
+The last element is a dictionary describing the transitions for the
+state. The keys are symbols (or the empty string), and the values are
+sets of successor states.
+.RE
+.RE
+.sp
+Assuming the following FA (which describes the life of a truck driver
+in a very simple way :)
+.sp
+.nf
+
+    Drive -- yellow --> Brake -- red --> (Stop) -- red/yellow --> Attention -- green --> Drive
+    (...) is the start state.
+
+.fi
+.sp
+a possible serialization is
+.sp
+.nf
+
+    grammar::fa \\\\
+    {yellow red green red/yellow} \\\\
+    {Drive     {0 0 {yellow     Brake}} \\\\
+     Brake     {0 0 {red        Stop}} \\\\
+     Stop      {1 0 {red/yellow Attention}} \\\\
+     Attention {0 0 {green      Drive}}}
+
+.fi
+.sp
+A possible one, because I did not care about creation order here
+.TP
+\fIfaName\fR \fBdeserialize\fR \fIserialization\fR
+This is the complement to \fBserialize\fR. It replaces the
+automaton definition in \fIfaName\fR with the automaton described by
+the \fIserialization\fR value. The old contents of \fIfaName\fR are
+deleted by this operation.
+.TP
+\fIfaName\fR \fBstates\fR
+Returns the set of all states known to \fIfaName\fR.
+.TP
+\fIfaName\fR \fBstate\fR \fBadd\fR \fIs1\fR ?\fIs2\fR ...?
+Adds the states \fIs1\fR, \fIs2\fR, et cetera to the FA definition in
+\fIfaName\fR. The operation will fail any of the new states is already
+declared.
+.TP
+\fIfaName\fR \fBstate\fR \fBdelete\fR \fIs1\fR ?\fIs2\fR ...?
+Deletes the state \fIs1\fR, \fIs2\fR, et cetera, and all associated
+information from the FA definition in \fIfaName\fR. The latter means
+that the information about in- or outbound transitions is deleted as
+well. If the deleted state was a start or final state then this
+information is invalidated as well. The operation will fail if the
+state \fIs\fR is not known to the FA.
+.TP
+\fIfaName\fR \fBstate\fR \fBexists\fR \fIs\fR
+A predicate. It tests whether the state \fIs\fR is known to the FA in
+\fIfaName\fR.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+state \fIs\fR is known, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBstate\fR \fBrename\fR \fIs\fR \fIsnew\fR
+Renames the state \fIs\fR to \fIsnew\fR. Fails if \fIs\fR is not a
+known state. Also fails if \fIsnew\fR is already known as a state.
+.TP
+\fIfaName\fR \fBstartstates\fR
+Returns the set of states which are marked as \fIstart\fR states,
+also known as \fIinitial\fR states.
+See \fBFINITE AUTOMATONS\fR for explanations what this means.
+.TP
+\fIfaName\fR \fBstart\fR \fBadd\fR \fIs1\fR ?\fIs2\fR ...?
+Mark the states \fIs1\fR, \fIs2\fR, et cetera in the FA \fIfaName\fR
+as \fIstart\fR (aka \fIinitial\fR).
+.TP
+\fIfaName\fR \fBstart\fR \fBremove\fR \fIs1\fR ?\fIs2\fR ...?
+Mark the states \fIs1\fR, \fIs2\fR, et cetera in the FA \fIfaName\fR
+as \fInot start\fR (aka \fInot accepting\fR).
+.TP
+\fIfaName\fR \fBstart?\fR \fIs\fR
+A predicate. It tests if the state \fIs\fR in the FA \fIfaName\fR is
+\fIstart\fR or not.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+state \fIs\fR is \fIstart\fR, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBstart?set\fR \fIstateset\fR
+A predicate. It tests if the set of states \fIstateset\fR contains at
+least one start state. They operation will fail if the set contains an
+element which is not a known state.
+The result is a boolean value. It will be set to \fBtrue\fR if a
+start state is present in \fIstateset\fR, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBfinalstates\fR
+Returns the set of states which are marked as \fIfinal\fR states,
+also known as \fIaccepting\fR states.
+See \fBFINITE AUTOMATONS\fR for explanations what this means.
+.TP
+\fIfaName\fR \fBfinal\fR \fBadd\fR \fIs1\fR ?\fIs2\fR ...?
+Mark the states \fIs1\fR, \fIs2\fR, et cetera in the FA \fIfaName\fR
+as \fIfinal\fR (aka \fIaccepting\fR).
+.TP
+\fIfaName\fR \fBfinal\fR \fBremove\fR \fIs1\fR ?\fIs2\fR ...?
+Mark the states \fIs1\fR, \fIs2\fR, et cetera in the FA \fIfaName\fR
+as \fInot final\fR (aka \fInot accepting\fR).
+.TP
+\fIfaName\fR \fBfinal?\fR \fIs\fR
+A predicate. It tests if the state \fIs\fR in the FA \fIfaName\fR is
+\fIfinal\fR or not.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+state \fIs\fR is \fIfinal\fR, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBfinal?set\fR \fIstateset\fR
+A predicate. It tests if the set of states \fIstateset\fR contains at
+least one final state. They operation will fail if the set contains an
+element which is not a known state.
+The result is a boolean value. It will be set to \fBtrue\fR if a
+final state is present in \fIstateset\fR, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBsymbols\fR
+Returns the set of all symbols known to the FA \fIfaName\fR.
+.TP
+\fIfaName\fR \fBsymbols@\fR \fIs\fR ?\fId\fR?
+Returns the set of all symbols for which the state \fIs\fR has transitions.
+If the empty symbol is present then \fIs\fR has epsilon transitions. If two
+states are specified the result is the set of symbols which have transitions
+from \fIs\fR to \fIt\fR. This set may be empty if there are no transitions
+between the two specified states.
+.TP
+\fIfaName\fR \fBsymbols@set\fR \fIstateset\fR
+Returns the set of all symbols for which at least one state in the set
+of states \fIstateset\fR has transitions.
+In other words, the union of [\fIfaName\fR \fBsymbols@\fR \fBs\fR]
+for all states \fBs\fR in \fIstateset\fR.
+If the empty symbol is present then at least one state contained in
+\fIstateset\fR has epsilon transitions.
+.TP
+\fIfaName\fR \fBsymbol\fR \fBadd\fR \fIsym1\fR ?\fIsym2\fR ...?
+Adds the symbols \fIsym1\fR, \fIsym2\fR, et cetera to the FA
+definition in \fIfaName\fR. The operation will fail any of the symbols
+is already declared. The empty string is not allowed as a value for the symbols.
+.TP
+\fIfaName\fR \fBsymbol\fR \fBdelete\fR \fIsym1\fR ?\fIsym2\fR ...?
+Deletes the symbols \fIsym1\fR, \fIsym2\fR et cetera, and all
+associated information from the FA definition in \fIfaName\fR. The
+latter means that all transitions using the symbols are deleted as
+well. The operation will fail if any of the symbols is not known to
+the FA.
+.TP
+\fIfaName\fR \fBsymbol\fR \fBrename\fR \fIsym\fR \fInewsym\fR
+Renames the symbol \fIsym\fR to \fInewsym\fR. Fails if \fIsym\fR is
+not a known symbol. Also fails if \fInewsym\fR is already known as a
+symbol.
+.TP
+\fIfaName\fR \fBsymbol\fR \fBexists\fR \fIsym\fR
+A predicate. It tests whether the symbol \fIsym\fR is known to the FA
+in \fIfaName\fR.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+symbol \fIsym\fR is known, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBnext\fR \fIs\fR \fIsym\fR ?\fB-->\fR \fInext\fR?
+Define or query transition information.
+.sp
+If \fInext\fR is specified, then the method will add a transition from
+the state \fIs\fR to the \fIsuccessor\fR state \fInext\fR labeled with
+the symbol \fIsym\fR to the FA contained in \fIfaName\fR. The
+operation will fail if \fIs\fR, or \fInext\fR are not known states, or
+if \fIsym\fR is not a known symbol. An exception to the latter is that
+\fIsym\fR is allowed to be the empty string. In that case the new
+transition is an \fIepsilon transition\fR which will not consume
+input when traversed. The operation will also fail if the combination
+of (\fIs\fR, \fIsym\fR, and \fInext\fR) is already present in the FA.
+.sp
+If \fInext\fR was not specified, then the method will return
+the set of states which can be reached from \fIs\fR through
+a single transition labeled with symbol \fIsym\fR.
+.TP
+\fIfaName\fR \fB!next\fR \fIs\fR \fIsym\fR ?\fB-->\fR \fInext\fR?
+Remove one or more transitions from the Fa in \fIfaName\fR.
+.sp
+If \fInext\fR was specified then the single transition from the state
+\fIs\fR to the state \fInext\fR labeled with the symbol \fIsym\fR is
+removed from the FA. Otherwise \fIall\fR transitions originating in
+state \fIs\fR and labeled with the symbol \fIsym\fR will be removed.
+.sp
+The operation will fail if \fIs\fR and/or \fInext\fR are not known as
+states. It will also fail if a non-empty \fIsym\fR is not known as
+symbol. The empty string is acceptable, and allows the removal of
+epsilon transitions.
+.TP
+\fIfaName\fR \fBnextset\fR \fIstateset\fR \fIsym\fR
+Returns the set of states which can be reached by a single transition
+originating in a state in the set \fIstateset\fR and labeled with the
+symbol \fIsym\fR.
+.sp
+In other words, this is the union of
+[\fIfaName\fR next \fBs\fR \fIsymbol\fR]
+for all states \fBs\fR in \fIstateset\fR.
+.TP
+\fIfaName\fR \fBis\fR \fBdeterministic\fR
+A predicate. It tests whether the FA in \fIfaName\fR is a
+deterministic FA or not.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+FA is deterministic, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBis\fR \fBcomplete\fR
+A predicate. It tests whether the FA in \fIfaName\fR is a complete FA
+or not. A FA is complete if it has at least one transition per state
+and symbol. This also means that a FA without symbols, or states is
+also complete.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+FA is deterministic, and \fBfalse\fR otherwise.
+.sp
+Note: When a FA has epsilon-transitions transitions over a symbol for
+a state S can be indirect, i.e. not attached directly to S, but to a
+state in the epsilon-closure of S. The symbols for such indirect
+transitions count when computing completeness.
+.TP
+\fIfaName\fR \fBis\fR \fBuseful\fR
+A predicate. It tests whether the FA in \fIfaName\fR is an useful FA
+or not. A FA is useful if all states are \fIreachable\fR
+and \fIuseful\fR.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+FA is deterministic, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBis\fR \fBepsilon-free\fR
+A predicate. It tests whether the FA in \fIfaName\fR is an
+epsilon-free FA or not. A FA is epsilon-free if it has no epsilon
+transitions. This definition means that all deterministic FAs are
+epsilon-free as well, and epsilon-freeness is a necessary
+pre-condition for deterministic'ness.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+FA is deterministic, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBreachable_states\fR
+Returns the set of states which are reachable from a start state by
+one or more transitions.
+.TP
+\fIfaName\fR \fBunreachable_states\fR
+Returns the set of states which are not reachable from any start state
+by any number of transitions. This is
+.sp
+.nf
+
+	 [faName states] - [faName reachable_states]
+
+.fi
+.TP
+\fIfaName\fR \fBreachable\fR \fIs\fR
+A predicate. It tests whether the state \fIs\fR in the FA \fIfaName\fR
+can be reached from a start state by one or more transitions.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+state can be reached, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBuseful_states\fR
+Returns the set of states which are able to reach a final state by
+one or more transitions.
+.TP
+\fIfaName\fR \fBunuseful_states\fR
+Returns the set of states which are not able to reach a final state by
+any number of transitions. This is
+.sp
+.nf
+
+	 [faName states] - [faName useful_states]
+
+.fi
+.TP
+\fIfaName\fR \fBuseful\fR \fIs\fR
+A predicate. It tests whether the state \fIs\fR in the FA \fIfaName\fR
+is able to reach a final state by one or more transitions.
+The result is a boolean value. It will be set to \fBtrue\fR if the
+state is useful, and \fBfalse\fR otherwise.
+.TP
+\fIfaName\fR \fBepsilon_closure\fR \fIs\fR
+Returns the set of states which are reachable from the state \fIs\fR
+in the FA \fIfaName\fR by one or more epsilon transitions, i.e
+transitions over the empty symbol, transitions which do not consume
+input. This is called the \fIepsilon closure\fR of \fIs\fR.
+.TP
+\fIfaName\fR \fBreverse\fR
+.TP
+\fIfaName\fR \fBcomplete\fR
+.TP
+\fIfaName\fR \fBremove_eps\fR
+.TP
+\fIfaName\fR \fBtrim\fR ?\fIwhat\fR?
+.TP
+\fIfaName\fR \fBdeterminize\fR ?\fImapvar\fR?
+.TP
+\fIfaName\fR \fBminimize\fR ?\fImapvar\fR?
+.TP
+\fIfaName\fR \fBcomplement\fR
+.TP
+\fIfaName\fR \fBkleene\fR
+.TP
+\fIfaName\fR \fBoptional\fR
+.TP
+\fIfaName\fR \fBunion\fR \fIfa\fR ?\fImapvar\fR?
+.TP
+\fIfaName\fR \fBintersect\fR \fIfa\fR ?\fImapvar\fR?
+.TP
+\fIfaName\fR \fBdifference\fR \fIfa\fR ?\fImapvar\fR?
+.TP
+\fIfaName\fR \fBconcatenate\fR \fIfa\fR ?\fImapvar\fR?
+.TP
+\fIfaName\fR \fBfromRegex\fR \fIregex\fR ?\fIover\fR?
+These methods provide more complex operations on the FA.  Please see
+the same-named commands in the package \fBgrammar::fa::op\fR for
+descriptions of what they do.
+.PP
+.PP
+.SH EXAMPLES
+.PP
+.SH "FINITE AUTOMATONS"
+.PP
+For the mathematically inclined, a FA is a 5-tuple (S,Sy,St,Fi,T) where
+.IP \(bu
+S is a set of \fIstates\fR,
+.IP \(bu
+Sy a set of \fIinput symbols\fR,
+.IP \(bu
+St is a subset of S, the set of \fIstart\fR states, also known as
+\fIinitial\fR states.
+.IP \(bu
+Fi is a subset of S, the set of \fIfinal\fR states, also known as
+\fIaccepting\fR.
+.IP \(bu
+T is a function from S x (Sy + epsilon) to {S}, the \fItransition function\fR.
+Here \fBepsilon\fR denotes the empty input symbol and is distinct
+from all symbols in Sy; and {S} is the set of subsets of S. In other
+words, T maps a combination of State and Input (which can be empty) to
+a set of \fIsuccessor states\fR.
+.PP
+.PP
+In computer theory a FA is most often shown as a graph where the nodes
+represent the states, and the edges between the nodes encode the
+transition function: For all n in S' = T (s, sy) we have one edge
+between the nodes representing s and n resp., labeled with sy. The
+start and accepting states are encoded through distinct visual
+markers, i.e. they are attributes of the nodes.
+.PP
+FA's are used to process streams of symbols over Sy.
+.PP
+A specific FA is said to \fIaccept\fR a finite stream sy_1 sy_2
+... sy_n if there is a path in the graph of the FA beginning at a
+state in St and ending at a state in Fi whose edges have the labels
+sy_1, sy_2, etc. to sy_n.
+The set of all strings accepted by the FA is the \fIlanguage\fR of
+the FA. One important equivalence is that the set of languages which
+can be accepted by an FA is the set of \fIregular languages\fR.
+.PP
+Another important concept is that of deterministic FAs. A FA is said
+to be \fIdeterministic\fR if for each string of input symbols there
+is exactly one path in the graph of the FA beginning at the start
+state and whose edges are labeled with the symbols in the string.
+While it might seem that non-deterministic FAs to have more power of
+recognition, this is not so. For each non-deterministic FA we can
+construct a deterministic FA which accepts the same language (-->
+Thompson's subset construction).
+.PP
+While one of the premier applications of FAs is in \fIparsing\fR,
+especially in the \fIlexer\fR stage (where symbols == characters),
+this is not the only possibility by far.
+.PP
+Quite a lot of processes can be modeled as a FA, albeit with a
+possibly large set of states. For these the notion of accepting states
+is often less or not relevant at all. What is needed instead is the
+ability to act to state changes in the FA, i.e. to generate some
+output in response to the input.
+This transforms a FA into a \fIfinite transducer\fR, which has an
+additional set OSy of \fIoutput symbols\fR and also an additional
+\fIoutput function\fR O which maps from "S x (Sy + epsilon)" to
+"(Osy + epsilon)", i.e a combination of state and input, possibly
+empty to an output symbol, or nothing.
+.PP
+For the graph representation this means that edges are additional
+labeled with the output symbol to write when this edge is traversed
+while matching input. Note that for an application "writing an output
+symbol" can also be "executing some code".
+.PP
+Transducers are not handled by this package. They will get their own
+package in the future.
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIgrammar_fa\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+automaton, finite automaton, grammar, parsing, regular expression, regular grammar, regular languages, state, transducer
+.SH CATEGORY
+Grammars and finite automata
+.SH COPYRIGHT
+.nf
+Copyright (c) 2004-2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

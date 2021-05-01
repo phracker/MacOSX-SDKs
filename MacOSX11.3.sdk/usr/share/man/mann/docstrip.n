@@ -1,0 +1,680 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/docstrip/docstrip.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2003-2005 Lars Hellström <Lars dot Hellstrom at residenset dot net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "docstrip" n 1.2 docstrip "Literate programming tool"
+.BS
+.SH NAME
+docstrip \- Docstrip style source code extraction
+.SH SYNOPSIS
+package require \fBTcl  8.4\fR
+.sp
+package require \fBdocstrip  ?1.2?\fR
+.sp
+\fBdocstrip::extract\fR \fItext\fR \fIterminals\fR ?\fIoption\fR \fIvalue\fR ...?
+.sp
+\fBdocstrip::sourcefrom\fR \fIfilename\fR \fIterminals\fR ?\fIoption\fR \fIvalue\fR ...?
+.sp
+.BE
+.SH DESCRIPTION
+\fBDocstrip\fR is a tool created to support a brand of Literate
+Programming. It is most common in the (La)TeX community, where it
+is being used for pretty much everything from the LaTeX core and up,
+but there is nothing about \fBdocstrip\fR which prevents using it
+for other types of software.
+.PP
+In short, the basic principle of literate programming is that program
+source should primarily be written and structured to suit the
+developers (and advanced users who want to peek "under the hood"), not
+to suit the whims of a compiler or corresponding source code consumer.
+This means literate sources often need some kind of "translation" to an
+illiterate form that dumb software can understand.
+The \fBdocstrip\fR Tcl package handles this translation.
+.PP
+Even for those who do not whole-hartedly subscribe to the philosophy
+behind literate programming, \fBdocstrip\fR can bring greater
+clarity to in particular:
+.IP \(bu
+programs employing non-obvious mathematics
+.IP \(bu
+projects where separate pieces of code, perhaps in
+different languages, need to be closely coordinated.
+.PP
+The first is by providing access to much more powerful typographical
+features for source code comments than are possible in plain text.
+The second is because all the separate pieces of code can be kept
+next to each other in the same source file.
+.PP
+The way it works is that the programmer edits directly only one or
+several "master" source code files, from which \fBdocstrip\fR
+generates the more traditional "source" files compilers or the like
+would expect. The master sources typically contain a large amount of
+documentation of the code, sometimes even in places where the code
+consumers would not allow any comments. The etymology of "docstrip"
+is that this \fIdoc\fRumentation was \fIstrip\fRped away (although
+"code extraction" might be a better description, as it has always
+been a matter of copying selected pieces of the master source rather
+than deleting text from it).
+The \fBdocstrip\fR Tcl package contains a reimplementation of
+the basic extraction functionality from the \fBdocstrip\fR
+program, and thus makes it possible for a Tcl interpreter to read
+and interpret the master source files directly.
+.PP
+Readers who are not previously familiar with \fBdocstrip\fR but
+want to know more about it may consult the following sources.
+.IP [1]
+\fIThe tclldoc package and class\fR,
+\fIhttp://tug.org/tex-archive/macros/latex/contrib/tclldoc/\fR.
+.IP [2]
+\fIThe DocStrip utility\fR,
+\fIhttp://tug.org/tex-archive/macros/latex/base/docstrip.dtx\fR.
+.IP [3]
+\fIThe doc and shortvrb Packages\fR,
+\fIhttp://tug.org/tex-archive/macros/latex/base/doc.dtx\fR.
+.IP [4]
+Chapter 14 of
+\fIThe LaTeX Companion\fR (second edition),
+Addison-Wesley, 2004; ISBN 0-201-36299-6.
+.PP
+.SH "FILE FORMAT"
+The basic unit \fBdocstrip\fR operates on are the \fIlines\fR of
+a master source file. Extraction consists of selecting some of these
+lines to be copied from input text to output text. The basic
+distinction is that between \fIcode lines\fR (which are copied and
+do not begin with a percent character) and \fIcomment lines\fR
+(which begin with a percent character and are not copied).
+.nf
+
+   docstrip::extract [join {
+     {% comment}
+     {% more comment !"#$%&/(}
+     {some command}
+     { % blah $blah "Not a comment."}
+     {% abc; this is comment}
+     {# def; this is code}
+     {ghi}
+     {% jkl}
+   } \\n] {}
+
+.fi
+returns the same sequence of lines as
+.nf
+
+   join {
+     {some command}
+     { % blah $blah "Not a comment."}
+     {# def; this is code}
+     {ghi} ""
+   } \\n
+
+.fi
+It does not matter to \fBdocstrip\fR what format is used for the
+documentation in the comment lines, but in order to do better than
+plain text comments, one typically uses some markup language. Most
+commonly LaTeX is used, as that is a very established standard and
+also provides the best support for mathematical formulae, but the
+\fBdocstrip::util\fR package also gives some support for
+\fIdoctools\fR-like markup.
+.PP
+Besides the basic code and comment lines, there are also
+\fIguard lines\fR, which begin with the two characters '%<', and
+\fImeta-comment lines\fR, which begin with the two characters
+\'%%'. Within guard lines there is furthermore the distinction between
+\fIverbatim guard lines\fR, which begin with '%<<', and ordinary
+guard lines, where the '%<' is not followed by another '<'. The last
+category is by far the most common.
+.PP
+Ordinary guard lines conditions extraction of the code line(s) they
+guard by the value of a boolean expression; the guarded block of
+code lines will only be included if the expression evaluates to true.
+The syntax of an ordinary guard line is one of
+.nf
+
+    '%' '<' STARSLASH EXPRESSION '>'
+    '%' '<' PLUSMINUS EXPRESSION '>' CODE
+
+.fi
+where
+.nf
+
+    STARSLASH  ::=  '*' | '/'
+    PLUSMINUS  ::=  '+' | '-' |
+    EXPRESSION ::= SECONDARY | SECONDARY ',' EXPRESSION
+                 | SECONDARY '|' EXPRESSION
+    SECONDARY  ::= PRIMARY | PRIMARY '&' SECONDARY
+    PRIMARY    ::= TERMINAL | '!' PRIMARY | '(' EXPRESSION ')'
+    CODE       ::= { any character except end-of-line }
+
+.fi
+Comma and vertical bar both denote 'or'. Ampersand denotes 'and'.
+Exclamation mark denotes 'not'. A TERMINAL can be any nonempty string
+of characters not containing '>', '&', '|', comma, '(', or ')',
+although the \fBdocstrip\fR manual is a bit restrictive and only
+guarantees proper operation for strings of letters (although even
+the LaTeX core sources make heavy use also of digits in TERMINALs).
+The second argument of \fBdocstrip::extract\fR is the list of those
+TERMINALs that should count as having the value 'true'; all other
+TERMINALs count as being 'false' when guard expressions are evaluated.
+.PP
+In the case of a '%<*\fIEXPRESSION\fR>' guard, the lines guarded are
+all lines up to the next '%</\fIEXPRESSION\fR>' guard with the same
+\fIEXPRESSION\fR (compared as strings). The blocks of code delimited
+by such '*' and '/' guard lines must be properly nested.
+.nf
+
+   set text [join {
+      {begin}
+      {%<*foo>}
+      {1}
+      {%<*bar>}
+      {2}
+      {%</bar>}
+      {%<*!bar>}
+      {3}
+      {%</!bar>}
+      {4}
+      {%</foo>}
+      {5}
+      {%<*bar>}
+      {6}
+      {%</bar>}
+      {end}
+   } \\n]
+   set res [docstrip::extract $text foo]
+   append res [docstrip::extract $text {foo bar}]
+   append res [docstrip::extract $text bar]
+
+.fi
+sets $res to the result of
+.nf
+
+   join {
+      {begin}
+      {1}
+      {3}
+      {4}
+      {5}
+      {end}
+      {begin}
+      {1}
+      {2}
+      {4}
+      {5}
+      {6}
+      {end}
+      {begin}
+      {5}
+      {6}
+      {end} ""
+   } \\n
+
+.fi
+In guard lines without a '*', '/', '+', or '-' modifier after the
+\'%<', the guard applies only to the CODE following the '>' on that
+single line. A '+' modifier is equivalent to no modifier. A '-'
+modifier is like the case with no modifier, but the expression is
+implicitly negated, i.e., the CODE of a '%<-' guard line is only
+included if the expression evaluates to false.
+.PP
+Metacomment lines are "comment lines which should not be stripped
+away", but be extracted like code lines; these are sometimes used for
+copyright notices and similar material. The '%%' prefix is however
+not kept, but substituted by the current \fB-metaprefix\fR, which
+is customarily set to some "comment until end of line" character (or
+character sequence) of the language of the code being extracted.
+.nf
+
+   set text [join {
+      {begin}
+      {%<foo> foo}
+      {%<+foo>plusfoo}
+      {%<-foo>minusfoo}
+      {middle}
+      {%% some metacomment}
+      {%<*foo>}
+      {%%another metacomment}
+      {%</foo>}
+      {end}
+   } \\n]
+   set res [docstrip::extract $text foo -metaprefix {# }]
+   append res [docstrip::extract $text bar -metaprefix {#}]
+
+.fi
+sets $res to the result of
+.nf
+
+   join {
+      {begin}
+      { foo}
+      {plusfoo}
+      {middle}
+      {#  some metacomment}
+      {# another metacomment}
+      {end}
+      {begin}
+      {minusfoo}
+      {middle}
+      {# some metacomment}
+      {end} ""
+   } \\n
+
+.fi
+Verbatim guards can be used to force code line
+interpretation of a block of lines even if some of them happen to look
+like any other type of lines to docstrip. A verbatim guard has the
+form '%<<\fIEND-TAG\fR' and the verbatim block is terminated by the
+first line that is exactly '%\fIEND-TAG\fR'.
+.nf
+
+   set text [join {
+      {begin}
+      {%<*myblock>}
+      {some stupid()}
+      {   #computer<program>}
+      {%<<QQQ-98765}
+      {% These three lines are copied verbatim (including percents}
+      {%% even if -metaprefix is something different than %%).}
+      {%</myblock>}
+      {%QQQ-98765}
+      {   using*strange@programming<language>}
+      {%</myblock>}
+      {end}
+   } \\n]
+   set res [docstrip::extract $text myblock -metaprefix {# }]
+   append res [docstrip::extract $text {}]
+
+.fi
+sets $res to the result of
+.nf
+
+   join {
+      {begin}
+      {some stupid()}
+      {   #computer<program>}
+      {% These three lines are copied verbatim (including percents}
+      {%% even if -metaprefix is something different than %%).}
+      {%</myblock>}
+      {   using*strange@programming<language>}
+      {end}
+      {begin}
+      {end} ""
+   } \\n
+
+.fi
+The processing of verbatim guards takes place also inside blocks of
+lines which due to some outer block guard will not be copied.
+.PP
+The final piece of \fBdocstrip\fR syntax is that extraction
+stops at a line that is exactly "\\endinput"; this is often used to
+avoid copying random whitespace at the end of a file. In the unlikely
+case that one wants such a code line, one can protect it with a
+verbatim guard.
+.SH COMMANDS
+The package defines two commands.
+.TP
+\fBdocstrip::extract\fR \fItext\fR \fIterminals\fR ?\fIoption\fR \fIvalue\fR ...?
+The \fBextract\fR command docstrips the \fItext\fR and returns the
+extracted lines of code, as a string with each line terminated with
+a newline. The \fIterminals\fR is the list of those guard
+expression terminals which should evaluate to true.
+The available options are:
+.RS
+.TP
+\fB-annotate\fR \fIlines\fR
+Requests the specified number of lines of annotation to follow
+each extracted line in the result. Defaults to 0. Annotation lines
+are mostly useful when the extracted lines are to undergo some
+further transformation. A first annotation line is a list of three
+elements: line type, prefix removed in extraction, and prefix
+inserted in extraction. The line type is one of: 'V' (verbatim),
+\'M' (metacomment), '+' (+ or no modifier guard line), '-' (-
+modifier guard line), '.' (normal line). A second annotation line
+is the source line number. A third annotation line is the current
+stack of block guards. Requesting more than three lines of
+annotation is currently not supported.
+.TP
+\fB-metaprefix\fR \fIstring\fR
+The string by which the '%%' prefix of a metacomment line will
+be replaced. Defaults to '%%'. For Tcl code this would typically
+be '#'.
+.TP
+\fB-onerror\fR \fIkeyword\fR
+Controls what will be done when a format error in the \fItext\fR
+being processed is detected. The settings are:
+.RS
+.TP
+\fBignore\fR
+Just ignore the error; continue as if nothing happened.
+.TP
+\fBputs\fR
+Write an error message to \fBstderr\fR, then continue
+processing.
+.TP
+\fBthrow\fR
+Throw an error. \fB::errorCode\fR is set to a list whose
+first element is \fBDOCSTRIP\fR, second element is the
+type of error, and third element is the line number where
+the error is detected. This is the default.
+.RE
+.TP
+\fB-trimlines\fR \fIboolean\fR
+Controls whether \fIspaces\fR at the end of a line should be
+trimmed away before the line is processed. Defaults to true.
+.RE
+It should be remarked that the \fIterminals\fR are often called
+"options" in the context of the \fBdocstrip\fR program, since
+these specify which optional code fragments should be included.
+.TP
+\fBdocstrip::sourcefrom\fR \fIfilename\fR \fIterminals\fR ?\fIoption\fR \fIvalue\fR ...?
+The \fBsourcefrom\fR command is a docstripping emulation of
+\fBsource\fR. It opens the file \fIfilename\fR, reads it, closes it,
+docstrips the contents as specified by the \fIterminals\fR, and
+evaluates the result in the local context of the caller, during
+which time the \fBinfo\fR \fBscript\fR value will be the
+\fIfilename\fR. The options are passed on to \fBfconfigure\fR to
+configure the file before its contents are read. The
+\fB-metaprefix\fR is set to '#', all other \fBextract\fR
+options have their default values.
+.PP
+.SH "DOCUMENT STRUCTURE"
+The file format (as described above) determines whether a master
+source code file can be processed correctly by \fBdocstrip\fR,
+but the usefulness of the format is to no little part also dependent
+on that the code and comment lines together constitute a well-formed
+document.
+.PP
+For a document format that does not require any non-Tcl software, see
+the \fBddt2man\fR command in the \fBdocstrip::util\fR package. It
+is suggested that files employing that document format are given the
+suffix "\fI.ddt\fR", to distinguish them from the more traditional
+LaTeX-based "\fI.dtx\fR" files.
+.PP
+Master source files with "\fI.dtx\fR" extension are usually set up so
+that they can be typeset directly by \fBlatex\fR without any
+support from other files. This is achieved by beginning the file
+with the lines
+.nf
+
+   % \\iffalse
+   %<*driver>
+   \\documentclass{tclldoc}
+   \\begin{document}
+   \\DocInput{\fIfilename.dtx\fR}
+   \\end{document}
+   %</driver>
+   % \\fi
+
+.fi
+or some variation thereof. The trick is that the file gets read twice.
+With normal LaTeX reading rules, the first two lines are comments and
+therefore ignored. The third line is the document preamble, the fourth
+line begins the document body, and the sixth line ends the document,
+so LaTeX stops there -- non-comments below that point in the file are
+never subjected to the normal LaTeX reading rules. Before that,
+however, the \\DocInput command on the fifth line is processed, and
+that does two things: it changes the interpretation of '%' from
+"comment" to "ignored", and it inputs the file specified in the
+argument (which is normally the name of the file the command is in).
+It is this second time that the file is being read that the comments
+and code in it are typeset.
+.PP
+The function of the \\iffalse ... \\fi is to skip lines two to seven
+on this second time through; this is similar to the "if 0 { ... }"
+idiom for block comments in Tcl code, and it is needed here because
+(amongst other things) the \\documentclass command may only be
+executed once. The function of the <driver> guards is to prevent this
+short piece of LaTeX code from being extracted by \fBdocstrip\fR.
+The total effect is that the file can function both as a LaTeX
+document and as a \fBdocstrip\fR master source code file.
+.PP
+It is not necessary to use the tclldoc document class, but that does
+provide a number of features that are convenient for "\fI.dtx\fR"
+files containing Tcl code. More information on this matter can be
+found in the references above.
+.SH "SEE ALSO"
+docstrip_util
+.SH KEYWORDS
+.dtx, LaTeX, docstrip, documentation, literate programming, source
+.SH CATEGORY
+Documentation tools
+.SH COPYRIGHT
+.nf
+Copyright (c) 2003-2005 Lars Hellström <Lars dot Hellstrom at residenset dot net>
+
+.fi

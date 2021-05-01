@@ -1,0 +1,968 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/struct/struct_tree.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2002-2004 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "struct::tree" n 2.1.1 struct "Tcl Data Structures"
+.BS
+.SH NAME
+struct::tree \- Create and manipulate tree objects
+.SH SYNOPSIS
+package require \fBTcl  8.2\fR
+.sp
+package require \fBstruct::tree  ?2.1.1?\fR
+.sp
+package require \fBstruct::list  ?1.5?\fR
+.sp
+\fB::struct::tree\fR ?\fItreeName\fR? ?\fB=\fR|\fB:=\fR|\fBas\fR|\fBdeserialize\fR \fIsource\fR?
+.sp
+\fBtreeName\fR \fBoption\fR ?\fIarg arg ...\fR?
+.sp
+\fB::struct::tree::prune\fR
+.sp
+\fItreeName\fR \fB=\fR \fIsourcetree\fR
+.sp
+\fItreeName\fR \fB-->\fR \fIdesttree\fR
+.sp
+\fItreeName\fR \fBancestors\fR \fInode\fR
+.sp
+\fItreeName\fR \fBappend\fR \fInode\fR \fIkey\fR \fIvalue\fR
+.sp
+\fItreeName\fR \fBattr\fR \fIkey\fR
+.sp
+\fItreeName\fR \fBattr\fR \fIkey\fR \fB-nodes\fR \fIlist\fR
+.sp
+\fItreeName\fR \fBattr\fR \fIkey\fR \fB-glob\fR \fIglobpattern\fR
+.sp
+\fItreeName\fR \fBattr\fR \fIkey\fR \fB-regexp\fR \fIrepattern\fR
+.sp
+\fItreeName\fR \fBchildren\fR ?\fB-all\fR? \fInode\fR ?\fBfilter\fR \fIcmdprefix\fR?
+.sp
+\fItreeName\fR \fBcut\fR \fInode\fR
+.sp
+\fItreeName\fR \fBdelete\fR \fInode\fR ?\fInode\fR ...?
+.sp
+\fItreeName\fR \fBdepth\fR \fInode\fR
+.sp
+\fItreeName\fR \fBdescendants\fR \fInode\fR ?\fBfilter\fR \fIcmdprefix\fR?
+.sp
+\fItreeName\fR \fBdeserialize\fR \fIserialization\fR
+.sp
+\fItreeName\fR \fBdestroy\fR
+.sp
+\fItreeName\fR \fBexists\fR \fInode\fR
+.sp
+\fItreeName\fR \fBget\fR \fInode\fR \fIkey\fR
+.sp
+\fItreeName\fR \fBgetall\fR \fInode\fR ?\fIpattern\fR?
+.sp
+\fItreeName\fR \fBkeys\fR \fInode\fR ?\fIpattern\fR?
+.sp
+\fItreeName\fR \fBkeyexists\fR \fInode\fR \fIkey\fR
+.sp
+\fItreeName\fR \fBindex\fR \fInode\fR
+.sp
+\fItreeName\fR \fBinsert\fR \fIparent\fR \fIindex\fR ?\fIchild\fR ?\fIchild\fR ...??
+.sp
+\fItreeName\fR \fBisleaf\fR \fInode\fR
+.sp
+\fItreeName\fR \fBlappend\fR \fInode\fR \fIkey\fR \fIvalue\fR
+.sp
+\fItreeName\fR \fBleaves\fR
+.sp
+\fItreeName\fR \fBmove\fR \fIparent\fR \fIindex\fR \fInode\fR ?\fInode\fR ...?
+.sp
+\fItreeName\fR \fBnext\fR \fInode\fR
+.sp
+\fItreeName\fR \fBnumchildren\fR \fInode\fR
+.sp
+\fItreeName\fR \fBnodes\fR
+.sp
+\fItreeName\fR \fBparent\fR \fInode\fR
+.sp
+\fItreeName\fR \fBprevious\fR \fInode\fR
+.sp
+\fItreeName\fR \fBrename\fR \fInode\fR \fInewname\fR
+.sp
+\fItreeName\fR \fBrootname\fR
+.sp
+\fItreeName\fR \fBserialize\fR ?\fInode\fR?
+.sp
+\fItreeName\fR \fBset\fR \fInode\fR \fIkey\fR ?\fIvalue\fR?
+.sp
+\fItreeName\fR \fBsize\fR ?\fInode\fR?
+.sp
+\fItreeName\fR \fBsplice\fR \fIparent\fR \fIfrom\fR ?\fIto\fR? ?\fIchild\fR?
+.sp
+\fItreeName\fR \fBswap\fR \fInode1\fR \fInode2\fR
+.sp
+\fItreeName\fR \fBunset\fR \fInode\fR \fIkey\fR
+.sp
+\fItreeName\fR \fBwalk\fR \fInode\fR ?\fB-order\fR \fIorder\fR? ?\fB-type\fR \fItype\fR? \fIloopvar\fR \fIscript\fR
+.sp
+\fItreeName\fR \fBwalkproc\fR \fInode\fR ?\fB-order\fR \fIorder\fR? ?\fB-type\fR \fItype\fR? \fIcmdprefix\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+A tree is a collection of named elements, called nodes, one of which is
+distinguished as a root, along with a relation ("parenthood") that
+places a hierarchical structure on the nodes. (Data Structures and
+Algorithms; Aho, Hopcroft and Ullman; Addison-Wesley, 1987).  In
+addition to maintaining the node relationships, this tree
+implementation allows any number of keyed values to be associated with
+each node.
+.PP
+The element names can be arbitrary strings.
+.PP
+A tree is thus similar to an array, but with three important
+differences:
+.IP [1]
+Trees are accessed through an object command, whereas arrays are
+accessed as variables. (This means trees cannot be local to a procedure.)
+.IP [2]
+Trees have a hierarchical structure, whereas an array is just an
+unordered collection.
+.IP [3]
+Each node of a tree has a separate collection of attributes and
+values. This is like an array where every value is a dictionary.
+.PP
+.PP
+\fINote:\fR The major version of the package \fBstruct\fR has
+been changed to version 2.0, due to backward incompatible changes in
+the API of this module. Please read the section
+\fBChanges for 2.0\fR for a full list of all changes,
+incompatible and otherwise.
+.PP
+.SH API
+.SS "TREE CLASS API"
+The main commands of the package are:
+.TP
+\fB::struct::tree\fR ?\fItreeName\fR? ?\fB=\fR|\fB:=\fR|\fBas\fR|\fBdeserialize\fR \fIsource\fR?
+The command creates a new tree object with an associated global Tcl
+command whose name is \fItreeName\fR. This command may be used to
+invoke various operations on the tree.
+It has the following general form:
+.RS
+.TP
+\fBtreeName\fR \fBoption\fR ?\fIarg arg ...\fR?
+\fIOption\fR and the \fIarg\fRs determine the exact behavior of the
+command.
+.RE
+.sp
+If \fItreeName\fR is not specified a unique name will be generated by
+the package itself. If a \fIsource\fR is specified the new tree will
+be initialized to it. For the operators \fB=\fR, \fB:=\fR, and
+\fBas\fR \fIsource\fR is interpreted as the name of another tree
+object, and the assignment operator \fB=\fR will be executed. For
+\fBdeserialize\fR the \fIsource\fR is a serialized tree object and
+\fBdeserialize\fR will be executed.
+.sp
+In other words
+.sp
+.nf
+
+    ::struct::tree mytree = b
+
+.fi
+.sp
+is equivalent to
+.sp
+.nf
+
+    ::struct::tree mytree
+    mytree = b
+
+.fi
+.sp
+and
+.sp
+.nf
+
+    ::struct::tree mytree deserialize $b
+
+.fi
+.sp
+is equivalent to
+.sp
+.nf
+
+    ::struct::tree mytree
+    mytree deserialize $b
+
+.fi
+.TP
+\fB::struct::tree::prune\fR
+This command is provided outside of the tree methods, as it is not a
+tree method per se. It however interacts tightly with the method
+\fBwalk\fR. When used in the walk script it causes the traversal to
+ignore the children of the node we are currently at.
+This command cannot be used with the traversal modes which look at
+children before their parent, i.e. \fBpost\fR and \fBin\fR. The
+only applicable orders of traversal are \fBpre\fR and
+\fBboth\fR. An error is thrown if the command and chosen order of
+traversal do not fit.
+.PP
+.PP
+.SS "TREE OBJECT API"
+Two general observations beforehand:
+.IP [1]
+The root node of the tree can be used in most places where a node is
+asked for. The default name of the rootnode is "root", but this can be
+changed with the method \fBrename\fR (see below). Whatever the
+current name for the root node of the tree is, it can be retrieved by
+calling the method \fBrootname\fR.
+.IP [2]
+The method \fBinsert\fR is the only way to create new nodes, and
+they are automatically added to a parent. A tree object cannot have
+nodes without a parent, save the root node.
+.PP
+.PP
+And now the methods supported by tree objects created by this package:
+.TP
+\fItreeName\fR \fB=\fR \fIsourcetree\fR
+This is the assignment operator for tree objects. It copies the tree
+contained in the tree object \fIsourcetree\fR over the tree data in
+\fItreeName\fR. The old contents of \fItreeName\fR are deleted by this
+operation.
+.sp
+This operation is in effect equivalent to
+.sp
+.nf
+
+    \fItreeName\fR \fBdeserialize\fR [\fIsourcetree\fR \fBserialize\fR]
+
+.fi
+.TP
+\fItreeName\fR \fB-->\fR \fIdesttree\fR
+This is the reverse assignment operator for tree objects. It copies the tree
+contained in the tree object \fItreeName\fR over the tree data in the object
+\fIdesttree\fR. The old contents of \fIdesttree\fR are deleted by this
+operation.
+.sp
+This operation is in effect equivalent to
+.sp
+.nf
+
+    \fIdesttree\fR \fBdeserialize\fR [\fItreeName\fR \fBserialize\fR]
+
+.fi
+.TP
+\fItreeName\fR \fBancestors\fR \fInode\fR
+This method extends the method \fBparent\fR and returns a list
+containing all ancestor nodes to the specified \fInode\fR. The
+immediate ancestor, in other words, parent node, is the first element
+in that list, its parent the second element, and so on until the root
+node is reached, making it the last element of the returned list.
+.TP
+\fItreeName\fR \fBappend\fR \fInode\fR \fIkey\fR \fIvalue\fR
+Appends a \fIvalue\fR to one of the keyed values associated with an
+node. Returns the new value given to the attribute \fIkey\fR.
+.TP
+\fItreeName\fR \fBattr\fR \fIkey\fR
+.TP
+\fItreeName\fR \fBattr\fR \fIkey\fR \fB-nodes\fR \fIlist\fR
+.TP
+\fItreeName\fR \fBattr\fR \fIkey\fR \fB-glob\fR \fIglobpattern\fR
+.TP
+\fItreeName\fR \fBattr\fR \fIkey\fR \fB-regexp\fR \fIrepattern\fR
+This method retrieves the value of the attribute named \fIkey\fR, for
+all nodes in the tree (matching the restriction specified via one of
+the possible options) and having the specified attribute.
+.sp
+The result is a dictionary mapping from node names to the value of
+attribute \fIkey\fR at that node.
+Nodes not having the attribute \fIkey\fR, or not passing a
+specified restriction, are not listed in the result.
+.sp
+The possible restrictions are:
+.RS
+.TP
+\fB-nodes\fR
+The value is a list of nodes. Only the nodes mentioned in this list
+are searched for the attribute.
+.TP
+\fB-glob\fR
+The value is a glob pattern. Only the nodes in the tree whose names
+match this pattern are searched for the attribute.
+.TP
+\fB-regexp\fR
+The value is a regular expression. Only the nodes in the tree whose
+names match this pattern are searched for the attribute.
+.RE
+.sp
+.TP
+\fItreeName\fR \fBchildren\fR ?\fB-all\fR? \fInode\fR ?\fBfilter\fR \fIcmdprefix\fR?
+Return a list of the children of \fInode\fR.
+If the option \fB-all\fR is specified, then not only the direct
+children, but their children, and so on are returned in the result.
+If a filter command is specified only those nodes are listed in the
+final result which pass the test. The command in \fIcmdprefix\fR is
+called with two arguments, the name of the tree object, and the name
+of the node in question. It is executed in the context of the caller
+and has to return a boolean value. Nodes for which the command returns
+\fBfalse\fR are removed from the result list before it is returned
+to the caller.
+.sp
+Some examples:
+.sp
+.nf
+
+    mytree insert root end 0 ; mytree set 0 volume 30
+    mytree insert root end 1
+    mytree insert root end 2
+    mytree insert 0    end 3
+    mytree insert 0    end 4
+    mytree insert 4    end 5 ; mytree set 5 volume 50
+    mytree insert 4    end 6
+
+    proc vol {t n} {
+	$t keyexists $n volume
+    }
+    proc vgt40 {t n} {
+	if {![$t keyexists $n volume]} {return 0}
+	expr {[$t get $n volume] > 40}
+    }
+
+    tclsh> lsort [mytree children -all root filter vol]
+    0 5
+
+    tclsh> lsort [mytree children -all root filter vgt40]
+    5
+
+    tclsh> lsort [mytree children root filter vol]
+    0
+
+    tclsh> puts ([lsort [mytree children root filter vgt40]])
+    ()
+
+.fi
+.TP
+\fItreeName\fR \fBcut\fR \fInode\fR
+Removes the node specified by \fInode\fR from the tree, but not its
+children.  The children of \fInode\fR are made children of the parent
+of the \fInode\fR, at the index at which \fInode\fR was located.
+.TP
+\fItreeName\fR \fBdelete\fR \fInode\fR ?\fInode\fR ...?
+Remove the specified nodes from the tree.  All of the nodes' children
+will be removed as well to prevent orphaned nodes.
+.TP
+\fItreeName\fR \fBdepth\fR \fInode\fR
+Return the number of steps from node \fInode\fR to the root node.
+.TP
+\fItreeName\fR \fBdescendants\fR \fInode\fR ?\fBfilter\fR \fIcmdprefix\fR?
+This method extends the method \fBchildren\fR and returns a list
+containing all nodes descending from \fInode\fR, and passing the
+filter, if such was specified.
+.sp
+This is actually the same as
+"\fItreeName\fR \fBchildren\fR \fB-all\fR".
+\fBdescendants\fR should be prefered, and "children -all"
+will be deprecated sometime in the future.
+.TP
+\fItreeName\fR \fBdeserialize\fR \fIserialization\fR
+This is the complement to \fBserialize\fR. It replaces tree data in
+\fItreeName\fR with the tree described by the \fIserialization\fR
+value. The old contents of \fItreeName\fR are deleted by this
+operation.
+.TP
+\fItreeName\fR \fBdestroy\fR
+Destroy the tree, including its storage space and associated command.
+.TP
+\fItreeName\fR \fBexists\fR \fInode\fR
+Remove true if the specified node exists in the tree.
+.TP
+\fItreeName\fR \fBget\fR \fInode\fR \fIkey\fR
+Returns the value associated with the key \fIkey\fR for the node
+\fInode\fR.
+.TP
+\fItreeName\fR \fBgetall\fR \fInode\fR ?\fIpattern\fR?
+Returns a dictionary (suitable for use with [\fBarray set\fR])
+containing the attribute data for the \fInode\fR.
+If the glob \fIpattern\fR is specified only the attributes whose names
+match the pattern will be part of the dictionary.
+.TP
+\fItreeName\fR \fBkeys\fR \fInode\fR ?\fIpattern\fR?
+Returns a list of keys for the \fInode\fR.
+If the \fIpattern\fR is specified only the attributes whose names
+match the pattern will be part of the returned list. The pattern is a
+\fBglob\fR pattern.
+.TP
+\fItreeName\fR \fBkeyexists\fR \fInode\fR \fIkey\fR
+Return true if the specified \fIkey\fR exists for the \fInode\fR.
+.TP
+\fItreeName\fR \fBindex\fR \fInode\fR
+Returns the index of \fInode\fR in its parent's list of children.  For
+example, if a node has \fInodeFoo\fR, \fInodeBar\fR, and
+\fInodeBaz\fR as children, in that order, the index of
+\fInodeBar\fR is 1.
+.TP
+\fItreeName\fR \fBinsert\fR \fIparent\fR \fIindex\fR ?\fIchild\fR ?\fIchild\fR ...??
+Insert one or more nodes into the tree as children of the node
+\fIparent\fR. The nodes will be added in the order they are given. If
+\fIparent\fR is \fBroot\fR, it refers to the root of the tree. The
+new nodes will be added to the \fIparent\fR node's child list at the
+index given by \fIindex\fR. The \fIindex\fR can be \fBend\fR in
+which case the new nodes will be added after the current last child.
+Indices of the form "end-\fBn\fR" are accepted as well.
+.sp
+If any of the specified children already exist in \fItreeName\fR,
+those nodes will be moved from their original location to the new
+location indicated by this command.
+.sp
+If no \fIchild\fR is specified, a single node will be added, and a
+name will be generated for the new node. The generated name is of the
+form \fInode\fR\fBx\fR, where \fBx\fR is a number. If names are
+specified they must neither contain whitespace nor colons (":").
+.sp
+The return result from this command is a list of nodes added.
+.TP
+\fItreeName\fR \fBisleaf\fR \fInode\fR
+Returns true if \fInode\fR is a leaf of the tree (if \fInode\fR has no
+children), false otherwise.
+.TP
+\fItreeName\fR \fBlappend\fR \fInode\fR \fIkey\fR \fIvalue\fR
+Appends a \fIvalue\fR (as a list) to one of the keyed values
+associated with an \fInode\fR. Returns the new value given to the
+attribute \fIkey\fR.
+.TP
+\fItreeName\fR \fBleaves\fR
+Return a list containing all leaf nodes known to the tree.
+.TP
+\fItreeName\fR \fBmove\fR \fIparent\fR \fIindex\fR \fInode\fR ?\fInode\fR ...?
+Make the specified nodes children of \fIparent\fR, inserting them into
+the parent's child list at the index given by \fIindex\fR. Note that
+the command will take all nodes out of the tree before inserting them
+under the new parent, and that it determines the position to place
+them into after the removal, before the re-insertion. This behaviour
+is important when it comes to moving one or more nodes to a different
+index without changing their parent node.
+.TP
+\fItreeName\fR \fBnext\fR \fInode\fR
+Return the right sibling of \fInode\fR, or the empty string if
+\fInode\fR was the last child of its parent.
+.TP
+\fItreeName\fR \fBnumchildren\fR \fInode\fR
+Return the number of immediate children of \fInode\fR.
+.TP
+\fItreeName\fR \fBnodes\fR
+Return a list containing all nodes known to the tree.
+.TP
+\fItreeName\fR \fBparent\fR \fInode\fR
+Return the parent of \fInode\fR.
+.TP
+\fItreeName\fR \fBprevious\fR \fInode\fR
+Return the left sibling of \fInode\fR, or the empty string if
+\fInode\fR was the first child of its parent.
+.TP
+\fItreeName\fR \fBrename\fR \fInode\fR \fInewname\fR
+Renames the node \fInode\fR to \fInewname\fR. An error is thrown if
+either the node does not exist, or a node with name \fInewname\fR does
+exist. The result of the command is the new name of the node.
+.TP
+\fItreeName\fR \fBrootname\fR
+Returns the name of the root node of the tree.
+.TP
+\fItreeName\fR \fBserialize\fR ?\fInode\fR?
+This method serializes the sub-tree starting at \fInode\fR. In other
+words it returns a tcl \fIvalue\fR completely describing the tree
+starting at \fInode\fR.
+This allows, for example, the transfer of tree objects (or parts
+thereof) over arbitrary channels, persistence, etc.
+This method is also the basis for both the copy constructor and
+the assignment operator.
+.sp
+The result of this method has to be semantically identical over all
+implementations of the tree interface. This is what will enable us to
+copy tree data between different implementations of the same
+interface.
+.sp
+The result is a list containing containing a multiple of three
+elements. It is like a serialized array except that there are two
+values following each key. They are the names of the nodes in the
+serialized tree. The two values are a reference to the parent node and
+the attribute data, in this order.
+.sp
+The reference to the parent node is the empty string for the root node
+of the tree. For all other nodes it is the index of the parent node in
+the list. This means that they are integers, greater than or equal to
+zero, less than the length of the list, and multiples of three.
+The order of the nodes in the list is important insofar as it is used
+to reconstruct the lists of children for each node. The children of a
+node have to be listed in the serialization in the same order as they
+are listed in their parent in the tree.
+.sp
+The attribute data of a node is a dictionary, i.e. a list of even
+length containing a serialized array. For a node without attribute
+data the dictionary is the empty list.
+.sp
+\fINote:\fR While the current implementation returns the root node as
+the first element of the list, followed by its children and their
+children in a depth-first traversal this is not necessarily true for
+other implementations.
+The only information a reader of the serialized data can rely on for
+the structure of the tree is that the root node is signaled by the
+empty string for the parent reference, that all other nodes refer to
+their parent through the index in the list, and that children occur in
+the same order as in their parent.
+.sp
+.nf
+
+ A possible serialization for the tree structure
+
+             +- d
+       +- a -+
+ root -+- b  +- e
+       +- c
+ is
+
+ {root {} {} a 0 {} d 3 {} e 3 {} b 0 {} c 0 {}}
+
+ The above assumes that none of the nodes have attributes.
+
+.fi
+.TP
+\fItreeName\fR \fBset\fR \fInode\fR \fIkey\fR ?\fIvalue\fR?
+Set or get one of the keyed values associated with a node. A node may
+have any number of keyed values associated with it.  If \fIvalue\fR is
+not specified, this command returns the current value assigned to the
+key; if \fIvalue\fR is specified, this command assigns that value to
+the key, and returns it.
+.TP
+\fItreeName\fR \fBsize\fR ?\fInode\fR?
+Return a count of the number of descendants of the node \fInode\fR; if
+no node is specified, \fBroot\fR is assumed.
+.TP
+\fItreeName\fR \fBsplice\fR \fIparent\fR \fIfrom\fR ?\fIto\fR? ?\fIchild\fR?
+Insert a node named \fIchild\fR into the tree as a child of the node
+\fIparent\fR. If \fIparent\fR is \fBroot\fR, it refers to the root
+of the tree. The new node will be added to the parent node's child
+list at the index given by \fIfrom\fR.  The children of \fIparent\fR
+which are in the range of the indices \fIfrom\fR and \fIto\fR are made
+children of \fIchild\fR.  If the value of \fIto\fR is not specified it
+defaults to \fBend\fR.  If no name is given for \fIchild\fR, a name
+will be generated for the new node.  The generated name is of the form
+\fInode\fR\fBx\fR, where \fBx\fR is a number.  The return result
+from this command is the name of the new node.
+.sp
+The arguments \fIfrom\fR and \fIto\fR are regular list indices, i.e.
+the form "end-\fBn\fR" is accepted as well.
+.TP
+\fItreeName\fR \fBswap\fR \fInode1\fR \fInode2\fR
+Swap the position of \fInode1\fR and \fInode2\fR in the tree.
+.TP
+\fItreeName\fR \fBunset\fR \fInode\fR \fIkey\fR
+Remove a keyed value from the node \fInode\fR. The method will do
+nothing if the \fIkey\fR does not exist.
+.TP
+\fItreeName\fR \fBwalk\fR \fInode\fR ?\fB-order\fR \fIorder\fR? ?\fB-type\fR \fItype\fR? \fIloopvar\fR \fIscript\fR
+Perform a breadth-first or depth-first walk of the tree starting at
+the node \fInode\fR.  The type of walk, breadth-first or depth-first,
+is determined by the value of \fItype\fR; \fBbfs\fR indicates
+breadth-first, \fBdfs\fR indicates depth-first.  Depth-first is the
+default. The order of the walk, pre-, post-, both- or in-order is
+determined by the value of \fIorder\fR; \fBpre\fR indicates
+pre-order, \fBpost\fR indicates post-order, \fBboth\fR indicates
+both-order and \fBin\fR indicates in-order. Pre-order is the
+default.
+.sp
+Pre-order walking means that a parent node is visited before any of
+its children.  For example, a breadth-first search starting from the
+root will visit the root, followed by all of the root's children,
+followed by all of the root's grandchildren. Post-order walking means
+that a parent node is visited after any of its children. Both-order
+walking means that a parent node is visited before \fIand\fR after
+any of its children. In-order walking means that a parent node is
+visited after its first child and before the second. This is a
+generalization of in-order walking for binary trees and will do the
+right thing if a binary tree is walked. The combination of a breadth-first
+walk with in-order is illegal.
+.sp
+As the walk progresses, the \fIscript\fR will be evaluated at each
+node. The evaluation takes place in the context of the caller of the
+method.
+Regarding loop variables, these are listed in \fIloopvar\fR. If one
+only one variable is specified it will be set to the id of the
+node. When two variables are specified, i.e. \fIloopvar\fR is a true
+list, then the first variable will be set to the action performed at
+the node, and the other to the id of the node itself.
+All loop variables are created in the context of the caller.
+.sp
+There are three possible actions: \fBenter\fR, \fBleave\fR,
+or \fBvisit\fR.  \fBenter\fR actions occur during pre-order
+walks; \fBleave\fR actions occur during post-order walks;
+\fBvisit\fR actions occur during in-order walks.  In a both-order
+walk, the command will be evaluated twice for each node; the action is
+\fBenter\fR for the first evaluation, and \fBleave\fR for the
+second.
+.sp
+\fINote\fR: The \fBenter\fR action for a node is always performed
+before the walker will look at the children of that node. This means
+that changes made by the \fIscript\fR to the children of the node
+will immediately influence the walker and the steps it will take.
+.sp
+Any other manipulation, for example of nodes higher in the tree (i.e
+already visited), or upon leaving will have undefined results. They
+may succeed, error out, silently compute the wrong result, or anything
+in between.
+.sp
+At last a small table showing the relationship between the various
+options and the possible actions.
+.sp
+.nf
+
+ order       type    actions         notes
+ -----       ----    -----           -----
+ pre         dfs     enter           parent before children
+ post        dfs     leave           parent after children
+ in          dfs     visit           parent between first and second child.
+ both        dfs     enter, leave    parent before and after children
+ -----       ----    -----           -----
+ pre         bfs     enter           parent before children
+ post        bfs     leave           parent after children
+ in          bfs             -- illegal --
+ both        bfs     enter, leave    parent before and after children
+ -----       ----    -----           -----
+
+.fi
+.sp
+Note the command \fB::struct::tree::prune\fR. This command can be used
+in the walk script to force the command to ignore the children of the
+node we are currently at. It will throw an error if the order of
+traversal is either \fBpost\fR or \fBin\fR as these modes visit
+the children before their parent, making pruning non-sensical.
+.TP
+\fItreeName\fR \fBwalkproc\fR \fInode\fR ?\fB-order\fR \fIorder\fR? ?\fB-type\fR \fItype\fR? \fIcmdprefix\fR
+This method is like method \fBwalk\fR in all essentials, except the
+interface to the user code. This method invokes a command prefix with
+three additional arguments (tree, node, and action), instead of
+evaluating a script and passing the node via a loop variable.
+.PP
+.SS "CHANGES FOR 2.0"
+The following noteworthy changes have occurred:
+.IP [1]
+The API for accessing attributes and their values has been
+simplified.
+.sp
+All functionality regarding the default attribute "data" has been
+removed. This default attribute does not exist anymore. All accesses
+to attributes have to specify the name of the attribute in
+question. This backward \fIincompatible\fR change allowed us to
+simplify the signature of all methods handling attributes.
+.sp
+Especially the flag \fB-key\fR is not required anymore, even more,
+its use is now forbidden. Please read the documentation for the
+methods \fBset\fR, \fBget\fR, \fBgetall\fR, \fBunset\fR,
+\fBappend\fR, \fBlappend\fR, \fBkeyexists\fR
+and \fBkeys\fR for a description of the new API's.
+.IP [2]
+The methods \fBkeys\fR and \fBgetall\fR now take an optional
+pattern argument and will return only attribute data for keys matching
+this pattern.
+.IP [3]
+Nodes can now be renamed. See the documentation for the method
+\fBrename\fR.
+.IP [4]
+The structure has been extended with API's for the serialization and
+deserialization of tree objects, and a number of operations based on
+them (tree assignment, copy construction).
+.sp
+Please read the documentation for the methods \fBserialize\fR,
+\fBdeserialize\fR, \fB=\fR, and \fB-->\fR, and the
+documentation on the construction of tree objects.
+.sp
+Beyond the copying of whole tree objects these new API's also enable
+the transfer of tree objects over arbitrary channels and for easy
+persistence.
+.IP [5]
+The walker API has been streamlined and made more similar to the
+command \fBforeach\fR. In detail:
+.RS
+.IP \(bu
+The superfluous option \fB-command\fR has been removed.
+.IP \(bu
+Ditto for the place holders. Instead of the placeholders two loop
+variables have to be specified to contain node and action information.
+.IP \(bu
+The old command argument has been documented as a script now, which it
+was in the past too.
+.IP \(bu
+The fact that \fBenter\fR actions are called before the walker looks
+at the children of a node has been documented now. In other words it
+is now officially allowed to manipulate the list of children for a
+node under \fIthese\fR circumstances. It has been made clear that
+changes under any other circumstances will have undefined results,
+from silently computing the wrong result to erroring out.
+.RE
+.IP [6]
+A new method, \fBattr\fR, was added allowing the query and
+retrieval of attribute data without regard to the node relationship.
+.IP [7]
+The method \fBchildren\fR has been extended with the ability to
+select from the children of the node based on an arbitrary filtering
+criterium. Another extension is the ability to look not only at the
+immediate children of the node, but the whole tree below it.
+.PP
+.SH EXAMPLES
+The following example demonstrates the creation of new nodes:
+.nf
+
+    mytree insert root end 0   ; # Create node 0, as child of the root
+    mytree insert root end 1 2 ; # Ditto nodes 1 & 2
+    mytree insert 0    end 3   ; # Now create node 3 as child of node 0
+    mytree insert 0    end     ; # Create another child of 0, with a
+    #                              generated name. The name is returned
+    #                              as the result of the command.
+
+.fi
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIstruct :: tree\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+breadth-first, depth-first, in-order, node, post-order, pre-order, serialization, tree
+.SH CATEGORY
+Data structures
+.SH COPYRIGHT
+.nf
+Copyright (c) 2002-2004 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

@@ -1,0 +1,737 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/doctools2toc/import.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "doctools::toc::import" n 0.1 doctools2toc "Documentation tools"
+.BS
+.SH NAME
+doctools::toc::import \- Importing keyword indices
+.SH SYNOPSIS
+package require \fBdoctools::toc::import  ?0.1?\fR
+.sp
+package require \fBTcl  8.4\fR
+.sp
+package require \fBdoctools::config \fR
+.sp
+package require \fBdoctools::toc::structure \fR
+.sp
+package require \fBsnit \fR
+.sp
+package require \fBpluginmgr \fR
+.sp
+\fB::doctools::toc::import\fR \fIobjectName\fR
+.sp
+\fBobjectName\fR \fBmethod\fR ?\fIarg arg ...\fR?
+.sp
+\fIobjectName\fR \fBdestroy\fR
+.sp
+\fIobjectName\fR \fBimport text\fR \fItext\fR ?\fIformat\fR?
+.sp
+\fIobjectName\fR \fBimport file\fR \fIpath\fR ?\fIformat\fR?
+.sp
+\fIobjectName\fR \fBimport object text\fR \fIobject\fR \fItext\fR ?\fIformat\fR?
+.sp
+\fIobjectName\fR \fBimport object file\fR \fIobject\fR \fIpath\fR ?\fIformat\fR?
+.sp
+\fIobjectName\fR \fBconfig names\fR
+.sp
+\fIobjectName\fR \fBconfig get\fR
+.sp
+\fIobjectName\fR \fBconfig set\fR \fIname\fR ?\fIvalue\fR?
+.sp
+\fIobjectName\fR \fBconfig unset\fR \fIpattern\fR...
+.sp
+\fIobjectName\fR \fBincludes\fR
+.sp
+\fIobjectName\fR \fBinclude add\fR \fIpath\fR
+.sp
+\fIobjectName\fR \fBinclude remove\fR \fIpath\fR
+.sp
+\fIobjectName\fR \fBinclude clear\fR
+.sp
+\fBIncludeFile\fR \fIcurrentfile\fR \fIpath\fR
+.sp
+\fBimport\fR \fItext\fR \fIconfiguration\fR
+.sp
+.BE
+.SH DESCRIPTION
+This package provides a class to manage the plugins for the import of
+tables of contents from other formats, i.e. their conversion from, for
+example \fIdoctoc\fR, \fIjson\fR, etc.
+.PP
+This is one of the three public pillars the management of tables of
+contents resides on. The other two pillars are
+.IP [1]
+\fIExporting tables of contents\fR, and
+.IP [2]
+\fIHolding tables of contents\fR
+.PP
+.PP
+For information about the \fBConcepts\fR of tables of contents,
+and their parts, see the same-named section.
+For information about the data structure which is the major output of
+the manager objects provided by this package see the section
+\fBToC serialization format\fR.
+.PP
+The plugin system of our class is based on the package
+\fBpluginmgr\fR, and configured to look for plugins using
+.IP [1]
+the environment variable \fBDOCTOOLS_TOC_IMPORT_PLUGINS\fR,
+.IP [2]
+the environment variable \fBDOCTOOLS_TOC_PLUGINS\fR,
+.IP [3]
+the environment variable \fBDOCTOOLS_PLUGINS\fR,
+.IP [4]
+the path "\fI~/.doctools/toc/import/plugin\fR"
+.IP [5]
+the path "\fI~/.doctools/toc/plugin\fR"
+.IP [6]
+the path "\fI~/.doctools/plugin\fR"
+.IP [7]
+the path "\fI~/.doctools/toc/import/plugins\fR"
+.IP [8]
+the path "\fI~/.doctools/toc/plugins\fR"
+.IP [9]
+the path "\fI~/.doctools/plugins\fR"
+.IP [10]
+the registry entry "HKEY_CURRENT_USER\\SOFTWARE\\DOCTOOLS\\TOC\\IMPORT\\PLUGINS"
+.IP [11]
+the registry entry "HKEY_CURRENT_USER\\SOFTWARE\\DOCTOOLS\\TOC\\PLUGINS"
+.IP [12]
+the registry entry "HKEY_CURRENT_USER\\SOFTWARE\\DOCTOOLS\\PLUGINS"
+.PP
+The last three are used only when the package is run on a machine
+using Windows(tm) operating system.
+.PP
+The whole system is delivered with two predefined import plugins,
+namely
+.TP
+doctoc
+See \fIdoctoc import plugin\fR for details.
+.TP
+json
+See \fIjson import plugin\fR for details.
+.PP
+.PP
+Readers wishing to write their own import plugin for some format, i.e.
+\fIplugin writer\fRs reading and understanding the section
+containing the \fBImport plugin API v2 reference\fR is an
+absolute necessity, as it specifies the interaction between this
+package and its plugins in detail.
+.SH CONCEPTS
+.IP [1]
+A \fItable of contents\fR consists of a (possibly empty) list of
+\fIelements\fR.
+.IP [2]
+Each element in the list is identified by its label.
+.IP [3]
+Each element is either a \fIreference\fR, or a \fIdivision\fR.
+.IP [4]
+Each reference has an associated document, identified by a symbolic
+id, and a textual description.
+.IP [5]
+Each division may have an associated document, identified by a
+symbolic id.
+.IP [6]
+Each division consists consists of a (possibly empty) list of
+\fIelements\fR, with each element following the rules as specified in
+item 2 and above.
+.PP
+A few notes
+.IP [1]
+The above rules span up a tree of elements, with references as the
+leaf nodes, and divisions as the inner nodes, and each element
+representing an entry in the whole table of contents.
+.IP [2]
+The identifying labels of any element E are unique within their
+division (or toc), and the full label of any element E is the list of
+labels for all nodes on the unique path from the root of the tree to
+E, including E.
+.PP
+.SH API
+.SS "PACKAGE COMMANDS"
+.TP
+\fB::doctools::toc::import\fR \fIobjectName\fR
+This command creates a new import manager object with an associated
+Tcl command whose name is \fIobjectName\fR. This \fIobject\fR command
+is explained in full detail in the sections \fBObject command\fR
+and \fBObject methods\fR. The object command will be created
+under the current namespace if the \fIobjectName\fR is not fully
+qualified, and in the specified namespace otherwise.
+.PP
+.SS "OBJECT COMMAND"
+All objects created by the \fB::doctools::toc::import\fR command have
+the following general form:
+.TP
+\fBobjectName\fR \fBmethod\fR ?\fIarg arg ...\fR?
+The method \fBmethod\fR and its \fIarg\fR'uments determine the
+exact behavior of the command.
+See section \fBObject methods\fR for the detailed
+specifications.
+.PP
+.SS "OBJECT METHODS"
+.TP
+\fIobjectName\fR \fBdestroy\fR
+This method destroys the object it is invoked for.
+.TP
+\fIobjectName\fR \fBimport text\fR \fItext\fR ?\fIformat\fR?
+This method takes the \fItext\fR and converts it from the specified
+\fIformat\fR to the canonical serialization of a table of contents using
+the import plugin for the format. An error is thrown if no plugin
+could be found for the format.
+The serialization generated by the conversion process is returned as
+the result of this method.
+.sp
+If no format is specified the method defaults to \fBdoctoc\fR.
+.sp
+The specification of what a \fIcanonical\fR serialization is can be
+found in the section \fBToC serialization format\fR.
+.sp
+The plugin has to conform to the interface specified in section
+\fBImport plugin API v2 reference\fR.
+.TP
+\fIobjectName\fR \fBimport file\fR \fIpath\fR ?\fIformat\fR?
+This method is a convenient wrapper around the \fBimport text\fR
+method described by the previous item.
+It reads the contents of the specified file into memory, feeds the
+result into \fBimport text\fR and returns the resulting
+serialization as its own result.
+.TP
+\fIobjectName\fR \fBimport object text\fR \fIobject\fR \fItext\fR ?\fIformat\fR?
+This method is a convenient wrapper around the \fBimport text\fR
+method described by the previous item.
+It expects that \fIobject\fR is an object command supporting a
+\fBdeserialize\fR method expecting the canonical serialization of a
+table of contents.
+It imports the text using \fBimport text\fR and then feeds the
+resulting serialization into the \fIobject\fR via \fBdeserialize\fR.
+This method returns the empty string as it result.
+.TP
+\fIobjectName\fR \fBimport object file\fR \fIobject\fR \fIpath\fR ?\fIformat\fR?
+This method behaves like \fBimport object text\fR, except that it
+reads the text to convert from the specified file instead of being
+given it as argument.
+.TP
+\fIobjectName\fR \fBconfig names\fR
+This method returns a list containing the names of all configuration
+variables currently known to the object.
+.TP
+\fIobjectName\fR \fBconfig get\fR
+This method returns a dictionary containing the names and values of
+all configuration variables currently known to the object.
+.TP
+\fIobjectName\fR \fBconfig set\fR \fIname\fR ?\fIvalue\fR?
+This method sets the configuration variable \fIname\fR to the
+specified \fIvalue\fR and returns the new value of the variable.
+.sp
+If no value is specified it simply returns the current value, without
+changing it.
+.sp
+Note that while the user can set the predefined configuration
+variables \fBuser\fR and \fBformat\fR doing so will have no
+effect, these values will be internally overriden when invoking an
+import plugin.
+.TP
+\fIobjectName\fR \fBconfig unset\fR \fIpattern\fR...
+This method unsets all configuration variables matching the specified
+glob \fIpattern\fRs. If no pattern is specified it will unset all
+currently defined configuration variables.
+.TP
+\fIobjectName\fR \fBincludes\fR
+This method returns a list containing the currently specified paths to
+use to search for include files when processing input.
+The order of paths in the list corresponds to the order in which they
+are used, from first to last, and also corresponds to the order in
+which they were added to the object.
+.TP
+\fIobjectName\fR \fBinclude add\fR \fIpath\fR
+This methods adds the specified \fIpath\fR to the list of paths to use
+to search for include files when processing input. The path is added
+to the end of the list, causing it to be searched after all previously
+added paths. The result of the command is the empty string.
+.sp
+The method does nothing if the path is already known.
+.TP
+\fIobjectName\fR \fBinclude remove\fR \fIpath\fR
+This methods removes the specified \fIpath\fR from the list of paths
+to use to search for include files when processing input. The result
+of the command is the empty string.
+.sp
+The method does nothing if the path is not known.
+.TP
+\fIobjectName\fR \fBinclude clear\fR
+This method clears the list of paths to use to search for include
+files when processing input. The result of the command is the empty
+string.
+.PP
+.SH "IMPORT PLUGIN API V2 REFERENCE"
+Plugins are what this package uses to manage the support for any input
+format beyond the \fBToC serialization format\fR. Here we
+specify the API the objects created by this package use to interact
+with their plugins.
+.PP
+A plugin for this package has to follow the rules listed below:
+.IP [1]
+A plugin is a package.
+.IP [2]
+The name of a plugin package has the form
+doctools::toc::import::\fBFOO\fR,
+where \fBFOO\fR is the name of the format the plugin will
+generate output for. This name is also the argument to provide
+to the various \fBimport\fR methods of import manager
+objects to get a string encoding a table of contents in that
+format.
+.IP [3]
+The plugin can expect that the package
+\fBdoctools::toc::export::plugin\fR is present, as
+indicator that it was invoked from a genuine plugin manager.
+.IP [4]
+The plugin can expect that a command named \fBIncludeFile\fR is
+present, with the signature
+.RS
+.TP
+\fBIncludeFile\fR \fIcurrentfile\fR \fIpath\fR
+This command has to be invoked by the plugin when it has to process an
+included file, if the format has the concept of such. An example of
+such a format would be \fIdoctoc\fR.
+.sp
+The plugin has to supply the following arguments
+.RS
+.TP
+string \fIcurrentfile\fR
+The path of the file it is currently processing. This may be the empty
+string if no such is known.
+.TP
+string \fIpath\fR
+The path of the include file as specified in the include directive
+being processed.
+.RE
+The result of the command will be a 5-element list containing
+.RS
+.IP [1]
+A boolean flag indicating the success (\fBTrue\fR) or failure
+(\fBFalse\fR) of the operation.
+.IP [2]
+In case of success the contents of the included file, and the
+empty string otherwise.
+.IP [3]
+The resolved, i.e. absolute path of the included file, if
+possible, or the unchanged \fIpath\fR argument. This is for
+display in an error message, or as the \fIcurrentfile\fR
+argument of another call to \fBIncludeFile\fR should this file
+contain more files.
+.IP [4]
+In case of success an empty string, and for failure a code
+indicating the reason for it, one of
+.RS
+.TP
+notfound
+The specified file could not be found.
+.TP
+notread
+The specified file was found, but not be read into memory.
+.RE
+.IP [5]
+An empty string in case of success of a \fBnotfound\fR
+failure, and an additional error message describing the reason
+for a \fBnotread\fR error in more detail.
+.RE
+.RE
+.IP [5]
+A plugin has to provide one command, with the signature shown
+below.
+.RS
+.TP
+\fBimport\fR \fItext\fR \fIconfiguration\fR
+Whenever an import manager of \fBdoctools::toc\fR has to parse
+input for a table of contents it will invoke this command.
+.RS
+.TP
+string \fItext\fR
+This argument will contain the text encoding the table of contents per
+the format the plugin is for.
+.TP
+dictionary \fIconfiguration\fR
+This argument will contain the current configuration to apply to the
+parsing, as a dictionary mapping from variable names to values.
+.sp
+The following configuration variables have a predefined meaning all
+plugins have to obey, although they can ignore this information at
+their discretion. Any other other configuration variables recognized
+by a plugin will be described in the manpage for that plugin.
+.RS
+.TP
+user
+This variable is expected to contain the name of the user
+owning the process invoking the plugin.
+.TP
+format
+This variable is expected to contain the name of the
+format whose plugin is invoked.
+.RE
+.RE
+.RE
+.IP [6]
+A single usage cycle of a plugin consists of the invokations of
+the command \fBimport\fR. This call has to leave the plugin in
+a state where another usage cycle can be run without problems.
+.PP
+.SH "TOC SERIALIZATION FORMAT"
+Here we specify the format used by the doctools v2 packages to
+serialize tables of contents as immutable values for transport,
+comparison, etc.
+.PP
+We distinguish between \fIregular\fR and \fIcanonical\fR
+serializations.
+While a table of contents may have more than one regular serialization
+only exactly one of them will be \fIcanonical\fR.
+.PP
+.TP
+regular serialization
+.RS
+.IP [1]
+The serialization of any table of contents is a nested Tcl dictionary.
+.IP [2]
+This dictionary holds a single key, \fBdoctools::toc\fR, and its
+value. This value holds the contents of the table of contents.
+.IP [3]
+The contents of the table of contents are a Tcl dictionary holding the
+title of the table of contents, a label, and its elements. The
+relevant keys and their values are
+.RS
+.TP
+\fBtitle\fR
+The value is a string containing the title of the table of contents.
+.TP
+\fBlabel\fR
+The value is a string containing a label for the table of contents.
+.TP
+\fBitems\fR
+The value is a Tcl list holding the elements of the table, in the
+order they are to be shown.
+.sp
+Each element is a Tcl list holding the type of the item, and its
+description, in this order. An alternative description would be that
+it is a Tcl dictionary holding a single key, the item type, mapped to
+the item description.
+.sp
+The two legal item types and their descriptions are
+.RS
+.TP
+\fBreference\fR
+This item describes a single entry in the table of contents,
+referencing a single document.
+To this end its value is a Tcl dictionary containing an id for the
+referenced document, a label, and a longer textual description which
+can be associated with the entry.
+The relevant keys and their values are
+.RS
+.TP
+\fBid\fR
+The value is a string containing the id of the document associated
+with the entry.
+.TP
+\fBlabel\fR
+The value is a string containing a label for this entry. This string
+also identifies the entry, and no two entries (references and
+divisions) in the containing list are allowed to have the same label.
+.TP
+\fBdesc\fR
+The value is a string containing a longer description for this entry.
+.RE
+.TP
+\fBdivision\fR
+This item describes a group of entries in the table of contents,
+inducing a hierarchy of entries.
+To this end its value is a Tcl dictionary containing a label for the
+group, an optional id to a document for the whole group, and the list
+of entries in the group.
+The relevant keys and their values are
+.RS
+.TP
+\fBid\fR
+The value is a string containing the id of the document associated
+with the whole group. This key is optional.
+.TP
+\fBlabel\fR
+The value is a string containing a label for the group. This string
+also identifies the entry, and no two entries (references and
+divisions) in the containing list are allowed to have the same label.
+.TP
+\fBitems\fR
+The value is a Tcl list holding the elements of the group, in the
+order they are to be shown.
+This list has the same structure as the value for the keyword
+\fBitems\fR used to describe the whole table of contents, see
+above. This closes the recusrive definition of the structure, with
+divisions holding the same type of elements as the whole table of
+contents, including other divisions.
+.RE
+.RE
+.RE
+.RE
+.TP
+canonical serialization
+The canonical serialization of a table of contents has the format as
+specified in the previous item, and then additionally satisfies the
+constraints below, which make it unique among all the possible
+serializations of this table of contents.
+.RS
+.IP [1]
+The keys found in all the nested Tcl dictionaries are sorted in
+ascending dictionary order, as generated by Tcl's builtin command
+\fBlsort -increasing -dict\fR.
+.RE
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIdoctools\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+conversion, doctoc, documentation, import, json, manpage, markup, parsing, plugin, reference, table, table of contents, url
+.SH CATEGORY
+Documentation tools
+.SH COPYRIGHT
+.nf
+Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

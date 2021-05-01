@@ -1,0 +1,246 @@
+.TH "MPSUnaryImageKernel" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSUnaryImageKernel
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSImageKernel\&.h>\fP
+.PP
+Inherits \fBMPSKernel\fP\&.
+.PP
+Inherited by \fBMPSImageAreaMax\fP, \fBMPSImageBox\fP, \fBMPSImageConversion\fP, \fBMPSImageConvolution\fP, \fBMPSImageDilate\fP, \fBMPSImageEuclideanDistanceTransform\fP, \fBMPSImageGaussianBlur\fP, \fBMPSImageHistogramEqualization\fP, \fBMPSImageHistogramSpecification\fP, \fBMPSImageIntegral\fP, \fBMPSImageIntegralOfSquares\fP, \fBMPSImageLaplacian\fP, \fBMPSImageMedian\fP, \fBMPSImagePyramid\fP, \fBMPSImageReduceUnary\fP, \fBMPSImageScale\fP, \fBMPSImageSobel\fP, \fBMPSImageStatisticsMean\fP, \fBMPSImageStatisticsMeanAndVariance\fP, \fBMPSImageStatisticsMinAndMax\fP, \fBMPSImageThresholdBinary\fP, \fBMPSImageThresholdBinaryInverse\fP, \fBMPSImageThresholdToZero\fP, \fBMPSImageThresholdToZeroInverse\fP, \fBMPSImageThresholdTruncate\fP, and \fBMPSImageTranspose\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(BOOL) \- \fBencodeToCommandBuffer:inPlaceTexture:fallbackCopyAllocator:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceTexture:destinationTexture:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceImage:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSRegion\fP) \- \fBsourceRegionForDestinationSize:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "\fBMPSOffset\fP \fBoffset\fP"
+.br
+.ti -1c
+.RI "MTLRegion \fBclipRect\fP"
+.br
+.ti -1c
+.RI "\fBMPSImageEdgeMode\fP \fBedgeMode\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  \fBA\fP \fBMPSUnaryImageKernel\fP consumes one MTLTexture and produces one MTLTexture\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (BOOL) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(__nonnull id< MTLTexture > __strong *__nonnull) texture(nullable \fBMPSCopyAllocator\fP) copyAllocator"
+This method attempts to apply the \fBMPSKernel\fP in place on a texture\&. 
+.PP
+.nf
+    In-place operation means that the same texture is used both to hold the input
+    image and the results. Operating in-place can be an excellent way to reduce
+    resource utilization, and save time and energy. While simple Metal kernels can
+    not operate in place because textures can not be readable and writable at the
+    same time, some MPSKernels can operate in place because they use
+    multi-pass algorithms. Whether a MPSKernel can operate in-place can
+    depend on current hardware, operating system revision and the parameters
+    and properties passed to it. You should never assume that a MPSKernel will
+    continue to work in place, even if you have observed it doing so before.
+
+.fi
+.PP
+.PP
+If the operation succeeds in-place, YES is returned\&. If the in-place operation fails and no copyAllocator is provided, then NO is returned\&. Without a fallback MPSCopyAllocator, in neither case is the pointer held at *texture modified\&.
+.PP
+Failure during in-place operation is very common and will occur inconsistently across different hardware platforms and OS releases\&. Without a fallback MPSCopyAllocator, operating in place may require significant error handling code to accompany each call to -encodeToCommandBuffer:\&.\&.\&., complicating your code\&.
+.PP
+You may find it simplifies your code to provide a fallback MPSCopyAllocator so that the operation can proceed reliably even when it can not proceed in-place\&. When an in-place filter fails, the MPSCopyAllocator (if any) will be invoked to create a new texture in which to write the results, allowing the filter to proceed reliably out-of-place\&. The original texture will be released, replaced with a pointer to the new texture and YES will be returned\&. If the allocator returns an invalid texture, it is released, *texture remains unmodified and NO is returned\&. Please see the MPSCopyAllocator definition for a sample allocator implementation\&.
+.PP
+Sample usage with a copy allocator: 
+.PP
+.nf
+id <MTLTexture> inPlaceTex = \&.\&.\&.;
+MPSImageSobel *sobelFiler = [[MPSImageSobel alloc] initWithDevice: my_device];
+
+// With a fallback MPSCopyAllocator, failure should only occur in exceptional
+// conditions such as MTLTexture allocation failure or programmer error\&.
+// That is, the operation is roughly as robust as the MPSCopyAllocator\&.
+// Depending on the quality of that, we might decide we are justified here
+// in not checking the return value\&.
+[sobelFilter encodeToCommandBuffer: my_command_buffer
+                    inPlaceTexture: &inPlaceTex  // may be replaced!
+             fallbackCopyAllocator: myAllocator];
+
+// If myAllocator was not called:
+//
+//      inPlaceTex holds the original texture with the result pixels in it
+//
+// else,
+//
+//      1) myAllocator creates a new texture\&.
+//      2) The new texture pixel data is overwritten by MPSUnaryImageKernel\&.
+//      3) The old texture passed in *inPlaceTex is released once\&.
+//      4) *inPlaceTex = the new texture
+//
+// In either case, the caller should now hold one reference to the texture now held in
+// inPlaceTex, whether it was replaced or not\&. Most of the time that means that nothing
+// further needs to be done here, and you can proceed to the next image encoding operation\&.
+// However, if other agents held references to the original texture, they still hold them
+// and may need to be alerted that the texture has been replaced so that they can retain
+// the new texture and release the old one\&.
+
+[sobelFilter release];  // if not ARC, clean up the MPSImageSobel object
+
+.fi
+.PP
+.PP
+Note: Image filters that look at neighboring pixel values may actually consume more memory when operating in place than out of place\&. Many such operations are tiled internally to save intermediate texture storage, but can not tile when operating in place\&. The memory savings for tiling is however very short term, typically the lifetime of the MTLCommandBuffer\&.
+.PP
+Attempt to apply a \fBMPSKernel\fP to a texture in place\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fItexture\fP \fBA\fP pointer to a valid MTLTexture containing source image\&. On success, the image contents and possibly texture itself will be replaced with the result image\&. 
+.br
+\fIcopyAllocator\fP An optional block to allocate a new texture to hold the results, in case in-place operation is not possible\&. The allocator may use a different MTLPixelFormat or size than the original texture\&. You may enqueue operations on the provided MTLCommandBuffer using the provided MTLComputeCommandEncoder to initialize the texture contents\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+On success, YES is returned\&. The texture may have been replaced with a new texture if a copyAllocator was provided\&. On failure, NO is returned\&. The texture is unmodified\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(nonnull \fBMPSImage\fP *) sourceImage(nonnull \fBMPSImage\fP *) destinationImage"
+Encode a \fBMPSKernel\fP into a command Buffer\&. The operation shall proceed out-of-place\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceImage\fP \fBA\fP valid \fBMPSImage\fP containing the source image\&. 
+.br
+\fIdestinationImage\fP \fBA\fP valid \fBMPSImage\fP to be overwritten by result image\&. DestinationImage may not alias sourceImage\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(nonnull id< MTLTexture >) sourceTexture(nonnull id< MTLTexture >) destinationTexture"
+Encode a \fBMPSKernel\fP into a command Buffer\&. The operation shall proceed out-of-place\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceTexture\fP \fBA\fP valid MTLTexture containing the source image\&. 
+.br
+\fIdestinationTexture\fP \fBA\fP valid MTLTexture to be overwritten by result image\&. DestinationTexture may not alias sourceTexture\&. 
+.RE
+.PP
+
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use initWithCoder:device instead\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSKernel\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.PP
+Reimplemented in \fBMPSImagePyramid\fP, \fBMPSImageHistogramSpecification\fP, \fBMPSImageHistogramEqualization\fP, \fBMPSImageSobel\fP, \fBMPSImageThresholdToZeroInverse\fP, \fBMPSImageThresholdToZero\fP, \fBMPSImageEuclideanDistanceTransform\fP, \fBMPSImageBox\fP, \fBMPSImageGaussianBlur\fP, \fBMPSImageStatisticsMean\fP, \fBMPSImageThresholdBinary\fP, \fBMPSImageThresholdTruncate\fP, \fBMPSImageDilate\fP, \fBMPSImageScale\fP, \fBMPSImageLanczosScale\fP, \fBMPSImageBilinearScale\fP, \fBMPSImageStatisticsMeanAndVariance\fP, \fBMPSImageConvolution\fP, \fBMPSImageThresholdBinaryInverse\fP, \fBMPSImageStatisticsMinAndMax\fP, \fBMPSImageMedian\fP, and \fBMPSImageAreaMax\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.PP
+Reimplemented in \fBMPSImagePyramid\fP, \fBMPSImageSobel\fP, \fBMPSImageThresholdToZeroInverse\fP, \fBMPSImageThresholdToZero\fP, \fBMPSImageEuclideanDistanceTransform\fP, \fBMPSImageBox\fP, \fBMPSImageGaussianBlur\fP, \fBMPSImageStatisticsMean\fP, \fBMPSImageThresholdBinary\fP, \fBMPSImageThresholdTruncate\fP, \fBMPSImageDilate\fP, \fBMPSImageLanczosScale\fP, \fBMPSImageBilinearScale\fP, \fBMPSImageStatisticsMeanAndVariance\fP, \fBMPSImageThresholdBinaryInverse\fP, \fBMPSImageReduceUnary\fP, \fBMPSImageReduceRowMin\fP, \fBMPSImageReduceColumnMin\fP, \fBMPSImageReduceRowMax\fP, \fBMPSImageReduceColumnMax\fP, \fBMPSImageReduceRowMean\fP, \fBMPSImageReduceColumnMean\fP, \fBMPSImageReduceRowSum\fP, \fBMPSImageReduceColumnSum\fP, \fBMPSImageScale\fP, \fBMPSImageStatisticsMinAndMax\fP, \fBMPSImageMedian\fP, and \fBMPSImageAreaMax\fP\&.
+.SS "\- (\fBMPSRegion\fP) sourceRegionForDestinationSize: (MTLSize) destinationSize"
+sourceRegionForDestinationSize: is used to determine which region of the sourceTexture will be read by encodeToCommandBuffer:sourceTexture:destinationTexture (and similar) when the filter runs\&. This information may be needed if the source image is broken into multiple textures\&. The size of the full (untiled) destination image is provided\&. The region of the full (untiled) source image that will be read is returned\&. You can then piece together an appropriate texture containing that information for use in your tiled context\&.
+.PP
+The function will consult the \fBMPSUnaryImageKernel\fP offset and clipRect parameters, to determine the full region read by the function\&. Other parameters such as sourceClipRect, kernelHeight and kernelWidth will be consulted as necessary\&. All properties should be set to intended values prior to calling sourceRegionForDestinationSize:\&. 
+.PP
+.nf
+Caution: This function operates using global image coordinates, but
+-encodeToCommandBuffer:... uses coordinates local to the source and
+destination image textures. Consequently, the offset and clipRect 
+attached to this object will need to be updated using a global to 
+local coordinate transform before -encodeToCommandBuffer:... is 
+called.
+
+.fi
+.PP
+.PP
+Determine the region of the source texture that will be read for a encode operation 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdestinationSize\fP The size of the full virtual destination image\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The area in the virtual source image that will be read\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- clipRect\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+An optional clip rectangle to use when writing data\&. Only the pixels in the rectangle will be overwritten\&.  \fBA\fP MTLRegion that indicates which part of the destination to overwrite\&. If the clipRect does not lie completely within the destination image, the intersection between clip rectangle and destination bounds is used\&. Default: MPSRectNoClip (\fBMPSKernel::MPSRectNoClip\fP) indicating the entire image\&.
+.PP
+See Also: \fBMetalPerformanceShaders\&.h\fP subsubsection_clipRect 
+.SS "\- edgeMode\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The MPSImageEdgeMode to use when texture reads stray off the edge of an image  Most \fBMPSKernel\fP objects can read off the edge of the source image\&. This can happen because of a negative offset property, because the offset + clipRect\&.size is larger than the source image or because the filter looks at neighboring pixels, such as a Convolution or morphology filter\&. Default: usually MPSImageEdgeModeZero\&. (Some \fBMPSKernel\fP types default to MPSImageEdgeModeClamp, because MPSImageEdgeModeZero is either not supported or would produce unexpected results\&.)
+.PP
+See Also: \fBMetalPerformanceShaders\&.h\fP subsubsection_edgemode 
+.SS "\- offset\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The position of the destination clip rectangle origin relative to the source buffer\&.  The offset is defined to be the position of clipRect\&.origin in source coordinates\&. Default: {0,0,0}, indicating that the top left corners of the clipRect and source image align\&.
+.PP
+See Also: \fBMetalPerformanceShaders\&.h\fP subsubsection_mpsoffset 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

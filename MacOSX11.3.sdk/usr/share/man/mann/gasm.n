@@ -1,0 +1,641 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/grammar_me/gasm.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2005 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "grammar::me::cpu::gasm" n 0.1 grammar_me "Grammar operations and usage"
+.BS
+.SH NAME
+grammar::me::cpu::gasm \- ME assembler
+.SH SYNOPSIS
+package require \fBgrammar::me::cpu::gasm  ?0.1?\fR
+.sp
+\fB::grammar::me::cpu::gasm::begin\fR \fIg\fR \fIn\fR ?\fImode\fR? ?\fInote\fR?
+.sp
+\fB::grammar::me::cpu::gasm::done\fR \fB-->\fR \fIt\fR
+.sp
+\fB::grammar::me::cpu::gasm::state\fR
+.sp
+\fB::grammar::me::cpu::gasm::state!\fR \fIs\fR
+.sp
+\fB::grammar::me::cpu::gasm::lift\fR \fIt\fR \fIdst\fR \fB=\fR \fIsrc\fR
+.sp
+\fB::grammar::me::cpu::gasm::Inline\fR \fIt\fR \fInode\fR \fIlabel\fR
+.sp
+\fB::grammar::me::cpu::gasm::Cmd\fR \fIcmd\fR ?\fIarg\fR...?
+.sp
+\fB::grammar::me::cpu::gasm::Bra\fR
+.sp
+\fB::grammar::me::cpu::gasm::Nop\fR \fItext\fR
+.sp
+\fB::grammar::me::cpu::gasm::Note\fR \fItext\fR
+.sp
+\fB::grammar::me::cpu::gasm::Jmp\fR \fIlabel\fR
+.sp
+\fB::grammar::me::cpu::gasm::Exit\fR
+.sp
+\fB::grammar::me::cpu::gasm::Who\fR \fIlabel\fR
+.sp
+\fB::grammar::me::cpu::gasm::/Label\fR \fIname\fR
+.sp
+\fB::grammar::me::cpu::gasm::/Clear\fR
+.sp
+\fB::grammar::me::cpu::gasm::/Ok\fR
+.sp
+\fB::grammar::me::cpu::gasm::/Fail\fR
+.sp
+\fB::grammar::me::cpu::gasm::/At\fR \fIname\fR
+.sp
+\fB::grammar::me::cpu::gasm::/CloseLoop\fR
+.sp
+.BE
+.SH DESCRIPTION
+This package provides a simple in-memory assembler. Its origin is that
+of a support package for use by packages converting PEG and other
+grammars into a corresponding matcher based on the ME virtual machine,
+like \fBpage::compiler::peg::mecpu\fR. Despite that it is actually
+mostly agnostic regarding the instructions, users can choose any
+instruction set they like.
+.PP
+The program under construction is held in a graph structure (See
+package \fBstruct::graph\fR) during assembly and subsequent
+manipulation, with instructions represented by nodes, and the flow of
+execution between instructions explicitly encoded in the arcs between
+them.
+.PP
+In this model jumps are not encoded explicitly, they are implicit in
+the arcs. The generation of explicit jumps is left to any code
+converting the graph structure into a more conventional
+representation. The same goes for branches. They are implicitly
+encoded by all instructions which have two outgoing arcs, whereas all
+other instructions have only one outgoing arc. Their conditonality is
+handled by tagging their outgoing arcs with information about the
+conditions under which they are taken.
+.PP
+While the graph the assembler operates on is supplied from the
+outside, i.e. external, it does manage some internal state, namely:
+.IP [1]
+The handle of the graph node most assembler operations will
+work on, the \fIanchor\fR.
+.IP [2]
+A mapping from arbitrary strings to instructions. I.e. it is
+possible to \fIlabel\fR an instruction during assembly, and later
+recall that instruction by its label.
+.IP [3]
+The condition code to use when creating arcs between
+instructions, which is one of \fBalways\fR, \fBok\fR, and
+\fBfail\fR.
+.IP [4]
+The current operation mode, one of \fBhalt\fR,
+\fBokfail\fR, and \fB!okfail\fR.
+.IP [5]
+The name of a node in a tree. This, and the operation mode
+above are the parts most heavily influenced by the needs of a grammar
+compiler, as they assume some basic program structures (selected
+through the operation mode), and intertwine the graph with a tree,
+like the AST for the grammar to be compiled.
+.PP
+.SH DEFINITIONS
+As the graph the assembler is operating on, and the tree it is
+intertwined with, are supplied to the assembler from the outside it is
+necessary to specify the API expected from them, and to describe the
+structures expected and/or generated by the assembler in either.
+.PP
+.IP [1]
+Any graph object command used by the assembler has to provide
+the API as specified in the documentation for the package
+\fBstruct::graph\fR.
+.IP [2]
+Any tree object command used by the assembler has to provide
+the API as specified in the documentation for the package
+\fBstruct::tree\fR.
+.IP [3]
+Any instruction (node) generated by the assembler in a graph
+will have at least two, and at most three attributes:
+.RS
+.TP
+\fBinstruction\fR
+The value of this attribute is the name of
+the instruction. The only names currently defined by the assembler are
+the three pseudo-instructions
+.RS
+.TP
+\fBNOP\fR
+This instruction does nothing. Useful for fixed
+framework nodes, unchanging jump destinations, and the like. No
+arguments.
+.TP
+\fBC\fR
+A .NOP to allow the insertion of arbitrary comments
+into the instruction stream, i.e. a comment node. One argument, the
+text of the comment.
+.TP
+\fBBRA\fR
+A .NOP serving as explicitly coded conditional
+branch. No arguments.
+.RE
+However we reserve the space of all instructions whose names begin
+with a "." (dot) for future use by the assembler.
+.TP
+\fBarguments\fR
+The value of this attribute is a list of
+strings, the arguments of the instruction. The contents are dependent
+on the actual instruction and the assembler doesn't know or care about
+them. This means for example that it has no builtin knowledge about
+what instruction need which arguments and thus doesn't perform any
+type of checking.
+.TP
+\fBexpr\fR
+This attribute is optional. When it is present its
+value is the name of a node in the tree intertwined with the graph.
+.RE
+.IP [4]
+Any arc between two instructions will have one attribute:
+.RS
+.TP
+\fBcondition\fR
+The value of this attribute determines under which
+condition execution will take this arc. It is one of \fBalways\fR,
+\fBok\fR, and \fBfail\fR. The first condition is used for all arcs
+which are the single outgoing arc of an instruction. The other two are
+used for the two outgoing arcs of an instruction which implicitly
+encode a branch.
+.RE
+.IP [5]
+A tree node given to the assembler for cross-referencing will
+be written to and given the following attributes, some fixed, some
+dependent on the operation mode. All values will be references to
+nodes in the instruction graph. Some of the instruction will expect
+some or specific sets of these attributes.
+.RS
+.TP
+\fBgas::entry\fR
+Always written.
+.TP
+\fBgas::exit\fR
+Written for all modes but \fBokfail\fR.
+.TP
+\fBgas::exit::ok\fR
+Written for mode \fBokfail\fR.
+.TP
+\fBgas::exit::fail\fR
+Written for mode \fBokfail\fR.
+.RE
+.PP
+.SH API
+.TP
+\fB::grammar::me::cpu::gasm::begin\fR \fIg\fR \fIn\fR ?\fImode\fR? ?\fInote\fR?
+This command starts the assembly of an instruction sequence, and
+(re)initializes the state of the assembler. After completion of the
+instruction sequence use \fB::grammar::me::cpu::gasm::done\fR to
+finalize the assembler.
+.sp
+It will operate on the graph \fIg\fR in the specified \fImode\fR
+(Default is \fBokfail\fR). As part of the initialization it will
+always create a standard .NOP instruction and label it "entry". The
+creation of the remaining standard instructions is
+\fImode\fR-dependent:
+.RS
+.TP
+\fBhalt\fR
+An "icf_halt" instruction labeled "exit/return".
+.TP
+\fB!okfail\fR
+An "icf_ntreturn" instruction labeled "exit/return".
+.TP
+\fBokfail\fR
+Two .NOP instructions labeled "exit/ok" and
+"exit/fail" respectively.
+.RE
+The \fInote\fR, if specified (default is not), is given to the "entry" .NOP instruction.
+.sp
+The node reference \fIn\fR is simply stored for use by
+\fB::grammar::me::cpu::gasm::done\fR. It has to refer to a node in the
+tree \fIt\fR argument of that command.
+.sp
+After the initialization is done the "entry" instruction will be the
+\fIanchor\fR, and the condition code will be set to \fBalways\fR.
+.sp
+The command returns the empy string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::done\fR \fB-->\fR \fIt\fR
+This command finalizes the creation of an instruction sequence and
+then clears the state of the assembler.
+\fINOTE\fR that this \fIdoes not\fR delete any of the created
+instructions. They can be made available to future begin/done cycles.
+Further assembly will be possible only after reinitialization of the
+system via \fB::grammar::me::cpu::gasm::begin\fR.
+.sp
+Before the state is cleared selected references to selected
+instructions will be written to attributes of the node \fIn\fR in the
+tree \fIt\fR.
+Which instructions are saved is \fImode\fR-dependent. Both \fImode\fR
+and the destination node \fIn\fR were specified during invokation of
+\fB::grammar::me::cpu::gasm::begin\fR.
+.sp
+Independent of the mode a reference to the instruction labeled "entry"
+will be saved to the attribute \fBgas::entry\fR of \fIn\fR. The
+reference to the node \fIn\fR will further be saved into the attribute
+"expr" of the "entry" instruction. Beyond that
+.RS
+.TP
+\fBhalt\fR
+A reference to the instruction labeled
+"exit/return" will be saved to the attribute \fBgas::exit\fR of
+\fIn\fR.
+.TP
+\fBokfail\fR
+See \fBhalt\fR.
+.TP
+\fB!okfail\fR
+Reference to the two instructions labeled
+"exit/ok" and "exit/fail" will be saved to the attributes
+\fBgas::exit::ok\fR and \fBgas::exit::fail\fR of \fIn\fR
+respectively.
+.RE
+.sp
+The command returns the empy string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::state\fR
+This command returns the current state of the assembler. Its format is
+not documented and considered to be internal to the package.
+.TP
+\fB::grammar::me::cpu::gasm::state!\fR \fIs\fR
+This command takes a serialized assembler state \fIs\fR as returned by
+\fB::grammar::me::cpu::gasm::state\fR and makes it the current state
+of the assembler.
+.sp
+\fINote\fR that this may overwrite label definitions, however all
+non-conflicting label definitions in the state before are not touched
+and merged with \fIs\fR.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::lift\fR \fIt\fR \fIdst\fR \fB=\fR \fIsrc\fR
+This command operates on the tree \fIt\fR. It copies the contents of
+the attributes \fBgas::entry\fR, \fBgas::exit::ok\fR and
+\fBgas::exit::fail\fR from the node \fIsrc\fR to the node \fIdst\fR.
+It returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::Inline\fR \fIt\fR \fInode\fR \fIlabel\fR
+This command links an instruction sequence created by an earlier
+begin/done pair into the current instruction sequence.
+.sp
+To this end it
+.RS
+.IP [1]
+reads the instruction references from the attributes
+\fBgas::entry\fR, \fBgas::exit::ok\fR, and \fBgas::exit::fail\fR
+from the node \fIn\fR of the tree \fIt\fR and makes them available to
+assembler und the labels \fIlabel\fR/entry, \fIlabel\fR/exit::ok, and
+\fIlabel\fR/exit::fail respectively.
+.IP [2]
+Creates an arc from the \fIanchor\fR to the node labeled
+\fIlabel\fR/entry, and tags it with the current condition code.
+.IP [3]
+Makes the node labeled \fIlabel\fR/exit/ok the new \fIanchor\fR.
+.RE
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::Cmd\fR \fIcmd\fR ?\fIarg\fR...?
+This is the basic command to add instructions to the graph.
+It creates a new instruction of type \fIcmd\fR with the given
+arguments \fIarg\fR...
+If the \fIanchor\fR was defined it will also create an arc from the
+\fIanchor\fR to the new instruction using the current condition code.
+After the call the new instruction will be the \fIanchor\fR and the
+current condition code will be set to \fBalways\fR.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::Bra\fR
+This is a convenience command to create a .BRA pseudo-instruction. It
+uses \fB::grammar::me::cpu::gasm::Cmd\fR to actually create the
+instruction and inherits its behaviour.
+.TP
+\fB::grammar::me::cpu::gasm::Nop\fR \fItext\fR
+This is a convenience command to create a .NOP pseudo-instruction. It
+uses \fB::grammar::me::cpu::gasm::Cmd\fR to actually create the
+instruction and inherits its behaviour.
+The \fItext\fR will be saved as the first and only argument of the new
+instruction.
+.TP
+\fB::grammar::me::cpu::gasm::Note\fR \fItext\fR
+This is a convenience command to create a .C pseudo-instruction,
+i.e. a comment. It uses \fB::grammar::me::cpu::gasm::Cmd\fR to
+actually create the instruction and inherits its behaviour.
+The \fItext\fR will be saved as the first and only argument of the new
+instruction.
+.TP
+\fB::grammar::me::cpu::gasm::Jmp\fR \fIlabel\fR
+This command creates an arc from the \fIanchor\fR to the instruction
+labeled with \fIlabel\fR, and tags with the the current condition
+code.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::Exit\fR
+This command creates an arc from the \fIanchor\fR to one of the exit
+instructions, based on the operation mode (see
+\fB::grammar::me::cpu::gasm::begin\fR), and tags it with current
+condition code.
+.sp
+For mode \fBokfail\fR it links to the instruction labeled either
+"exit/ok" or "exit/fail", depending on the current condition code, and
+tagging it with the current condition code
+For the other two modes it links to the instruction labeled
+"exit/return", tagging it condition code \fBalways\fR, independent
+the current condition code.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::Who\fR \fIlabel\fR
+This command returns a reference to the instruction labeled with
+\fIlabel\fR.
+.TP
+\fB::grammar::me::cpu::gasm::/Label\fR \fIname\fR
+This command labels the \fIanchor\fR with \fIname\fR.
+\fINote\fR that an instruction can have more than one label.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::/Clear\fR
+This command clears the \fIanchor\fR, leaving it undefined, and
+further resets the current condition code to \fBalways\fR.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::/Ok\fR
+This command sets the current condition code to \fBok\fR.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::/Fail\fR
+This command sets the current condition code to \fBfail\fR.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::/At\fR \fIname\fR
+This command sets the \fIanchor\fR to the instruction labeled with
+\fIname\fR, and further resets the current condition code to
+\fBalways\fR.
+.sp
+The command returns the empty string as its result.
+.TP
+\fB::grammar::me::cpu::gasm::/CloseLoop\fR
+This command marks the \fIanchor\fR as the last instruction in a loop
+body, by creating the attribute \fBLOOP\fR.
+.sp
+The command returns the empty string as its result.
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIgrammar_me\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+assembler, grammar, graph, parsing, tree, virtual machine
+.SH CATEGORY
+Grammars and finite automata
+.SH COPYRIGHT
+.nf
+Copyright (c) 2005 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

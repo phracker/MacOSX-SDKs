@@ -1,0 +1,480 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/doctools2toc/structure.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "doctools::toc::structure" n 0.1 doctools2toc "Documentation tools"
+.BS
+.SH NAME
+doctools::toc::structure \- Doctoc serialization utilities
+.SH SYNOPSIS
+package require \fBdoctools::toc::structure  ?0.1?\fR
+.sp
+package require \fBTcl  8.4\fR
+.sp
+package require \fBlogger \fR
+.sp
+package require \fBsnit \fR
+.sp
+\fB::doctools::toc::structure\fR \fBverify\fR \fIserial\fR ?\fIcanonvar\fR?
+.sp
+\fB::doctools::toc::structure\fR \fBverify-as-canonical\fR \fIserial\fR
+.sp
+\fB::doctools::toc::structure\fR \fBcanonicalize\fR \fIserial\fR
+.sp
+\fB::doctools::toc::structure\fR \fBprint\fR \fIserial\fR
+.sp
+\fB::doctools::toc::structure\fR \fBmerge\fR \fIseriala\fR \fIserialb\fR
+.sp
+.BE
+.SH DESCRIPTION
+This package provides commands to work with the serializations of
+tables of contents as managed by the doctools system v2, and specified
+in section \fBToC serialization format\fR.
+.PP
+This is an internal package of doctools, for use by the higher level
+packages handling tables of contents and their conversion into and out
+of various other formats, like documents written using \fIdoctoc\fR
+markup.
+.SH API
+.TP
+\fB::doctools::toc::structure\fR \fBverify\fR \fIserial\fR ?\fIcanonvar\fR?
+This command verifies that the content of \fIserial\fR is a valid
+\fIregular\fR serialization of a table of contents and will throw an
+error if that is not the case. The result of the command is the empty
+string.
+.sp
+If the argument \fIcanonvar\fR is specified it is interpreted as the
+name of a variable in the calling context. This variable will be
+written to if and only if \fIserial\fR is a valid regular
+serialization. Its value will be a boolean, with \fBTrue\fR
+indicating that the serialization is not only valid, but also
+\fIcanonical\fR. \fBFalse\fR will be written for a valid, but
+non-canonical serialization.
+.sp
+For the specification of regular and canonical serializations see the
+section \fBToC serialization format\fR.
+.TP
+\fB::doctools::toc::structure\fR \fBverify-as-canonical\fR \fIserial\fR
+This command verifies that the content of \fIserial\fR is a valid
+\fIcanonical\fR serialization of a table of contents and will throw
+an error if that is not the case. The result of the command is the
+empty string.
+.sp
+For the specification of canonical serializations see the section
+\fBToC serialization format\fR.
+.TP
+\fB::doctools::toc::structure\fR \fBcanonicalize\fR \fIserial\fR
+This command assumes that the content of \fIserial\fR is a valid
+\fIregular\fR serialization of a table of contents and will throw an
+error if that is not the case.
+.sp
+It will then convert the input into the \fIcanonical\fR serialization
+of the contained table of contents and return it as its result. If the
+input is already canonical it will be returned unchanged.
+.sp
+For the specification of regular and canonical serializations see the
+section \fBToC serialization format\fR.
+.TP
+\fB::doctools::toc::structure\fR \fBprint\fR \fIserial\fR
+This command assumes that the argument \fIserial\fR contains a valid
+regular serialization of a table of contents and returns a string
+containing that table in a human readable form.
+.sp
+The exact format of this form is not specified and cannot be relied on
+for parsing or other machine-based activities.
+.sp
+For the specification of regular serializations see the section
+\fBToC serialization format\fR.
+.TP
+\fB::doctools::toc::structure\fR \fBmerge\fR \fIseriala\fR \fIserialb\fR
+This command accepts the regular serializations of two tables of
+contents and uses them to create their union.  The result of the
+command is the canonical serialization of this unified table of
+contents.
+.sp
+Title and label of the resulting table are taken from the table
+contained in \fIserialb\fR.
+.sp
+The whole table and its divisions are merged recursively in the same
+manner:
+.RS
+.IP [1]
+All reference elements which occur in both divisions (identified by
+their label) are unified with document id's and descriptions taken
+from the second table.
+.IP [2]
+All division elements which occur in both divisions (identified by
+their label) are unified with the optional document id taken from the
+second table, if any, or from the first if none is in the second. The
+elements in the division are merged recursively using the same
+algorithm as described in this list.
+.IP [3]
+Type conflicts between elements, i.e. finding two elements with the
+same label but different types result in a merge error.
+.IP [4]
+All elements found in the second division but not in the first are
+added to the end of the list of elements in the merge result.
+.RE
+.sp
+For the specification of regular and canonical serializations see the
+section \fBToC serialization format\fR.
+.PP
+.SH "TOC SERIALIZATION FORMAT"
+Here we specify the format used by the doctools v2 packages to
+serialize tables of contents as immutable values for transport,
+comparison, etc.
+.PP
+We distinguish between \fIregular\fR and \fIcanonical\fR
+serializations.
+While a table of contents may have more than one regular serialization
+only exactly one of them will be \fIcanonical\fR.
+.PP
+.TP
+regular serialization
+.RS
+.IP [1]
+The serialization of any table of contents is a nested Tcl dictionary.
+.IP [2]
+This dictionary holds a single key, \fBdoctools::toc\fR, and its
+value. This value holds the contents of the table of contents.
+.IP [3]
+The contents of the table of contents are a Tcl dictionary holding the
+title of the table of contents, a label, and its elements. The
+relevant keys and their values are
+.RS
+.TP
+\fBtitle\fR
+The value is a string containing the title of the table of contents.
+.TP
+\fBlabel\fR
+The value is a string containing a label for the table of contents.
+.TP
+\fBitems\fR
+The value is a Tcl list holding the elements of the table, in the
+order they are to be shown.
+.sp
+Each element is a Tcl list holding the type of the item, and its
+description, in this order. An alternative description would be that
+it is a Tcl dictionary holding a single key, the item type, mapped to
+the item description.
+.sp
+The two legal item types and their descriptions are
+.RS
+.TP
+\fBreference\fR
+This item describes a single entry in the table of contents,
+referencing a single document.
+To this end its value is a Tcl dictionary containing an id for the
+referenced document, a label, and a longer textual description which
+can be associated with the entry.
+The relevant keys and their values are
+.RS
+.TP
+\fBid\fR
+The value is a string containing the id of the document associated
+with the entry.
+.TP
+\fBlabel\fR
+The value is a string containing a label for this entry. This string
+also identifies the entry, and no two entries (references and
+divisions) in the containing list are allowed to have the same label.
+.TP
+\fBdesc\fR
+The value is a string containing a longer description for this entry.
+.RE
+.TP
+\fBdivision\fR
+This item describes a group of entries in the table of contents,
+inducing a hierarchy of entries.
+To this end its value is a Tcl dictionary containing a label for the
+group, an optional id to a document for the whole group, and the list
+of entries in the group.
+The relevant keys and their values are
+.RS
+.TP
+\fBid\fR
+The value is a string containing the id of the document associated
+with the whole group. This key is optional.
+.TP
+\fBlabel\fR
+The value is a string containing a label for the group. This string
+also identifies the entry, and no two entries (references and
+divisions) in the containing list are allowed to have the same label.
+.TP
+\fBitems\fR
+The value is a Tcl list holding the elements of the group, in the
+order they are to be shown.
+This list has the same structure as the value for the keyword
+\fBitems\fR used to describe the whole table of contents, see
+above. This closes the recusrive definition of the structure, with
+divisions holding the same type of elements as the whole table of
+contents, including other divisions.
+.RE
+.RE
+.RE
+.RE
+.TP
+canonical serialization
+The canonical serialization of a table of contents has the format as
+specified in the previous item, and then additionally satisfies the
+constraints below, which make it unique among all the possible
+serializations of this table of contents.
+.RS
+.IP [1]
+The keys found in all the nested Tcl dictionaries are sorted in
+ascending dictionary order, as generated by Tcl's builtin command
+\fBlsort -increasing -dict\fR.
+.RE
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIdoctools\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+deserialization, doctoc, doctools, serialization
+.SH CATEGORY
+Documentation tools
+.SH COPYRIGHT
+.nf
+Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

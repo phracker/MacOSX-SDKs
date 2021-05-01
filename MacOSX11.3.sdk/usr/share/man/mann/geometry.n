@@ -1,0 +1,753 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/math/geometry.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2001 by Ideogramic ApS and other parties
+'\" Copyright (c) 2004 by Arjen Markus
+'\" Copyright (c) 2010 by Andreas Kupries
+'\" Copyright (c) 2010 by Kevin Kenny
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "math::geometry" n 1.1.2 math "Tcl Math Library"
+.BS
+.SH NAME
+math::geometry \- Geometrical computations
+.SH SYNOPSIS
+package require \fBTcl  ?8.3?\fR
+.sp
+package require \fBmath::geometry  ?1.1.2?\fR
+.sp
+\fB::math::geometry::+\fR \fIpoint1\fR \fIpoint2\fR
+.sp
+\fB::math::geometry::-\fR \fIpoint1\fR \fIpoint2\fR
+.sp
+\fB::math::geometry::p\fR \fIx\fR \fIy\fR
+.sp
+\fB::math::geometry::distance\fR \fIpoint1\fR \fIpoint2\fR
+.sp
+\fB::math::geometry::length\fR \fIpoint\fR
+.sp
+\fB::math::geometry::s*\fR \fIfactor\fR \fIpoint\fR
+.sp
+\fB::math::geometry::direction\fR \fIangle\fR
+.sp
+\fB::math::geometry::h\fR \fIlength\fR
+.sp
+\fB::math::geometry::v\fR \fIlength\fR
+.sp
+\fB::math::geometry::between\fR \fIpoint1\fR \fIpoint2\fR \fIs\fR
+.sp
+\fB::math::geometry::octant\fR \fIpoint\fR
+.sp
+\fB::math::geometry::rect\fR \fInw\fR \fIse\fR
+.sp
+\fB::math::geometry::nwse\fR \fIrect\fR
+.sp
+\fB::math::geometry::angle\fR \fIline\fR
+.sp
+\fB::math::geometry::calculateDistanceToLine\fR \fIP\fR \fIline\fR
+.sp
+\fB::math::geometry::calculateDistanceToLineSegment\fR \fIP\fR \fIlinesegment\fR
+.sp
+\fB::math::geometry::calculateDistanceToPolyline\fR \fIP\fR \fIpolyline\fR
+.sp
+\fB::math::geometry::findClosestPointOnLine\fR \fIP\fR \fIline\fR
+.sp
+\fB::math::geometry::findClosestPointOnLineSegment\fR \fIP\fR \fIlinesegment\fR
+.sp
+\fB::math::geometry::findClosestPointOnPolyline\fR \fIP\fR \fIpolyline\fR
+.sp
+\fB::math::geometry::lengthOfPolyline\fR \fIpolyline\fR
+.sp
+\fB::math::geometry::movePointInDirection\fR \fIP\fR \fIdirection\fR \fIdist\fR
+.sp
+\fB::math::geometry::lineSegmentsIntersect\fR \fIlinesegment1\fR \fIlinesegment2\fR
+.sp
+\fB::math::geometry::findLineSegmentIntersection\fR \fIlinesegment1\fR \fIlinesegment2\fR
+.sp
+\fB::math::geometry::findLineIntersection\fR \fIline1\fR \fIline2\fR
+.sp
+\fB::math::geometry::polylinesIntersect\fR \fIpolyline1\fR \fIpolyline2\fR
+.sp
+\fB::math::geometry::polylinesBoundingIntersect\fR \fIpolyline1\fR \fIpolyline2\fR \fIgranularity\fR
+.sp
+\fB::math::geometry::intervalsOverlap\fR \fIy1\fR \fIy2\fR \fIy3\fR \fIy4\fR \fIstrict\fR
+.sp
+\fB::math::geometry::rectanglesOverlap\fR \fIP1\fR \fIP2\fR \fIQ1\fR \fIQ2\fR \fIstrict\fR
+.sp
+\fB::math::geometry::bbox\fR \fIpolyline\fR
+.sp
+\fB::math::geometry::pointInsidePolygon\fR \fIP\fR \fIpolyline\fR
+.sp
+\fB::math::geometry::rectangleInsidePolygon\fR \fIP1\fR \fIP2\fR \fIpolyline\fR
+.sp
+\fB::math::geometry::areaPolygon\fR \fIpolygon\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+The \fBmath::geometry\fR package is a collection of functions for
+computations and manipulations on two-dimensional geometrical objects,
+such as points, lines and polygons.
+.PP
+The geometrical objects are implemented as plain lists of coordinates.
+For instance a line is defined by a list of four numbers, the x- and
+y-coordinate of a first point and the x- and y-coordinates of a second
+point on the line.
+.PP
+The various types of object are recognised by the number of coordinate
+pairs and the context in which they are used: a list of four elements
+can be regarded as an infinite line, a finite line segment but also
+as a polyline of one segment and a point set of two points.
+.PP
+Currently the following types of objects are distinguished:
+.IP \(bu
+\fIpoint\fR - a list of two coordinates representing the x- and
+y-coordinates respectively.
+.IP \(bu
+\fIline\fR - a list of four coordinates, interpreted as the x- and
+y-coordinates of two distinct points on the line.
+.IP \(bu
+\fIline segment\fR - a list of four coordinates, interpreted as the
+x- and y-coordinates of the first and the last points on the line
+segment.
+.IP \(bu
+\fIpolyline\fR - a list of an even number of coordinates,
+interpreted as the x- and y-coordinates of an ordered set of points.
+.IP \(bu
+\fIpolygon\fR - like a polyline, but the implicit assumption is that
+the polyline is closed (if the first and last points do not coincide,
+the missing segment is automatically added).
+.IP \(bu
+\fIpoint set\fR - again a list of an even number of coordinates, but
+the points are regarded without any ordering.
+.PP
+.SH PROCEDURES
+The package defines the following public procedures:
+.TP
+\fB::math::geometry::+\fR \fIpoint1\fR \fIpoint2\fR
+Compute the sum of the two vectors given as points and return it.
+The result is a vector as well.
+.TP
+\fB::math::geometry::-\fR \fIpoint1\fR \fIpoint2\fR
+Compute the difference (point1 - point2) of the two vectors
+given as points and return it. The result is a vector as well.
+.TP
+\fB::math::geometry::p\fR \fIx\fR \fIy\fR
+Construct a point from its coordinates and return it as the
+result of the command.
+.TP
+\fB::math::geometry::distance\fR \fIpoint1\fR \fIpoint2\fR
+Compute the distance between the two points and return it as the
+result of the command. This is in essence the same as
+.nf
+
+    math::geometry::length [math::geomtry::- point1 point2]
+
+.fi
+.TP
+\fB::math::geometry::length\fR \fIpoint\fR
+Compute the length of the vector and return it as the
+result of the command.
+.TP
+\fB::math::geometry::s*\fR \fIfactor\fR \fIpoint\fR
+Scale the vector by the factor and return it as the
+result of the command. This is a vector as well.
+.TP
+\fB::math::geometry::direction\fR \fIangle\fR
+Given the angle in degrees this command computes and returns
+the unit vector pointing into this direction. The vector for
+angle == 0 points to the right (up), and for angle == 90 up (north).
+.TP
+\fB::math::geometry::h\fR \fIlength\fR
+Returns a horizontal vector on the X-axis of the specified length.
+Positive lengths point to the right (east).
+.TP
+\fB::math::geometry::v\fR \fIlength\fR
+Returns a vertical vector on the Y-axis of the specified length.
+Positive lengths point down (south).
+.TP
+\fB::math::geometry::between\fR \fIpoint1\fR \fIpoint2\fR \fIs\fR
+Compute the point which is at relative distance \fIs\fR between the two
+points and return it as the result of the command. A relative distance of
+\fB0\fR returns \fIpoint1\fR, the distance \fB1\fR returns \fIpoint2\fR.
+Distances < 0 or > 1 extrapolate along the line between the two point.
+.TP
+\fB::math::geometry::octant\fR \fIpoint\fR
+Compute the octant of the circle the point is in and return it as the result
+of the command. The possible results are
+.RS
+.IP [1]
+east
+.IP [2]
+northeast
+.IP [3]
+north
+.IP [4]
+northwest
+.IP [5]
+west
+.IP [6]
+southwest
+.IP [7]
+south
+.IP [8]
+southeast
+.RE
+Each octant is the arc of the circle +/- 22.5 degrees from the cardinal direction
+the octant is named for.
+.TP
+\fB::math::geometry::rect\fR \fInw\fR \fIse\fR
+Construct a rectangle from its northwest and southeast corners and return
+it as the result of the command.
+.TP
+\fB::math::geometry::nwse\fR \fIrect\fR
+Extract the northwest and southeast corners of the rectangle and return
+them as the result of the command (a 2-element list containing the
+points, in the named order).
+.TP
+\fB::math::geometry::angle\fR \fIline\fR
+Calculate the angle from the positive x-axis to a given line
+(in two dimensions only).
+.RS
+.TP
+list \fIline\fR
+Coordinates of the line
+.RE
+.sp
+.TP
+\fB::math::geometry::calculateDistanceToLine\fR \fIP\fR \fIline\fR
+Calculate the distance of point P to the (infinite) line and return the
+result
+.RS
+.TP
+list \fIP\fR
+List of two numbers, the coordinates of the point
+.TP
+list \fIline\fR
+List of four numbers, the coordinates of two points
+on the line
+.RE
+.sp
+.TP
+\fB::math::geometry::calculateDistanceToLineSegment\fR \fIP\fR \fIlinesegment\fR
+Calculate the distance of point P to the (finite) line segment and
+return the result.
+.RS
+.TP
+list \fIP\fR
+List of two numbers, the coordinates of the point
+.TP
+list \fIlinesegment\fR
+List of four numbers, the coordinates of the
+first and last points of the line segment
+.RE
+.sp
+.sp
+.TP
+\fB::math::geometry::calculateDistanceToPolyline\fR \fIP\fR \fIpolyline\fR
+Calculate the distance of point P to the polyline and
+return the result.
+.RS
+.TP
+list \fIP\fR
+List of two numbers, the coordinates of the point
+.TP
+list \fIpolyline\fR
+List of numbers, the coordinates of the
+vertices of the polyline
+.RE
+.sp
+.TP
+\fB::math::geometry::findClosestPointOnLine\fR \fIP\fR \fIline\fR
+Return the point on a line which is closest to a given point.
+.RS
+.TP
+list \fIP\fR
+List of two numbers, the coordinates of the point
+.TP
+list \fIline\fR
+List of four numbers, the coordinates of two points
+on the line
+.RE
+.sp
+.TP
+\fB::math::geometry::findClosestPointOnLineSegment\fR \fIP\fR \fIlinesegment\fR
+Return the point on a \fIline segment\fR which is closest to a given
+point.
+.RS
+.TP
+list \fIP\fR
+List of two numbers, the coordinates of the point
+.TP
+list \fIlinesegment\fR
+List of four numbers, the first and last
+points on the line segment
+.RE
+.sp
+.TP
+\fB::math::geometry::findClosestPointOnPolyline\fR \fIP\fR \fIpolyline\fR
+Return the point on a \fIpolyline\fR which is closest to a given
+point.
+.RS
+.TP
+list \fIP\fR
+List of two numbers, the coordinates of the point
+.TP
+list \fIpolyline\fR
+List of numbers, the vertices of the polyline
+.RE
+.sp
+.TP
+\fB::math::geometry::lengthOfPolyline\fR \fIpolyline\fR
+Return the length of the \fIpolyline\fR (note: it not regarded as a
+polygon)
+.RS
+.TP
+list \fIpolyline\fR
+List of numbers, the vertices of the polyline
+.RE
+.sp
+.TP
+\fB::math::geometry::movePointInDirection\fR \fIP\fR \fIdirection\fR \fIdist\fR
+Move a point over a given distance in a given direction and return the
+new coordinates (in two dimensions only).
+.RS
+.TP
+list \fIP\fR
+Coordinates of the point to be moved
+.TP
+double \fIdirection\fR
+Direction (in degrees; 0 is to the right, 90
+upwards)
+.TP
+list \fIdist\fR
+Distance over which to move the point
+.RE
+.sp
+.TP
+\fB::math::geometry::lineSegmentsIntersect\fR \fIlinesegment1\fR \fIlinesegment2\fR
+Check if two line segments intersect or coincide. Returns 1 if that is
+the case, 0 otherwise (in two dimensions only).
+.RS
+.TP
+list \fIlinesegment1\fR
+First line segment
+.TP
+list \fIlinesegment2\fR
+Second line segment
+.RE
+.sp
+.TP
+\fB::math::geometry::findLineSegmentIntersection\fR \fIlinesegment1\fR \fIlinesegment2\fR
+Find the intersection point of two line segments. Return the coordinates
+or the keywords "coincident" or "none" if the line segments coincide or
+have no points in common (in two dimensions only).
+.RS
+.TP
+list \fIlinesegment1\fR
+First line segment
+.TP
+list \fIlinesegment2\fR
+Second line segment
+.RE
+.sp
+.TP
+\fB::math::geometry::findLineIntersection\fR \fIline1\fR \fIline2\fR
+Find the intersection point of two (infinite) lines. Return the coordinates
+or the keywords "coincident" or "none" if the lines coincide or
+have no points in common (in two dimensions only).
+.RS
+.TP
+list \fIline1\fR
+First line
+.TP
+list \fIline2\fR
+Second line
+.RE
+See section \fBReferences\fR for details on the algorithm and math behind it.
+.sp
+.TP
+\fB::math::geometry::polylinesIntersect\fR \fIpolyline1\fR \fIpolyline2\fR
+Check if two polylines intersect or not (in two dimensions only).
+.RS
+.TP
+list \fIpolyline1\fR
+First polyline
+.TP
+list \fIpolyline2\fR
+Second polyline
+.RE
+.sp
+.TP
+\fB::math::geometry::polylinesBoundingIntersect\fR \fIpolyline1\fR \fIpolyline2\fR \fIgranularity\fR
+Check whether two polylines intersect, but reduce
+the correctness of the result to the given granularity.
+Use this for faster, but weaker, intersection checking.
+.sp
+How it works:
+.sp
+Each polyline is split into a number of smaller polylines,
+consisting of granularity points each. If a pair of those smaller
+lines' bounding boxes intersect, then this procedure returns 1,
+otherwise it returns 0.
+.RS
+.TP
+list \fIpolyline1\fR
+First polyline
+.TP
+list \fIpolyline2\fR
+Second polyline
+.TP
+int \fIgranularity\fR
+Number of points in each part (<=1 means check
+every edge)
+.RE
+.sp
+.TP
+\fB::math::geometry::intervalsOverlap\fR \fIy1\fR \fIy2\fR \fIy3\fR \fIy4\fR \fIstrict\fR
+Check if two intervals overlap.
+.RS
+.TP
+double \fIy1,y2\fR
+Begin and end of first interval
+.TP
+double \fIy3,y4\fR
+Begin and end of second interval
+.TP
+logical \fIstrict\fR
+Check for strict or non-strict overlap
+.RE
+.sp
+.TP
+\fB::math::geometry::rectanglesOverlap\fR \fIP1\fR \fIP2\fR \fIQ1\fR \fIQ2\fR \fIstrict\fR
+Check if two rectangles overlap.
+.RS
+.TP
+list \fIP1\fR
+upper-left corner of the first rectangle
+.TP
+list \fIP2\fR
+lower-right corner of the first rectangle
+.TP
+list \fIQ1\fR
+upper-left corner of the second rectangle
+.TP
+list \fIQ2\fR
+lower-right corner of the second rectangle
+.TP
+list \fIstrict\fR
+choosing strict or non-strict interpretation
+.RE
+.sp
+.TP
+\fB::math::geometry::bbox\fR \fIpolyline\fR
+Calculate the bounding box of a polyline. Returns a list of four
+coordinates: the upper-left and the lower-right corner of the box.
+.RS
+.TP
+list \fIpolyline\fR
+The polyline to be examined
+.RE
+.sp
+.TP
+\fB::math::geometry::pointInsidePolygon\fR \fIP\fR \fIpolyline\fR
+Determine if a point is completely inside a polygon. If the point
+touches the polygon, then the point is not completely inside the
+polygon.
+.RS
+.TP
+list \fIP\fR
+Coordinates of the point
+.TP
+list \fIpolyline\fR
+The polyline to be examined
+.RE
+.sp
+.TP
+\fB::math::geometry::rectangleInsidePolygon\fR \fIP1\fR \fIP2\fR \fIpolyline\fR
+Determine if a rectangle is completely inside a polygon. If polygon
+touches the rectangle, then the rectangle is not complete inside the
+polygon.
+.RS
+.TP
+list \fIP1\fR
+Upper-left corner of the rectangle
+.TP
+list \fIP2\fR
+Lower-right corner of the rectangle
+.sp
+.TP
+list \fIpolygon\fR
+The polygon in question
+.RE
+.sp
+.TP
+\fB::math::geometry::areaPolygon\fR \fIpolygon\fR
+Calculate the area of a polygon.
+.RS
+.TP
+list \fIpolygon\fR
+The polygon in question
+.RE
+.PP
+.SH REFERENCES
+.IP [1]
+\fIPolygon Intersection\fR [http:/wiki.tcl.tk/12070]
+.IP [2]
+\fIhttp://en.wikipedia.org/wiki/Line-line_intersection\fR
+.IP [3]
+\fIhttp://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/\fR
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fImath :: geometry\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+angle, distance, line, math, plane geometry, point
+.SH CATEGORY
+Mathematics
+.SH COPYRIGHT
+.nf
+Copyright (c) 2001 by Ideogramic ApS and other parties
+Copyright (c) 2004 by Arjen Markus
+Copyright (c) 2010 by Andreas Kupries
+Copyright (c) 2010 by Kevin Kenny
+
+.fi

@@ -1,0 +1,125 @@
+.Dd September 1, 2020
+.Dt BPUTIL 1
+.Os Darwin
+.Sh NAME
+.Nm bputil
+.Nd Utility to precisely modify the security settings on Apple Silicon Macs.
+.Sh SYNOPSIS
+.Nm
+.Op Fl ldfgnmkcas                      \" [-ldfgnmkcas]
+.Op Fl u Ar username                   \" [-u username]
+.Op Fl p Ar password                   \" [-p password]
+.Op Fl v Ar APFS Volume Group UUID     \" [-v APFS Volume Group UUID]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Pp
+This utility is not meant for normal users or even sysadmins. It provides unabstracted access to capabilities which are normally handled for the user automatically when changing the security policy through GUIs such as the Startup Security Utility in macOS Recovery. It is possible to make your system security much weaker and therefore easier to compromise using this tool. This tool is not to be used in production environments. It is possible to render your system unbootable with this tool. It should only be used to understand how the security of Apple Silicon Macs works. Use at your own risk!
+.Pp
+.Nm 
+performs actions by calling the BootPolicy library. This modifies the security configuration of the system, which is stored in a file called the LocalPolicy. This file is digitally signed by the Secure Enclave Processor (SEP). The private key which is used to sign the LocalPolicy is protected by a separate key which is only accessible when a user has put in their password as part of a successful authentication. This is why this tool must either have a username and password specified on the command line, or via the interactive prompt.
+.Pp
+By design, the SEP application which is responsible for making changes to the LocalPolicy will inspect the boot state of the main Application Processor (AP). It will only allow the below security-downgrading operations if it detects that the AP is in the intended boot state. When System Integrity Protection (SIP) was first introduced to Macs, it was decided that requiring a reboot to macOS Recovery would provide intentional friction which would make it harder for malicious software to downgrade the system. That precedent is extended here to detect the special boot to macOS Recovery via holding the power key at boot time. We refer to this as One True Recovery (1TR), and most of the below downgrade options will only work when booted into 1TR, not when called from normal macOS. This helps ensure that only a physically-present user, not malicious software running in macOS, can permanently downgrade the security settings. The below CLI options specify what boot environments a downgrade can be performed from.
+.Pp
+The SEP-signed LocalPolicy is evaluated at boot time by iBoot. Configurations within the LocalPolicy change iBoot's behavior, such as whether it will require that all boot objects must be signed with metadata specific to the particular machine (a "personalized" signature, which is the default, and the always-required policy on iOS), or whether it will accept "global" signatures which are valid for all units of a specific hardware model. The LocalPolicy can also influence other boot or OS security behavior as described in the below options.
+.Pp
+.Bl -tag -width -indent  \" Begin list
+.It Fl u, Fl -username Ar username
+.Pp
+Used to specify the username for a user with access to the signing key to authenticate the change.
+.Pp
+If this is specified the below password option is required too.
+.Pp
+If this is not specified, an interactive prompt will request the username.
+.Pp
+.Pp
+.It Fl p, Fl -password Ar password
+.Pp
+Used to specify the password for a user with access to the signing key to authenticate the change.
+.Pp
+If this is specified the above username option is required too.
+.Pp
+If this is not specified, an interactive prompt will request the password.
+.Pp
+.Pp
+.It Fl v, Fl -vuid Ar AABBCCDD-EEFF-0011-2233-445566778899\n"
+.Pp
+Specify the APFS Volume Group UUID of the OS intended to have its policy changed. If no option is specified, the default value will be set to the APFS Volume Group UUID of the running OS. The Volume Group UUID for a given OS can be found with 'diskutil apfs listVolumeGroups'.
+.Pp
+.Pp
+.It Fl l, -debug-logging
+.Pp
+Enables verbose logging to assist in debugging any issues associated with changing the policy.
+.Pp
+.Pp
+.It Fl d, -display-policy
+.Pp
+Display the detailed contents of the LocalPolicy. This will show specific 4-character "tags" in the Apple Image4 data structure which is used to capture the customer-specified security policy. More details about the displayed entries are available in the "Apple Platform Security" website documentation. If the system has multiple bootable volumes, an interactive prompt will ask to select a volume to display the policy for.
+.Pp
+.Pp
+.It Fl f, -full-security
+.Pp
+Changes security mode to Full Security. This option is mutually exclusive with all options below which cause security downgrades. Full Security is effectively a LocalPolicy which is in its default state, lacking all available security downgrades. Full Security also performs an online check at software install and upgrade time to ensure that only the latest version of software can be installed. This prevents accidentally installing old software which has known vulnerabilities in it. If the security is downgraded away from Full Security, and then re-upgraded to Full Security, the online check will be performed, and if the software is no longer the latest available, it will not be possible to set it to Full Security again. Because online checks are only performed at software installation, upgrade, and Full Security policy setting time, it is possible for an OS to report that it is Full Security despite not being the latest software version. Full Security only indicates the state as of the latest install or upgrade.
+.Pp
+Boot environment requirements: None.
+.Pp
+.Pp
+.It Fl g, -reduced-security
+.Pp
+Selecting this option will make your system easier to compromise!
+.Pp
+This changes the security mode to Reduced Security. Reduced Security will use the "global" digital signature for macOS, in order to allow running software which is not the latest version. Thus anything other than the latest software therefore may have security vulnerabilities. At a high level, Reduced Security does not necessarily require the latest software, but it does still require all software be digitally signed by Apple or 3rd party software developers. Passing this option will explicitly recreate the LocalPolicy from scratch, (i.e. it does not preserve any existing security policy options) and only the options specified via this tool will exist in the output local policy.
+.Pp
+Boot environment requirements: software-launched macOS Recovery or 1TR.
+.Pp
+.It Fl n, -permissive-security
+.Pp
+Selecting this option will make your system easier to compromise!
+.Pp
+This changes the security mode to Permissive Security. Permissive Security uses the same "global" digital signature for macOS as the above Reduced Security option, in order to allow running software which is not the latest version. Thus anything other than the latest software therefore may have security vulnerabilities. At a high level, Permissive Security allows configuration options to be set to not require all software to be digitally signed. This can allow users who are not part of the Apple Developer program to still be able to introduce their own software into their system. Additionally, especially dangerous security downgrades may be restricted to Permissive Security, and only available via CLI tools for power users rather than GUIs. Passing this option will explicitly recreate the LocalPolicy from scratch, (i.e. it does not preserve any existing security policy options) and only the options specified via this tool will exist in the output local policy.
+.Pp
+Boot environment requirements: 1TR.
+.Pp
+.It Fl k, -enable-kexts.
+.Pp
+Because this option automatically downgrades to Reduced Security mode if not already true, selecting this option will make your system easier to compromise!
+.Pp
+The AuxilaryKernelCache is a SEP-signed boot object which can be verified and loaded into kernel memory before that memory is restricted to being non-writable by a "Configurable Text Read-only Region" (CTRR) hardware register. Introducing 3rd party kernel extensions can introduce architectural or implementation flaws into the kernel, which can lead to system compromise. In order to achieve iOS-like security properties, 3rd party kexts must be denied by default, and only loadable if the customer consciously opts in to lowering their security from 1TR.
+.Pp
+Boot environment requirements: 1TR.
+.Pp
+.It Fl c, -disable-kernel-ctrr
+.Pp
+Because this option automatically downgrades to Reduced Security mode if not already true, selecting this option will make your system easier to compromise!
+.Pp
+This disables the enforcement of the "Configurable Text Read-only Region" (CTRR) hardware register that marks kernel memory as non-writable. This is sometimes required for performing actions such as using dynamic DTrace code hooks to profile kernel behavior or perform 3rd party kernel extension debugging. However, the lack of CTRR enforcement makes it much easier for an attacker to modify the kernel with exploits.
+.Pp
+Boot environment requirements: 1TR.
+.Pp
+.It Fl a, -disable-boot-args-restriction
+.Pp
+Because this option automatically downgrades to Reduced Security mode if not already true, selecting this option will make your system easier to compromise!
+.Pp
+The macOS kernel accepts a variety of configuration options via an nvram variable named "boot-args". However, some of these options direct the kernel to reduce some security enforcement. In order to achieve iOS-like security properties, this security-downgrading behavior needs to be denied by default, and only available if the customer consciously opts in to lowering their security from 1TR.
+.Pp
+Boot environment requirements: 1TR.
+.Pp
+.It Fl s, -disable-ssv
+.Pp
+Because this option automatically downgrades to Permissive Security mode if not already true, selecting this option will make your system easier to compromise!
+.Pp
+The Signed System Volume is a mechanism to digitally sign and verify all data from the System volume (where the primary macOS software is stored). The result is that malware cannot directly manipulate executables there in order to achieve persistent execution, or manipulate the data stored there in order to try to exploit programs. This option disables Signed System Volume integrity enforcement, to allow customers to modify the System volume. SSV cannot be disabled while FileVault is enabled. Customer modifications to the System volume are not expected to persist across software updates.
+.Pp
+Boot environment requirements: 1TR.
+.Pp
+.It Fl m, -enable-mdm
+.Pp
+Because this option automatically downgrades to Reduced Security mode if not already true, selecting this option will make your system easier to compromise!
+.Pp
+Enables remote MDM management of software updates & kernel extensions. After this option is set, the MDM can install older software with known vulnerabilities, or 3rd party kernel extensions with architectural or implementation flaws which can lead to kernel compromise. Therefore this requires a person to explicitly approve this capability for the MDM.
+.Pp
+Boot environment requirements: 1TR.
+.Pp
+.El                      \" Ends the list
+.Pp
+.Sh HISTORY
+.Nm
+first appeared in macOS 11 for Apple Silicon Macs

@@ -1,0 +1,497 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/doctools2toc/include/export/plugin.inc' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "doctools::toc::export::json" n 0.1 doctools2toc "Documentation tools"
+.BS
+.SH NAME
+doctools::toc::export::json \- JSON export plugin
+.SH SYNOPSIS
+package require \fBTcl  8.4\fR
+.sp
+package require \fBdoctools::toc::export::json  ?0.1?\fR
+.sp
+package require \fBtextutil::adjust \fR
+.sp
+\fBexport\fR \fIserial\fR \fIconfiguration\fR
+.sp
+.BE
+.SH DESCRIPTION
+This package implements the doctools table of contents export plugin
+for the generation of JSON markup.
+.PP
+This is an internal package of doctools, for use by the higher level
+management packages handling tables of contents, especially \fBdoctools::toc::export\fR, the export manager.
+.PP
+Using it from a regular interpreter is possible, however only with
+contortions, and is not recommended.
+The proper way to use this functionality is through the package
+\fBdoctools::toc::export\fR and the export manager objects it
+provides.
+.SH API
+The API provided by this package satisfies the specification of the
+doctoc export plugin API version 2.
+.TP
+\fBexport\fR \fIserial\fR \fIconfiguration\fR
+This command takes the canonical serialization of a table of contents,
+as specified in section \fBToC serialization format\fR, and
+contained in \fIserial\fR, the \fIconfiguration\fR, a dictionary, and
+generates JSON markup encoding the table.
+The created string is then returned as the result of the command.
+.PP
+.SH "JSON NOTATION OF TABLES OF CONTENTS"
+The JSON format used for tables of contents is a direct translation of
+the \fBToC serialization format\fR, mapping Tcl dictionaries as
+JSON objects and Tcl lists as JSON arrays.
+For example, the Tcl serialization
+.nf
+
+doctools::toc {
+    items {
+        {reference {
+	    desc {DocTools - Tables of Contents}
+	     id introduction.man
+	     label doctools::toc::introduction
+	}}
+	{division {
+	     id processing.man
+	     items {
+	         {reference {
+		     desc {doctoc serialization utilities}
+		     id structure.man
+		     label doctools::toc::structure
+		 }}
+		 {reference {
+		     desc {Parsing text in doctoc format}
+		     id parse.man
+		     label doctools::toc::parse
+		 }}
+	     }
+             label Processing
+        }}
+    }
+    label {Table of Contents}
+    title TOC
+}
+
+.fi
+is equivalent to the JSON string
+.nf
+
+{
+    "doctools::toc" : {
+        "items" : [{
+            "reference" : {
+                "desc"  : "DocTools - Tables of Contents",
+                "id"    : "introduction.man",
+                "label" : "doctools::toc::introduction"
+            }
+        },{
+            "division" : {
+                "id"    : "processing.man",
+                "items" : [{
+                    "reference" : {
+                        "desc"  : "doctoc serialization utilities",
+                        "id"    : "structure.man",
+                        "label" : "doctools::toc::structure"
+                    }
+                },{
+                    "reference" : {
+                        "desc"  : "Parsing text in doctoc format",
+                        "id"    : "parse.man",
+                        "label" : "doctools::toc::parse"
+                    }
+                }],
+                "label" : "Processing"
+            }
+        }],
+        "label" : "Table of Contents",
+        "title" : "TOC"
+    }
+}
+
+.fi
+.SH CONFIGURATION
+The JSON export plugin recognizes the following configuration
+variables and changes its behaviour as they specify.
+.TP
+boolean \fIindented\fR
+If this flag is set the plugin will break the generated JSON code
+across lines and indent it according to its inner structure, with each
+key of a dictionary on a separate line.
+.sp
+If this flag is not set (the default), the whole JSON object will be
+written on a single line, with minimum spacing between all elements.
+.TP
+boolean \fIaligned\fR
+If this flag is set the generator ensures that the values for the keys
+in a dictionary are vertically aligned with each other, for a nice
+table effect. To make this work this also implies that \fBindented\fR
+is set.
+.sp
+If this flag is not set (the default), the output is formatted as per
+the value of \fBindented\fR, without trying to align the values for
+dictionary keys.
+.PP
+\fINote\fR that this plugin ignores the standard configuration
+variables \fBuser\fR, \fBformat\fR, \fBfile\fR, and \fBmap\fR and
+their values.
+.SH "TOC SERIALIZATION FORMAT"
+Here we specify the format used by the doctools v2 packages to
+serialize tables of contents as immutable values for transport,
+comparison, etc.
+.PP
+We distinguish between \fIregular\fR and \fIcanonical\fR
+serializations.
+While a table of contents may have more than one regular serialization
+only exactly one of them will be \fIcanonical\fR.
+.PP
+.TP
+regular serialization
+.RS
+.IP [1]
+The serialization of any table of contents is a nested Tcl dictionary.
+.IP [2]
+This dictionary holds a single key, \fBdoctools::toc\fR, and its
+value. This value holds the contents of the table of contents.
+.IP [3]
+The contents of the table of contents are a Tcl dictionary holding the
+title of the table of contents, a label, and its elements. The
+relevant keys and their values are
+.RS
+.TP
+\fBtitle\fR
+The value is a string containing the title of the table of contents.
+.TP
+\fBlabel\fR
+The value is a string containing a label for the table of contents.
+.TP
+\fBitems\fR
+The value is a Tcl list holding the elements of the table, in the
+order they are to be shown.
+.sp
+Each element is a Tcl list holding the type of the item, and its
+description, in this order. An alternative description would be that
+it is a Tcl dictionary holding a single key, the item type, mapped to
+the item description.
+.sp
+The two legal item types and their descriptions are
+.RS
+.TP
+\fBreference\fR
+This item describes a single entry in the table of contents,
+referencing a single document.
+To this end its value is a Tcl dictionary containing an id for the
+referenced document, a label, and a longer textual description which
+can be associated with the entry.
+The relevant keys and their values are
+.RS
+.TP
+\fBid\fR
+The value is a string containing the id of the document associated
+with the entry.
+.TP
+\fBlabel\fR
+The value is a string containing a label for this entry. This string
+also identifies the entry, and no two entries (references and
+divisions) in the containing list are allowed to have the same label.
+.TP
+\fBdesc\fR
+The value is a string containing a longer description for this entry.
+.RE
+.TP
+\fBdivision\fR
+This item describes a group of entries in the table of contents,
+inducing a hierarchy of entries.
+To this end its value is a Tcl dictionary containing a label for the
+group, an optional id to a document for the whole group, and the list
+of entries in the group.
+The relevant keys and their values are
+.RS
+.TP
+\fBid\fR
+The value is a string containing the id of the document associated
+with the whole group. This key is optional.
+.TP
+\fBlabel\fR
+The value is a string containing a label for the group. This string
+also identifies the entry, and no two entries (references and
+divisions) in the containing list are allowed to have the same label.
+.TP
+\fBitems\fR
+The value is a Tcl list holding the elements of the group, in the
+order they are to be shown.
+This list has the same structure as the value for the keyword
+\fBitems\fR used to describe the whole table of contents, see
+above. This closes the recusrive definition of the structure, with
+divisions holding the same type of elements as the whole table of
+contents, including other divisions.
+.RE
+.RE
+.RE
+.RE
+.TP
+canonical serialization
+The canonical serialization of a table of contents has the format as
+specified in the previous item, and then additionally satisfies the
+constraints below, which make it unique among all the possible
+serializations of this table of contents.
+.RS
+.IP [1]
+The keys found in all the nested Tcl dictionaries are sorted in
+ascending dictionary order, as generated by Tcl's builtin command
+\fBlsort -increasing -dict\fR.
+.RE
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIdoctools\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+JSON, doctools, export, serialization, table of contents, toc
+.SH CATEGORY
+Text formatter plugin
+.SH COPYRIGHT
+.nf
+Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

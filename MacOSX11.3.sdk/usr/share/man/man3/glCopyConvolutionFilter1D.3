@@ -1,0 +1,159 @@
+'\" t  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:45
+.ds Dm 1 May 22 14:
+.ds Xs 33614     7
+.TH GLCOPYCONVOLUTIONFILTER1D 3G
+.SH NAME
+.B "glCopyConvolutionFilter1D
+\- copy pixels into a one-dimensional convolution filter
+
+.SH C SPECIFICATION
+void \f3glCopyConvolutionFilter1D\fP(
+GLenum \fItarget\fP,
+.nf
+.ta \w'\f3void \fPglCopyConvolutionFilter1D( 'u
+	GLenum \fIinternalformat\fP,
+	GLint \fIx\fP,
+	GLint \fIy\fP,
+	GLsizei \fIwidth\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fIinternalformat\fP\ \ 'u 
+\f2target\fP
+Must be \%\f3GL_CONVOLUTION_1D\fP.
+.TP
+\f2internalformat\fP
+The internal  of the convolution filter kernel.
+The allowable values are
+\%\f3GL_ALPHA\fP,
+\%\f3GL_ALPHA4\fP,
+\%\f3GL_ALPHA8\fP,
+\%\f3GL_ALPHA12\fP,
+\%\f3GL_ALPHA16\fP,
+\%\f3GL_LUMINANCE\fP,
+\%\f3GL_LUMINANCE4\fP,
+\%\f3GL_LUMINANCE8\fP,
+\%\f3GL_LUMINANCE12\fP,
+\%\f3GL_LUMINANCE16\fP,
+\%\f3GL_LUMINANCE_ALPHA\fP,
+\%\f3GL_LUMINANCE4_ALPHA4\fP,
+\%\f3GL_LUMINANCE6_ALPHA2\fP,
+\%\f3GL_LUMINANCE8_ALPHA8\fP,
+\%\f3GL_LUMINANCE12_ALPHA4\fP,
+\%\f3GL_LUMINANCE12_ALPHA12\fP,
+\%\f3GL_LUMINANCE16_ALPHA16\fP,
+\%\f3GL_INTENSITY\fP,
+\%\f3GL_INTENSITY4\fP,
+\%\f3GL_INTENSITY8\fP,
+\%\f3GL_INTENSITY12\fP,
+\%\f3GL_INTENSITY16\fP,
+\%\f3GL_R3_G3_B2\fP,
+\%\f3GL_RGB\fP,
+\%\f3GL_RGB4\fP,
+\%\f3GL_RGB5\fP,
+\%\f3GL_RGB8\fP,
+\%\f3GL_RGB10\fP,
+\%\f3GL_RGB12\fP,
+\%\f3GL_RGB16\fP,
+\%\f3GL_RGBA\fP,
+\%\f3GL_RGBA2\fP,
+\%\f3GL_RGBA4\fP,
+\%\f3GL_RGB5_A1\fP,
+\%\f3GL_RGBA8\fP,
+\%\f3GL_RGB10_A2\fP,
+\%\f3GL_RGBA12\fP, or
+\%\f3GL_RGBA16\fP.
+.TP
+\f2x\fP, \f2y\fP
+The window space coordinates of the lower-left coordinate of the
+pixel array to copy.
+.TP
+\f2width\fP
+The width of the pixel array to copy.
+.SH DESCRIPTION
+\%\f3glCopyConvolutionFilter1D\fP defines a one-dimensional convolution filter kernel with pixels
+from the current \%\f3GL_READ_BUFFER\fP (rather than from main memory, 
+as is the case for \%\f3glConvolutionFilter1D\fP).
+.sp
+The screen-aligned pixel rectangle with lower-left corner at (\f2x\fP,\ \f2y\fP),
+width \f2width\fP and height 1 is used to define
+the convolution filter.  If any pixels within this region are 
+outside the window that is associated with the GL context, the 
+values obtained for those pixels are undefined.
+.sp
+The pixels in the rectangle are processed exactly as if \%\f3glReadPixels\fP 
+had been called with \f2format\fP
+set to RGBA, but the process stops just before final conversion.  
+The R, G, B, and A components of each pixel are next scaled by the four
+1D \%\f3GL_CONVOLUTION_FILTER_SCALE\fP parameters and biased by the
+four 1D \%\f3GL_CONVOLUTION_FILTER_BIAS\fP parameters.
+(The scale and bias parameters are set by \%\f3glConvolutionParameter\fP
+using the \%\f3GL_CONVOLUTION_1D\fP target and the names
+\%\f3GL_CONVOLUTION_FILTER_SCALE\fP and \%\f3GL_CONVOLUTION_FILTER_BIAS\fP.
+The parameters themselves are vectors of four values that are applied to red,
+green, blue, and alpha, in that order.)
+The R, G, B, and A values are not clamped to [0,1] at any time during this
+process.
+.sp
+Each pixel is then converted to the internal  specified by
+\f2internalformat\fP.
+This conversion simply maps the component values of the pixel (R, G, B,
+and A) to the values included in the internal  (red, green, blue,
+alpha, luminance, and intensity).  The mapping is as follows:
+.sp
+
+.Bd -literal
+ Internal Format     Channel mapping
+ GL_ALPHA            A=Alpha
+ GL_LUMINANCE        R=Luminance
+ GL_LUMINANCE_ALPHA  A=Alpha, R=Luminance
+ GL_INTENSITY        R=Intensity
+ GL_RGB              R=Red, G=Green, B=Blue
+ GL_RGBA             R=Red, G=Green, B=Blue, A=Alpha
+.Ed
+
+.sp
+The red, green, blue, alpha, luminance, and/or intensity components of
+the resulting pixels are stored in floating-point rather than integer
+.
+.sp
+Pixel ordering is such that lower x screen coordinates correspond to 
+lower \f2i\fP filter image coordinates.
+.PP
+Note that after a convolution is performed, the resulting color
+components are also scaled by their corresponding
+\%\f3GL_POST_CONVOLUTION_c_SCALE\fP parameters and biased by their
+corresponding \%\f3GL_POST_CONVOLUTION_c_BIAS\fP parameters (where
+\f2c\fP takes on the values \f3RED\fP, \f3GREEN\fP, \f3BLUE\fP, and
+\f3ALPHA\fP).
+These parameters are set by \%\f3glPixelTransfer\fP.
+.SH NOTES
+\%\f3glCopyConvolutionFilter1D\fP is present only if \%\f3GL_ARB_imaging\fP is returned when \%\f3glGetString\fP
+is called with an argument of \%\f3GL_EXTENSIONS\fP.
+.SH ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated if \f2target\fP is not
+\%\f3GL_CONVOLUTION_1D\fP.
+.P
+\%\f3GL_INVALID_ENUM\fP is generated if \f2internalformat\fP is not one of the
+allowable values.
+.P
+\%\f3GL_INVALID_VALUE\fP is generated if \f2width\fP is less than zero or greater
+than the maximum supported value.
+This value may be queried with \%\f3glGetConvolutionParameter\fP
+using target \%\f3GL_CONVOLUTION_1D\fP and name
+\%\f3GL_MAX_CONVOLUTION_WIDTH\fP.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glCopyConvolutionFilter1D\fP is executed
+between the execution of \%\f3glBegin\fP and the corresponding
+execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGetConvolutionParameter\fP, \%\f3glGetConvolutionFilter\fP
+.SH SEE ALSO
+\%\f3glConvolutionFilter1D\fP,
+\%\f3glConvolutionParameter\fP,
+\%\f3glPixelTransfer\fP

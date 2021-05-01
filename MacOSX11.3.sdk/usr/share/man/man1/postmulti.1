@@ -1,0 +1,428 @@
+.TH POSTMULTI 1 
+.ad
+.fi
+.SH NAME
+postmulti
+\-
+Postfix multi\-instance manager
+.SH "SYNOPSIS"
+.na
+.nf
+.fi
+.ti -4
+\fBEnabling multi\-instance management:\fR
+
+\fBpostmulti\fR \fB\-e init\fR [\fB\-v\fR]
+
+.ti -4
+\fBIterator mode:\fR
+
+\fBpostmulti\fR \fB\-l\fR [\fB\-aRv\fR] [\fB\-g \fIgroup\fR]
+[\fB\-i \fIname\fR]
+
+\fBpostmulti\fR \fB\-p\fR [\fB\-av\fR] [\fB\-g \fIgroup\fR]
+[\fB\-i \fIname\fR] \fIpostfix\-command...\fR
+
+\fBpostmulti\fR \fB\-x\fR [\fB\-aRv\fR] [\fB\-g \fIgroup\fR]
+[\fB\-i \fIname\fR] \fIunix\-command...\fR
+
+.ti -4
+\fBLife\-cycle management:\fR
+
+\fBpostmulti\fR \fB\-e create\fR [\fB\-av\fR]
+[\fB\-g \fIgroup\fR] [\fB\-i \fIname\fR] [\fB\-G \fIgroup\fR]
+[\fB\-I \fIname\fR] [\fIparam=value\fR ...]
+
+\fBpostmulti\fR \fB\-e import\fR [\fB\-av\fR]
+[\fB\-g \fIgroup\fR] [\fB\-i \fIname\fR] [\fB\-G \fIgroup\fR]
+[\fB\-I \fIname\fR] [\fBconfig_directory=\fI/path\fR]
+
+\fBpostmulti\fR \fB\-e destroy\fR [\fB\-v\fR] \fB\-i \fIname\fR
+
+\fBpostmulti\fR \fB\-e deport\fR [\fB\-v\fR] \fB\-i \fIname\fR
+
+\fBpostmulti\fR \fB\-e enable\fR [\fB\-v\fR] \fB\-i \fIname\fR
+
+\fBpostmulti\fR \fB\-e disable\fR [\fB\-v\fR] \fB\-i \fIname\fR
+
+\fBpostmulti\fR \fB\-e assign\fR [\fB\-v\fR] \fB\-i \fIname\fR
+[\fB\-I \fIname\fR] [\-G \fIgroup\fR]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBpostmulti\fR(1) command allows a Postfix administrator
+to manage multiple Postfix instances on a single host.
+
+\fBpostmulti\fR(1) implements two fundamental modes of
+operation.  In \fBiterator\fR mode, it executes the same
+command for multiple Postfix instances.  In \fBlife\-cycle
+management\fR mode, it adds or deletes one instance, or
+changes the multi\-instance status of one instance.
+
+Each mode of operation has its own command syntax. For this
+reason, each mode is documented in separate sections below.
+.SH "BACKGROUND"
+.na
+.nf
+.ad
+.fi
+A multi\-instance configuration consists of one primary
+Postfix instance, and one or more secondary instances whose
+configuration directory pathnames are recorded in the primary
+instance's main.cf file. Postfix instances share program
+files and documentation, but have their own configuration,
+queue and data directories.
+
+Currently, only the default Postfix instance can be used
+as primary instance in a multi\-instance configuration. The
+\fBpostmulti\fR(1) command does not currently support a \fB\-c\fR
+option to select an alternative primary instance, and exits
+with a fatal error if the \fBMAIL_CONFIG\fR environment
+variable is set to a non\-default configuration directory.
+
+See the MULTI_INSTANCE_README tutorial for a more detailed
+discussion of multi\-instance management with \fBpostmulti\fR(1).
+.SH "ITERATOR MODE"
+.na
+.nf
+.ad
+.fi
+In iterator mode, \fBpostmulti\fR performs the same operation
+on all Postfix instances in turn.
+
+If multi\-instance support is not enabled, the requested
+command is performed just for the primary instance.
+.PP
+Iterator mode implements the following command options:
+.SH "Instance selection"
+.IP \fB\-a\fR
+Perform the operation on all instances. This is the default.
+.IP "\fB\-g \fIgroup\fR"
+Perform the operation only for members of the named \fIgroup\fR.
+.IP "\fB\-i \fIname\fR"
+Perform the operation only for the instance with the specified
+\fIname\fR.  You can specify either the instance name
+or the absolute pathname of the instance's configuration
+directory.  Specify "\-" to select the primary Postfix instance.
+.IP \fB\-R\fR
+Reverse the iteration order. This may be appropriate when
+updating a multi\-instance system, where "sink" instances
+are started before "source" instances.
+.sp
+This option cannot be used with \fB\-p\fR.
+.SH "List mode"
+.IP \fB\-l\fR
+List Postfix instances with their instance name, instance
+group name, enable/disable status and configuration directory.
+.SH "Postfix\-wrapper mode"
+.IP "\fB\-p \fIpostfix\-command\fR"
+Invoke \fBpostfix(1)\fR to execute \fIpostfix\-command\fR.
+This option implements the \fBpostfix\-wrapper\fR(5) interface.
+.RS
+.IP \(bu
+With "start"\-like commands, "postfix check" is executed for
+instances that are not enabled. The full list of commands
+is specified with the postmulti_start_commands parameter.
+.IP \(bu
+With "stop"\-like commands, the iteration order is reversed,
+and disabled instances are skipped. The full list of commands
+is specified with the postmulti_stop_commands parameter.
+.IP \(bu
+With "reload" and other commands that require a started
+instance, disabled instances are skipped. The full list of
+commands is specified with the postmulti_control_commands
+parameter.
+.IP \(bu
+With "status" and other commands that don't require a started
+instance, the command is executed for all instances.
+.RE
+.IP
+The \fB\-p\fR option can also be used interactively to
+start/stop/etc.  a named instance or instance group. For
+example, to start just the instances in the group "msa",
+invoke \fBpostmulti\fR(1) as follows:
+.RS
+.IP
+# postmulti \-g msa \-p start
+.RE
+.SH "Command mode"
+.IP "\fB\-x \fIunix\-command\fR"
+Execute the specified \fIunix\-command\fR for all Postfix instances.
+The command runs with appropriate environment settings for
+MAIL_CONFIG, command_directory, daemon_directory,
+config_directory, queue_directory, data_directory,
+multi_instance_name, multi_instance_group and
+multi_instance_enable.
+.SH "Other options"
+.IP \fB\-v\fR
+Enable verbose logging for debugging purposes. Multiple
+\fB\-v\fR options make the software increasingly verbose.
+.SH "LIFE-CYCLE MANAGEMENT MODE"
+.na
+.nf
+.ad
+.fi
+With the \fB\-e\fR option \fBpostmulti\fR(1) can be used to
+add or delete a Postfix instance, and to manage the
+multi\-instance status of an existing instance.
+.PP
+The following options are implemented:
+.SH "Existing instance selection"
+.IP \fB\-a\fR
+When creating or importing an instance, place the new
+instance at the front of the secondary instance list.
+.IP "\fB\-g \fIgroup\fR"
+When creating or importing an instance, place the new
+instance before the first secondary instance that is a
+member of the specified group.
+.IP "\fB\-i \fIname\fR"
+When creating or importing an instance, place the new
+instance before the matching secondary instance.
+.sp
+With other life\-cycle operations, apply the operation to
+the named existing instance.  Specify "\-" to select the
+primary Postfix instance.
+.SH "New or existing instance name assignment"
+.IP "\fB\-I \fIname\fR"
+Assign the specified instance \fIname\fR to an existing
+instance, newly\-created instance, or imported instance.
+Instance
+names other than "\-" (which makes the instance "nameless")
+must start with "postfix\-".  This restriction reduces the
+likelihood of name collisions with system files.
+.IP "\fB\-G \fIgroup\fR"
+Assign the specified \fIgroup\fR name to an existing instance
+or to a newly created or imported instance.
+.SH "Instance creation/deletion/status change"
+.IP "\fB\-e \fIaction\fR"
+"Edit" managed instances. The following actions are supported:
+.RS
+.IP \fBinit\fR
+This command is required before \fBpostmulti\fR(1) can be
+used to manage Postfix instances.  The "postmulti \-e init"
+command updates the primary instance's main.cf file by
+setting:
+.RS
+.IP
+.nf
+multi_instance_wrapper =
+        ${command_directory}/postmulti \-p \-\-
+multi_instance_enable = yes
+.fi
+.RE
+.IP
+You can set these by other means if you prefer.
+.IP \fBcreate\fR
+Create a new Postfix instance and add it to the
+multi_instance_directories parameter of the primary instance.
+The "\fB\-I \fIname\fR" option is recommended to give the
+instance a short name that is used to construct default
+values for the private directories of the new instance. The
+"\fB\-G \fIgroup\fR" option may be specified to assign the
+instance to a group, otherwise, the new instance is not a
+member of any groups.
+.sp
+The new instance main.cf is the stock main.cf with the
+parameters that specify the locations of shared files cloned
+from the primary instance.  For "nameless" instances, you
+should manually adjust "syslog_name" to yield a unique
+"logtag" starting with "postfix\-" that will uniquely identify
+the instance in the mail logs. It is simpler to assign the
+instance a short name with the "\fB\-I \fIname\fR" option.
+.sp
+Optional "name=value" arguments specify the instance
+config_directory, queue_directory and data_directory.
+For example:
+.RS
+.IP
+.nf
+# postmulti \-I postfix\-mumble \e
+        \-G mygroup \-e create \e
+        config_directory=/my/config/dir \e
+        queue_directory=/my/queue/dir \e
+        data_directory=/my/data/dir
+.fi
+.RE
+.IP
+If any of these pathnames is not supplied, the program
+attempts to generate the pathname by taking the corresponding
+primary instance pathname, and by replacing the last pathname
+component by the value of the \fB\-I\fR option.
+.sp
+If the instance configuration directory already exists, and
+contains both a main.cf and master.cf file, \fBcreate\fR
+will "import" the instance as\-is. For existing instances,
+\fBcreate\fR and \fBimport\fR are identical.
+.IP \fBimport\fR
+Import an existing instance into the list of instances
+managed by the \fBpostmulti\fR(1) multi\-instance manager.
+This adds the instance to the multi_instance_directories
+list of the primary instance.  If the "\fB\-I \fIname\fR"
+option is provided it specifies the new name for the instance
+and is used to define a default location for the instance
+configuration directory (as with \fBcreate\fR above).  The
+"\fB\-G \fIgroup\fR" option may be used to assign the instance
+to a group. Add a "\fBconfig_directory=\fI/path\fR" argument
+to override a default pathname based on "\fB\-I \fIname\fR".
+.IP \fBdestroy\fR
+Destroy a secondary Postfix instance. To be a candidate for
+destruction an instance must be disabled, stopped and its
+queue must not contain any messages. Attempts to destroy
+the primary Postfix instance trigger a fatal error, without
+destroying the instance.
+.sp
+The instance is removed from the primary instance main.cf
+file's alternate_config_directories parameter and its data,
+queue and configuration directories are cleaned of files
+and directories created by the Postfix system. The main.cf
+and master.cf files are removed from the configuration
+directory even if they have been modified since initial
+creation. Finally, the instance is "deported" from the list
+of managed instances.
+.sp
+If other files are present in instance private directories,
+the directories may not be fully removed, a warning is
+logged to alert the administrator. It is expected that an
+instance built using "fresh" directories via the \fBcreate\fR
+action will be fully removed by the \fBdestroy\fR action
+(if first disabled). If the instance configuration and queue
+directories are populated with additional files (access and
+rewriting tables, chroot jail content, etc.) the instance
+directories will not be fully removed.
+.sp
+The \fBdestroy\fR action triggers potentially dangerous
+file removal operations. Make sure the instance's data,
+queue and configuration directories are set correctly and
+do not contain any valuable files.
+.IP \fBdeport\fR
+Deport a secondary instance from the list of managed
+instances. This deletes the instance configuration directory
+from the primary instance's multi_instance_directories list,
+but does not remove any files or directories.
+.IP \fBassign\fR
+Assign a new instance name or a new group name to the
+selected instance.  Use "\fB\-G \-\fR" to specify "no group"
+and "\fB\-I \-\fR" to specify "no name".  If you choose to
+make an instance "nameless", set a suitable syslog_name in
+the corresponding main.cf file.
+.IP \fBenable\fR
+Mark the selected instance as enabled. This just sets the
+multi_instance_enable parameter to "yes" in the instance's
+main.cf file.
+.IP \fBdisable\fR
+Mark the selected instance as disabled. This means that
+the instance will not be started etc. with "postfix start",
+"postmulti \-p start" and so on. The instance can still be
+started etc. with "postfix \-c config\-directory start".
+.SH "Other options"
+.IP \fB\-v\fR
+Enable verbose logging for debugging purposes. Multiple
+\fB\-v\fR options make the software increasingly verbose.
+.RE
+.SH "ENVIRONMENT"
+.na
+.nf
+.ad
+.fi
+The \fBpostmulti\fR(1) command exports the following environment
+variables before executing the requested \fIcommand\fR for a given
+instance:
+.IP \fBMAIL_VERBOSE\fR
+This is set when the \-v command\-line option is present.
+.IP \fBMAIL_CONFIG\fR
+The location of the configuration directory of the instance.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_directory (see 'postconf -d' output)\fR"
+The directory with Postfix support programs and daemon programs.
+.IP "\fBimport_environment (see 'postconf -d' output)\fR"
+The list of environment parameters that a Postfix process will
+import from a non\-Postfix parent process.
+.IP "\fBmulti_instance_directories (empty)\fR"
+An optional list of non\-default Postfix configuration directories;
+these directories belong to additional Postfix instances that share
+the Postfix executable files and documentation with the default
+Postfix instance, and that are started, stopped, etc., together
+with the default Postfix instance.
+.IP "\fBmulti_instance_group (empty)\fR"
+The optional instance group name of this Postfix instance.
+.IP "\fBmulti_instance_name (empty)\fR"
+The optional instance name of this Postfix instance.
+.IP "\fBmulti_instance_enable (no)\fR"
+Allow this Postfix instance to be started, stopped, etc., by a
+multi\-instance manager.
+.IP "\fBpostmulti_start_commands (start)\fR"
+The \fBpostfix\fR(1) commands that the \fBpostmulti\fR(1) instance manager treats
+as "start" commands.
+.IP "\fBpostmulti_stop_commands (see 'postconf -d' output)\fR"
+The \fBpostfix\fR(1) commands that the \fBpostmulti\fR(1) instance manager treats
+as "stop" commands.
+.IP "\fBpostmulti_control_commands (reload flush)\fR"
+The \fBpostfix\fR(1) commands that the \fBpostmulti\fR(1) instance manager
+treats as "control" commands, that operate on running instances.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.PP
+Available in Postfix 3.0 and later:
+.IP "\fBmeta_directory (see 'postconf -d' output)\fR"
+The location of non\-executable files that are shared among
+multiple Postfix instances, such as postfix\-files, dynamicmaps.cf,
+and the multi\-instance template files main.cf.proto and master.cf.proto.
+.IP "\fBshlib_directory (see 'postconf -d' output)\fR"
+The location of Postfix dynamically\-linked libraries
+(libpostfix\-*.so), and the default location of Postfix database
+plugins (postfix\-*.so) that have a relative pathname in the
+dynamicmaps.cf file.
+.SH "FILES"
+.na
+.nf
+$meta_directory/main.cf.proto, stock configuration file
+$meta_directory/master.cf.proto, stock configuration file
+$daemon_directory/postmulti\-script, life\-cycle helper program
+.SH "SEE ALSO"
+.na
+.nf
+postfix(1), Postfix control program
+postfix\-wrapper(5), Postfix multi\-instance API
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or "\fBpostconf
+html_directory\fR" to locate this information.
+.nf
+.na
+MULTI_INSTANCE_README, Postfix multi\-instance management
+.SH HISTORY
+.ad
+.fi
+.ad
+.fi
+The \fBpostmulti\fR(1) command was introduced with Postfix
+version 2.6.
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Victor Duchovni
+Morgan Stanley
+
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA

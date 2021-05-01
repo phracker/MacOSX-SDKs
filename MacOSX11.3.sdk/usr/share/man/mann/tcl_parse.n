@@ -1,0 +1,408 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/doctools2base/tcl_parse.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "doctools::tcl::parse" n 1 doctools2base "Documentation tools"
+.BS
+.SH NAME
+doctools::tcl::parse \- Processing text in 'subst -novariables' format
+.SH SYNOPSIS
+package require \fBTcl  8.4\fR
+.sp
+package require \fBsnit \fR
+.sp
+package require \fBfileutil \fR
+.sp
+package require \fBlogger \fR
+.sp
+package require \fBstruct::list \fR
+.sp
+package require \fBstruct::stack \fR
+.sp
+package require \fBstruct::set \fR
+.sp
+package require \fBtreeql \fR
+.sp
+\fB::doctools::tcl::parse\fR \fBtext\fR \fItree\fR \fItext\fR ?\fIroot\fR?
+.sp
+\fB::doctools::tcl::parse\fR \fBfile\fR \fItree\fR \fIpath\fR ?\fIroot\fR?
+.sp
+.BE
+.SH DESCRIPTION
+This package provides commands for parsing text with embedded Tcl
+commands as accepted by the Tcl builtin command
+\fBsubst -novariables\fR. The result of the parsing is an abstract
+syntax tree.
+.PP
+This is an internal package of doctools, for use by the higher level
+parsers processing the \fIdocidx\fR, \fIdoctoc\fR, and \fIdoctools\fR
+markup languages.
+.SH API
+.TP
+\fB::doctools::tcl::parse\fR \fBtext\fR \fItree\fR \fItext\fR ?\fIroot\fR?
+The command takes the \fItext\fR and parses it under the assumption
+that it contains a string acceptable to the Tcl builtin command
+\fBsubst -novariables\fR. Errors are thrown otherwise during the
+parsing. The format used for these errors in described in section
+\fBError format\fR.
+.sp
+The command returns the empty string as it result. The actual result
+of the parsing is entered into the tree structure \fItree\fR, under
+the node \fIroot\fR.
+If \fIroot\fR is not specified the root of \fItree\fR is used. The
+\fItree\fR has to exist and be the command of a tree object which
+supports the same methods as trees created by the package
+\fBstruct::tree\fR.
+.sp
+In case of errors \fItree\fR will be left in an undefined state.
+.TP
+\fB::doctools::tcl::parse\fR \fBfile\fR \fItree\fR \fIpath\fR ?\fIroot\fR?
+The same as \fBtext\fR, except that the text to parse is read from
+the file specified by \fIpath\fR.
+.PP
+.SH "ERROR FORMAT"
+When the parser encounters a problem in the input
+it will throw an error using the format described
+here.
+.IP [1]
+The message will contain the reason for the problem (unexpected
+character or end of input in input), the character in question, if
+any, and the line and column the problem was found at, in a human
+readable form. This part is not documented further as its format may
+change as we see fit. It is intended for human consumption, not
+machine.
+.IP [2]
+The error code however will contain a machine-readable representation
+of the problem, in the form of a 5-element list containing, in the
+order listed below
+.RS
+.IP [1]
+the constant string \fBdoctools::tcl::parse\fR
+.IP [2]
+the cause of the problem, one of
+.RS
+.TP
+\fBchar\fR
+Unexpected character in input
+.TP
+\fBeof\fR
+Unexpected end of the input
+.RE
+.IP [3]
+The location of the problem as offset from the beginning of the input,
+counted in characters. Note: Line markers count as one character.
+.IP [4]
+The line the problem was found on (counted from 1 (one)),
+.IP [5]
+The column the problem was found at (counted from 0 (zero))
+.RE
+.PP
+.SH "TREE STRUCTURE"
+After successfully parsing a string the generated tree will have the
+following structure:
+.IP [1]
+In the following items the word 'root' refers to the node which was
+specified as the root of the tree when invoking either \fBtext\fR
+or \fBfile\fR. This may be the actual root of the tree.
+.IP [2]
+All the following items further ignore the possibility of pre-existing
+attributes in the pre-existing nodes. If attributes exists with the
+same names as the attributes used by the parser the pre-existing
+values are written over. Attributes with names not clashing with the
+parser's attributes are not touched.
+.IP [3]
+The root node has no attributes.
+.IP [4]
+All other nodes have the attributes
+.RS
+.TP
+type
+The value is a string from the set { Command , Text , Word }
+.TP
+range
+The value is either empty or a 2-element list containing integer
+numbers. The numbers are the offsets of the first and last character
+in the input text, of the token described by the node,.
+.TP
+line
+The value is an integer, it describes the line in the input the token
+described by the node ends on. Lines are counted from 1 (\fBone\fR).
+.TP
+col
+The value is an integer, it describes the column in the line in the
+input the token described by the node ends on. Columns are counted
+from 0 (\fBzero\fR).
+.RE
+.IP [5]
+The children of the root, if any, are of type Command and Text, in
+semi-alternation. This means: After a Text node a Command node has to
+follow, and anything can follow a Command node, a Text or other
+Command node.
+.IP [6]
+The children of a Command node, if any, are of type Command, and Text,
+and Word, they describe the arguments of the command.
+.IP [7]
+The children of a Word node, if any, are of type Command, Text, in
+semi-alternation. This means: After a Text node a Command node has to
+follow, and anything can follow a Command node, a Text or other
+Command node.
+.IP [8]
+A Word node without children represents the empty string.
+.IP [9]
+All Text nodes are leaves of the tree.
+.IP [10]
+All leaves of the tree are either Text or Command nodes.
+Word nodes cannot be leaves.
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIdoctools\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+Tcl syntax, command, doctools, parser, subst, word
+.SH CATEGORY
+Documentation tools
+.SH COPYRIGHT
+.nf
+Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

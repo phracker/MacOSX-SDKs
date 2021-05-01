@@ -1,0 +1,514 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/rcs/rcs.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2005, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\" Copyright (c) 2005, Colin McCormack <coldstore@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "rcs" n 2.0.2 rcs "RCS low level utilities"
+.BS
+.SH NAME
+rcs \- RCS low level utilities
+.SH SYNOPSIS
+package require \fBTcl  8.4\fR
+.sp
+package require \fBrcs  ?0.1?\fR
+.sp
+\fB::rcs::text2dict\fR \fItext\fR
+.sp
+\fB::rcs::dict2text\fR \fIdict\fR
+.sp
+\fB::rcs::file2dict\fR \fIfilename\fR
+.sp
+\fB::rcs::dict2file\fR \fIfilename\fR \fIdict\fR
+.sp
+\fB::rcs::decodeRcsPatch\fR \fItext\fR
+.sp
+\fB::rcs::encodeRcsPatch\fR \fIpcmds\fR
+.sp
+\fB::rcs::applyRcsPatch\fR \fItext\fR \fIpcmds\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+The \fIRevision Control System\fR, short \fIRCS\fR, is a set of
+applications and related data formats which allow a system to persist
+the history of changes to a text. It, and its relative SCCS are the
+basis for many other such systems, like \fICVS\fR, etc.
+.PP
+This package \fIdoes not\fR implement RCS.
+.PP
+It only provides a number of low level commands which should be useful
+in the implementation of any revision management system, namely:
+.IP [1]
+The conversion of texts into and out of a data structures which allow
+the easy modification of such text by \fIpatches\fR, i.e. sequences
+of instructions for the transformation of one text into an other.
+.IP [2]
+And the conversion of one particular format for patches, the so-called
+\fIRCS patches\fR, into and out of data structures which allow
+their easy application to texts.
+.PP
+.SH COMMANDS
+.TP
+\fB::rcs::text2dict\fR \fItext\fR
+Converts the argument \fItext\fR into a dictionary containing and
+representing the same text in an indexed form and returns that
+dictionary as its result.
+More information about the format of the result can be found in
+section \fBTEXT DICT DATA STRUCTURE\fR. This command returns the
+\fIcanonical\fR representation of the input.
+.TP
+\fB::rcs::dict2text\fR \fIdict\fR
+This command provides the complementary operation to
+\fB::rcs::text2dict\fR. It converts a dictionary in the form described
+in section \fBTEXT DICT DATA STRUCTURE\fR back into a text and
+returns that text as its result. The command does accept non-canonical
+representations of the text as its input.
+.TP
+\fB::rcs::file2dict\fR \fIfilename\fR
+This command is identical to \fB::rcs::text2dict\fR, except that it
+reads the text to convert from the file with path \fIfilename\fR. The
+file has to exist and must be readable as well.
+.TP
+\fB::rcs::dict2file\fR \fIfilename\fR \fIdict\fR
+This command is identical to \fB::rcs::2dict2text\fR, except that it
+stores the resulting text in the file with path \fIfilename\fR. The
+file is created if it did not exist, and must be writable. The result
+of the command is the empty string.
+.TP
+\fB::rcs::decodeRcsPatch\fR \fItext\fR
+Converts the \fItext\fR argument into a patch command list (PCL) as
+specified in the section \fBRCS PATCH COMMAND LIST\fR and
+returns this list as its result.
+It is assumed that the input text is in \fIdiff -n format\fR, also
+known as \fIRCS patch\fR format, as specified in the section
+\fBRCS PATCH FORMAT\fR.
+Please note that the command ignores no-ops in the input, in other
+words the resulting PCL contains only instructions doing something.
+.TP
+\fB::rcs::encodeRcsPatch\fR \fIpcmds\fR
+This command provides the complementary operation to
+\fB::rcs::decodeRcsPatch\fR. It convert a patch comand list (PCL) list
+as specified in the section \fBRCS PATCH COMMAND LIST\fR back
+into a text in \fBRCS PATCH FORMAT\fR and returns that text as its result.
+.sp
+Note that this command and \fB::rcs::decodeRcsPatch\fR are not exactly
+complementary, as the latter strips no-ops from its input, which the
+encoder cannot put back anymore into the generated RCS patch. In other
+words, the result of a decode/encode step may not match the original
+input at the character level, but it will match it at the functional
+level.
+.TP
+\fB::rcs::applyRcsPatch\fR \fItext\fR \fIpcmds\fR
+This operation applies a patch in the form of a PCL to a text given in
+the form of a dictionary and returns the modified text, again as
+dictionary, as its result.
+.sp
+To handle actual text use the commands \fB::rcs::text2dict\fR (or
+equivalent) and \fB::rcs::decodeRcsPatch\fR to transform the inputs
+into data structures acceptable to this command. Analogously use the
+command \fB::rcs::dict2text\fR (or equivalent) to transform the
+result of this command into actuall text as required.
+.PP
+.SH "TEXT DICT DATA STRUCTURE"
+A text dictionary is a dictionary whose keys are integer numbers and
+text strings as the associated values. The keys represent the line
+numbers of a text and the values the text of that line.  Note that one
+text can have many representations as a dictionary, as the index
+values only have to be properly ordered for reconstruction, their
+exact values do not matter. Similarly the strings may actually span
+multiple physical lines.
+.PP
+The text
+.PP
+.nf
+Hello World,
+how are you ?
+Fine, and you ?
+.fi
+.PP
+for example can be represented by
+.PP
+.nf
+{{1 {Hello World,}} {2 {how are you ?}} {3 {Fine, and you ?}}}
+.fi
+.PP
+or
+.PP
+.nf
+{{5 {Hello World,}} {8 {how are you ?}} {9 {Fine, and you ?}}}
+.fi
+.PP
+or
+.PP
+.nf
+{{-1 {Hello World,
+how are you ?}} {4 {Fine, and you ?}}}
+.fi
+.PP
+The first dictionary is the \fIcanonical\fR representation of the
+text, with line numbers starting at \fB1\fR, increasing in steps of
+\fB1\fR and without gaps, and each value representing exactly one
+physical line.
+.PP
+All the commands creating dictionaries from text will return the
+canonical representation of their input text. The commands taking a
+dictionary and returning text will generally accept all
+representations, canonical or not.
+.PP
+The result of applying a patch to a text dictionary will in general
+cause the dictionary to become non-canonical.
+.SH "RCS PATCH FORMAT"
+A \fIpatch\fR is in general a series of instructions how to transform
+an input text T into a different text T', and also encoded in text
+form as well.
+.PP
+The text format for patches understood by this package is a very
+simple one, known under the names \fIRCS patch\fR or
+\fIdiff -n format\fR.
+.PP
+Patches in this format contain only two different commands, for the
+deletion of old text, and addition of new text. The replacement of
+some text by a different text is handled as combination of a deletion
+following by an addition.
+.PP
+The format is line oriented, with each line containing either a
+command or text data associated with the preceding command.
+The first line of a \fIRCS patch\fR is always a command line.
+.PP
+The commands are:
+.TP
+""
+The empty line is a command which does nothing.
+.TP
+"a\fBstart\fR \fBn\fR"
+A line starting with the character \fBa\fR is a command for the
+addition of text to the output. It is followed by \fBn\fR lines of
+text data. When applying the patch the data is added just between the
+lines \fBstart\fR and \fBstart\fR+1. The same effect is had by
+appending the data to the existing text on line \fBstart\fR. A
+non-existing line \fBstart\fR is created.
+.TP
+"d\fBstart\fR \fBn\fR"
+A line starting with the character \fBd\fR is a command for the
+deletion of text from the output. When applied it deletes \fBn\fR
+lines of text, and the first line deleted is at index \fBstart\fR.
+.PP
+Note that the line indices \fBstart\fR always refer to the text which
+is transformed as it is in its original state, without taking the
+precending changes into account.
+.PP
+Note also that the instruction have to be applied in the order they
+occur in the patch, or in a manner which produces the same result as
+in-order application.
+.PP
+This is the format of results returned by the command
+\fB::rcs::decodeRcsPatch\fR and accepted by the commands
+\fB::rcs::encodeRcsPatch\fR and \fB::rcs::appplyRcsPatch\fR
+resp.
+Note however that the decoder will strip no-op commands, and the
+encoder will not generate no-ops, making them not fully complementary
+at the textual level, only at the functional level.
+.PP
+And example of a RCS patch is
+.PP
+.nf
+d1 2
+d4 1
+a4 2
+The named is the mother of all things.
+
+a11 3
+They both may be called deep and profound.
+Deeper and more profound,
+The door of all subtleties!
+.fi
+.SH "RCS PATCH COMMAND LIST"
+Patch command lists (sort: PCL's) are the data structures generated by
+patch decoder command and accepted by the patch encoder and applicator
+commands. They represent RCS patches in the form of Tcl data
+structures.
+.PP
+A PCL is a list where each element represents a single patch
+instruction, either an addition, or a deletion. The elements are lists
+themselves, where the first item specifies the command and the
+remainder represent the arguments of the command.
+.TP
+a
+This is the instruction for the addition of text. It has two
+arguments, the index of the line where to add the text, and the text
+to add, in this order.
+.TP
+d
+This is the instruction for the deletion of text. It has two
+arguments, the index of the line where to start deleting text, and the
+number of lines to delete, in this order.
+.PP
+.PP
+This is the format returned by the patch decoder command and accepted
+as input by the patch encoder and applicator commands.
+.PP
+An example for a patch command is shown below, it represents the
+example RCS patch found in section \fBRCS PATCH FORMAT\fR.
+.PP
+.nf
+{{d 1 2} {d 4 1} {a 4 {The named is the mother of all things.
+
+}} {a 11 {They both may be called deep and profound.
+Deeper and more profound,
+The door of all subtleties!}}}
+.fi
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIrcs\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH "SEE ALSO"
+struct, textutil
+.SH KEYWORDS
+CVS, RCS, RCS patch, SCCS, diff -n format, patching, text conversion, text differences
+.SH CATEGORY
+Text processing
+.SH COPYRIGHT
+.nf
+Copyright (c) 2005, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+Copyright (c) 2005, Colin McCormack <coldstore@users.sourceforge.net>
+
+.fi

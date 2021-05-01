@@ -1,0 +1,726 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/grammar_me/me_vm.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2005 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "grammar::me_vm" n 0.1 grammar_me "Grammar operations and usage"
+.BS
+.SH NAME
+grammar::me_vm \- Virtual machine for parsing token streams
+.SH DESCRIPTION
+Please go and read the document \fBgrammar::me_intro\fR first for
+an overview of the various documents and their relations.
+.PP
+This document specifies a virtual machine for the controlled matching
+and parsing of token streams, creating an
+\fIabstract syntax tree\fR (short \fIAST\fR) reflecting the
+structure of the input. Special machine features are the caching and
+reuse of partial results, caching of the encountered input, and the
+ability to backtrack in both input and AST creation.
+.PP
+These features make the specified virtual machine especially useful to
+packrat parsers based on parsing expression grammars. It is however
+not restricted to this type of parser. Normal LL and LR parsers can be
+implemented with it as well.
+.PP
+The following sections will discuss first the abstract state kept by
+ME virtual machines, and then their instruction set.
+.SH "MACHINE STATE"
+A ME virtual machine manages the following state:
+.TP
+\fICurrent token\fR CT
+The token from the input under consideration by the machine.
+.sp
+This information is used and modified by the instructions defined in
+the section
+\fBTERMINAL MATCHING\fR.
+.TP
+\fICurrent location\fR CL
+The location of the \fIcurrent token\fR in the input stream, as
+offset relative to the beginning of the stream. The first token is
+considered to be at offset \fB0\fR.
+.sp
+This information is implicitly used and modified by the instructions
+defined in the sections
+\fBTERMINAL MATCHING\fR and
+\fBNONTERMINAL MATCHING\fR,
+and can be directly queried and modified by the instructions defined
+in section
+\fBINPUT LOCATION HANDLING\fR.
+.TP
+\fILocation stack\fR LS
+In addition to the above a stack of locations, for backtracking.
+Locations can put on the stack, removed from it, and removed with
+setting the current location.
+.sp
+This information is implicitly used and modified by the instructions
+defined in the sections
+\fBTERMINAL MATCHING\fR and
+\fBNONTERMINAL MATCHING\fR,
+and can be directly queried and modified by the instructions defined
+in section
+\fBINPUT LOCATION HANDLING\fR.
+.TP
+\fIMatch status\fR OK
+A boolean value, the result of the last attempt at matching input.
+It is set to \fBtrue\fR if that attempt was successful, and
+\fBfalse\fR otherwise.
+.sp
+This information is influenced by the instructions defined in the
+sections
+\fBTERMINAL MATCHING\fR,
+\fBNONTERMINAL MATCHING\fR, and
+\fBUNCONDITIONAL MATCHING\fR.
+It is queried by the instructions defined in the section
+\fBCONTROL FLOW\fR.
+.TP
+\fISemantic value\fR SV
+The semantic value associated with (generated by) the last attempt at
+matching input. Contains either the empty string or a node for the
+abstract syntax tree constructed from the input.
+.sp
+This information is influenced by the instructions defined in the
+sections
+\fBSEMANTIC VALUES\fR, and
+\fBAST STACK HANDLING\fR.
+.TP
+\fIAST stack\fR AS
+A stack of partial abstract syntax trees constructed by the machine
+during matching.
+.sp
+This information is influenced by the instructions defined in the
+sections
+\fBSEMANTIC VALUES\fR, and
+\fBAST STACK HANDLING\fR.
+.TP
+\fIAST Marker stack\fR MS
+In addition to the above a stack of stacks, for backtracking. This is
+actually a stack of markers into the AST stack, thus implicitly
+snapshooting the state of the AST stack at some point in time. Markers
+can be put on the stack, dropped from it, and used to roll back the
+AST stack to an earlier state.
+.sp
+This information is influenced by the instructions defined in the
+sections
+\fBSEMANTIC VALUES\fR, and
+\fBAST STACK HANDLING\fR.
+.TP
+\fIError status\fR ER
+Error information associated with the last attempt at matching
+input. Contains either the empty string or a list of 2 elements, a
+location in the input and a list of error messages associated with
+it, in this order.
+.sp
+\fINote\fR that error information can be set even if the last attempt
+at matching input was successful. For example the *-operator (matching
+a sub-expression zero or more times) in a parsing expression grammar
+is always successful, even if it encounters a problem further in the
+input and has to backtrack. Such problems must not be forgotten when
+continuing to match.
+.sp
+This information is queried and influenced by the instructions defined
+in the sections
+\fBTERMINAL MATCHING\fR,
+\fBNONTERMINAL MATCHING\fR, and
+\fBERROR HANDLING\fR.
+.TP
+\fIError stack\fR ES
+In addition to the above a stack of error information, to allow the
+merging of current and older error information when performing
+backtracking in choices after an unsucessful match.
+.sp
+This information is queried and influenced by the instructions defined
+in the sections
+\fBTERMINAL MATCHING\fR,
+\fBNONTERMINAL MATCHING\fR, and
+\fBERROR HANDLING\fR.
+.TP
+\fIReturn stack\fR RS
+A stack of program counter values, i.e. locations in the code
+controlling the virtual machine, for the management of subroutine
+calls, i.e. the matching of nonterminal symbols.
+.sp
+This information is queried and influenced by the instructions defined
+in the section
+\fBNONTERMINAL MATCHING\fR.
+.TP
+\fINonterminal cache\fR NC
+A cache of machine states (A 4-tuple containing a location in the
+input, match status \fIOK\fR, semantic value \fISV\fR, and error
+status \fIER\fR) keyed by name of nonterminal symbol and location in
+the input stream.
+.sp
+The key location is where machine started the attempt to match the
+named nonterminal symbol, and the location in the value is where
+machine ended up after the attempt completed, independent of the
+success of the attempt.
+.sp
+This status is queried and influenced by the instructions defined in
+the section
+\fBNONTERMINAL MATCHING\fR.
+.PP
+.SH "MACHINE INSTRUCTIONS"
+With the machine state specified it is now possible to explain the
+instruction set of ME virtual machines. They are grouped roughly by
+the machine state they influence and/or query.
+.SS "TERMINAL MATCHING"
+First the instructions to match tokens from the input stream, and
+by extension all terminal symbols.
+.PP
+These instructions are the only ones which may retrieve a new token
+from the input stream. This is a \fImay\fR and not a \fIwill\fR
+because the instructions will a retrieve new token if, and only if the
+current location \fICL\fR is at the head of the stream.
+If the machine has backtracked (see \fBicl_rewind\fR) the instructions
+will retrieve the token to compare against from the internal cache.
+.PP
+.TP
+\fBict_advance\fR \fImessage\fR
+This instruction tries to advance to the next token in the input
+stream, i.e. the one after the current location \fICL\fR. The
+instruction will fail if, and only if the end of the input stream is
+reached, i.e. if there is no next token.
+.sp
+The sucess/failure of the instruction is remembered in the match
+status \fIOK\fR. In the case of failure the error status \fIER\fR is
+set to the current location and the message \fImessage\fR.
+In the case of success the error status \fIER\fR is cleared, the new
+token is made the current token \fICT\fR, and the new location is
+made the current location \fICL\fR.
+.sp
+The argument \fImessage\fR is a reference to the string to put into
+the error status \fIER\fR, if such is needed.
+.TP
+\fBict_match_token\fR \fItok\fR \fImessage\fR
+This instruction tests the current token \fICT\fR for equality
+with the argument \fItok\fR and records the result in the match
+status \fIOK\fR. The instruction fails if the current token is
+not equal to \fItok\fR.
+.sp
+In case of failure the error status \fIER\fR is set to the current
+location \fICL\fR and the message \fImessage\fR, and the
+current location \fICL\fR is moved one token backwards.
+Otherwise, i.e. upon success, the error status \fIER\fR is cleared
+and the current location \fICL\fR is not touched.
+.TP
+\fBict_match_tokrange\fR \fItokbegin\fR \fItokend\fR \fImessage\fR
+This instruction tests the current token \fICT\fR for being in
+the range of tokens from \fItokbegin\fR to \fItokend\fR
+(inclusive) and records the result in the match status \fIOK\fR. The
+instruction fails if the current token is not inside the range.
+.sp
+In case of failure the error status \fIER\fR is set to the current
+location \fICL\fR and the message \fImessage\fR, and the current location
+\fICL\fR is moved one token backwards.
+Otherwise, i.e. upon success, the error status \fIER\fR is cleared
+and the current location \fICL\fR is not touched.
+.TP
+\fBict_match_tokclass\fR \fIcode\fR \fImessage\fR
+This instruction tests the current token \fICT\fR for being a member
+of the token class \fIcode\fR and records the result in the match
+status \fIOK\fR. The instruction fails if the current token is not a
+member of the specified class.
+.sp
+In case of failure the error status \fIER\fR is set to the current
+location \fICL\fR and the message \fImessage\fR, and the
+current location \fICL\fR is moved one token backwards.
+Otherwise, i.e. upon success, the error status \fIER\fR is cleared
+and the current location \fICL\fR is not touched.
+.sp
+Currently the following classes are legal:
+.RS
+.TP
+alnum
+A token is accepted if it is a unicode alphabetical character, or a digit.
+.TP
+alpha
+A token is accepted if it is a unicode alphabetical character.
+.TP
+digit
+A token is accepted if it is a unicode digit character.
+.TP
+xdigit
+A token is accepted if it is a hexadecimal digit character.
+.TP
+punct
+A token is accepted if it is a unicode punctuation character.
+.TP
+space
+A token is accepted if it is a unicode space character.
+.RE
+.PP
+.PP
+.SS "NONTERMINAL MATCHING"
+The instructions in this section handle the matching of nonterminal
+symbols. They query the nonterminal cache \fINC\fR for saved
+information, and put such information into the cache.
+.PP
+The usage of the cache is a performance aid for backtracking parsers,
+allowing them to avoid an expensive rematch of complex nonterminal
+symbols if they have been encountered before.
+.PP
+.TP
+\fBinc_restore\fR \fIbranchlabel\fR \fInt\fR
+This instruction checks if the nonterminal cache \fINC\fR contains
+information about the nonterminal symbol \fInt\fR, at the current
+location \fICL\fR. If that is the case the instruction will update
+the machine state (current location \fICL\fR, match status \fIOK\fR,
+semantic value \fISV\fR, and error status \fIER\fR) with the found
+information and continue execution at the instruction refered to by
+the \fIbranchlabel\fR. The new current location \fICL\fR will be the
+last token matched by the nonterminal symbol, i.e. belonging to it.
+.sp
+If no information was found the instruction will continue execution at
+the next instruction.
+.sp
+Together with \fBicf_ntcall\fR it is possible to generate code for
+memoized and non-memoized matching of nonterminal symbols, either as
+subroutine calls, or inlined in the caller.
+.TP
+\fBinc_save\fR \fInt\fR
+This instruction saves the current state of the machine (current
+location \fICL\fR, match status \fIOK\fR, semantic value \fISV\fR,
+and error status \fIER\fR), to the nonterminal cache \fINC\fR. It
+will also pop an entry from the location stack \fILS\fR and save it
+as the start location of the match.
+.sp
+It is expected to be called at the end of matching a nonterminal
+symbol, with \fInt\fR the name of the nonterminal symbol the code was
+working on. This allows the instruction \fBinc_restore\fR to check for
+and retrieve the data, should we have to match this nonterminal symbol
+at the same location again, during backtracking.
+.TP
+\fBicf_ntcall\fR \fIbranchlabel\fR
+This instruction invokes the code for matching the nonterminal symbol
+\fInt\fR as a subroutine. To this end it stores the current program
+counter \fIPC\fR on the return stack \fIRS\fR, the current location
+\fICL\fR on the location stack \fILS\fR, and then continues
+execution at the address \fIbranchlabel\fR.
+.sp
+The next matching \fBicf_ntreturn\fR will cause the execution to
+continue at the instruction coming after the call.
+.TP
+\fBicf_ntreturn\fR
+This instruction will pop an entry from the return stack \fIRS\fR,
+assign it to the program counter \fIPC\fR, and then continue
+execution at the new address.
+.PP
+.PP
+.SS "UNCONDITIONAL MATCHING"
+The instructions in this section are the remaining match
+operators. They change the match status \fIOK\fR directly and
+unconditionally.
+.TP
+\fBiok_ok\fR
+This instruction sets the match status \fIOK\fR to \fBtrue\fR,
+indicating a successful match.
+.TP
+\fBiok_fail\fR
+This instruction sets the match status \fIOK\fR to \fBfalse\fR,
+indicating a failed match.
+.TP
+\fBiok_negate\fR
+This instruction negates the match status \fIOK\fR, turning a failure
+into a success and vice versa.
+.PP
+.PP
+.SS "CONTROL FLOW"
+The instructions in this section implement both conditional and
+unconditional control flow. The conditional jumps query the match
+status \fIOK\fR.
+.TP
+\fBicf_jalways\fR \fIbranchlabel\fR
+This instruction sets the program counter \fIPC\fR to the address
+specified by \fIbranchlabel\fR and then continues execution from
+there. This is an unconditional jump.
+.TP
+\fBicf_jok\fR \fIbranchlabel\fR
+This instruction sets the program counter \fIPC\fR to the address
+specified by \fIbranchlabel\fR. This happens if, and only if the match
+status \fIOK\fR indicates a success. Otherwise it simply continues
+execution at the next instruction. This is a conditional jump.
+.TP
+\fBicf_jfail\fR \fIbranchlabel\fR
+This instruction sets the program counter \fIPC\fR to the address
+specified by \fIbranchlabel\fR. This happens if, and only if the match
+status \fIOK\fR indicates a failure. Otherwise it simply continues
+execution at the next instruction. This is a conditional jump.
+.TP
+\fBicf_halt\fR
+This instruction halts the machine and blocks any further execution.
+.PP
+.SS "INPUT LOCATION HANDLING"
+The instructions in this section are for backtracking, they manipulate
+the current location \fICL\fR of the machine state.
+They allow a user of the machine to query and save locations in the
+input, and to rewind the current location \fICL\fR to saved
+locations, making them one of the components enabling the
+implementation of backtracking parsers.
+.TP
+\fBicl_push\fR
+This instruction pushes a copy of the current location \fICL\fR on
+the location stack \fILS\fR.
+.TP
+\fBicl_rewind\fR
+This instruction pops an entry from the location stack \fILS\fR and
+then moves the current location \fICL\fR back to this point in the
+input.
+.TP
+\fBicl_pop\fR
+This instruction pops an entry from the location stack \fILS\fR and
+discards it.
+.PP
+.PP
+.SS "ERROR HANDLING"
+The instructions in this section provide read and write access to the
+error status \fIER\fR of the machine.
+.TP
+\fBier_push\fR
+This instruction pushes a copy of the current error status \fIER\fR
+on the error stack \fIES\fR.
+.TP
+\fBier_clear\fR
+This instruction clears the error status \fIER\fR.
+.TP
+\fBier_nonterminal\fR \fImessage\fR
+This instruction checks if the error status \fIER\fR contains an
+error whose location is just past the location found in the top entry
+of the location stack \fILS\fR.
+Nothing happens if no such error is found.
+Otherwise the found error is replaced by an error at the location
+found on the stack, having the message \fImessage\fR.
+.TP
+\fBier_merge\fR
+This instruction pops an entry from the error stack \fIES\fR, merges
+it with the current error status \fIER\fR and stores the result of
+the merge as the new error status \fIER\fR.
+.sp
+The merge is performed as described below:
+.sp
+If one of the two error states is empty the other is chosen. If
+neither error state is empty, and refering to different locations,
+then the error state with the location further in the input is
+chosen. If both error states refer to the same location their messages
+are merged (with removing duplicates).
+.PP
+.SS "SEMANTIC VALUES"
+The instructions in this section manipulate the semantic value
+\fISV\fR.
+.TP
+\fBisv_clear\fR
+This instruction clears the semantic value \fISV\fR.
+.TP
+\fBisv_terminal\fR
+This instruction creates a terminal AST node for the current token
+\fICT\fR, makes it the semantic value \fISV\fR, and also pushes the
+node on the AST stack \fIAS\fR.
+.TP
+\fBisv_nonterminal_leaf\fR \fInt\fR
+This instruction creates a nonterminal AST node without any children
+for the nonterminal \fInt\fR, and makes it the semantic value
+\fISV\fR.
+.sp
+This instruction should be executed if, and only if the match status
+\fIOK\fR indicates a success.
+In the case of a failure \fBisv_clear\fR should be called.
+.TP
+\fBisv_nonterminal_range\fR \fInt\fR
+This instruction creates a nonterminal AST node for the nonterminal
+\fInt\fR, with a single terminal node as its child, and makes this AST
+the semantic value \fISV\fR. The terminal node refers to the input
+string from the location found on top of the location stack \fILS\fR
+to the current location \fICL\fR (both inclusive).
+.sp
+This instruction should be executed if, and only if the match status
+\fIOK\fR indicates a success.
+In the case of a failure \fBisv_clear\fR should be called.
+.TP
+\fBisv_nonterminal_reduce\fR \fInt\fR
+This instruction creates a nonterminal AST node for the nonterminal
+\fInt\fR and makes it the semantic value \fISV\fR.
+.sp
+All entries on the AST stack \fIAS\fR above the marker found in the
+top entry of the AST Marker stack \fIMS\fR become children of the new
+node, with the entry at the stack top becoming the rightmost child. If
+the AST Marker stack \fIMS\fR is empty the whole stack is used. The
+AST marker stack \fIMS\fR is left unchanged.
+.sp
+This instruction should be executed if, and only if the match status
+\fIOK\fR indicates a success.
+In the case of a failure \fBisv_clear\fR should be called.
+.PP
+.PP
+.SS "AST STACK HANDLING"
+The instructions in this section manipulate the AST stack \fIAS\fR,
+and the AST Marker stack \fIMS\fR.
+.TP
+\fBias_push\fR
+This instruction pushes the semantic value \fISV\fR on the AST stack
+\fIAS\fR.
+.TP
+\fBias_mark\fR
+This instruction pushes a marker for the current state of the AST
+stack \fIAS\fR on the AST Marker stack \fIMS\fR.
+.TP
+\fBias_mrewind\fR
+This instruction pops an entry from the AST Marker stack \fIMS\fR and
+then proceeds to pop entries from the AST stack \fIAS\fR until the
+state represented by the popped marker has been reached again.
+Nothing is done if the AST stack \fIAS\fR is already smaller than
+indicated by the popped marker.
+.TP
+\fBias_mpop\fR
+This instruction pops an entry from the AST Marker stack \fIMS\fR and
+discards it.
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIgrammar_me\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+grammar, parsing, virtual machine
+.SH CATEGORY
+Grammars and finite automata
+.SH COPYRIGHT
+.nf
+Copyright (c) 2005 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

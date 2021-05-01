@@ -1,0 +1,808 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/doctools/doctools_lang_intro.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2007 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "doctools_lang_intro" n 1.0 doctools "Documentation tools"
+.BS
+.SH NAME
+doctools_lang_intro \- doctools language introduction
+.SH DESCRIPTION
+.PP
+This document is an informal introduction to version 1 of the doctools
+markup language based on a multitude of examples. After reading this a
+writer should be ready to understand the two parts of the formal
+specification, i.e. the \fIdoctools language syntax\fR specification
+and the \fIdoctools language command reference\fR.
+.SS FUNDAMENTALS
+In the broadest terms possible the \fIdoctools markup language\fR
+is LaTeX-like, instead of like SGML and similar languages. A document
+written in this language consists primarily of text, with markup
+commands embedded into it.
+.PP
+Each markup command is a Tcl command surrounded by a matching pair of
+\fB[\fR and \fB]\fR. Inside of these delimiters the usual
+rules for a Tcl command apply with regard to word quotation, nested
+commands, continuation lines, etc. I.e.
+.PP
+.nf
+
+  ... [list_begin enumerated] ...
+
+.fi
+.nf
+
+  ... [call [cmd foo] \\\\
+          [arg bar]] ...
+
+.fi
+.nf
+
+  ... [term {complex concept}] ...
+
+.fi
+.nf
+
+  ... [opt "[arg key] [arg value]"] ...
+
+.fi
+.SS "BASIC STRUCTURE"
+The most simple document which can be written in doctools is
+.nf
+
+    [manpage_begin NAME SECTION VERSION]
+    [description]
+    [manpage_end]
+
+.fi
+This also shows us that all doctools documents are split into two
+parts, the \fIheader\fR and the \fIbody\fR. Everything coming before
+[\fBdescription\fR] belongs to the header, and everything coming
+after belongs to the body, with the whole document bracketed by the
+two \fBmanpage_*\fR commands. Before and after these opening and
+closing commands we have only \fIwhitespace\fR.
+.PP
+In the remainder of this section we will discuss only the contents of
+the header, the structure of the body will be discussed in the section
+\fBText structure\fR.
+.PP
+The header section can be empty, and otherwise may contain only an
+arbitrary sequence of the four so-called \fIheader\fR commands, plus
+\fIwhitespace\fR. These commands are
+.TP
+\fBtitledesc\fR
+.TP
+\fBmoddesc\fR
+.TP
+\fBrequire\fR
+.TP
+\fBcopyright\fR
+.PP
+They provide, through their arguments, additional information about
+the document, like its title, the title of the larger group the
+document belongs to (if applicable), the requirements of the
+documented packages (if applicable), and copyright assignments. All of
+them can occur multiple times, including none, and they can be used in
+any order.
+However for \fBtitledesc\fR and \fBmoddesc\fR only the last occurrence
+is taken. For the other two the specified information is accumulated,
+in the given order. Regular text is not allowed within the header.
+.PP
+Given the above a less minimal example of a document is
+.nf
+
+[manpage_begin NAME SECTION VERSION]
+[\fBcopyright {YEAR AUTHOR}\fR]
+[\fBtitledesc TITLE\fR]
+[\fBmoddesc   MODULE_TITLE\fR]
+[\fBrequire   PACKAGE VERSION\fR]
+[\fBrequire   PACKAGE\fR]
+[description]
+[manpage_end]
+
+.fi
+Remember that the whitespace is optional. The document
+.nf
+
+    [manpage_begin NAME SECTION VERSION]
+    [copyright {YEAR AUTHOR}][titledesc TITLE][moddesc MODULE_TITLE]
+    [require PACKAGE VERSION][require PACKAGE][description]
+    [manpage_end]
+
+.fi
+has the same meaning as the example before.
+.PP
+On the other hand, if \fIwhitespace\fR is present it consists not
+only of any sequence of characters containing the space character,
+horizontal and vertical tabs, carriage return, and newline, but it may
+contain comment markup as well, in the form of the \fBcomment\fR
+command.
+.nf
+
+[\fBcomment { ... }\fR]
+[manpage_begin NAME SECTION VERSION]
+[copyright {YEAR AUTHOR}]
+[titledesc TITLE]
+[moddesc   MODULE_TITLE][\fBcomment { ... }\fR]
+[require   PACKAGE VERSION]
+[require   PACKAGE]
+[description]
+[manpage_end]
+[\fBcomment { ... }\fR]
+
+.fi
+.SS "ADVANCED STRUCTURE"
+In the simple examples of the last section we fudged a bit regarding
+the markup actually allowed to be used before the \fBmanpage_begin\fR
+command opening the document.
+.PP
+Instead of only whitespace the two templating commands \fBinclude\fR
+and \fBvset\fR are also allowed, to enable the writer to either set
+and/or import configuration settings relevant to the document. I.e. it
+is possible to write
+.nf
+
+[\fBinclude FILE\fR]
+[\fBvset VAR VALUE\fR]
+[manpage_begin NAME SECTION VERSION]
+[description]
+[manpage_end]
+
+.fi
+Even more important, these two commands are allowed anywhere where a
+markup command is allowed, without regard for any other
+structure. I.e. for example in the header as well.
+.nf
+
+[manpage_begin NAME SECTION VERSION]
+[\fBinclude FILE\fR]
+[\fBvset VAR VALUE\fR]
+[description]
+[manpage_end]
+
+.fi
+The only restriction \fBinclude\fR has to obey is that the contents of
+the included file must be valid at the place of the inclusion. I.e. a
+file included before \fBmanpage_begin\fR may contain only the
+templating commands \fBvset\fR and \fBinclude\fR, a file included in
+the header may contain only header commands, etc.
+.SS "TEXT STRUCTURE"
+The body of the document consists mainly of text, possibly split into
+sections, subsections, and paragraphs, with parts marked up to
+highlight various semantic categories of text, and additional
+structure through the use of examples and (nested) lists.
+.PP
+This section explains the high-level structural commands, with
+everything else deferred to the following sections.
+.PP
+The simplest way of structuring the body is through the introduction
+of paragraphs. The command for doing so is \fBpara\fR. Each occurrence
+of this command closes the previous paragraph and automatically opens
+the next. The first paragraph is automatically opened at the beginning
+of the body, by \fBdescription\fR. In the same manner the last
+paragraph automatically ends at \fBmanpage_end\fR.
+.nf
+
+[manpage_begin NAME SECTION VERSION]
+[description]
+ ...
+[\fBpara\fR]
+ ...
+[\fBpara\fR]
+ ...
+[manpage_end]
+
+.fi
+Empty paragraphs are ignored.
+.PP
+A structure coarser than paragraphs are sections, which allow the
+writer to split a document into larger, and labeled, pieces. The
+command for doing so is \fBsection\fR. Each occurrence of this command
+closes the previous section and automatically opens the next,
+including its first paragraph. The first section is automatically
+opened at the beginning of the body, by \fBdescription\fR (This
+section is labeled "DESCRIPTION"). In the same manner the last section
+automatically ends at \fBmanpage_end\fR.
+.PP
+Empty sections are \fInot\fR ignored. We are free to (not) use
+paragraphs within sections.
+.nf
+
+[manpage_begin NAME SECTION VERSION]
+[description]
+ ...
+[\fBsection {Section A}\fR]
+ ...
+[para]
+ ...
+[\fBsection {Section B}\fR]
+ ...
+[manpage_end]
+
+.fi
+Between sections and paragraphs we have subsections, to split sections.
+The command for doing so is \fBsubsection\fR. Each occurrence of this
+command closes the previous subsection and automatically opens the
+next, including its first paragraph. A subsection is automatically
+opened at the beginning of the body, by \fBdescription\fR, and at the
+beginning of each section. In the same manner the last subsection
+automatically ends at \fBmanpage_end\fR.
+.PP
+Empty subsections are \fInot\fR ignored. We are free to (not) use
+paragraphs within subsections.
+.nf
+
+[manpage_begin NAME SECTION VERSION]
+[description]
+ ...
+[section {Section A}]
+ ...
+[\fBsubsection {Sub 1}\fR]
+ ...
+[para]
+ ...
+[\fBsubsection {Sub 2}\fR]
+ ...
+[section {Section B}]
+ ...
+[manpage_end]
+
+.fi
+.SS "TEXT MARKUP"
+Having handled the overall structure a writer can impose on the
+document we now take a closer at the text in a paragraph.
+.PP
+While most often this is just the unadorned content of the document we
+do have situations where we wish to highlight parts of it as some type
+of thing or other, like command arguments, command names, concepts,
+uris, etc.
+.PP
+For this we have a series of markup commands which take the text to
+highlight as their single argument. It should be noted that while
+their predominant use is the highlighting of parts of a paragraph they
+can also be used to mark up the arguments of list item commands, and
+of other markup commands.
+.PP
+The commands available to us are
+.TP
+\fBarg\fR
+Its argument is a the name of a command argument.
+.TP
+\fBclass\fR
+Its argument is a class name.
+.TP
+\fBcmd\fR
+Its argument is a command name (Tcl command).
+.TP
+\fBconst\fR
+Its argument is a constant.
+.TP
+\fBemph\fR
+General, non-semantic emphasis.
+.TP
+\fBfile\fR
+Its argument is a filename / path.
+.TP
+\fBfun\fR
+Its argument is a function name.
+.TP
+\fBmethod\fR
+Its argument is a method name
+.TP
+\fBnamespace\fR
+Its argument is namespace name.
+.TP
+\fBopt\fR
+Its argument is some optional syntax element.
+.TP
+\fBoption\fR
+Its argument is a command line switch / widget option.
+.TP
+\fBpackage\fR
+Its argument is a package name.
+.TP
+\fBsectref\fR
+Its argument is the title of a section or subsection,
+i.e. a section reference.
+.TP
+\fBsyscmd\fR
+Its argument is a command name (external, system command).
+.TP
+\fBterm\fR
+Its argument is a concept, or general terminology.
+.TP
+\fBtype\fR
+Its argument is a type name.
+.TP
+\fBuri\fR
+Its argument is a uniform resource identifier, i.e an
+external reference. A second argument can be used
+to specify an explicit label for the reference in
+question.
+.TP
+\fBusage\fR
+The arguments describe the syntax of a Tcl command.
+.TP
+\fBvar\fR
+Its argument is a variable.
+.TP
+\fBwidget\fR
+Its argument is a widget name.
+.PP
+The example demonstrating the use of text markup is an excerpt from
+the \fIdoctools language command reference\fR, with some
+highlighting added.
+It shows their use within a block of text, as the arguments of a list
+item command (\fBcall\fR), and our ability to nest them.
+.nf
+
+  ...
+  [call [\fBcmd arg_def\fR] [\fBarg type\fR] [\fBarg name\fR]] [\fBopt\fR [\fBarg mode\fR]]]
+
+  Text structure. List element. Argument list. Automatically closes the
+  previous list element. Specifies the data-[\fBarg type\fR] of the described
+  argument of a command, its [\fBarg name\fR] and its i/o-[\fBarg mode\fR]. The
+  latter is optional.
+  ...
+
+.fi
+.SS ESCAPES
+Beyond the 20 commands for simple markup shown in the previous section
+we have two more available which are technically simple markup.
+However their function is not the marking up of phrases as specific
+types of things, but the insertion of characters, namely \fB[\fR
+and \fB]\fR.
+These commands, \fBlb\fR and \fBrb\fR respectively, are required
+because our use of [ and ] to bracket markup commands makes it
+impossible to directly use [ and ] within the text.
+.PP
+Our example of their use are the sources of the last sentence in the
+previous paragraph, with some highlighting added.
+.nf
+
+  ...
+  These commands, [cmd lb] and [cmd lb] respectively, are required
+  because our use of [\fBlb\fR] and [\fBrb\fR] to bracket markup commands makes it
+  impossible to directly use [\fBlb\fR] and [\fBrb\fR] within the text.
+  ...
+
+.fi
+.SS CROSS-REFERENCES
+The last two commands we have to discuss are for the declaration of
+cross-references between documents, explicit and implicit. They are
+\fBkeywords\fR and \fBsee_also\fR. Both take an arbitrary number of
+arguments, all of which have to be plain unmarked text. I.e. it is not
+allowed to use markup on them. Both commands can be used multiple
+times in a document. If that is done all arguments of all occurrences
+of one of them are put together into a single set.
+.TP
+\fBkeywords\fR
+The arguments of this command are interpreted as keywords describing
+the document. A processor can use this information to create an index
+indirectly linking the containing document to all documents with the
+same keywords.
+.TP
+\fBsee_also\fR
+The arguments of this command are interpreted as references to other
+documents. A processor can format them as direct links to these
+documents.
+.PP
+.PP
+All the cross-reference commands can occur anywhere in the document
+between \fBmanpage_begin\fR and \fBmanpage_end\fR. As such the writer
+can choose whether she wants to have them at the beginning of the
+body, or at its end, maybe near the place a keyword is actually
+defined by the main content, or considers them as meta data which
+should be in the header, etc.
+.PP
+Our example shows the sources for the cross-references of this
+document, with some highlighting added. Incidentally they are found
+at the end of the body.
+.nf
+
+  ...
+  [\fBsee_also doctools_intro\fR]
+  [\fBsee_also doctools_lang_syntax\fR]
+  [\fBsee_also doctools_lang_cmdref\fR]
+  [\fBkeywords markup {semantic markup}\fR]
+  [\fBkeywords {doctools markup} {doctools language}\fR]
+  [\fBkeywords {doctools syntax} {doctools commands}\fR]
+  [manpage_end]
+
+.fi
+.SS EXAMPLES
+Where ever we can write plain text we can write examples too. For
+simple examples we have the command \fBexample\fR which takes a single
+argument, the text of the argument. The example text must not contain
+markup. If we wish to have markup within an example we have to use the
+2-command combination \fBexample_begin\fR / \fBexample_end\fR instead.
+.PP
+The first opens an example block, the other closes it, and in between
+we can write plain text and use all the regular text markup commands.
+Note that text structure commands are not allowed. This also means
+that it is not possible to embed examples and lists within an example.
+On the other hand, we \fIcan\fR use templating commands within
+example blocks to read their contents from a file (Remember section
+\fBAdvanced structure\fR).
+.PP
+The source for the very first example in this document (see section
+\fBFundamentals\fR), with some highlighting added, is
+.nf
+
+  [\fBexample\fR {
+    ... [list_begin enumerated] ...
+  }]
+
+.fi
+Using \fBexample_begin\fR / \fBexample_end\fR this would look like
+.nf
+
+  [\fBexample_begin\fR]
+    ... [list_begin enumerated] ...
+  [\fBexample_end\fR]
+
+.fi
+.SS LISTS
+Where ever we can write plain text we can write lists too. The main
+commands are \fBlist_begin\fR to start a list, and \fBlist_end\fR to
+close one. The opening command takes an argument specifying the type
+of list started it, and this in turn determines which of the eight
+existing list item commands are allowed within the list to start list
+items.
+.PP
+After the opening command only whitespace is allowed, until the first
+list item command opens the first item of the list. Each item is a
+regular series of paragraphs and is closed by either the next list
+item command, or the end of the list. If closed by a list item command
+this command automatically opens the next list item. A consequence of
+a list item being a series of paragraphs is that all regular text
+markup can be used within a list item, including examples and other
+lists.
+.PP
+The list types recognized by \fBlist_begin\fR and their associated
+list item commands are:
+.TP
+\fBarguments\fR
+(\fBarg_def\fR) This opens an \fIargument (declaration) list\fR. It
+is a specialized form of a term definition list where the term is an
+argument name, with its type and i/o-mode.
+.TP
+\fBcommands\fR
+(\fBcmd_def\fR) This opens a \fIcommand (declaration) list\fR. It
+is a specialized form of a term definition list where the term is a
+command name.
+.TP
+\fBdefinitions\fR
+(\fBdef\fR and \fBcall\fR) This opens a general
+\fIterm definition list\fR. The terms defined by the list items are
+specified through the argument(s) of the list item commands, either
+general terms, possibly with markup (\fBdef\fR), or Tcl commands with
+their syntax (\fBcall\fR).
+.TP
+\fBenumerated\fR
+(\fBenum\fR) This opens a general \fIenumerated list\fR.
+.TP
+\fBitemized\fR
+(\fBitem\fR)
+This opens a general \fIitemized list\fR.
+.TP
+\fBoptions\fR
+(\fBopt_def\fR) This opens an \fIoption (declaration) list\fR. It
+is a specialized form of a term definition list where the term is an
+option name, possibly with the option's arguments.
+.TP
+\fBtkoptions\fR
+(\fBtkoption_def\fR) This opens a
+\fIwidget option (declaration) list\fR. It is a specialized form of
+a term definition list where the term is the name of a configuration
+option for a widget, with its name and class in the option database.
+.PP
+Our example is the source of the definition list in the previous
+paragraph, with most of the content in the middle removed.
+.nf
+
+  ...
+  [\fBlist_begin\fR definitions]
+  [\fBdef\fR [const arg]]
+
+  ([cmd arg_def]) This opens an argument (declaration) list. It is a
+  specialized form of a definition list where the term is an argument
+  name, with its type and i/o-mode.
+
+  [\fBdef\fR [const itemized]]
+
+  ([cmd item])
+  This opens a general itemized list.
+
+  ...
+  [\fBdef\fR [const tkoption]]
+
+  ([cmd tkoption_def]) This opens a widget option (declaration) list. It
+  is a specialized form of a definition list where the term is the name
+  of a configuration option for a widget, with its name and class in the
+  option database.
+
+  [\fBlist_end\fR]
+  ...
+
+.fi
+Note that a list cannot begin in one (sub)section and end in
+another. Differently said, (sub)section breaks are not allowed within
+lists and list items. An example of this \fIillegal\fR construct is
+.nf
+
+  ...
+  [list_begin itemized]
+  [item]
+  ...
+  [\fBsection {ILLEGAL WITHIN THE LIST}\fR]
+  ...
+  [list_end]
+  ...
+
+.fi
+.SH "FURTHER READING"
+Now that this document has been digested the reader, assumed to be a
+\fIwriter\fR of documentation should be fortified enough to be able
+to understand the formal \fIdoctools language syntax\fR
+specification as well. From here on out the
+\fIdoctools language command reference\fR will also serve as the
+detailed specification and cheat sheet for all available commands and
+their syntax.
+.PP
+To be able to validate a document while writing it, it is also
+recommended to familiarize oneself with one of the applications for
+the processing and conversion of doctools documents, i.e. either
+Tcllib's easy and simple \fBdtplite\fR, or Tclapps'
+ultra-configurable \fBdtp\fR.
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, will undoubtedly contain bugs and other problems.
+Please report such in the category \fIdoctools\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have.
+.SH "SEE ALSO"
+doctools_intro, doctools_lang_cmdref, doctools_lang_faq, doctools_lang_syntax
+.SH KEYWORDS
+doctools commands, doctools language, doctools markup, doctools syntax, markup, semantic markup
+.SH CATEGORY
+Documentation tools
+.SH COPYRIGHT
+.nf
+Copyright (c) 2007 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi
