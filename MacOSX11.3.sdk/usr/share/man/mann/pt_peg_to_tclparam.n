@@ -1,0 +1,764 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/pt/include/export/to.inc' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "pt::peg::to::tclparam" n 1 pt "Parser Tools"
+.BS
+.SH NAME
+pt::peg::to::tclparam \- PEG Conversion. Write TCLPARAM format
+.SH SYNOPSIS
+package require \fBTcl  8.5\fR
+.sp
+package require \fBpt::peg::to::tclparam  ?1?\fR
+.sp
+\fBpt::peg::to::tclparam\fR \fBreset\fR
+.sp
+\fBpt::peg::to::tclparam\fR \fBconfigure\fR
+.sp
+\fBpt::peg::to::tclparam\fR \fBconfigure\fR \fIoption\fR
+.sp
+\fBpt::peg::to::tclparam\fR \fBconfigure\fR \fIoption\fR \fIvalue\fR...
+.sp
+\fBpt::peg::to::tclparam\fR \fBconvert\fR \fIserial\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+Are you lost ?
+Do you have trouble understanding this document ?
+In that case please read the overview provided by the
+\fIIntroduction to Parser Tools\fR. This document is the
+entrypoint to the whole system the current package is a part of.
+.PP
+This package implements the converter from parsing expression grammars
+to TCLPARAM markup.
+.PP
+It resides in the Export section of the Core Layer of Parser Tools,
+and can be used either directly with the other packages of this layer,
+or indirectly through the export manager provided by
+\fBpt::peg::export\fR. The latter is intented for use in untrusted
+environments and done through the corresponding export plugin
+\fBpt::peg::export::tclparam\fR sitting between converter
+and export manager.
+.PP
+IMAGE: arch_core_eplugins
+.PP
+.SH API
+The API provided by this package satisfies the specification of the
+Converter API found in the \fIParser Tools Export API\fR
+specification.
+.TP
+\fBpt::peg::to::tclparam\fR \fBreset\fR
+This command resets the configuration of the package to its default
+settings.
+.TP
+\fBpt::peg::to::tclparam\fR \fBconfigure\fR
+This command returns a dictionary containing the current configuration
+of the package.
+.TP
+\fBpt::peg::to::tclparam\fR \fBconfigure\fR \fIoption\fR
+This command returns the current value of the specified configuration
+\fIoption\fR of the package. For the set of legal options, please read
+the section \fBOptions\fR.
+.TP
+\fBpt::peg::to::tclparam\fR \fBconfigure\fR \fIoption\fR \fIvalue\fR...
+This command sets the given configuration \fIoption\fRs of the
+package, to the specified \fIvalue\fRs. For the set of legal options,
+please read the section \fBOptions\fR.
+.TP
+\fBpt::peg::to::tclparam\fR \fBconvert\fR \fIserial\fR
+This command takes the canonical serialization of a parsing expression
+grammar, as specified in section \fBPEG serialization format\fR,
+and contained in \fIserial\fR, and generates TCLPARAM markup
+encoding the grammar, per the current package configuration.
+The created string is then returned as the result of the command.
+.PP
+.SH OPTIONS
+The converter to Tcl/PARAM markup recognizes the following
+configuration variables and changes its behaviour as they specify.
+.TP
+\fB-template\fR string
+The value of this configuration variable is a string into which to put
+the generated text and the other configuration settings. The various
+locations for user-data are expected to be specified with the
+placeholders listed below. The default value is "\fB@code@\fR".
+.RS
+.TP
+\fB@user@\fR
+To be replaced with the value of the configuration variable \fB-user\fR.
+.TP
+\fB@format@\fR
+To be replaced with the the constant \fBTcl/PARAM\fR.
+.TP
+\fB@file@\fR
+To be replaced with the value of the configuration variable \fB-file\fR.
+.TP
+\fB@name@\fR
+To be replaced with the value of the configuration variable \fB-name\fR.
+.TP
+\fB@code@\fR
+To be replaced with the generated Tcl code.
+.RE
+The following configuration variables are special, in that they will
+occur within the generated code, and are replaced there as well.
+.RS
+.TP
+\fB@runtime@\fR
+To be replaced with the value of the configuration variable \fBruntime-command\fR.
+.TP
+\fB@self@\fR
+To be replaced with the value of the configuration variable \fBself-command\fR.
+.TP
+\fB@def@\fR
+To be replaced with the value of the configuration variable \fBproc-command\fR.
+.TP
+\fB@ns@\fR
+To be replaced with the value of the configuration variable \fBnamespace\fR.
+.TP
+\fB@main@\fR
+To be replaced with the value of the configuration variable \fBmain\fR.
+.TP
+\fB@prelude@\fR
+To be replaced with the value of the configuration variable \fBprelude\fR.
+.RE
+.TP
+\fB-name\fR string
+The value of this configuration variable is the name of the grammar
+for which the conversion is run. The default value is \fBa_pe_grammar\fR.
+.TP
+\fB-user\fR string
+The value of this configuration variable is the name of the user for
+which the conversion is run. The default value is \fBunknown\fR.
+.TP
+\fB-file\fR string
+The value of this configuration variable is the name of the file or
+other entity from which the grammar came, for which the conversion is
+run. The default value is \fBunknown\fR.
+.TP
+\fB-runtime-command\fR string
+A Tcl string representing the Tcl command or reference to it used to
+call PARAM instruction from parser procedures, per the chosen
+framework (template).
+The default value is the empty string.
+.TP
+\fB-self-command\fR string
+A Tcl string representing the Tcl command or reference to it used to
+call the parser procedures (methods ...) from another parser
+procedure, per the chosen framework (template).
+The default value is the empty string.
+.TP
+\fB-proc-command\fR string
+The name of the Tcl command used to define procedures (methods ...),
+per the chosen framework (template).
+The default value is \fBproc\fR.
+.TP
+\fB-namespace\fR string
+The name of the namespace the parser procedures (methods, ...) shall
+reside in, including the trailing '::' needed to separate it from the
+actual procedure name.
+The default value is \fB::\fR.
+.TP
+\fB-main\fR string
+The name of the main procedure (method, ...) to be called by the
+chosen framework (template) to start parsing input.
+The default value is \fB__main\fR.
+.TP
+\fB-prelude\fR string
+A snippet of code to be insert at the head of each generated parsing
+command.
+The default value is the empty string.
+.TP
+\fB-indent\fR integer
+The number of characters to indent each line of the generated code by.
+The default value is \fB0\fR.
+.PP
+While the high parameterizability of this converter, as shown by the
+multitude of options it supports, is an advantage to the advanced
+user, allowing her to customize the output of the converter as needed,
+a novice user will likely not see the forest for the trees.
+.PP
+To help these latter users two adjunct packages are provided, each
+containing a canned configuration which will generate immediately
+useful full parsers. These are
+.TP
+\fBpt::tclparam::configuration::snit\fR
+Generated parsers are classes based on the \fBsnit\fR package,
+i.e. snit::type's.
+.TP
+\fBpt::tclparam::configuration::tcloo\fR
+Generated parsers are classes based on the \fBOO\fR package.
+.PP
+.SH "TCL/PARAM CODE REPRESENTATION OF PARSING EXPRESSION GRAMMARS"
+The Tcl/PARAM representation of parsing expression grammars is Tcl
+code whose execution will parse input per the grammar. The code is
+based on the virtual machine documented in the
+\fIPackRat Machine Specification\fR, using its instructions
+and a few more to handle control flow.
+.PP
+Note that the generated code by itself is not functional. It expects
+to be embedded into a framework which provides services like the PARAM
+state, implementations for the PARAM instructions, etc.
+The bulk of such a framework has to be specified through the option
+\fB-template\fR. The additional options
+.TP
+\fB-indent\fR integer
+.TP
+\fB-main\fR string
+.TP
+\fB-namespace\fR string
+.TP
+\fB-prelude\fR string
+.TP
+\fB-proc-command\fR string
+.TP
+\fB-runtime-command\fR string
+.TP
+\fB-self-command\fR string
+.PP
+provide code snippets which help to glue framework and generated code
+together. Their placeholders are in the \fIgenerated\fR code.
+.SH "PEG SERIALIZATION FORMAT"
+Here we specify the format used by the Parser Tools to serialize
+Parsing Expression Grammars as immutable values for transport,
+comparison, etc.
+.PP
+We distinguish between \fIregular\fR and \fIcanonical\fR
+serializations.
+While a PEG may have more than one regular serialization only exactly
+one of them will be \fIcanonical\fR.
+.TP
+regular serialization
+.RS
+.IP [1]
+The serialization of any PEG is a nested Tcl dictionary.
+.IP [2]
+This dictionary holds a single key, \fBpt::grammar::peg\fR, and its
+value. This value holds the contents of the grammar.
+.IP [3]
+The contents of the grammar are a Tcl dictionary holding the set of
+nonterminal symbols and the starting expression. The relevant keys and
+their values are
+.RS
+.TP
+\fBrules\fR
+The value is a Tcl dictionary whose keys are the names of the
+nonterminal symbols known to the grammar.
+.RS
+.IP [1]
+Each nonterminal symbol may occur only once.
+.IP [2]
+The empty string is not a legal nonterminal symbol.
+.IP [3]
+The value for each symbol is a Tcl dictionary itself. The relevant
+keys and their values in this dictionary are
+.RS
+.TP
+\fBis\fR
+The value is the serialization of the parsing expression describing
+the symbols sentennial structure, as specified in the section
+\fBPE serialization format\fR.
+.TP
+\fBmode\fR
+The value can be one of three values specifying how a parser should
+handle the semantic value produced by the symbol.
+.RS
+.TP
+\fBvalue\fR
+The semantic value of the nonterminal symbol is an abstract syntax
+tree consisting of a single node node for the nonterminal itself,
+which has the ASTs of the symbol's right hand side as its children.
+.TP
+\fBleaf\fR
+The semantic value of the nonterminal symbol is an abstract syntax
+tree consisting of a single node node for the nonterminal, without any
+children. Any ASTs generated by the symbol's right hand side are
+discarded.
+.TP
+\fBvoid\fR
+The nonterminal has no semantic value. Any ASTs generated by the
+symbol's right hand side are discarded (as well).
+.RE
+.RE
+.RE
+.TP
+\fBstart\fR
+The value is the serialization of the start parsing expression of the
+grammar, as specified in the section \fBPE serialization format\fR.
+.RE
+.IP [4]
+The terminal symbols of the grammar are specified implicitly as the
+set of all terminal symbols used in the start expression and on the
+RHS of the grammar rules.
+.RE
+.TP
+canonical serialization
+The canonical serialization of a grammar has the format as specified
+in the previous item, and then additionally satisfies the constraints
+below, which make it unique among all the possible serializations of
+this grammar.
+.RS
+.IP [1]
+The keys found in all the nested Tcl dictionaries are sorted in
+ascending dictionary order, as generated by Tcl's builtin command
+\fBlsort -increasing -dict\fR.
+.IP [2]
+The string representation of the value is the canonical representation
+of a Tcl dictionary. I.e. it does not contain superfluous whitespace.
+.RE
+.PP
+.SS EXAMPLE
+Assuming the following PEG for simple mathematical expressions
+.PP
+.nf
+
+PEG calculator (Expression)
+    Digit      <- '0'/'1'/'2'/'3'/'4'/'5'/'6'/'7'/'8'/'9'	;
+    Sign       <- '-' / '+'					;
+    Number     <- Sign? Digit+					;
+    Expression <- '(' Expression ')' / (Factor (MulOp Factor)*)	;
+    MulOp      <- '*' / '/'					;
+    Factor     <- Term (AddOp Term)*				;
+    AddOp      <- '+'/'-'					;
+    Term       <- Number					;
+END;
+
+.fi
+.PP
+then its canonical serialization (except for whitespace) is
+.PP
+.nf
+
+pt::grammar::peg {
+    rules {
+	AddOp      {is {/ {t -} {t +}}                                                                mode value}
+	Digit      {is {/ {t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7} {t 8} {t 9}}                mode value}
+	Expression {is {/ {x {t (} {n Expression} {t )}} {x {n Factor} {* {x {n MulOp} {n Factor}}}}} mode value}
+	Factor     {is {x {n Term} {* {x {n AddOp} {n Term}}}}                                        mode value}
+	MulOp      {is {/ {t *} {t /}}                                                                mode value}
+	Number     {is {x {? {n Sign}} {+ {n Digit}}}                                                 mode value}
+	Sign       {is {/ {t -} {t +}}                                                                mode value}
+	Term       {is  {n Number}                                                                    mode value}
+    }
+    start {n Expression}
+}
+
+.fi
+.PP
+.SH "PE SERIALIZATION FORMAT"
+Here we specify the format used by the Parser Tools to serialize
+Parsing Expressions as immutable values for transport, comparison,
+etc.
+.PP
+We distinguish between \fIregular\fR and \fIcanonical\fR
+serializations.
+While a parsing expression may have more than one regular
+serialization only exactly one of them will be \fIcanonical\fR.
+.TP
+Regular serialization
+.RS
+.TP
+\fBAtomic Parsing Expressions\fR
+.RS
+.IP [1]
+The string \fBepsilon\fR is an atomic parsing expression. It matches
+the empty string.
+.IP [2]
+The string \fBdot\fR is an atomic parsing expression. It matches
+any character.
+.IP [3]
+The string \fBalnum\fR is an atomic parsing expression. It matches
+any Unicode alphabet or digit character. This is a custom extension of
+PEs based on Tcl's builtin command \fBstring is\fR.
+.IP [4]
+The string \fBalpha\fR is an atomic parsing expression. It matches
+any Unicode alphabet character. This is a custom extension of PEs
+based on Tcl's builtin command \fBstring is\fR.
+.IP [5]
+The string \fBascii\fR is an atomic parsing expression. It matches
+any Unicode character below U0080. This is a custom extension of PEs
+based on Tcl's builtin command \fBstring is\fR.
+.IP [6]
+The string \fBcontrol\fR is an atomic parsing expression. It matches
+any Unicode control character. This is a custom extension of PEs based
+on Tcl's builtin command \fBstring is\fR.
+.IP [7]
+The string \fBdigit\fR is an atomic parsing expression. It matches
+any Unicode digit character. Note that this includes characters
+outside of the [0..9] range. This is a custom extension of PEs
+based on Tcl's builtin command \fBstring is\fR.
+.IP [8]
+The string \fBgraph\fR is an atomic parsing expression. It matches
+any Unicode printing character, except for space. This is a custom
+extension of PEs based on Tcl's builtin command \fBstring is\fR.
+.IP [9]
+The string \fBlower\fR is an atomic parsing expression. It matches
+any Unicode lower-case alphabet character. This is a custom extension
+of PEs based on Tcl's builtin command \fBstring is\fR.
+.IP [10]
+The string \fBprint\fR is an atomic parsing expression. It matches
+any Unicode printing character, including space. This is a custom
+extension of PEs based on Tcl's builtin command \fBstring is\fR.
+.IP [11]
+The string \fBpunct\fR is an atomic parsing expression. It matches
+any Unicode punctuation character. This is a custom extension of PEs
+based on Tcl's builtin command \fBstring is\fR.
+.IP [12]
+The string \fBspace\fR is an atomic parsing expression. It matches
+any Unicode space character. This is a custom extension of PEs based
+on Tcl's builtin command \fBstring is\fR.
+.IP [13]
+The string \fBupper\fR is an atomic parsing expression. It matches
+any Unicode upper-case alphabet character. This is a custom extension
+of PEs based on Tcl's builtin command \fBstring is\fR.
+.IP [14]
+The string \fBwordchar\fR is an atomic parsing expression. It
+matches any Unicode word character. This is any alphanumeric character
+(see alnum), and any connector punctuation characters (e.g.
+underscore). This is a custom extension of PEs based on Tcl's builtin
+command \fBstring is\fR.
+.IP [15]
+The string \fBxdigit\fR is an atomic parsing expression. It matches
+any hexadecimal digit character. This is a custom extension of PEs
+based on Tcl's builtin command \fBstring is\fR.
+.IP [16]
+The string \fBddigit\fR is an atomic parsing expression. It matches
+any decimal digit character. This is a custom extension of PEs based
+on Tcl's builtin command \fBregexp\fR.
+.IP [17]
+The expression
+[list t \fBx\fR]
+is an atomic parsing expression. It matches the terminal string \fBx\fR.
+.IP [18]
+The expression
+[list n \fBA\fR]
+is an atomic parsing expression. It matches the nonterminal \fBA\fR.
+.RE
+.TP
+\fBCombined Parsing Expressions\fR
+.RS
+.IP [1]
+For parsing expressions \fBe1\fR, \fBe2\fR, ... the result of
+[list / \fBe1\fR \fBe2\fR ... ]
+is a parsing expression as well.
+This is the \fIordered choice\fR, aka \fIprioritized choice\fR.
+.IP [2]
+For parsing expressions \fBe1\fR, \fBe2\fR, ... the result of
+[list x \fBe1\fR \fBe2\fR ... ]
+is a parsing expression as well.
+This is the \fIsequence\fR.
+.IP [3]
+For a parsing expression \fBe\fR the result of
+[list * \fBe\fR]
+is a parsing expression as well.
+This is the \fIkleene closure\fR, describing zero or more
+repetitions.
+.IP [4]
+For a parsing expression \fBe\fR the result of
+[list + \fBe\fR]
+is a parsing expression as well.
+This is the \fIpositive kleene closure\fR, describing one or more
+repetitions.
+.IP [5]
+For a parsing expression \fBe\fR the result of
+[list & \fBe\fR]
+is a parsing expression as well.
+This is the \fIand lookahead predicate\fR.
+.IP [6]
+For a parsing expression \fBe\fR the result of
+[list ! \fBe\fR]
+is a parsing expression as well.
+This is the \fInot lookahead predicate\fR.
+.IP [7]
+For a parsing expression \fBe\fR the result of
+[list ? \fBe\fR]
+is a parsing expression as well.
+This is the \fIoptional input\fR.
+.RE
+.RE
+.TP
+Canonical serialization
+The canonical serialization of a parsing expression has the format as
+specified in the previous item, and then additionally satisfies the
+constraints below, which make it unique among all the possible
+serializations of this parsing expression.
+.RS
+.IP [1]
+The string representation of the value is the canonical representation
+of a pure Tcl list. I.e. it does not contain superfluous whitespace.
+.IP [2]
+Terminals are \fInot\fR encoded as ranges (where start and end of the
+range are identical).
+.RE
+.PP
+.PP
+.SS EXAMPLE
+Assuming the parsing expression shown on the right-hand side of the
+rule
+.PP
+.nf
+
+    Expression <- '(' Expression ')'
+                / Factor (MulOp Factor)*
+
+.fi
+.PP
+then its canonical serialization (except for whitespace) is
+.PP
+.nf
+
+    {/ {x {t (} {n Expression} {t )}} {x {n Factor} {* {x {n MulOp} {n Factor}}}}}
+
+.fi
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIpt\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+EBNF, LL(k), PEG, TCLPARAM, TDPL, context-free languages, conversion, expression, format conversion, grammar, matching, parser, parsing expression, parsing expression grammar, push down automaton, recursive descent, serialization, state, top-down parsing languages, transducer
+.SH CATEGORY
+Parsing and Grammars
+.SH COPYRIGHT
+.nf
+Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

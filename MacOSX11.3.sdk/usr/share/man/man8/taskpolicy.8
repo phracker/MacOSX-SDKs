@@ -1,0 +1,75 @@
+.Dd 2/21/13
+.Dt taskpolicy 8
+.Os Darwin
+.Sh NAME
+.Nm taskpolicy
+.Nd execute a program with an altered I/O or scheduling policy or change settings of already running process
+.Sh SYNOPSIS
+.Nm
+.Op Fl d Ar policy
+.Op Fl g Ar policy
+.Op Fl c Ar clamp
+.Op Fl b
+.Op Fl t Ar thruput_tier
+.Op Fl l Ar latency_tier
+.Op Fl a
+.Ar program
+.Oo
+.Ar arg1
+.Op Ar ...
+.Oc
+.Nm
+.Op Fl b|-B
+.Op Fl t Ar thruput_tier
+.Op Fl l Ar latency_tier
+.Op Fl p Ar pid
+.Sh DESCRIPTION
+The
+.Nm
+program uses the
+.Xr setiopolicy_np 3
+and
+.Xr setpriority 2
+APIs to execute a program with altered I/O or scheduling policies. All
+children of the specified program also inherit these policies.
+.Pp
+.Nm
+accepts the following flags and arguments:
+.Bl -tag -width "d policy " -offset indent
+.It Fl d Ar policy
+Run the program after calling
+.Xr setiopolicy_np 3
+with an iotype of IOPOL_TYPE_DISK, a scope of IOPOL_SCOPE_PROCESS, and the
+specified policy. The argument can either be an integer, or a symbolic string
+like "default" or "throttle", which is interpreted case-insensitively.
+.It Fl g Ar policy
+Run the program after calling
+.Xr setiopolicy_np 3
+with an iotype of IOPOL_TYPE_DISK, a scope of IOPOL_SCOPE_DARWIN_BG, and the
+specified policy. The argument is interpreted in the same manner as
+.Fl d .
+.It Fl c Ar clamp
+Run the program using the specified QoS clamp. The argument can be either
+"utility", "background", or "maintenance", which is interpreted case-insensitively.
+.It Fl p Ar pid
+Change settings for the process specified by
+.Ar pid .
+.It Fl b
+Run the program after calling
+.Xr setpriority 2
+with a priority of PRIO_DARWIN_BG.
+.It Fl B
+Move target process out of PRIO_DARWIN_BG.
+.It Fl t
+Set throughput tier of the process to 
+.Ar thruput_tier .
+.It Fl l 
+Set latency tier of the process to 
+.Ar latency_tier .
+.It Fl a
+Run the program with the resource management policies given to applications.
+.El
+.Pp
+.Sh SEE ALSO 
+.Xr setpriority 2 ,
+.Xr setiopolicy_np 3

@@ -1,0 +1,361 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tklib/tklib/modules/ntext/ntextIndent.man' by tcllib/doctools with format 'nroff'
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "ntextIndent" n 0.81 ntext "ntext Indentation for the Text Widget"
+.BS
+.SH NAME
+ntextIndent \- ntext Indentation for the Text Widget
+.SH SYNOPSIS
+package require \fBTcl  8.5\fR
+.sp
+package require \fBTk  8.5\fR
+.sp
+package require \fBntext  ?0.81?\fR
+.sp
+.BE
+.SH DESCRIPTION
+The \fBntext\fR package provides a binding tag named \fINtext\fR for use by text widgets in place of the default \fIText\fR binding tag.
+.PP
+Tk's text widget may be configured to wrap lines of text that are longer than the width of the text area, a feature that is familiar from text editors and word processors.  A complete line of text (delimited by newlines, or by the beginning or end of the document) is called a "logical line".  When a logical line is wrapped onto more than one line of the display area, these fragments of the logical line are called "display lines".
+.PP
+If a logical line begins with whitespace, then wrapped display lines begin further to the left than the first display line, which can make the text layout untidy and difficult to read.  The \fINtext\fR binding tag provides facilities so that a text widget in \fI-wrap\fR \fIword\fR mode will automatically indent display lines (other than the first) to match the initial whitespace of the first display line.
+.PP
+This indentation is available to text widgets only in \fI-wrap\fR \fIword\fR mode.
+.SH "CONFIGURATION OPTIONS"
+The behavior of \fINtext\fR may be configured application-wide by setting the values of a number of namespace variables:
+.PP
+\fB::ntext::classicWrap\fR
+.IP \(bu
+0 - selects \fINtext\fR behaviour, i.e. display lines are indented to match the initial whitespace of the first display line of a logical line.
+.sp
+No other action is required if this option, and the text widget's \fI-wrap\fR option, are set before any text is entered in the widget, and if text is entered and edited only by the mouse and keyboard.  If, instead, text is manipulated by the script, or if the text widget's \fI-wrap\fR option or the value of \fB::ntext::classicWrap\fR are changed while the widget holds text, then calls to \fIntext\fR functions are needed to alter the indentation.  See the section \fBINDENTING DISPLAY LINES\fR for detailed instructions.
+.IP \(bu
+1 - (default value) selects classic \fIText\fR behaviour, i.e. no indentation.
+.PP
+\fIAdvanced Use\fR
+.PP
+\fB::ntext::newWrapRegexp\fR
+.IP \(bu
+the value is a regexp pattern that determines the character of a logical line to which display lines other than the first will be aligned.  The default value, \fB[^[:space:]]\fR, ensures alignment with the first non-whitespace character.
+.PP
+.SH "INDENTING DISPLAY LINES"
+To use \fINtext\fR 's display line indentation:
+.IP [1]
+Set the variable \fB::ntext::classicWrap\fR to \fB0\fR (default value is \fB1\fR).  This enables bindings that will preserve indentation whenever the user modifies the widget contents using the keyboard and mouse.  If the widget already holds text, call \fB::ntext::wrapIndent\fR to initialise indentation.
+.sp
+Further instructions apply if the program changes the widget's contents, wrap configuration, or indent configuration.
+.IP [2]
+The program can change the text contents, e.g. by the .text insert command.  Such a change does not trigger a window binding, so the program should explicitly call function \fB::ntext::wrapIndent\fR after inserting text.
+.IP [3]
+Auto-indentation occurs only if the widget is in \fI-wrap\fR \fIword\fR mode.  If the program changes to or from \fI-wrap\fR \fIword\fR when the widget is not empty, it should call \fB::ntext::wrapIndent\fR to format the widget's text.
+.IP [4]
+If indentation is used, and then switched off by setting \fB::ntext::classicWrap\fR to \fB1\fR,  call \fB::ntext::wrapIndent\fR to remove indentation.
+.PP
+.SH FUNCTIONS
+\fB::ntext::wrapIndent\fR \fItextWidget\fR ?index1? ?index2?
+.IP \(bu
+Adjust the indentation of a text widget.  Different cases are discussed below.
+.PP
+\fB::ntext::wrapIndent\fR \fItextWidget\fR
+.IP \(bu
+Adjust the indentation of all the text in text widget \fItextWidget\fR.
+.PP
+\fB::ntext::wrapIndent\fR \fItextWidget\fR \fIindex1\fR
+.IP \(bu
+Adjust the indentation of a single logical line of a text widget - the line of \fItextWidget\fR that contains the index \fIindex1\fR.
+.PP
+\fB::ntext::wrapIndent\fR \fItextWidget\fR \fIindex1\fR \fIindex2\fR
+.IP \(bu
+Adjust the indentation of a range of logical lines of a text widget - the lines of \fItextWidget\fR that contain indices \fIindex1\fR to \fIindex2\fR.
+.PP
+\fIUsage\fR
+.IP \(bu
+\fB::ntext::wrapIndent\fR should be called only if the script changes the widget's contents or display properties.  If the contents of the widget have been modified by the keyboard or mouse, it is not necessary for the script to call \fB::ntext::wrapIndent\fR because the appropriate calls are made automatically by the \fINtext\fR bindings.
+.IP \(bu
+The script should normally call \fB::ntext::wrapIndent\fR if, for example, the script changes one of the following when the widget is not empty: the value of \fB::ntext::classicWrap\fR, or the widget's \fI-wrap\fR status, or the widget's tab spacing, or the font size, or the widget's contents.
+.IP \(bu
+A call of the form \fB::ntext::wrapIndent\fR \fItextWidget\fR will always suffice, but if changes are needed only to certain lines, it is more efficient to specify those lines with the optional arguments ?index1?, ?index2?.
+.IP \(bu
+If the widget is in \fI-word\fR \fIwrap\fR mode, and if \fB::ntext::classicWrap\fR is set to \fB0\fR, \fB::ntext::wrapIndent\fR will apply indentation to the logical lines within the range specified by the function's arguments.
+.IP \(bu
+In other cases, i.e. if the widget is in \fI-word\fR \fIchar\fR or \fI-word\fR \fInone\fR mode, or if \fB::ntext::classicWrap\fR is set to \fB1\fR,  \fB::ntext::wrapIndent\fR will remove the indentation of the logical lines within the range specified by the function's arguments.
+.PP
+.SH EXAMPLES
+To switch on \fINtext\fR 's indentation and use it in widget .t:
+.nf
+
+package require ntext
+set ::ntext::classicWrap 0
+text .t -wrap word
+bindtags .t {.t Ntext . all}
+
+.fi
+To decide later to switch off \fINtext\fR 's indentation:
+.nf
+
+set ::ntext::classicWrap 1
+::ntext::wrapIndent .t
+
+.fi
+To decide later to switch \fINtext\fR 's indentation back on:
+.nf
+
+set ::ntext::classicWrap 0
+::ntext::wrapIndent .t 1.0 end
+
+.fi
+To inject some text into the widget:
+.nf
+
+set foo [.t index end]
+.t insert end {This line was added by the script, not the keyboard!}
+::ntext::wrapIndent .t $foo end
+
+.fi
+To switch to \fI-wrap\fR \fIchar\fR mode:
+.nf
+
+.t configure -wrap char
+::ntext::wrapIndent .t
+
+.fi
+.SH "SEE ALSO"
+bindtags, ntext, re_syntax, regexp, text
+.SH KEYWORDS
+bindtags, re_syntax, regexp, text

@@ -1,0 +1,302 @@
+/*
+ * Copyright (c) 2018-2019 Apple Inc. All rights reserved.
+ *
+ * @APPLE_OSREFERENCE_LICENSE_HEADER_START@
+ *
+ * This file contains Original Code and/or Modifications of Original Code
+ * as defined in and that are subject to the Apple Public Source License
+ * Version 2.0 (the 'License'). You may not use this file except in
+ * compliance with the License. The rights granted to you under the License
+ * may not be used to create, or enable the creation or redistribution of,
+ * unlawful or unlicensed copies of an Apple operating system, or to
+ * circumvent, violate, or enable the circumvention or violation of, any
+ * terms of an Apple operating system software license agreement.
+ *
+ * Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this file.
+ *
+ * The Original Code and all software distributed under the License are
+ * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+ * Please see the License for the specific language governing rights and
+ * limitations under the License.
+ *
+ * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+ */
+
+#if !__IIG
+#if KERNEL
+#include <IOKit/hidevent/IOHIDEventService.h>
+#endif
+#endif
+
+#ifndef _HIDDRIVERKIT_IOHIDEVENTSERVICE_H
+#define _HIDDRIVERKIT_IOHIDEVENTSERVICE_H
+
+#include <DriverKit/OSAction.iig>
+#include <DriverKit/IOService.iig>
+#include <DriverKit/IOTypes.h>
+
+class IOBufferMemoryDescriptor;
+class IOHIDEvent;
+
+typedef struct IOHIDDigitizerStylusData IOHIDDigitizerStylusData;
+typedef struct IOHIDDigitizerTouchData IOHIDDigitizerTouchData;
+
+class KERNEL IOHIDEventService : public IOService
+{
+
+public:
+
+    /*!
+     * @function DispatchKeyboardEvent
+     *
+     * @abstract
+     * Dispatches a keyboard event with the provided usage page, usage, and
+     * value.
+     *
+     * @param timestamp
+     * The timestamp of the event.
+     *
+     * @param usagePage
+     * The usage page. Usage pages are defined in
+     * <IOKit/hid/IOHIDUsageTables.h>.
+     *
+     * @param usage
+     * The usage. Usages are defined in <IOKit/hid/IOHIDUsageTables.h>.
+     *
+     * @param value
+     * The value.
+     *
+     * @param options
+     * Optional option bits. Options are defined in the IOHIDKeyboardEventOptions
+     * enumerator in <IOKit/hid/IOHIDKeys.h>
+     *
+     * @param repeat
+     * Default behavior for keyboard events is to repeat keys if the key has been
+     * held down for a certain amount of time defined in system preferences. Pass
+     * in false to not apply key repeat logic to this event.
+     */
+    virtual kern_return_t dispatchKeyboardEvent(uint64_t timeStamp,
+                                                uint32_t usagePage,
+                                                uint32_t usage,
+                                                uint32_t value,
+                                                IOOptionBits options,
+                                                bool repeat = true) LOCALONLY;
+
+    /*!
+     * @function DispatchRelativePointerEvent
+     *
+     * @abstract
+     * Dispatches a relative pointer event.
+     *
+     * @param timestamp
+     * The timestamp of the event.
+     *
+     * @param dx
+     * The delta X value.
+     *
+     * @param dy
+     * The delta Y value.
+     *
+     * @param buttonState
+     * Current state of the buttons, if any.
+     *
+     * @param options
+     * Optional option bits.
+     *
+     * @param accelerate
+     * Pointer events are subject to an acceleration algorithm. Pass in false
+     * if you do not wish to have acceleration logic applied to the pointer event.
+     */
+    virtual kern_return_t dispatchRelativePointerEvent(uint64_t timeStamp,
+                                                       IOFixed dx,
+                                                       IOFixed dy,
+                                                       uint32_t buttonState,
+                                                       IOOptionBits options,
+                                                       bool accelerate = true) LOCALONLY;
+    
+    /*!
+     * @function DispatchAbsolutePointerEvent
+     *
+     * @abstract
+     * Dispatches an absolute pointer event.
+     *
+     * @param timeStamp
+     * The timestamp of the event.
+     *
+     * @param x
+     * An X value between 0 and 1.
+     *
+     * @param dy
+     * A Y value between 0 and 1.
+     *
+     * @param buttonState
+     * Current state of the buttons, if any.
+     *
+     * @param options
+     * Optional option bits.
+     *
+     * @param accelerate
+     * Pointer events are subject to an acceleration algorithm. Pass in false
+     * if you do not wish to have acceleration logic applied to the pointer event.
+     */
+    virtual kern_return_t dispatchAbsolutePointerEvent(uint64_t timeStamp,
+                                                       IOFixed x,
+                                                       IOFixed y,
+                                                       uint32_t buttonState,
+                                                       IOOptionBits options,
+                                                       bool accelerate = true) LOCALONLY;
+    
+    /*!
+     * @function DispatchRelativeScrollWheelEvent
+     *
+     * @abstract
+     * Dispatches a relative scroll wheel event.
+     *
+     * @param timestamp
+     * The timestamp of the event.
+     *
+     * @param dx
+     * The delta X value.
+     *
+     * @param dy
+     * The delta Y value.
+     *
+     * @param dz
+     * The delta Z value.
+     *
+     * @param options
+     * Optional option bits.
+     *
+     * @param accelerate
+     * Scroll events are subject to an acceleration algorithm. Pass in false
+     * if you do not wish to have acceleration logic applied to the scroll event.
+     */
+    virtual kern_return_t dispatchRelativeScrollWheelEvent(uint64_t timeStamp,
+                                                           IOFixed dx,
+                                                           IOFixed dy,
+                                                           IOFixed dz,
+                                                           IOOptionBits options,
+                                                           bool accelerate = true) LOCALONLY;
+    
+    /*!
+     * @function dispatchDigitizerStylusEvent
+     *
+     * @abstract
+     * Dispatches a digitizer stylus event.
+     *
+     * @param timestamp
+     * The timestamp of the event.
+     *
+     * @param stylusData
+     * A struct containing the stylus data. See IOHIDDigtizerStructs.h for more 
+     * info.
+     */
+    virtual kern_return_t dispatchDigitizerStylusEvent(
+                                        uint64_t timeStamp,
+                                        IOHIDDigitizerStylusData *stylusData) LOCALONLY;
+    
+    /*!
+     * @function dispatchDigitizerTouchEvent
+     *
+     * @abstract
+     * Dispatches a digitizer touch pad event.
+     *
+     * @param timestamp
+     * The timestamp of the event.
+     *
+     * @param touchData
+     * An array of touch data, where each struct represents a surface contact. 
+     * See IOHIDDigtizerStructs.h for more info.
+     *
+     * @param touchDataCount
+     * The touchData array count.
+     */
+    virtual kern_return_t dispatchDigitizerTouchEvent(
+                                            uint64_t timeStamp,
+                                            IOHIDDigitizerTouchData *touchData,
+                                            uint32_t touchDataCount) LOCALONLY;
+
+protected:
+
+    /*!
+     * @function SetLED
+     *
+     * @abstract
+     * Sets an LED on the service.
+     *
+     * @param usage
+     * The LED usage to set. LED usages can be found in
+     * <IOKit/hid/IOHIDUsageTables.h>.
+     *
+     * @param on
+     * Turn on or off the LED.
+     */
+    virtual void SetLED(uint32_t usage, bool on) LOCAL;
+    
+    /*!
+     * @function dispatchEvent
+     *
+     * @abstract
+     * Dispatches an event.
+     *
+     * @param event
+     * The IOHIDEvent to dispatch.
+     */
+    virtual void dispatchEvent(IOHIDEvent *event) LOCALONLY;
+};
+
+class EXTENDS (IOHIDEventService) IOHIDEventServicePrivate
+{
+    virtual kern_return_t _DispatchKeyboardEvent(uint64_t timeStamp,
+                                                 uint32_t usagePage,
+                                                 uint32_t usage,
+                                                 uint32_t value,
+                                                 IOOptionBits options,
+                                                 bool repeat = true);
+    
+    virtual kern_return_t _DispatchRelativePointerEvent(uint64_t timeStamp,
+                                                        IOFixed dx,
+                                                        IOFixed dy,
+                                                        uint32_t buttonState,
+                                                        IOOptionBits options,
+                                                        bool accelerate = true);
+    
+    virtual kern_return_t _DispatchAbsolutePointerEvent(uint64_t timeStamp,
+                                                        IOFixed x,
+                                                        IOFixed y,
+                                                        uint32_t buttonState,
+                                                        IOOptionBits options,
+                                                        bool accelerate = true);
+    
+    virtual kern_return_t _DispatchRelativeScrollWheelEvent(uint64_t timeStamp,
+                                                            IOFixed dx,
+                                                            IOFixed dy,
+                                                            IOFixed dz,
+                                                            IOOptionBits options,
+                                                            bool accelerate = true);
+    
+    virtual kern_return_t SetEventMemory(IOBufferMemoryDescriptor *memory);
+    
+    virtual kern_return_t EventAvailable(uint32_t length);
+    
+    /*!
+     * @function _Start
+     *
+     * @abstract
+     * Finalizes initialization of kernel object once user space object
+     * initialization is complete.
+     *
+     * @param provider
+     * The provider of the IOHIDEventService.
+     *
+     * @return
+     * Returns kIOReturnSuccess on success.
+     */
+    virtual kern_return_t _Start(IOService * provider);
+};
+
+#endif /* ! _HIDDRIVERKIT_IOHIDEVENTSERVICE_H */

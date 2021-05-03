@@ -1,0 +1,233 @@
+.TH AA 1
+.SH NAME
+aa \- Manipulate Apple Archives
+.SH SYNOPSIS
+.B aa \fBcommand\fR [\fBoptions\fR]
+.SH DESCRIPTION
+.B aa creates and manipulates Apple Archives
+.SH VERBS
+.P
+\fBarchive\fR\ \ \ \ \ \ \ \ \ \ \ Archive the contents of the target directory
+.P
+\fBextract\fR\ \ \ \ \ \ \ \ \ \ \ Extract the contents of an archive to the target directory
+.P
+\fBlist\fR\ \ \ \ \ \ \ \ \ \ \ \ \ \ List the contents of an archive
+.P
+\fBconvert\fR\ \ \ \ \ \ \ \ \ \ \ Convert an archive into another archive
+.P
+\fBmanifest\fR\ \ \ \ \ \ \ \ \ \ Alias for 'archive -manifest'
+.P
+\fBverify\fR\ \ \ \ \ \ \ \ \ \ \ \ Compare the contents of the target directory with a manifest
+.P
+\fBcheck-and-fix\fR\ \ \ \ \ Verify and fix the contents of the target directory using an error correcting manifest
+.SH OPTIONS
+.TP
+.BR \-v
+Increase verbosity. Default is silent operation.
+.TP
+.BR \-h
+Print usage and exit.
+.TP
+.BR \-d\ \fIdir\fR
+Target directory for archive/extract. Default is the current directory.
+.TP
+.BR \-i\ \fIinput_file\fR
+Input file. Default is \fIstdin\fR.
+.TP
+.BR \-o\ \fIoutput_file\fR
+Output file. Default is \fIstdout\fR.
+.TP
+.BR \-subdir\ \fIsubdir\fR
+Path to archive under \fIdir\fR. \fIsubdir\fR will be included in the archived paths, and extracted. Default is empty.
+.TP
+.BR \-D\ \fIdir_and_subdir\fR
+Set both \fIdir\fR to `dirname \fIdir_and_subdir\fR` and \fIsubdir\fR to `basename \fIdir_and_subdir\fR`.
+.TP
+.BR \-x
+Do not cross volume boundaries when archiving.
+.TP
+.BR \-a\ \fIalgorithm\fR
+Compression algorithm used when creating archives. One of \fIlzfse\fR, \fIlzma\fR, \fIlz4\fR, \fIzlib\fR, \fIraw\fR. Default is \fIlzfse\fR.
+.TP
+.BR \-b\ \fIblock_size\fR
+Block size used when compressing archives, a number with optional \fIb\fR, \fIk\fR, \fIm\fR, \fIg\fR suffix (bytes are assumed if no suffix
+is specified). Default is \fI4m\fR for \fIarchive\fR and \fI1m\fR for the other commands.
+.TP
+.BR \-t\ \fIworker_threads\fR
+Number of worker threads compressing/decompressing data. Default is the number of physical CPU on the running machine.
+.TP
+.BR \-wt\ \fIwriter_threads\fR
+Number of writer threads extracting archive content. Default is to match \fIworker_threads\fR.
+.TP
+.BR \-enable-dedup\ (-no-enable-dedup)
+If set, and SLC fields are present in the archive, files with same data will be extracted as clones
+.TP
+.BR \-enable-holes\ (-no-enable-holes)
+If set, and the filesystem supports it, detect and create holes in files to store 0-filled segments
+.TP
+.BR \-ignore-eperm\ (-no-ignore-eperm)
+If set, ignore EPERM (operation not permitted) errors when setting files attributes
+.TP
+.BR \-manifest
+Alias for the following options:
+.br
+\fB\-exclude\-field\fR \fIdat\fR
+.br
+\fB\-include\-field\fR \fIsh1,cks,siz\fR
+.br
+\fB\-a\fR \fIlzfse\fR \fB\-b\fR \fI1m\fR
+.TP
+.BR \-include-path\ \fIpath\fR
+Include entry paths having \fIpath\fR as a prefix. This option can be given multiple times.
+.TP
+.BR \-exclude-path\ \fIpath\fR
+Exclude entry paths having \fIpath\fR as a prefix. This option can be given multiple times.
+.TP
+.BR \-include-path-list\ \fIpath_list_file\fR
+File containing a list of paths to include, one entry per line. This option can be given multiple times.
+.TP
+.BR \-exclude-path-list\ \fIpath_list_file\fR
+File containing a list of paths to exclude, one entry per line. This option can be given multiple times.
+.TP
+.BR \-include\-regex\ \fIexpr\fR
+Include entry paths matching regular expression \fIexpr\fR, see \fIre_format(7)\fR. This option can be given multiple times.
+.TP
+.BR \-exclude\-regex\ \fIexpr\fR
+Exclude entry paths matching regular expression \fIexpr\fR, see \fIre_format(7)\fR. This option can be given multiple times.
+.TP
+.BR \-exclude\-name\ \fIname\fR
+Exclude entry paths where a single component of the path matches exactly \fIname\fR. This option can be given multiple times.
+.TP
+.BR \-include\-type\ \fI<type_spec>\fR
+Include only entries matching the given types. \fI<type_spec>\fR is a word containing one or more of the entry type characters listed below.
+.TP
+.BR \-exclude\-type\ \fI<type_spec>\fR
+Include only entries not matching the given types. \fI<type_spec>\fR is a word containing one or more of the entry type characters listed below.
+.TP
+.BR \-include\-field\ \fI<field_spec>\fR
+Add the given fields to the set of field keys. This option can be given multiple times. \fI<field_spec>\fR is a comma separated list of entry field keys listed below.
+.TP
+.BR \-exclude\-field\ \fI<field_spec>\fR
+Remove the given fields from the set of field keys. This option can be given multiple times. \fI<field_spec>\fR is a comma separated list of entry field keys listed below.
+.SH ENTRY TYPES
+.br
+\fBb\fR block special
+.br
+\fBc\fR character special
+.br
+\fBd\fR directory
+.br
+\fBf\fR regular file
+.br
+\fBl\fR symbolic link
+.br
+\fBm\fR metadata
+.br
+\fBp\fR fifo
+.br
+\fBs\fR socket
+.SH ENTRY FIELDS
+.br
+\fBtyp\fR entry type
+.br
+\fBpat\fR path
+.br
+\fBlnk\fR link path
+.br
+\fBdev\fR device id
+.br
+\fBuid\fR user id
+.br
+\fBgid\fR group id
+.br
+\fBmod\fR access permissions
+.br
+\fBflg\fR flags
+.br
+\fBmtm\fR modification time
+.br
+\fBctm\fR creation time
+.br
+\fBbtm\fR backup time
+.br
+\fBxat\fR extended attributes
+.br
+\fBacl\fR access control list
+.br
+\fBcks\fR CRC32 checksum
+.br
+\fBsh1\fR SHA1 digest
+.br
+\fBsh2\fR SHA2 digest
+.br
+\fBdat\fR file contents
+.br
+\fBsiz\fR file size
+.br
+\fBduz\fR disk usage
+.br
+\fBidx\fR entry index in main archive
+.br
+\fByec\fR file data error correcting codes
+.br
+\fByaf\fR Apple Archive fields (in metadata entry)
+.br
+\fBall\fR alias for all fields (exclude only)
+.br
+\fBattr\fR alias for \fIuid,gid,mod,flg,mtm,btm,ctm\fR
+.SH ENTRY SELECTION
+.PP
+\fB-include-path\fR and \fB-include-path-list\fR options are applied first to select an initial set of entries,
+then \fB-exclude-path\fR, \fB-exclude-path-list\fR, \fB-exclude-name\fR, \fB-exclude-regex\fR are applied to remove entries from this set.
+If no \fB-include-path\fR or \fB-include-path-list\fR option is given, all entries are included in the initial set.
+If a directory is included/excluded, the entire sub-tree is included/excluded.
+.SH EXAMPLES
+.PP
+Archive the contents of directory \fIfoo\fR into archive \fIfoo.aar\fR, using LZMA compression with 8 MB blocks
+.PP
+.RS
+.B aa archive -d foo -o foo.aar -a lzma -b 8m
+.RE
+.PP
+Extract the contents of \fIfoo.aar\fR in directory \fIdst\fR
+.PP
+.RS
+.B aa extract -d dst -i foo.aar
+.RE
+.PP
+Create a manifest of the contents of directory \fIfoo\fR into \fIfoo.manifest\fR, using LZFSE compression with 1 MB blocks
+.PP
+.RS
+.B aa manifest -d foo -o foo.manifest -a lzfse -b 1m
+.RE
+.PP
+Verify the contents of \fIdst\fR match the manifest \fIfoo.manifest\fR
+.PP
+.RS
+.B aa verify -i foo.manifest -d dst -v
+.RE
+.PP
+Print all entry paths in \fIfoo.manifest\fR
+.PP
+.RS
+.B aa list -i foo.manifest
+.RE
+.PP
+Print all entry paths, uid, gid for regular files in \fIfoo.manifest\fR
+.PP
+.RS
+.B aa list -v -i foo.manifest -include-type f -exclude-field all -include-field uid,gid,pat
+.RE
+.PP
+Create a manifest of the contents of archive \fIfoo.aar\fR in \fIfoo.manifest\fR
+.PP
+.RS
+.B aa convert -manifest -v -i foo.aar -o foo.manifest
+.RE
+.PP
+Extract a subset of entries matching prefix \fIApplications/Mail.app\fR from archive \fIfoo.aar\fR in directory \fIdst\fR
+.PP
+.RS
+.B aa extract -i foo.aar -include-path Applications/Mail.app -d dst
+.RE
+

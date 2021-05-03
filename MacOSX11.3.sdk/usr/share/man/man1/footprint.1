@@ -1,0 +1,219 @@
+.\" Copyright (c) 2019, Apple, Inc.  All rights reserved.
+.\"
+.Dd March 11, 2019
+.Dt FOOTPRINT 1
+.Os "OS X"
+.Sh NAME
+.Nm footprint
+.Nd gathers memory information about one or more processes
+.Sh SYNOPSIS
+.Nm
+.Op Fl j Ar path
+.Op Fl f Ar bytes|formatted|pages
+.Op Fl -sort Ar column
+.Op Fl p Ar name|pid
+.Op Fl x Ar name|pid
+.Op Fl t
+.Op Fl s
+.Op Fl v
+.Op Fl y
+.Op Fl w
+.Op Fl -swapped
+.Op Fl -wired
+.Op Fl a
+.Ar process-name | pid | memgraph
+.Op ...
+.Nm
+.Fl -sample Ar interval
+.Ar ...
+.Nm
+.Fl h , Fl -help
+.Sh DESCRIPTION
+The
+.Nm
+utility gathers and displays memory consumption information for the specified processes or memory graph files.
+.Pp
+.Nm
+will display all addressable memory used by the specified processes, but it emphasizes memory considered 'dirty' by the kernel for purposes of accounting.  If multiple processes are specified,
+.Nm
+will de-duplicate multiply mapped objects and will display shared objects separately from private ones.
+.Pp
+.Nm
+must be run as root when inspecting processes that are not owned by the current user.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl a , Fl -all
+target all processes (will take much longer)
+.It Fl j , Fl -json Ar path
+also save a JSON representation of the data to the specified path
+.It Fl f , Fl -format Ar bytes|formatted|pages
+textual output should be formatted in
+.Ar bytes , Ar pages ,
+or human-readable
+.Ar formatted
+(default)
+.It Fl -sort Ar column
+textual output should be sorted by the given column name, for example
+.Ar dirty
+(default),
+.Ar clean ,
+.Ar category ,
+etc.
+.It Fl p , Fl -proc Ar name
+target the given process by name (can be used multiple times)
+.It Fl p , Fl -pid Ar pid
+target the given process by pid (can be used multiple times)
+.It Fl x , Fl -exclude Ar name/pid
+exclude the given process by name or pid (can be used multiple times)
+.Pp
+often used with
+.Fl -all
+to exclude some processes from analysis
+.It Fl t , Fl -targetChildren
+in addition to the supplied processes, target their children, grandchildren, etc.
+.It Fl s , Fl -skip
+skip processes that are dirty tracked and have no outstanding XPC transactions (i.e., are "clean")
+.It Fl v
+display all regions and vmmap-like output of address space layout.
+.br
+Without this flag the default output is a summary of the totals for each memory category.
+.It Fl w , Fl -wide
+show wide output with all columns and full paths (implies
+.Fl -swapped Fl -wired )
+.It Fl -swapped
+show swapped/compressed column
+.It Fl -wired
+show wired memory column
+.It Fl -vmObjectDirty
+interpret dirty memory as viewed by VM objects in the kernel, rather than the default behavior which interprets dirty memory through the pmap. This mode may calculate a total footprint that does not match what is shown in other tools such as
+.Xr top 1
+or Activity Monitor.app. However, it can provide insight into dirty memory that is by design not included in the default mode, such as dirty file-backed memory or a VM region mapped into a process that is normally accounted to only the process that created it.
+.br
+The
+.Fl -vmObjectDirty
+mode was the default in versions prior to macOS 10.15.
+.It Fl -unmapped
+search all processes for memory owned by the target processes but not mapped into their address spaces (see the discussion in
+.Sx MEMORY ACCOUNTING
+for more details)
+.It Fl -sample Ar interval
+Start
+.Nm
+in sampling mode, gathering data every
+.Ar interval
+seconds (which can be fractional like 0.5). Text output will be a concatenation of usual text output with added timestamps. JSON output will contain a "samples" array with many of the same key/values that would normally be at the top level. All other command line options are also supported in sampling mode.
+.It Fl h , Fl -help
+display help and exit
+.El
+.Sh COLUMNS
+.Bl -tag -width "Reclaimable"
+Column names between parentheses indicate that they are a subset of one or more non-parenthesized columns.
+.It Dirty
+Memory that has been written to by a process, which includes "Swapped", purgeable non-volatile memory, and implicitly written memory such as zero-filled. A process's footprint is equal to the total of all dirty memory.
+.It (Swapped)
+A subset of "Dirty" memory that has been compressed or swapped out by the kernel.
+.It Clean
+Resident memory which is neither "Dirty" nor "Reclaimable".
+.It Reclaimable
+Resident memory that has been explicitly marked as available for reuse. Memory can be marked reclaimable when it is made purgeable volatile (including purgeable empty) or by using
+.Xr madvise 2
+with advice such as MADV_FREE. Reclaimable memory can be taken away from a process at any time in response to system memory pressure.
+.It (Wired)
+Memory that has been wired down (e.g., by calling
+.Xr mlock 2 ).
+This memory is usually a subset of "Dirty" and cannot be paged out.
+.It Regions
+The count of VM regions contributing to this entry. Each binary segment contained within the shared cache region is considered a separate region for display purposes.
+.It Category
+A descriptive name for this entry, such as a human-readable name for a VM_MEMORY_* tag, a path to a mapped file, or a segment of a loaded binary.
+.El
+.Sh INVESTIGATING MEMORY FOOTPRINT
+.Nm footprint
+provides an efficient calculation of a process's memory footprint and a high-level overview of the various categories of memory contributing to that footprint. The details that it provides can be used as a starting point in an investigation.
+.Pp
+Prioritize reducing "Dirty" memory. Dirty memory cannot be automatically reclaimed by the kernel and is directly used by various parts of the OS as a measure of a process's contribution to system memory pressure.
+.br
+Next, focus on reducing "Reclaimable" memory, especially purgeable volatile memory which will become dirty when marked non-volatile. Although this memory can be cheaply reclaimed by the kernel, purgeable volatile memory is commonly used as a cache of data that may be expensive for a user process to recreate (such as decoded image data).
+.br
+"Clean" memory can also be cheaply taken by the kernel, but unlike "Reclaimable" it can be restored automatically by the kernel without the help of a user process. For example, clean file backed data can be automatically evicted from memory and re-read from disk on-demand. Having too much clean memory can still be a performance problem, since large working sets can cause thrashing when loading and unloading various parts of a process under low memory situations.
+.br
+Lastly, avoid using "Wired" memory as much as possible since it cannot be paged out or reclaimed.
+.Pp
+.Bl -tag -width Ds
+.It Malloc memory
+Memory allocated by
+.Xr malloc 3
+is one of the most common forms of memory, making up what is usually referred to as the 'heap'. This memory will have a category prefixed with 'MALLOC_'.
+.Xr malloc 3
+allocates VM regions on a process's behalf; the contents of those regions will be the individual allocations representing objects and data in a process. Refer to the
+.Xr heap 1
+tool to further categorize the objects contained within a malloc memory region, or
+.Xr leaks 1
+to detect a subset of heap memory that is no longer reachable.
+.It Binary segments
+Loaded binaries will be visible as an entry with both the segment type and the path to the binary, most often __TEXT, __DATA, or __LINKEDIT segments. Non-shared cache binaries and pages in the __DATA segment (such as those that contain modified global variables) can often have dirty memory.
+.It Mapped files
+File-backed memory allocated using
+.Xr mmap 2
+will show up as 'mapped file' along with the path to the file.
+.It VM allocations
+Most other types of memory can be tagged with a name that indicates what subsystem allocated the region (see
+.Xr mmap 2
+for more information). For instance, Foundation.framework may allocate memory and tag it with VM_MEMORY_FOUNDATION, which appears in
+.Nm footprint Ap s
+output as 'Foundation'. Processes are able to allocate memory with their own tags by using an appropriate tag in the range VM_MEMORY_APPLICATION_SPECIFIC_1-VM_MEMORY_APPLICATION_SPECIFIC_16. Memory which does not fall into one of the previous categories and has not been explicitly tagged will be marked 'untagged ("VM_ALLOCATE")'.
+.It Kernel memory
+In the special case of analyzing kernel_task,
+.Nm footprint Ap s
+output and categories will mirror much of the data also available via
+.Xr zprint 1 .
+This is memory allocated by the kernel or a kernel extension and is generally unavailable to userspace directly. Despite the restricted access, userspace programs often influence when and how much memory the kernel allocates (e.g., for resources allocated on behalf of a user process).
+.El
+.Pp
+For malloc and VM allocated memory, details about when and where the memory was allocated can often be obtained by enabling MallocStackLogging and using
+.Xr malloc_history 1
+to view the backtrace at the time of each allocation. Xcode.app and Instruments.app also provide visual tools for debugging memory, such as the Xcode's Memory Graph Debugger.
+.Pp
+.Xr vmmap 1
+provides a similar view to
+.Nm footprint ,
+but with an emphasis on displaying the raw metrics returned by the kernel rather than the simplified and more processed view of
+.Nm footprint .
+One important difference is that
+.Xr vmmap 1 Ap s
+"DIRTY" column does not include the compressed or swapped memory found in the "SWAPPED" column.
+Additionally,
+.Xr vmmap 1
+can only operate on a single process and contains additional information such as a malloc zone summary.
+.Sh MEMORY ACCOUNTING
+Determining what dirty memory should and should not be accounted to a process is a difficult problem. Memory can be shared by many processes, it can sometimes be allocated on your behalf by other processes, and no matter how the accounting is done can often be expensive to accurately calculate.
+.Pp
+Many operating systems have historically exposed memory metrics such as Virtual Size (VSIZE) and Resident Size (RSIZE/RPRVT/RSS/etc.). Metrics such as these, which are useful in their own respect, are not great indicators of the amount of physical memory required by a process to run (and therefore the memory pressure that a process applies to the system). For instance, Virtual Size includes allocations that may not be backed by physical memory, and Resident Size includes clean and volatile purgeable memory that can be reclaimed by the kernel (as described earlier).
+.br
+On the other hand, analyzing the dirty memory reported by the underlying VM objects mapped into a process (the approach taken by
+.Fl -vmObjectDirty ) ,
+while more accurate, is expensive and cannot be done in real-time for systems that need to frequently know the memory footprint of a process.
+.Pp
+Apple platforms instead keep track of the 'physical footprint' by using a per-process ledger in the kernel that is kept up-to-date by the pmap and other subsystems. This ledger is cheap to query, suitably accurate, and provides additional features such as tracking peak memory and the ability to charge one process for memory that is no longer mapped into it or that may have been allocated by another process. In cases where
+.Nm footprint
+is unable to analyze a portion of 'physical footprint' that is not mapped into a process, this memory will be listed as 'Owned physical footprint (unmapped)'. If this memory is mapped into another userspace process then the
+.Fl -unmapped
+argument can be used to search all processes for a mapping of the same VM object, which if found will provide a better description and what process(s) have mapped the memory. This also happens by default when targeting all processes via
+.Fl -all .
+Any memory still listed as "(unmapped)" after using
+.Fl -unmapped
+is likely not mapped into any userspace process and instead only referenced by the kernel or drivers.
+.br
+The exact definition of this 'physical footprint' ledger is complicated and subject to change, but suffice it to say that the default mode of
+.Nm footprint
+aims to present an accurate memory breakdown that matches the value reported by the ledger. Most other diagnostic tools, such as the 'MEM' column in
+.Xr top 1 ,
+the 'Memory' column in Activity Monitor.app, and the Memory Debug Gauge in Xcode.app, query this ledger to populate their metrics.
+.Pp
+Physical footprint can be potentially be split into multiple subcategories, such as network related memory, graphics, etc. When a memory allocation (either directly mapped into a process, or owned but unmapped) has such a classification, footprint will append it to the category name such as 'IOKit (graphics)' or 'Owned physical footprint (unmapped) (media)'.
+.Sh SEE ALSO
+.Xr vmmap 1 ,
+.Xr heap 1 ,
+.Xr leaks 1 ,
+.Xr malloc_history 1 ,
+.Xr zprint 1

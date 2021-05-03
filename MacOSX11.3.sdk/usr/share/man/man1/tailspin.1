@@ -1,0 +1,161 @@
+.\" Copyright (c) 2016, Apple Inc.  All rights reserved.
+.\"
+.Dd 22 June 2016
+.Dt tailspin 1
+.Os "Darwin"
+.Sh NAME
+.Nm tailspin
+.Nd configure, save and print tailspin output
+.Sh SYNOPSIS
+.Bl -hang -compact -width "tailspin -"
+.\"
+.It Nm Cm info
+.\"
+.It Nm Cm enable
+.\"
+.It Nm Cm disable
+.\"
+.It Nm Cm set buffer-size Ar buffer-size-mb
+.br .RE
+.Cm ktrace-filter-descriptor Ar (add:|remove:)filter-desc
+.br .RE
+.Cm oncore-sampling-period Ar period-in-ns|disabled
+.br .RE
+.Cm full-system-sampling-period Ar period-in-ns|disabled
+.El
+.Bl -hang -compact -width "tailspin -"
+.\"
+.It Nm Cm reset Op buffer-size-mb|ktrace-filter-descriptor|oncore-sampling-period|full-system-sampling-period
+.\"
+.It Nm Cm save
+.Op Fl r Ar reason-string
+.Op Fl l Ar num-seconds
+.Op Fl n
+.Ar path-to-file
+.\"
+.It Nm Cm augment
+.Op Fl s
+.Op Fl d
+.Op Fl l
+.Op Fl L Ar path-to-log-archive
+.Ar path-to-file
+.\"
+.It Nm Cm stat
+.Op Fl v
+.Op Fl s
+.Ar path-to-file
+.\"
+.El
+.Sh DESCRIPTION
+.Nm tailspin
+configures the system to continuously sample callstacks of processes and select
+kdebug events in the kernel trace buffer. When tailspin data is recorded to a
+file, the tailspin file will contain information about the system state from
+about 20s prior to the save. The tailspind daemon is a helper daemon for the
+tailspin feature and should not be run manually.
+.Pp
+.Sh COLLECTING TAILSPIN DATA
+tailspin data can be collected using the keychord when enabled:
+.Xr Shift-Control-Option-Command-Comma.
+When the command is completed, a Finder window will pop up with the saved
+tailspin file.
+.Sh SUBCOMMANDS
+.Nm
+uses a subcommand syntax to separate different functionality into logical groups.  Each subcommand takes its own set of options.
+.Bl -tag -width "disable -"
+.\" INFO
+.It Cm info
+Print information about the current configuration of tailspin.
+.Pp
+.\" ENABLE
+.It Cm enable
+Enable tailspin collection. Enablement persists across reboots and upgrade installs.
+.Pp
+.\" DISABLE
+.It Cm disable
+Stop tailspin collection. Disablement persists across reboots and upgrade installs. tailspin can be enabled again after it has been disabled, using the same configuration.
+.\" SET
+.It Cm set
+Configure the 4 tunable parameters of tailspin. Any change applied will persist across reboots and upgrade installs.
+.Pp
+.Bl -tag -width Ds
+.It Cm buffer-size Ar buffer-size-mb
+Set up the kernel trace buffer to be
+.Ar buffer-size-mb
+big.
+.Pp
+.It Cm ktrace-filter-descriptor Ar (add:|remove:)filter-desc
+Apply the
+.Ar filter-desc
+to the tailspin configuration, thereby controlling which events are traced by tailspin.  See
+.Sx FILTER DESCRIPTIONS
+on the syntax of a filter. The filter may be prefixed with "add:" or "remove:" to modify an existing filter rather than replace it entirely
+.It Cm oncore-sampling-period Ar period-in-ns
+Set up a timer in the tailspin configuration to sample the threads that are on the CPU when the timer fires every
+.Ar period-in-ns .
+The minimum period allowed is 1 ms. "disabled" may be used to disable the oncore sampling timer.
+.It Cm full-system-sampling-period Ar period-in-ns
+Set up a timer in the tailspin configuration to sample all threads of all processes when the timer fires every
+.Ar period-in-ns .
+The minimum period allowed is 10 ms. "disabled" may be used to disable the full sampling timer.
+.El
+.\" RESET
+.It Cm reset Op buffer-size-mb|ktrace-filter-descriptor|oncore-sampling-period|full-system-sampling-period
+Remove all custom configuration of tailspin and reset to system default, or reset specific setting to the system default.
+.\" SAVE
+.It Cm save Oo Fl r Ar reason-string Oc Oo Fl l Ar num-seconds Oc Oo Fl n Oc Oo Ar path-to-file Oc
+.Pp
+Save the current contents of the kernel trace buffer containing tailspin data to
+.Ar path-to-file .
+.Pp
+.Bl -tag -width Ds
+.It Fl r Ar reason-string
+Include a key in the tailspin file indicating why it was saved. This reason can be viewed with
+.Cm tailspin stat .
+.It Fl l Ar num-seconds
+Limit the data in tailspin file to that of the last
+.Ar num-seconds .
+.It Fl n
+Save tailspin file without symbolicating.
+.El
+.\" SYMBOLICATE
+.It Cm augment Oo Fl d Oc Oo Fl s Oc Oo Fl l Oc Oo Fl L path-to-log-archive Oc path-to-file
+Augment the tailspin report at
+.Ar path-to-file
+with additional information like symbols, os logs and os signposts.
+If not used with -d, needs to be run on the same device and
+build on which the tailspin file was saved .
+.\" STAT
+.It Cm stat Oo Fl v Oc Oo Fl s Oc Ar path-to-file
+Print aggregate information about the data in the tailspin file.
+.Bl -tag -width Ds
+.It Fl v
+Print layout information of tailspin file.
+.It Fl s
+Sort ktrace statistics by frequency of trace class/subclass. Default sorting is
+by class/subclass code.
+.El
+.El
+.Sh FILTER DESCRIPTIONS
+A filter description is a comma-separated list of class and subclass specifiers that indicate which events should be traced.   A class specifier starts with
+.Ql C
+followed by a number between 0 and 255 inclusive, specified in either decimal or hex (when prepended with "0x"). A subclass specifier starts with
+.Ql S
+and takes two bytes.  The high byte is the class and the low byte is the subclass of that class.
+.Pp
+For example, this filter description would enable classes 0x1 and 0x25 and the subclasses 0x21 and 0x23 of class 0x5:
+.Ql C1,C0x25,S0x0521,S0x0523 .
+The
+.Ql ALL
+filter description enables events from all classes.
+.Sh VIEWING TAILSPIN DATA
+tailspin data can be viewed by
+.Xr ktrace 1 ,
+.Xr spindump 8 and
+.Xr fs_usage 1 .
+.Sh DIAGNOSTICS
+.Ex -std
+.Sh SEE ALSO
+.Xr ktrace 1 ,
+.Xr fs_usage 1 ,
+.Xr spindump 8

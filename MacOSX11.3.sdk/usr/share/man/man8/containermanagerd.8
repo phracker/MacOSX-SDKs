@@ -1,0 +1,105 @@
+.\" Copyright (c) 2019 Apple Inc. All rights reserved.
+.Dd September 4, 2019        \" DATE
+.Dt containermanagerd 8  \" Program name and manual section number
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm containermanagerd
+.Nd Application and plug-in containerization management daemon
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl -runmode Ar runmode
+.Op Fl -default-user Ar username
+.Op Fl -bundle-container-mode Ar mode
+.Op Fl -bundle-container-owner Ar username
+.Op Fl -system-container-mode Ar mode
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+creates, destroys, and otherwise manages containers for applications and their respective plug-ins and works in concert with
+.Xr sandbox 7
+to provide application containerization. It is a classic launch daemon and/or agent managed by launchd.
+.Pp
+The following arguments are available:
+.Bl -tag -width indent
+.It Fl -runmode Ar runmode
+Defines the running mode of the daemon where
+.Ar runmode
+is one of the following:
+.Bl -tag -width ".Cm exclusive"
+.It Cm exclusive
+The daemon will run in exclusive mode where all containers on the system are managed by a single
+.Nm
+process.
+This is the default runmode. This mode can only be run as a LaunchDaemon.
+.It Cm agent
+The daemon will run in per-user mode, and will manage containers only for the current user.
+.It Cm proxy
+The daemon will run in per-user mode, but will only forward messages to the LaunchDaemon. This mode will automatically be used if set to run as an agent but the current user has no home directory, or its home directory is /var/empty.
+.El
+.It Fl -default-user Ar username
+Sets the default user where user data will be stored.
+.It Fl -bundle-container-mode Ar mode
+Controls how bundle containers are managed where
+.Ar mode
+is one of the following:
+.Bl -tag -width ".Cm per-user"
+.It Cm none
+Bundle containers will not be supported.
+.It Cm global
+Bundle containers will be cross-user and owned by the system.
+.It Cm per-user
+Bundle containers will be per-user and owned by the user.
+.El
+.It Fl -bundle-container-owner Ar username
+Sets the
+.Ar username
+that bundle containers will be
+.Xr chown 2
+to. Ignored if bundle container mode is not
+.Cm global
+.It Fl -system-container-mode Ar mode
+Controls how system containers are managed where
+.Ar mode
+is one of the following:
+.Bl -tag -width ".Cm per-user"
+.It Cm none
+System containers will not be supported.
+.It Cm global
+System containers will be cross-user and owned by the system.
+.It Cm per-user
+System containers will be per-user and owned by the user.
+.El
+.It Fl -system-container-owner Ar username
+Sets the
+.Ar username
+that system containers will be
+.Xr chown 2
+to. Ignored if system container mode is not
+.Cm global
+.El
+.Pp
+Users should not run
+.Nm
+manually and changing arguments is unsupported.
+.Sh FILES
+.Bl -bullet
+.It
+/System/Library/LaunchDaemons/com.apple.containermanagerd.plist
+.It
+/System/Library/LaunchAgents/com.apple.containermanagerd.plist
+.It
+/usr/libexec/containermanagerd
+.It
+~/Library/ContainerManager
+.It
+~/Library/Caches/com.apple.containermanagerd
+.It
+~/Library/Containers
+.It
+~/Library/Group Containers
+.El
+.Sh SEE ALSO
+.Xr xpc 3
+.Xr sandbox 7
+.Sh HISTORY           \" Document history if command behaves in a unique manner
+.Nm
+was first introduced in macOS 10.16.

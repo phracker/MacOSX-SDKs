@@ -1,0 +1,533 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) menubar.n
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::menubar iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::menubar \- Create and manipulate menubar menu widgets
+.SH SYNOPSIS
+\fBiwidgets::menubar\fR \fIpathName\fR ?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Menubar
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fB
+activeBackground      activeBorderWidth     activeForeground
+anchor                background            borderWidth
+cursor                disabledForeground    font
+foreground            highlightBackground   hightlightColor 
+highligthThickness    justify               relief
+padX                  padY                  wrapLength\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBhelpVariable\fR
+Class:	\fBHelpVariable\fR
+Command-Line Switch:	\fB-helpvariable\fR
+.fi
+.IP
+Specifies the global variable to update whenever the mouse is in motion over a menu entry. This global variable is updated with the current value of the active menu entry's \fBhelpStr\fR. Other widgets can "watch" this variable with the trace command, or as is the case with entry or label widgets, they can set their \fBtextVariable\fR to the same global variable. This allows for a simple implementation of a help status bar. Whenever the mouse leaves a menu entry, the helpVariable is set to the empty string {}. The mainwindow(1) associates its helpstatus and its menubar in this fashion.
+.LP
+.nf
+Name:	\fBmenuButtons\fR
+Class:	\fBMenuButtons\fR
+Command-Line Switch:	\fB-menubuttons\fR
+.fi
+.IP
+The menuButton option is a string which specifies the arrangement of menubuttons on the menubar frame. Each menubutton entry is delimited by the newline character.
+.nf
+.IP
+.ta 2c 8c 12c
+iwidgets::menubar .mb -menubuttons {
+	menubutton file -text File
+	menubutton edit -text Edit
+	menubutton options -text Options
+}
+.fi
+.IP
+specifies that three menubuttons will be added to the menubar (file, edit, options). Each entry is translated into an add command call.
+.IP
+The \fBmenuButtons\fR option can accept embedded variables, commands, and
+backslash quoting. Embedded variables and commands must be enclosed in
+curly braces ({}) to ensure proper parsing of the substituted values.
+.BE
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::menubar\fR command creates a new window (given by the \fIpathName\fR argument) and makes it into a \fBmenubar\fR menu widget. Additional options, described above may be specified on the command line or in the option database to configure aspects of the menubar such as its colors and font. The \fBiwidgets::menubar\fR command returns its \fIpathName\fR argument. At the time this command is invoked, there must not exist a window named pathName, but pathName's parent must exist.
+.PP
+A \fBmenubar\fR is a widget that simplifies the task of creating menu hierarchies. It encapsulates a \fBframe\fR widget, as well as \fBmenubuttons\fR, \fBmenus\fR, and menu \fBentries\fR. The menubar allows menus to be specified and referenced in a more consistent manner than using Tk to build menus directly. 
+
+\fBMenubar\fR allows a menu tree to be expressed in a hierachical "language". The \fBmenubar\fR accepts a \fBmenuButtons\fR option that allows a list of menubuttons to be added to the menubar. In turn, each menubutton accepts a \fBmenu\fR option that specifies a list of menu entries to be added to the menubutton's menu. Cascade entries also accept the \fBmenu\fR option for specifying a list of menu entries to be added to the cascade's menu. 
+
+Additionally, the menubar allows each component of the menubar system to be referenced by a simple \fImenuPathName\fR syntax. The menubar also extends the set of options for menu entries to include a \fBhelpStr\fR option.
+.SH "MENU PATH NAMES"
+.PP
+A \fImenuPathName\fR is a series of component names separated by the `.' character. Each menubar component can be referenced via these \fImenuPathNames\fR. \fImenuPathNames\fR are similar to widget pathNames in Tk. Some correspond directly to a widget pathName (components of type \fBmenu\fR or \fBmenubutton\fR), others correspond to a menu entry type. Every widget and entry in a menubar can be referenced with the \fImenuPathName\fR naming convention. A menubar can have four types of components:
+.IP
+\fBframe\fR. A menubar holds exactly one frame which manages menubuttons. The frame is always signified by the `.' character as the path name.
+.IP
+\fBmenubutton\fR. A menubutton corresponds directly to a Tk menubutton. See menubutton(n).
+.IP
+\fBmenu\fR. A menu is attached to a menubutton and corresponds directly to Tk's menu widget. A menu is always signified by the \fImenuPathName\fR ending with the keyword \fBmenu\fR. See menu(n).
+.IP
+\fBentry\fR. An entry corresponds directly to Tk's menu widget entries. Menus consist of a column of one line entries. Entries may be of type: \fBcommand\fR, \fBcheckbutton\fR, \fBradiobutton\fR, \fBseparator\fR, or \fBcascade\fR. For a complete description of these types see the discussion on \fBENTRIES\fR in menu(n).
+.PP
+The suffix of a \fImenuPathName\fR may have the form of:
+.TP 14
+\fItkWidgetName\fR
+Specifies the name of the component, either a \fBframe\fR, \fBmenubutton\fR, \fBmenu\fR, or an \fBentry\fR. This is the normal naming of widgets. For example, .file references a \fBmenubutton\fR named \fIfile\fR.
+.PP
+The \fImenuPathName\fR is a series of segment names, each separated by the '.' character. Segment names may be one of the following forms:
+.TP 14
+\fInumber\fR
+Specifies the index of the the component. For menubuttons, 0 corresponds to the left-most menubutton of the menu bar frame. As an example, \fI.1\fR would correspond to the second menubutton on the menu bar frame. 
+.IP
+For entries, 0 corresponds to the top-most entry of the menu. For example, .file.0 would correspond to the first entry on the menu attached to the menubutton named \fIfile\fR.
+.TP 14
+\fBend\fR
+Specifes the last component. For menubuttons, it specifies the right-most entry of the menu bar frame. For menu entries, it specifies the bottom-most entry of the menu. 
+.TP 14
+\fBlast\fR
+Same as end.
+.PP
+Finally, menu components always end with the \fBmenu\fR keyword. These components are automatically created via the -menu option on menubuttons and cascades or via the \fBadd\fR or \fBinsert\fR commands.
+.TP 14
+\fBmenu\fR
+Specifes the menu pane that is associated with the given menubutton prefix. For example, \fI.file.menu\fR specifies the menu pane attached to the \fI.file\fR menubutton.
+.PP
+For example, the path \fI.file.new\fR specifies the entry named new on the menu associated with the file menubutton located on the menu bar. The path \fI.file.menu\fR specifies the menu pane associated with the menubutton \fI.file\fR. The path \fI.last\fR specifies the last menu on the menu bar. The path \fI.0.last\fR would specify the first menu (file) and the last entry on that menu (quit), yielding \fI.file.quit\fR.
+
+As a restriction, the last name segment of \fImenuPathName\fR cannot be one of the keywords last, menu, end, nor may it be a numeric value (integer).
+.SH "WIDGET-SPECIFIC METHODS"
+.PP
+The \fBiwidgets::menubar\fR command creates a new Tcl command whose name is \fIpathName\fR.
+This command may be used to invoke various operations on the widget. It has
+the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIoption\fR and the \fIarg\fRs
+determine the exact behavior of the command.
+.PP
+In addition, many of the widget commands for menubar take as one argument a path name to a menu component. These path names are called \fImenuPathName\fRs. See the discussion on \fBMENUBAR PATH NAMES\fR above.
+.PP
+The following commands are possible for menubar widgets:
+.TP
+\fIpathName\fR \fBadd\fR \fItype\fR \fImenuPathName\fR ?\fIoption value option value\fR?
+Adds either a menu to the menu bar or a menu entry to a menu pane.
+.IP
+If additional arguments are present, they specify \fIoption\fRs available to component type \fBentry\fR. See the man pages for \fBmenu\fR(1) in the section on \fBENTRIES\fR. 
+
+If \fItype\fR is one of \fBcascade\fR, \fBcheckbutton\fR, \fBcommand\fR, \fBradiobutton\fR, or \fBseparator\fR it adds a new entry to the bottom of the menu denoted by the prefix of \fImenuPathName\fR. If additonal arguments are present, they specify options available to menu \fBentry\fR widgets. In addition, the \fBhelpStr\fR option is added by the menubar widget to all components of type entry.
+.RS
+.TP
+\fB-helpstr\fR \fIvalue\fR
+Specifes the string to associate with the entry. When the mouse moves over the associated entry, the variable denoted by \fBhelpVariable\fR is set. Another widget can bind to the helpVariable and thus display status help.
+.RE
+.IP
+If the type of the component added is \fBmenubutton\fR or \fBcascade\fR, a menubutton or cascade is added to the menubar. If additional arguments are present, they specify options available to menubutton or cascade widgets. In addition, the \fBmenu\fR option is added by the menubar widget to all menubutton and cascade widgets.
+.RS
+.TP
+\fB-menu\fR \fImenuSpec\fR
+This is only valid for \fImenuPathName\fRs of type \fBmenubutton\fR or \fBcascade\fR. Specifes an option set and/or a set of entries to place on a menu and associate with the menubutton or cascade. The \fBoption\fR keyword allows the menu widget to be configured. Each item in the \fImenuSpec\fR is treated as add commands (each with the possibility of having other -menu options). In this way a menu can be recursively built.
+.IP
+The last segment of \fImenuPathName\fR cannot be one of the keywords \fBlast\fR, \fBmenu\fR, \fBend\fR. Additionally, it may not be a \fInumber\fR. However the \fImenuPathName\fR may be referenced in this manner (see discussion of \fBCOMPONENT PATH NAMES\fR).
+.IP
+Note that the same curly brace quoting rules apply to \fB-menu\fR option strings as did to \fB-menubuttons\fR option strings. See the earlier discussion on \fBumenubuttons\fR in the "\fBWIDGET-SPECIFIC OPTIONS\fR" section.
+.RE
+.TP
+\fIpathName\fR \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given by \fIoption\fR.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoptions\fR \fIvalue\fR \fIoption\fR \fIvalue\fR?
+Query or modify the configuration options of the widget. If no \fIoption\fR is specified, returns a list describing all of the available options for \fBpathName\fR (see \fBTk_ConfigureInfo\fR for information on the format of this list). If \fIoption\fR is specified with no value, then the command returns a list describing the one named option (this list will be identical to the corresponding sublist of the value returned if no option is specified). If one or more option-value pairs are specified, then the command modifies the given widget option(s) to have the given value(s); in this case the command returns an empty string.
+.TP
+\fIpathName\fR \fBdelete\fR \fImenuPathName\fR ?\fImenuPathName2\fR?
+If \fImenuPathName\fR is of component type \fBMenubutton\fR or \fBMenu\fR, delete operates on menus. If \fImenuPathName\fR is of component type \fBEntry\fR, delete operates on menu entries.
+
+This command deletes all components between \fImenuPathName\fR and \fImenuPathName2\fR inclusive. If \fImenuPathName2\fR is omitted then it defaults to \fImenuPathName\fR. Returns an empty string.
+
+If \fImenuPathName\fR is of type menubar, then all menus and the menu bar frame will be destroyed. In this case \fImenuPathName2\fR is ignored.
+.TP
+\fIpathName\fR \fBindex\fR \fImenuPathName\fR
+If \fImenuPathName\fR is of type menubutton or menu, it returns the position of the menu/menubutton on the menubar frame. 
+
+If \fImenuPathName\fR is of type \fBcommand\fR, \fBseparator\fR, \fBradiobutton\fR, \fBcheckbutton\fR, or \fBcascade\fR, it returns the menu widget's numerical index for the entry corresponding to \fImenuPathName\fR. If path is not found or the path is equal to ".", a value of -1 is returned.
+.TP
+\fIpathName\fR \fBinsert\fR \fImenuPathName\fR \fItype\fR \fIname\fR ?\fIoption\fR \fIvalue\fR?
+Insert a new component named name before the component specified by \fImenuPathName\fR.
+.IP
+If \fImenuPathName\fR is of type \fBMenubutton\fR or \fBMenu\fR, the new component inserted is of type \fBMenu\fR and given the name name. In this case valid \fIoption\fR \fIvalue\fR pairs are those accepted by menubuttons.
+.IP
+If \fImenuPathName\fR is of type \fBEntry\fR, the new component inserted is of type \fBentry\fR and given the name \fIname\fR. In this case, valid \fIoption\fR \fIvalue\fR pairs are those accepted by menu entries.
+\fIName\fR cannot be one of the keywords \fBlast\fR, \fBmenu\fR, \fBend\fR. Additionally, it may not be a number. However the \fImenuPathName\fR may be referenced in this manner (see discussion of \fBCOMPONENT PATH NAMES\fR).
+.TP
+\fIpathName\fR \fBinvoke\fR \fImenuPathName\fR
+Invoke the action of the menu entry denoted by \fImenuPathName\fR. See the sections on the individual entries in the menu(1) man pages. If the menu entry is disabled then nothing happens. If the entry has a command associated with it then the result of that command is returned as the result of the \fBinvoke\fR widget command. Otherwise the result is an empty string.
+
+If \fImenuPathName\fR is not a menu entry, an error is issued.
+.TP
+\fIpathName\fR \fBmenucget\fR \fImenuPathName\fR \fIoption\fR
+Returns the current value of the configuration option given by \fIoption\fR. The component type of \fImenuPathName\fR determines the valid available options.
+.TP
+\fIpathName\fR \fBmenuconfigure\fR \fImenuPathName\fR ?\fIoption\fR \fIvalue\fR?
+Query or modify the configuration options of the componet of the menubar specified by \fImenuPathName\fR. If no \fIoption\fR is specified, returns a list describing all of the available options for \fImenuPathName\fR (see \fBTk_ConfigureInfo\fR for information on the format of this list). If \fIoption\fR is specified with no value, then the command returns a list describing the one named option (this list will be identical to the corresponding sublist of the value returned if no option is specified). If one or more option-value pairs are specified, then the command modifies the given widget option(s) to have the given value(s); in this case the command returns an empty string. The component type of \fImenuPathName\fR determines the valid available options.
+.TP
+\fIpathName\fR \fBpath\fR ?\fImode\fR? \fIpattern\fR
+Returns a fully formed \fImenuPathName\fR that matches \fIpattern\fR. If no match is found it returns -1. The \fImode\fR argument indicates how the search is to be matched against \fIpattern\fR and it must have one of the following values:
+.RS
+.TP
+\fB-glob\fR
+Pattern is a glob-style pattern which is matched against each component path using the same rules as the string match command.
+.TP
+\fB-regexp\fR
+Pattern is treated as a regular expression and matched against each component of the \fImenuPathName\fR using the same rules as the regexp command.
+The default mode is -glob.
+.RE
+.TP
+\fIpathName\fR \fBtype\fR \fImenuPathName\fR
+Returns the type of the component specified by \fImenuPathName\fR. For menu entries, this is the type argument passed to the \fBadd\fR/\fBinsert\fR widget command when the entry was created, such as \fBcommand\fR or \fBseparator\fR. Othewise it is either a \fBmenubutton\fR or a \fBmenu\fR.
+.TP
+\fIpathName\fR \fByposition\fR \fImenuPathName\fR
+Returns a decimal string giving the y-coordinate within the menu window of the topmost pixel in the entry specified by \fImenuPathName\fR. If the \fImenuPathName\fR is not an entry, an error is issued.
+.SH "EXAMPLE ONE: USING GRAMMAR"
+.PP
+The following example creates a menubar with "File", "Edit", "Options" menubuttons. Each of these menubuttons has an associated menu. 
+In turn the File menu has menu entries, as well as the Edit
+menu and the Options menu. The Options menu is a tearoff menu
+with selectColor (for radiobuttons) set to blue.
+In addition, the Options menu has a cascade titled More,
+with several menu entries attached to it as well. An entry widget is 
+provided to display help status.
+.DS
+package require Iwidgets 4.0
+iwidgets::menubar .mb -helpvariable helpVar -menubuttons {
+    menubutton file -text File -menu {
+        options -tearoff false
+        command new -label New \\
+            -helpstr "Open new document" \\
+            -command {puts NEW}
+        command close -label Close \\
+            -helpstr "Close current document" \\
+            -command {puts CLOSE}
+        separator sep1
+        command exit -label Exit -command {exit} \\
+            -helpstr "Exit application"
+    }
+    menubutton edit -text Edit -menu {
+        options -tearoff false
+        command undo -label Undo -underline 0 \\
+            -helpstr "Undo last command" \\
+            -command {puts UNDO}
+        separator sep2
+        command cut -label Cut -underline 1 \\
+            -helpstr "Cut selection to clipboard" \\
+            -command {puts CUT}
+        command copy -label Copy -underline 1 \\
+            -helpstr "Copy selection to clipboard" \\
+            -command {puts COPY}
+        command paste -label Paste -underline 0 \\
+            -helpstr "Paste clipboard contents" \\
+            -command {puts PASTE}
+    }
+    menubutton options -text Options -menu {
+        options -tearoff false -selectcolor blue
+        radiobutton byName -variable viewMode \\
+            -value NAME -label "by Name" \\
+            -helpstr "View files by name order" \\
+            -command {puts NAME}
+        radiobutton byDate -variable viewMode \\
+            -value DATE -label "by Date" \\
+            -helpstr "View files by date order" \\
+            -command {puts DATE}
+        cascade prefs -label Preferences -menu {
+            command colors -label Colors... \\
+                -helpstr "Change text colors" \\
+                -command {puts COLORS}
+            command fonts -label Fonts... \\
+                -helpstr "Change text font" \\
+                -command {puts FONT}
+        }
+    }
+
+}
+.if
+.nf
+frame .fr -width 300 -height 300
+entry .ef -textvariable helpVar
+pack .mb -anchor nw -fill x -expand yes
+pack .fr -fill both -expand yes
+pack .ef -anchor sw -fill x -expand yes
+.if
+.DE
+.SH "EXAMPLE TWO: USING METHODS"
+Alternatively the same menu could be created by using the add and configure methods:
+.PP
+.nf
+.ta 2c 4c 6c 8c 10c 12c 14c 16c
+.DS
+ package require Iwidgets 4.0
+ iwidgets::menubar .mb
+ .mb configure -menubuttons {
+	menubutton file -text File -menu {
+		command new -label New
+		command close -label Close
+		separator sep1
+		command 	quit -label Quit
+	}
+	menubutton edit -text Edit
+ }
+.if
+.PP
+ .mb add command .edit.undo -label Undo -underline 0
+ .mb add separator .edit.sep2
+ .mb add command .edit.cut -label Cut -underline 1
+ .mb add command .edit.copy -label Copy -underline 1
+ .mb add command .edit.paste -label Paste -underline 0
+
+ .mb add menubutton .options -text Options -menu {
+	radiobutton byName -variable viewMode \\
+		 -value NAME -label "by Name"
+	radiobutton byDate -variable viewMode \\
+		 -value DATE -label "by Date"
+}
+
+ .mb add cascade .options.prefs -label Preferences -menu {
+		command colors -label Colors...
+		command fonts -label Fonts...
+ }
+ pack .mb -side left -anchor nw -fill x -expand yes
+.DE
+.SH CAVEATS
+The \fB-menubuttons\fR option as well as the \fB-menu\fR option is evaluated by menubar with the \fBsubst\fR command. The positive side of this is that the option string may contain variables, commands, and/or backslash substitutions. However, substitutions might expand into more than a single word. These expansions can be protected by enclosing candidate substitutions in curly braces ({}). This ensures, for example, a value for an option will still be treated as a single value and not multiple values. The following example illustrates this case:
+.nf
+.IP
+.ta 2c 4c 6c
+set fileMenuName "File Menu"
+set var {}
+iwidgets::menubar .mb -menubuttons {
+	menubutton file -text {$fileMenuName}
+	menubutton edit -text Edit -menu {
+		checkbutton check \\
+			-label Check \\
+			-variable {[scope var]} \\
+			-onvalue 1 \\
+			-offvalue 0
+	}
+	menubutton options -text Options
+}
+.fi
+.IP
+The variable \fIfileMenuName\fR will expand to "File Menu" when the \fBsubst\fR command is used on the menubutton specification. In addition, the [\fBscope\fR...] command will expand to @scope :: var. By enclosing these inside {} they stay as a single value. Note that only {} work for this. [list...], "" etc. will not protect these from the subst command.
+.SH ACKNOWLEDGMENTS
+.LP
+Bret Schumaker
+.IP
+1994 - Early work on a menubar widget.
+.LP
+Mark Ulferts, Mark Harrison, John Sigler
+.IP
+Invaluable feedback on grammar and usability of the menubar widget
+.LP
+.SH AUTHOR
+Bill W. Scott
+.SH KEYWORDS
+frame, menu, menubutton, entries, help
+

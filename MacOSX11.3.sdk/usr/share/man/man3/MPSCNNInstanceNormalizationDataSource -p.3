@@ -1,0 +1,127 @@
+.TH "<MPSCNNInstanceNormalizationDataSource >" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+<MPSCNNInstanceNormalizationDataSource >
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNInstanceNormalization\&.h>\fP
+.PP
+Inherits <MPSNNGradientStateNSObject>, and <NSCopying>\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(float *__nullable) \- \fBgamma\fP"
+.br
+.ti -1c
+.RI "(float *__nullable) \- \fBbeta\fP"
+.br
+.ti -1c
+.RI "(NSString *__nullable) \- \fBlabel\fP"
+.br
+.ti -1c
+.RI "(\fBMPSCNNNormalizationGammaAndBetaState\fP *__nullable) \- \fBupdateGammaAndBetaWithCommandBuffer:instanceNormalizationStateBatch:\fP"
+.br
+.ti -1c
+.RI "(BOOL) \- \fBupdateGammaAndBetaWithInstanceNormalizationStateBatch:\fP"
+.br
+.ti -1c
+.RI "(float) \- \fBepsilon\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeWithCoder:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBnumberOfFeatureChannels\fP"
+.br
+.ti -1c
+.RI "BOOL \fBsupportsSecureCoding\fP"
+.br
+.in -1c
+.SH "Method Documentation"
+.PP 
+.SS "\- (float* __nullable \fBMPSCNNInstanceNormalizationDataSource\fP) beta \fC [required]\fP"
+Return a pointer to an array containing the beta terms\&. 
+.SS "\- (nonnull instancetype \fBMPSCNNInstanceNormalizationDataSource\fP) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device"
+Optional copy method to create a copy of the data source for use with a new device\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP The NSZone on which to allocate\&. 
+.br
+\fIdevice\fP The device where the kernel which uses this data source will be used\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to a copy of this data source\&. 
+.RE
+.PP
+
+.SS "\- (void \fBMPSCNNInstanceNormalizationDataSource\fP) encodeWithCoder: (NSCoder *__nonnull) aCoder\fC [optional]\fP"
+Optional \fBNSSecureCoding\fP compatibility\&. 
+.SS "\- (float \fBMPSCNNInstanceNormalizationDataSource\fP) epsilon \fC [optional]\fP"
+An optional tiny number to use to maintain numerical stability\&.  output_image = (input_image - mean[c]) * gamma[c] / sqrt(variance[c] + epsilon) + beta[c]; Defalt value if method unavailable: FLT_MIN 
+.SS "\- (float* __nullable \fBMPSCNNInstanceNormalizationDataSource\fP) gamma \fC [required]\fP"
+Return a pointer to an array containing the gamma terms\&. 
+.SS "\- (nullable instancetype \fBMPSCNNInstanceNormalizationDataSource\fP) initWithCoder: (NSCoder *__nonnull) aDecoder\fC [optional]\fP"
+
+.SS "\- (NSString* __nullable \fBMPSCNNInstanceNormalizationDataSource\fP) label "
+\fBA\fP label that is transferred to the instance normalization filter at init time  Overridden by a \fBMPSCNNInstanceNormalizationNode\&.label\fP if it is non-nil\&. 
+.SS "\- (\fBMPSCNNNormalizationGammaAndBetaState\fP * __nullable \fBMPSCNNInstanceNormalizationDataSource\fP) updateGammaAndBetaWithCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNInstanceNormalizationGradientStateBatch\fP *__nonnull) instanceNormalizationStateBatch\fC [optional]\fP"
+Compute new gamma and beta values using current values and gradients contained within a MPSCNNInstanceNormalizationStateBatch\&.  This is for use in the context of training a network within a \fBMPSNNGraph\fP\&. If you are writing your own graph using the low level interface or aren't training instance normalization it isn't needed\&.
+.PP
+In this mathod, you should perform the update on a GPU, because at the time it is called the data isn't in the state objects yet and the CPU can't do the work\&. You should not attempt to update the \fBMPSCNNInstanceNormalization\fP kernel directly with the results\&. The state object returned from the function will be used for that\&. \fBA\fP batch of states will be passed in\&. You should accumulate the gradients and then update the weights\&.
+.PP
+This operation is expected to also decrement the read count of instanceNormalizationStateBatch by 1, if the states are temporary\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer on which to encode the update\&.
+.br
+\fIinstanceNormalizationStateBatch\fP \fBA\fP batch of \fBMPSCNNInstanceNormalizationGradientState\fP objects containing current weights and gradients\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP \fBMPSCNNNormalizationGammaAndBetaState\fP object containing updated gamma and beta values\&. If NULL no update was performed\&. 
+.RE
+.PP
+
+.SS "\- (BOOL \fBMPSCNNInstanceNormalizationDataSource\fP) updateGammaAndBetaWithInstanceNormalizationStateBatch: (\fBMPSCNNInstanceNormalizationGradientStateBatch\fP *__nonnull) instanceNormalizationStateBatch\fC [optional]\fP"
+Compute new gamma and beta values using current values and gradients contained within a batch MPSCNNInstanceNormalizationState objects\&. Perform the update on the CPU\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIinstanceNormalizationStateBatch\fP \fBA\fP batch of \fBMPSCNNInstanceNormalizationGradientState\fP objects containing current gamma and beta values and gradients\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP boolean value indicating if the update was performed\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- (NSUInteger \fBMPSCNNInstanceNormalizationDataSource\fP) numberOfFeatureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- (BOOL \fBMPSCNNInstanceNormalizationDataSource\fP) supportsSecureCoding\fC [read]\fP, \fC [optional]\fP, \fC [atomic]\fP, \fC [assign]\fP"
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

@@ -1,0 +1,216 @@
+'\" te  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:45
+.ds Dm 1 May 22 14:
+.ds Xs 26060     9
+.TH GLFEEDBACKBUFFER 3G
+.SH NAME
+.B "glFeedbackBuffer
+\- controls feedback mode
+
+.SH C SPECIFICATION
+void \f3glFeedbackBuffer\fP(
+GLsizei \fIsize\fP,
+.nf
+.ta \w'\f3void \fPglFeedbackBuffer( 'u
+	GLenum \fItype\fP,
+	GLfloat \fI*buffer\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fIbuffer\fP\ \ 'u 
+\f2size\fP
+Specifies the maximum number of values that can be written into \f2buffer\fP.
+.TP
+\f2type\fP 
+Specifies a symbolic constant that describes the information
+that will be returned for each vertex.
+\%\f3GL_2D\fP,
+\%\f3GL_3D\fP,
+\%\f3GL_3D_COLOR\fP,
+\%\f3GL_3D_COLOR_TEXTURE\fP, and
+\%\f3GL_4D_COLOR_TEXTURE\fP are accepted.
+.TP
+\f2buffer\fP
+Returns the feedback data.
+.SH DESCRIPTION
+The \%\f3glFeedbackBuffer\fP function controls feedback.
+Feedback, like selection, is a GL mode.
+The mode is selected by calling
+\%\f3glRenderMode\fP with \%\f3GL_FEEDBACK\fP.
+When the GL is in feedback mode,
+no pixels are produced by rasterization.
+Instead, information about primitives that would have been
+rasterized is fed back to the application using the GL.
+.P
+\%\f3glFeedbackBuffer\fP has three arguments:
+\f2buffer\fP is a pointer to an array of floating-point values
+into which feedback information is placed.
+\f2size\fP indicates the size of the array.
+\f2type\fP is a symbolic constant describing the information
+that is fed back for each vertex.
+\%\f3glFeedbackBuffer\fP must be issued before feedback mode is enabled
+(by calling \%\f3glRenderMode\fP with argument \%\f3GL_FEEDBACK\fP).
+Setting \%\f3GL_FEEDBACK\fP without establishing the feedback buffer,
+or calling \%\f3glFeedbackBuffer\fP while the GL is in feedback mode,
+is an error.
+.P
+When \%\f3glRenderMode\fP is called while in feedback mode, it returns the number of entries
+placed in the feedback array, and resets the feedback array pointer to the base
+of the feedback buffer. The returned value never exceeds \f2size\fP. If the feedback
+data required more room than was available in \f2buffer\fP, 
+\%\f3glRenderMode\fP returns a negative value.
+To take the GL out of feedback mode, call
+\%\f3glRenderMode\fP with a parameter value other than \%\f3GL_FEEDBACK\fP.
+.P
+While in feedback mode,
+each primitive, bitmap, or pixel rectangle that would be rasterized
+generates a block of values that are copied into the feedback array.
+If doing so would cause the number of entries to exceed the maximum,
+the block is partially written so as to fill the array
+(if there is any room left at all),
+and an overflow flag is set.
+Each block begins with a code indicating the primitive type,
+followed by values that describe the primitive's vertices and
+associated data.
+Entries are also written for bitmaps and pixel rectangles.
+Feedback occurs after polygon culling and \%\f3glPolygonMode\fP interpretation
+of polygons has taken place,
+so polygons that are culled are not returned in the feedback buffer.
+It can also occur after polygons with more than three edges are broken up
+into triangles,
+if the GL implementation renders polygons by performing this decomposition.
+.P
+The \%\f3glPassThrough\fP command can be used to insert a marker
+into the feedback buffer.
+See \%\f3glPassThrough\fP.
+.P
+Following is the grammar for the blocks of values written
+into the feedback buffer.
+Each primitive is indicated with a unique identifying value
+followed by some number of vertices.
+Polygon entries include an integer value indicating how many vertices follow.
+A vertex is fed back as some number of floating-point values,
+as determined by \f2type\fP.
+Colors are fed back as four values in RGBA mode and one value
+in color index mode. 
+.RS
+.na
+.sp
+feedbackList \(<- feedbackItem feedbackList | feedbackItem
+.sp
+feedbackItem \(<- point | lineSegment | polygon | bitmap | pixelRectangle | passThru
+.sp
+point \(<- \%\f3GL_POINT_TOKEN\fP vertex
+.sp
+lineSegment \(<- \%\f3GL_LINE_TOKEN\fP vertex vertex | \%\f3GL_LINE_RESET_TOKEN\fP vertex vertex
+.sp
+polygon \(<- \%\f3GL_POLYGON_TOKEN\fP n polySpec
+.sp
+polySpec \(<- polySpec vertex | vertex vertex vertex
+.sp
+bitmap \(<- \%\f3GL_BITMAP_TOKEN\fP vertex 
+.sp
+pixelRectangle \(<- \%\f3GL_DRAW_PIXEL_TOKEN\fP vertex | \%\f3GL_COPY_PIXEL_TOKEN\fP vertex
+.sp
+passThru \(<- \%\f3GL_PASS_THROUGH_TOKEN\fP value
+.sp
+vertex \(<- 2d | 3d | 3dColor | 3dColorTexture | 4dColorTexture
+.sp
+2d \(<- value value
+.sp
+3d \(<- value value value
+.sp
+3dColor  \(<- value value value color
+.sp
+3dColorTexture \(<- value value value color tex
+.sp
+4dColorTexture \(<- value value value value color tex
+.sp
+color \(<- rgba | index
+.sp
+rgba \(<- value value value value
+.sp
+index \(<- value
+.sp
+tex \(<- value value value value
+.sp
+.RE
+.P
+.I value
+is a floating-point number, 
+and
+.I n
+is a floating-point integer giving the number of vertices in the polygon.
+\%\f3GL_POINT_TOKEN\fP, 
+\%\f3GL_LINE_TOKEN\fP,
+\%\f3GL_LINE_RESET_TOKEN\fP,
+\%\f3GL_POLYGON_TOKEN\fP,
+\%\f3GL_BITMAP_TOKEN\fP,
+\%\f3GL_DRAW_PIXEL_TOKEN\fP,
+\%\f3GL_COPY_PIXEL_TOKEN\fP and
+\%\f3GL_PASS_THROUGH_TOKEN\fP are symbolic floating-point constants.
+\%\f3GL_LINE_RESET_TOKEN\fP is returned whenever the line stipple pattern
+is reset.
+The data returned as a vertex depends on the feedback \f2type\fP.
+.P
+The following table gives the correspondence between \f2type\fP
+and the number of values per vertex.
+\f2k\fP is 1 in color index mode and 4 in RGBA mode.
+.sp
+.ne
+
+.Bd -literal
+ Type                   Coords      Color   Tex     Total # of Values
+ GL_2D					x, y                        2
+ GL_3D					x, y, z                     3
+ GL_3D_COLOR			x, y, z     k               3+k
+ GL_3D_COLOR_TEXTURE 	x, y, z     k       4       7+k
+ GL_4D_COLOR_TEXTURE 	x, y, z, w  k       4       8+k
+.Ed
+
+.P
+Feedback vertex coordinates are in window coordinates,
+except \f2w\fP,
+which is in clip coordinates.
+Feedback colors are lighted, if lighting is enabled.
+Feedback texture coordinates are generated,
+if texture coordinate generation is enabled.
+They are always transformed by the texture matrix.
+.SH NOTES
+\%\f3glFeedbackBuffer\fP, when used in a display list, is not compiled into the display list 
+but is executed immediately. 
+.P
+When the \%\f3GL_ARB_multitexture\fP extension is supported, \%\f3glFeedbackBuffer\fP
+returns only the texture coordinates of texture unit \%\f3GL_TEXTURE0_ARB\fP.
+.SH ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated if \f2type\fP is not an accepted value.
+.P
+\%\f3GL_INVALID_VALUE\fP is generated if \f2size\fP is negative.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glFeedbackBuffer\fP is called while the
+render mode is \%\f3GL_FEEDBACK\fP,
+or if \%\f3glRenderMode\fP is called with argument \%\f3GL_FEEDBACK\fP before
+\%\f3glFeedbackBuffer\fP is called at least once.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glFeedbackBuffer\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_RENDER_MODE\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FEEDBACK_BUFFER_POINTER\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FEEDBACK_BUFFER_SIZE\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FEEDBACK_BUFFER_TYPE\fP
+.SH SEE ALSO
+\%\f3glBegin\fP,
+\%\f3glLineStipple\fP,
+\%\f3glPassThrough\fP,
+\%\f3glPolygonMode\fP,
+\%\f3glRenderMode\fP,
+\%\f3glSelectBuffer\fP

@@ -1,0 +1,269 @@
+.TH "MPSNNOptimizerStochasticGradientDescent" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSNNOptimizerStochasticGradientDescent
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSNNOptimizers\&.h>\fP
+.PP
+Inherits \fBMPSNNOptimizer\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:learningRate:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:momentumScale:useNestrovMomentum:optimizerDescriptor:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:inputGradientVector:inputValuesVector:inputMomentumVector:resultValuesVector:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputMomentumVectors:resultState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:batchNormalizationState:inputMomentumVectors:resultState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputMomentumVectors:resultState:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "float \fBmomentumScale\fP"
+.br
+.ti -1c
+.RI "BOOL \fBuseNestrovMomentum\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+The \fBMPSNNOptimizerStochasticGradientDescent\fP performs a gradient descent with an optional momentum Update RMSProp is also known as root mean square propagation\&.
+.PP
+useNestrov == NO: m[t] = momentumScale * m[t-1] + learningRate * g variable = variable - m[t]
+.PP
+useNestrov == YES: m[t] = momentumScale * m[t-1] + g variable = variable - (learningRate * (g + m[t] * momentumScale))
+.PP
+.PP
+.nf
+        where,
+          g    is gradient of error wrt variable
+          m[t] is momentum of gradients it is a state we keep updating every update iteration.fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationGradientState(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationSourceState(nullable NSArray< \fBMPSVector\fP * > *) inputMomentumVectors(nonnull \fBMPSCNNNormalizationGammaAndBetaState\fP *) resultState"
+Encode an \fBMPSNNOptimizerStochasticGradientDescent\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIbatchNormalizationGradientState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with gradients for this update\&. 
+.br
+\fIbatchNormalizationSourceState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with original gamma/beta for this update\&. 
+.br
+\fIinputMomentumVectors\fP An array \fBMPSVector\fP object which specifies the gradient momentum vectors which will be updated and overwritten\&. The index 0 corresponds to gamma, index 1 corresponds to beta, array can be of size 1 in which case beta won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNNormalizationGammaAndBetaState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied
+.PP
+.PP
+.nf
+        useNestrov == NO:
+            m[t]     = momentumScale * m[t-1] + learningRate * g
+            variable = variable - m[t]
+
+        useNestrov == YES:
+            m[t]     = momentumScale * m[t-1] + g
+            variable = variable - (learningRate * (g + m[t] * momentumScale))
+
+        inputMomentumVector == nil
+            variable = variable - (learningRate * g)
+
+        where,
+          g    is gradient of error wrt variable
+          m[t] is momentum of gradients it is a state we keep updating every update iteration.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState(nullable NSArray< \fBMPSVector\fP * > *) inputMomentumVectors(nonnull \fBMPSCNNNormalizationGammaAndBetaState\fP *) resultState"
+Encode an \fBMPSNNOptimizerStochasticGradientDescent\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIbatchNormalizationState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with gradients and original gamma/beta for this update\&. 
+.br
+\fIinputMomentumVectors\fP An array \fBMPSVector\fP object which specifies the gradient momentum vectors which will be updated and overwritten\&. The index 0 corresponds to gamma, index 1 corresponds to beta, array can be of size 1 in which case beta won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNNormalizationGammaAndBetaState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied
+.PP
+.PP
+.nf
+        useNestrov == NO:
+            m[t]     = momentumScale * m[t-1] + learningRate * g
+            variable = variable - m[t]
+
+        useNestrov == YES:
+            m[t]     = momentumScale * m[t-1] + g
+            variable = variable - (learningRate * (g + m[t] * momentumScale))
+
+        inputMomentumVector == nil
+            variable = variable - (learningRate * g)
+
+        where,
+          g    is gradient of error wrt variable
+          m[t] is momentum of gradients it is a state we keep updating every update iteration.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNConvolutionGradientState\fP *__nonnull) convolutionGradientState(\fBMPSCNNConvolutionWeightsAndBiasesState\fP *__nonnull) convolutionSourceState(nullable NSArray< \fBMPSVector\fP * > *) inputMomentumVectors(nonnull \fBMPSCNNConvolutionWeightsAndBiasesState\fP *) resultState"
+Encode an \fBMPSNNOptimizerStochasticGradientDescent\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIconvolutionGradientState\fP \fBA\fP valid \fBMPSCNNConvolutionGradientState\fP object which specifies the input state with gradients for this update\&. 
+.br
+\fIconvolutionSourceState\fP \fBA\fP valid \fBMPSCNNConvolutionWeightsAndBiasesState\fP object which specifies the input state with values to be updated\&. 
+.br
+\fIinputMomentumVectors\fP An array \fBMPSVector\fP object which specifies the gradient momentum vectors which will be updated and overwritten\&. The index 0 corresponds to weights, index 1 corresponds to biases, array can be of size 1 in which case biases won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNConvolutionWeightsAndBiasesState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied
+.PP
+.PP
+.nf
+        useNestrov == NO:
+            m[t]     = momentumScale * m[t-1] + learningRate * g
+            variable = variable - m[t]
+
+        useNestrov == YES:
+            m[t]     = momentumScale * m[t-1] + g
+            variable = variable - (learningRate * (g + m[t] * momentumScale))
+
+        inputMomentumVector == nil
+            variable = variable - (learningRate * g)
+
+        where,
+          g    is gradient of error wrt variable
+          m[t] is momentum of gradients it is a state we keep updating every update iteration.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(nonnull \fBMPSVector\fP *) inputGradientVector(nonnull \fBMPSVector\fP *) inputValuesVector(nullable \fBMPSVector\fP *) inputMomentumVector(nonnull \fBMPSVector\fP *) resultValuesVector"
+Encode an \fBMPSNNOptimizerStochasticGradientDescent\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIinputGradientVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the input vector of gradients for this update\&. 
+.br
+\fIinputValuesVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the input vector of values to be updated\&. 
+.br
+\fIinputMomentumVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the gradient momentum vector which will be updated and overwritten\&. 
+.br
+\fIresultValuesVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the resultValues vector which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied
+.PP
+.PP
+.nf
+        useNestrov == NO:
+            m[t]     = momentumScale * m[t-1] + learningRate * g
+            variable = variable - m[t]
+
+        useNestrov == YES:
+            m[t]     = momentumScale * m[t-1] + g
+            variable = variable - (learningRate * (g + m[t] * momentumScale))
+
+        inputMomentumVector == nil
+            variable = variable - (learningRate * g)
+
+        where,
+          g    is gradient of error wrt variable
+          m[t] is momentum of gradients it is a state we keep updating every update iteration.fi
+.PP
+ 
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSNNOptimizer\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(float) learningRate"
+Convenience initialization for the momentum update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&. 
+.br
+\fIlearningRate\fP The learningRate which will be applied
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSNNOptimizerStochasticGradientDescent\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(float) momentumScale(BOOL) useNestrovMomentum(nonnull \fBMPSNNOptimizerDescriptor\fP *) optimizerDescriptor"
+Full initialization for the momentum update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&. 
+.br
+\fImomentumScale\fP The momentumScale to update momentum for values array 
+.br
+\fIuseNestrovMomentum\fP Use the Nestrov style momentum update 
+.br
+\fIoptimizerDescriptor\fP The optimizerDescriptor which will have a bunch of properties to be applied
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid MPSNNOptimizerMomentum object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- momentumScale\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The momentumScale at which we update momentum for values array  Default value is 0\&.0 
+.SS "\- useNestrovMomentum\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Nestrov momentum is considered an improvement on the usual momentum update  Default value is NO 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

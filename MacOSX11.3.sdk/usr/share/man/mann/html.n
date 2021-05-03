@@ -1,0 +1,690 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/html/html.man' by tcllib/doctools with format 'nroff'
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "html" n 1.4 html "HTML Generation"
+.BS
+.SH NAME
+html \- Procedures to generate HTML structures
+.SH SYNOPSIS
+package require \fBTcl  8.2\fR
+.sp
+package require \fBhtml  ?1.4?\fR
+.sp
+\fB::html::author\fR \fIauthor\fR
+.sp
+\fB::html::bodyTag\fR \fIargs\fR
+.sp
+\fB::html::cell\fR \fIparam value\fR ?\fItag\fR?
+.sp
+\fB::html::checkbox\fR \fIname value\fR
+.sp
+\fB::html::checkSet\fR \fIkey sep list\fR
+.sp
+\fB::html::checkValue\fR \fIname\fR ?\fIvalue\fR?
+.sp
+\fB::html::closeTag\fR
+.sp
+\fB::html::default\fR \fIkey\fR ?\fIparam\fR?
+.sp
+\fB::html::description\fR \fIdescription\fR
+.sp
+\fB::html::end\fR
+.sp
+\fB::html::eval\fR \fIarg\fR ?\fIargs\fR?
+.sp
+\fB::html::extractParam\fR \fIparam key\fR ?\fIvarName\fR?
+.sp
+\fB::html::font\fR \fIargs\fR
+.sp
+\fB::html::for\fR \fIstart test next body\fR
+.sp
+\fB::html::foreach\fR \fIvarlist1 list1\fR ?\fIvarlist2 list2 ...\fR? \fIbody\fR
+.sp
+\fB::html::formValue\fR \fIname\fR ?\fIdefvalue\fR?
+.sp
+\fB::html::getFormInfo\fR \fIargs\fR
+.sp
+\fB::html::getTitle\fR
+.sp
+\fB::html::h\fR \fIlevel string\fR ?\fIparam\fR?
+.sp
+\fB::html::h1\fR \fIstring\fR ?\fIparam\fR?
+.sp
+\fB::html::h2\fR \fIstring\fR ?\fIparam\fR?
+.sp
+\fB::html::h3\fR \fIstring\fR ?\fIparam\fR?
+.sp
+\fB::html::h4\fR \fIstring\fR ?\fIparam\fR?
+.sp
+\fB::html::h5\fR \fIstring\fR ?\fIparam\fR?
+.sp
+\fB::html::h6\fR \fIstring\fR ?\fIparam\fR?
+.sp
+\fB::html::hdrRow\fR \fIargs\fR
+.sp
+\fB::html::head\fR \fItitle\fR
+.sp
+\fB::html::headTag\fR \fIstring\fR
+.sp
+\fB::html::html_entities\fR \fIstring\fR
+.sp
+\fB::html::if\fR \fIexpr1 body1\fR ?\fBelseif\fR \fIexpr2 body2 ...\fR? ?\fBelse\fR \fIbodyN\fR?
+.sp
+\fB::html::init\fR ?\fIlist\fR?
+.sp
+\fB::html::keywords\fR \fIargs\fR
+.sp
+\fB::html::mailto\fR \fIemail\fR ?\fIsubject\fR?
+.sp
+\fB::html::meta\fR \fIargs\fR
+.sp
+\fB::html::minorList\fR \fIlist\fR ?\fIordered\fR?
+.sp
+\fB::html::minorMenu\fR \fIlist\fR ?\fIsep\fR?
+.sp
+\fB::html::nl2br\fR \fIstring\fR
+.sp
+\fB::html::openTag\fR \fItag\fR ?\fIparam\fR?
+.sp
+\fB::html::paramRow\fR \fIlist\fR ?\fIrparam\fR? ?\fIcparam\fR?
+.sp
+\fB::html::passwordInput\fR ?\fIname\fR?
+.sp
+\fB::html::passwordInputRow\fR \fIlabel\fR ?\fIname\fR?
+.sp
+\fB::html::quoteFormValue\fR \fIvalue\fR
+.sp
+\fB::html::radioSet\fR \fIkey sep list\fR
+.sp
+\fB::html::radioValue\fR \fIname value\fR
+.sp
+\fB::html::refresh\fR \fIseconds url\fR
+.sp
+\fB::html::row\fR \fIargs\fR
+.sp
+\fB::html::select\fR \fIname param choices\fR ?\fIcurrent\fR?
+.sp
+\fB::html::selectPlain\fR \fIname param choices\fR ?\fIcurrent\fR?
+.sp
+\fB::html::set\fR \fIvar val\fR
+.sp
+\fB::html::submit\fR \fIlabel\fR ?\fIname\fR?
+.sp
+\fB::html::tableFromArray\fR \fIarrname\fR ?\fIparam\fR? ?\fIpat\fR?
+.sp
+\fB::html::tableFromList\fR \fIquerylist\fR ?\fIparam\fR?
+.sp
+\fB::html::textarea\fR \fIname\fR ?\fIparam\fR? ?\fIcurrent\fR?
+.sp
+\fB::html::textInput\fR \fIname value args\fR
+.sp
+\fB::html::textInputRow\fR \fIlabel name value args\fR
+.sp
+\fB::html::varEmpty\fR \fIname\fR
+.sp
+\fB::html::while\fR \fItest body\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+The package \fBhtml\fR provides commands that generate HTML.
+These commands typically return an HTML string as their result. In
+particular, they do not output their result to \fBstdout\fR.
+.PP
+The command \fB::html::init\fR should be called early to initialize
+the module.  You can also use this procedure to define default values
+for HTML tag parameters.
+.TP
+\fB::html::author\fR \fIauthor\fR
+\fISide effect only\fR.  Call this before \fB::html::head\fR to
+define an author for the page.  The author is noted in a comment in
+the HEAD section.
+.TP
+\fB::html::bodyTag\fR \fIargs\fR
+Generate a \fIbody\fR tag.  The tag parameters are taken from \fIargs\fR or
+from the body.* attributes define with \fB::html::init\fR.
+.TP
+\fB::html::cell\fR \fIparam value\fR ?\fItag\fR?
+Generate a \fItd\fR (or \fIth\fR) tag, a value, and a closing
+\fItd\fR (or \fIth\fR) tag. The
+tag parameters come from \fIparam\fR or TD.* attributes defined with
+\fB::html::init\fR.  This uses \fB::html::font\fR to insert a standard
+\fIfont\fR tag into the table cell. The \fItag\fR argument defaults to "td".
+.TP
+\fB::html::checkbox\fR \fIname value\fR
+Generate a \fIcheckbox\fR form element with the specified name and value.
+This uses \fB::html::checkValue\fR.
+.TP
+\fB::html::checkSet\fR \fIkey sep list\fR
+Generate a set of \fIcheckbox\fR form elements and associated labels.  The
+\fIlist\fR should contain an alternating list of labels and values.
+This uses \fB::html::checkbox\fR. All the \fIcheckbox\fR buttons share the
+same \fIkey\fR for their name. The \fIsep\fR is text used to separate
+the elements.
+.TP
+\fB::html::checkValue\fR \fIname\fR ?\fIvalue\fR?
+Generate the "name=\fIname\fR value=\fIvalue\fR for a \fIcheckbox\fR form
+element.  If the CGI variable \fIname\fR has the value \fIvalue\fR,
+then SELECTED is added to the return value. \fIvalue\fR defaults to
+"1".
+.TP
+\fB::html::closeTag\fR
+Pop a tag off the stack created by \fB::html::openTag\fR and generate
+the corresponding close tag (e.g., </body>).
+.TP
+\fB::html::default\fR \fIkey\fR ?\fIparam\fR?
+This procedure is used by \fB::html::tagParam\fR to generate the name,
+value list of parameters for a tag.  The \fB::html::default\fR
+procedure is used to generate default values for those items not
+already in \fIparam\fR.  If the value identified by \fIkey\fR matches
+a value in \fIparam\fR then this procedure returns the empty string.
+Otherwise, it returns a "parameter=value" string for a form element
+identified by \fIkey\fR.  The \fIkey\fR has the form "tag.parameter"
+(e.g., body.bgcolor).  Use \fB::html::init\fR to register default
+values. \fIparam\fR defaults to the empty string.
+.TP
+\fB::html::description\fR \fIdescription\fR
+\fISide effect only\fR.  Call this before \fB::html::head\fR to
+define a description \fImeta\fR tag for the page.  This tag is generated
+later in the call to \fB::html::head\fR.
+.TP
+\fB::html::end\fR
+Pop all open tags from the stack and generate the corresponding close
+HTML tags, (e.g., </body></html>).
+.TP
+\fB::html::eval\fR \fIarg\fR ?\fIargs\fR?
+This procedure is similar to the built-in Tcl \fBeval\fR command.  The
+only difference is that it returns "" so it can be called from an HTML
+template file without appending unwanted results.
+.TP
+\fB::html::extractParam\fR \fIparam key\fR ?\fIvarName\fR?
+This is a parsing procedure that extracts the value of \fIkey\fR from
+\fIparam\fR, which is a HTML-style "name=quotedvalue" list.
+\fIvarName\fR is used as the name of a Tcl variable that is changed to
+have the value found in the parameters.  The function returns 1 if the
+parameter was found in \fIparam\fR, otherwise it returns 0.  If the
+\fIvarName\fR is not specified, then \fIkey\fR is used as the variable
+name.
+.TP
+\fB::html::font\fR \fIargs\fR
+Generate a standard \fIfont\fR tag.  The parameters to the tag are taken
+from \fIargs\fR and the HTML defaults defined with \fB::html::init\fR.
+.TP
+\fB::html::for\fR \fIstart test next body\fR
+This procedure is similar to the built-in Tcl \fBfor\fR control
+structure.  Rather than evaluating the body, it returns the subst'ed
+\fIbody\fR. Each iteration of the loop causes another string to be
+concatenated to the result value.
+.TP
+\fB::html::foreach\fR \fIvarlist1 list1\fR ?\fIvarlist2 list2 ...\fR? \fIbody\fR
+This procedure is similar to the built-in Tcl \fBforeach\fR control
+structure.  Rather than evaluating the body, it returns the subst'ed
+\fIbody\fR.  Each iteration of the loop causes another string to be
+concatenated to the result value.
+.TP
+\fB::html::formValue\fR \fIname\fR ?\fIdefvalue\fR?
+Return a name and value pair, where the value is initialized from
+existing CGI data, if any.  The result has this form:
+.sp
+.nf
+
+  name="fred" value="freds value"
+
+.fi
+.TP
+\fB::html::getFormInfo\fR \fIargs\fR
+Generate hidden fields to capture form values.  If \fIargs\fR is
+empty, then hidden fields are generated for all CGI values.  Otherwise
+args is a list of string match patterns for form element names.
+.TP
+\fB::html::getTitle\fR
+Return the title string, with out the surrounding \fItitle\fR tag,
+set with a previous call to \fB::html::title\fR.
+.TP
+\fB::html::h\fR \fIlevel string\fR ?\fIparam\fR?
+Generate a heading (e.g., \fIh\fBlevel\fR\fR) tag.  The \fIstring\fR is nested in the
+heading, and \fIparam\fR is used for the tag parameters.
+.TP
+\fB::html::h1\fR \fIstring\fR ?\fIparam\fR?
+Generate an \fIh1\fR tag.  See \fB::html::h\fR.
+.TP
+\fB::html::h2\fR \fIstring\fR ?\fIparam\fR?
+Generate an \fIh2\fR tag.  See \fB::html::h\fR.
+.TP
+\fB::html::h3\fR \fIstring\fR ?\fIparam\fR?
+Generate an \fIh3\fR tag.  See \fB::html::h\fR.
+.TP
+\fB::html::h4\fR \fIstring\fR ?\fIparam\fR?
+Generate an \fIh4\fR tag.  See \fB::html::h\fR.
+.TP
+\fB::html::h5\fR \fIstring\fR ?\fIparam\fR?
+Generate an \fIh5\fR tag.  See \fB::html::h\fR.
+.TP
+\fB::html::h6\fR \fIstring\fR ?\fIparam\fR?
+Generate an \fIh6\fR tag.  See \fB::html::h\fR.
+.TP
+\fB::html::hdrRow\fR \fIargs\fR
+Generate a table row, including \fItr\fR and \fIth\fR tags.
+Each value in \fIargs\fR is place into its own table cell.
+This uses \fB::html::cell\fR.
+.TP
+\fB::html::head\fR \fItitle\fR
+Generate the \fIhead\fR section that includes the page \fItitle\fR.
+If previous calls have been made to
+\fB::html::author\fR,
+\fB::html::keywords\fR,
+\fB::html::description\fR,
+or
+\fB::html::meta\fR
+then additional tags are inserted into the \fIhead\fR section.
+This leaves an open \fIhtml\fR tag pushed on the stack with
+\fB::html::openTag\fR.
+.TP
+\fB::html::headTag\fR \fIstring\fR
+Save a tag for inclusion in the \fIhead\fR section generated by
+\fB::html::head\fR.  The \fIstring\fR is everything in the tag except
+the enclosing angle brackets, < >.
+.TP
+\fB::html::html_entities\fR \fIstring\fR
+This command replaces all special characters in the \fIstring\fR with
+their HTML entities and returns the modified text.
+.TP
+\fB::html::if\fR \fIexpr1 body1\fR ?\fBelseif\fR \fIexpr2 body2 ...\fR? ?\fBelse\fR \fIbodyN\fR?
+This procedure is similar to the built-in Tcl \fBif\fR control
+structure.  Rather than evaluating the body of the branch that is
+taken, it returns the subst'ed \fIbody\fR.  Note that the syntax is
+slightly more restrictive than that of the built-in Tcl \fBif\fR
+control structure.
+.TP
+\fB::html::init\fR ?\fIlist\fR?
+\fB::html::init\fR accepts a Tcl-style name-value list that defines
+values for items with a name of the form "tag.parameter".  For
+example, a default with key "body.bgcolor" defines the background
+color for the \fIbody\fR tag.
+.TP
+\fB::html::keywords\fR \fIargs\fR
+\fISide effect only\fR.  Call this before \fB::html::head\fR to
+define a keyword \fImeta\fR tag for the page.  The \fImeta\fR tag
+is included in the result of \fB::html::head\fR.
+.TP
+\fB::html::mailto\fR \fIemail\fR ?\fIsubject\fR?
+Generate a hypertext link to a mailto: URL.
+.TP
+\fB::html::meta\fR \fIargs\fR
+\fISide effect only\fR.  Call this before \fB::html::head\fR to
+define a \fImeta\fR tag for the page.  The \fIargs\fR is a Tcl-style name,
+value list that is used for the name= and value= parameters for the
+\fImeta\fR tag.  The \fImeta\fR tag is included in the result of
+\fB::html::head\fR.
+.TP
+\fB::html::minorList\fR \fIlist\fR ?\fIordered\fR?
+Generate an ordered or unordered list of links.  The \fIlist\fR is a
+Tcl-style name, value list of labels and urls for the links.
+\fIordered\fR is a boolean used to choose between an ordered or
+unordered list. It defaults to \fBfalse\fR.
+.TP
+\fB::html::minorMenu\fR \fIlist\fR ?\fIsep\fR?
+Generate a series of hypertext links.  The \fIlist\fR is a Tcl-style
+name, value list of labels and urls for the links.  The \fIsep\fR is
+the text to put between each link. It defaults to " | ".
+.TP
+\fB::html::nl2br\fR \fIstring\fR
+This command replaces all line-endings in the \fIstring\fR with a
+\fIbr\fR tag and returns the modified text.
+.TP
+\fB::html::openTag\fR \fItag\fR ?\fIparam\fR?
+Push \fItag\fR onto a stack and generate the opening tag for
+\fItag\fR. Use \fB::html::closeTag\fR to pop the tag from the
+stack. The second argument provides any tag arguments, as a
+list whose elements are formatted to be in the form
+"\fBkey\fR=\fBvalue\fR".
+.TP
+\fB::html::paramRow\fR \fIlist\fR ?\fIrparam\fR? ?\fIcparam\fR?
+Generate a table row, including \fItr\fR and \fItd\fR tags. Each value in
+\fIlist\fR is placed into its own table cell. This uses
+\fB::html::cell\fR. The value of \fIrparam\fR is used as parameter for
+the \fItr\fR tag. The value of \fIcparam\fR is passed to \fB::html::cell\fR
+as parameter for the \fItd\fR tags.
+.TP
+\fB::html::passwordInput\fR ?\fIname\fR?
+Generate an \fIinput\fR tag of type \fIpassword\fR. The \fIname\fR defaults to
+"password".
+.TP
+\fB::html::passwordInputRow\fR \fIlabel\fR ?\fIname\fR?
+Format a table row containing a label and an \fIinput\fR tag of type
+\fIpassword\fR. The \fIname\fR defaults to "password".
+.TP
+\fB::html::quoteFormValue\fR \fIvalue\fR
+Quote special characters in \fIvalue\fR by replacing them with HTML
+entities for quotes, ampersand, and angle brackets.
+.TP
+\fB::html::radioSet\fR \fIkey sep list\fR
+Generate a set of \fIinput\fR tags of type \fIradio\fR and an associated text
+label.  All the radio buttons share the same \fIkey\fR for their name.
+The \fIsep\fR is text used to separate the elements.  The \fIlist\fR
+is a Tcl-style label, value list.
+.TP
+\fB::html::radioValue\fR \fIname value\fR
+Generate the "name=\fIname\fR value=\fIvalue\fR for a \fIradio\fR form
+element.  If the CGI variable \fIname\fR has the value \fIvalue\fR,
+then SELECTED is added to the return value.
+.TP
+\fB::html::refresh\fR \fIseconds url\fR
+Set up a refresh \fImeta\fR tag. Call this before \fB::html::head\fR and the
+HEAD section will contain a \fImeta\fR tag that causes the document to
+refresh in \fIseconds\fR seconds.  The \fIurl\fR is optional.  If
+specified, it specifies a new page to load after the refresh interval.
+.TP
+\fB::html::row\fR \fIargs\fR
+Generate a table row, including \fItr\fR and \fItd\fR tags.  Each value in
+\fIargs\fR is place into its own table cell. This uses
+\fB::html::cell\fR. Ignores any default information set up via
+\fB::html::init\fR.
+.TP
+\fB::html::select\fR \fIname param choices\fR ?\fIcurrent\fR?
+Generate a \fIselect\fR form element and nested \fIoption\fR tags. The \fIname\fR
+and \fIparam\fR are used to generate the \fIselect\fR tag. The \fIchoices\fR
+list is a Tcl-style name, value list.
+.TP
+\fB::html::selectPlain\fR \fIname param choices\fR ?\fIcurrent\fR?
+Like \fB::html::select\fR except that \fIchoices\fR is a Tcl list of
+values used for the \fIoption\fR tags.  The label and the value for each
+\fIoption\fR are the same.
+.TP
+\fB::html::set\fR \fIvar val\fR
+This procedure is similar to the built-in Tcl \fBset\fR command.  The
+main difference is that it returns "" so it can be called from an HTML
+template file without appending unwanted results.  The other
+difference is that it must take two arguments.
+.TP
+\fB::html::submit\fR \fIlabel\fR ?\fIname\fR?
+Generate an \fIinput\fR tag of type \fIsubmit\fR. \fIname\fR defaults to "submit".
+.TP
+\fB::html::tableFromArray\fR \fIarrname\fR ?\fIparam\fR? ?\fIpat\fR?
+Generate a two-column \fItable\fR and nested rows to display a Tcl array. The
+table gets a heading that matches the array name, and each generated row
+contains a name, value pair. The array names are sorted (\fBlsort\fR without
+special options). The argument \fIparam\fR is for the \fItable\fR tag and has
+to contain a pre-formatted string. The \fIpat\fR is a \fBstring match\fR
+pattern used to select the array elements to show in the table. It defaults to
+\fB*\fR, i.e. the whole array is shown.
+.TP
+\fB::html::tableFromList\fR \fIquerylist\fR ?\fIparam\fR?
+Generate a two-column \fItable\fR and nested rows to display \fIquerylist\fR,
+which is a Tcl dictionary. Each generated row contains a name, value pair. The
+information is shown in the same order as specified in the dictionary. The
+argument \fIparam\fR is for the \fItable\fR tag  and has to contain a
+pre-formatted string.
+.TP
+\fB::html::textarea\fR \fIname\fR ?\fIparam\fR? ?\fIcurrent\fR?
+Generate a \fItextarea\fR tag wrapped around its current values.
+.TP
+\fB::html::textInput\fR \fIname value args\fR
+Generate an \fIinput\fR form tag with type \fItext\fR.  This uses
+\fB::html::formValue\fR.  The args is any additional tag attributes
+you want to put into the \fIinput\fR tag.
+.TP
+\fB::html::textInputRow\fR \fIlabel name value args\fR
+Generate an \fIinput\fR form tag with type \fItext\fR formatted into a table row
+with an associated label.  The args is any additional tag attributes
+you want to put into the \fIinput\fR tag.
+.TP
+\fB::html::varEmpty\fR \fIname\fR
+This returns 1 if the named variable either does not exist or has the
+empty string for its value.
+.TP
+\fB::html::while\fR \fItest body\fR
+This procedure is similar to the built-in Tcl \fBwhile\fR control
+structure.  Rather than evaluating the body, it returns the subst'ed
+\fIbody\fR.  Each iteration of the loop causes another string to be
+concatenated to the result value.
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIhtml\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH "SEE ALSO"
+htmlparse, ncgi
+.SH KEYWORDS
+checkbox, checkbutton, form, html, radiobutton, table
+.SH CATEGORY
+CGI programming

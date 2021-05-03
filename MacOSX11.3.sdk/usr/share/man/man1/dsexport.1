@@ -1,0 +1,112 @@
+.\"
+.\" Copyright (c) 2006-2008 Apple Inc. All rights reserved.
+.\"
+.Dd 20 November 2008
+.Dt dsexport 1
+.Os
+.Sh NAME
+.Nm dsexport
+.Nd export records from OpenDirectory
+.Sh SYNOPSIS
+.Nm
+.Op Fl -N
+.Op Fl r Ar record_list
+.Op Fl e Ar exclude_attributes
+.Op Fl a Ar address Fl u Ar username Op Fl p Ar password
+.Ar output_file
+.Ar node_path
+.Ar record_type
+.Sh DESCRIPTION
+The
+.Nm
+utility exports records from Open Directory.
+.Pp
+The first argument is the path to the output file.
+If the file already exists it will be overwritten.
+.Pp
+The second argument is the path to the OpenDirectory node from which the records will be read.
+.Pp
+The third argument is the type of record to export.
+If the record type does not begin with
+.Sq dsRecTypeStandard:
+or
+.Sq dsRecTypeNative: ,
+the
+.Nm
+utility will determine if the node supports a standard attribute by the specified name;
+otherwise,
+.Nm
+will assume that the record type is native.
+A warning will be printed if the record type is converted.
+Standard record types can be listed using the following command:
+.Sq dscl -raw \&. -list / .
+.Sh OPTIONS
+The options are as follows:
+.Bl -tag -width indent
+.It Fl -N 
+Export all attributes, including native attributes.
+By default,
+.Nm
+only exports standard attributes.
+.It Fl r Ar record_list
+Comma-separated list of records to export from the specified node.
+The
+.Fl r
+option may be used multiple times to specify additional records to export.
+If the
+.Fl r
+option is not specified,
+.Nm
+will attempt to export all records.
+.It Fl e Ar exclude
+Comma-separated list of attributes that should not be exported.
+The
+.Fl e
+option may be used multiple times to specify additional attributes to exclude.
+The following attributes are always excluded:
+.Sq dsAttrTypeStandard:AppleMetaNodeLocation ,
+.Sq dsAttrTypeStandard:RecordType ,
+.Sq dsAttrTypeNative:objectClass .
+.It Fl a Ar address
+Address of the desired proxy machine.
+.It Fl u Ar username
+Username to use for the proxy connection
+.It Fl p Ar password
+Password to use for the proxy connection.
+If the
+.Fl p
+option is not specified,
+.Nm
+will interactively prompt for the password.
+.El
+.Sh NOTES
+When using an LDAP node, please be aware that
+.Nm
+can only export as many records as the LDAP server is willing to return.
+If the LDAP server has several thousand users, you may want to raise the maximum number of search results that the server returns.
+This can be done in Server Admin (my.server.com>OpenDirectory>Settings>Protocols tab).
+By default this is set to 11000 results.
+.Sh EXAMPLES
+Export all user records from the local node to
+.Sq export.out :
+.Pp
+.Dl $ dsexport export.out /Local/Default dsRecTypeStandard:Users
+.Pp
+Export the group records for
+.Sq admin
+and
+.Sq staff
+from the LDAPv3 node on a proxy machine
+.Sq proxy.machine.com :
+.Pp
+.Dl $ dsexport export.out /LDAPv3/127.0.0.1 dsRecTypeStandard:Groups -r admin,staff -a proxy.machine.com -u diradmin -p password
+.Pp
+Export augmented users from the LDAPv3 node, including native attributes but excluding the PasswordPlus attribute:
+.Pp
+.Dl $ dsexport augments.out /LDAPv3/127.0.0.1 dsRecTypeStandard:Augments --N -e \&"dsAttrTypeStandard:PasswordPlus"
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO 
+.Xr dscl 1 ,
+.Xr dsimport 1 ,
+.Xr DirectoryService 8

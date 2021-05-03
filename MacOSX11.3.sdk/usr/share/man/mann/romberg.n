@@ -1,0 +1,548 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/math/romberg.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2004 Kevin B. Kenny <kennykb@acm.org>. All rights reserved. Redistribution permitted under the terms of the Open Publication License <http://www.opencontent.org/openpub/>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "math::calculus::romberg" n 0.6 math "Tcl Math Library"
+.BS
+.SH NAME
+math::calculus::romberg \- Romberg integration
+.SH SYNOPSIS
+package require \fBTcl  8.2\fR
+.sp
+package require \fBmath::calculus  0.6\fR
+.sp
+\fB::math::calculus::romberg\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+.sp
+\fB::math::calculus::romberg_infinity\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+.sp
+\fB::math::calculus::romberg_sqrtSingLower\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+.sp
+\fB::math::calculus::romberg_sqrtSingUpper\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+.sp
+\fB::math::calculus::romberg_powerLawLower\fR \fIgamma\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+.sp
+\fB::math::calculus::romberg_powerLawUpper\fR \fIgamma\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+.sp
+\fB::math::calculus::romberg_expLower\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+.sp
+\fB::math::calculus::romberg_expUpper\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+The \fBromberg\fR procedures in the \fBmath::calculus\fR package
+perform numerical integration of a function of one variable.  They
+are intended to be of "production quality" in that they are robust,
+precise, and reasonably efficient in terms of the number of function
+evaluations.
+.SH PROCEDURES
+The following procedures are available for Romberg integration:
+.TP
+\fB::math::calculus::romberg\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+Integrates an analytic function over a given interval.
+.TP
+\fB::math::calculus::romberg_infinity\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+Integrates an analytic function over a half-infinite interval.
+.TP
+\fB::math::calculus::romberg_sqrtSingLower\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+Integrates a function that is expected to be analytic over an interval
+except for the presence of an inverse square root singularity at the
+lower limit.
+.TP
+\fB::math::calculus::romberg_sqrtSingUpper\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+Integrates a function that is expected to be analytic over an interval
+except for the presence of an inverse square root singularity at the
+upper limit.
+.TP
+\fB::math::calculus::romberg_powerLawLower\fR \fIgamma\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+Integrates a function that is expected to be analytic over an interval
+except for the presence of a power law singularity at the
+lower limit.
+.TP
+\fB::math::calculus::romberg_powerLawUpper\fR \fIgamma\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+Integrates a function that is expected to be analytic over an interval
+except for the presence of a power law singularity at the
+upper limit.
+.TP
+\fB::math::calculus::romberg_expLower\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+Integrates an exponentially growing function; the lower limit of the
+region of integration may be arbitrarily large and negative.
+.TP
+\fB::math::calculus::romberg_expUpper\fR \fIf\fR \fIa\fR \fIb\fR ?\fI-option value\fR...?
+Integrates an exponentially decaying function; the upper limit of the
+region of integration may be arbitrarily large.
+.PP
+.SH PARAMETERS
+.TP
+\fIf\fR
+Function to integrate.  Must be expressed as a single Tcl command,
+to which will be appended a single argument, specifically, the
+abscissa at which the function is to be evaluated. The first word
+of the command will be processed with \fBnamespace which\fR in the
+caller's scope prior to any evaluation. Given this processing, the
+command may local to the calling namespace rather than needing to be
+global.
+.TP
+\fIa\fR
+Lower limit of the region of integration.
+.TP
+\fIb\fR
+Upper limit of the region of integration.  For the
+\fBromberg_sqrtSingLower\fR, \fBromberg_sqrtSingUpper\fR,
+\fBromberg_powerLawLower\fR, \fBromberg_powerLawUpper\fR,
+\fBromberg_expLower\fR, and \fBromberg_expUpper\fR procedures,
+the lower limit must be strictly less than the upper.  For
+the other procedures, the limits may appear in either order.
+.TP
+\fIgamma\fR
+Power to use for a power law singularity; see section
+\fBIMPROPER INTEGRALS\fR for details.
+.PP
+.SH OPTIONS
+.TP
+\fB-abserror\fR \fIepsilon\fR
+Requests that the integration machinery proceed at most until
+the estimated absolute error of the integral is less than
+\fIepsilon\fR. The error may be seriously over- or underestimated
+if the function (or any of its derivatives) contains singularities;
+see section \fBIMPROPER INTEGRALS\fR for details. Default
+is 1.0e-08.
+.TP
+\fB-relerror\fR \fIepsilon\fR
+Requests that the integration machinery proceed at most until
+the estimated relative error of the integral is less than
+\fIepsilon\fR. The error may be seriously over- or underestimated
+if the function (or any of its derivatives) contains singularities;
+see section \fBIMPROPER INTEGRALS\fR for details.  Default is
+1.0e-06.
+.TP
+\fB-maxiter\fR \fIm\fR
+Requests that integration terminate after at most \fIn\fR triplings of
+the number of evaluations performed.  In other words, given \fIn\fR
+for \fB-maxiter\fR, the integration machinery will make at most
+3**\fIn\fR evaluations of the function.  Default is 14, corresponding
+to a limit approximately 4.8 million evaluations. (Well-behaved
+functions will seldom require more than a few hundred evaluations.)
+.TP
+\fB-degree\fR \fId\fR
+Requests that an extrapolating polynomial of degree \fId\fR be used
+in Romberg integration; see section \fBDESCRIPTION\fR for
+details. Default is 4.  Can be at most \fIm\fR-1.
+.PP
+.SH DESCRIPTION
+The \fBromberg\fR procedure performs Romberg integration using
+the modified midpoint rule. Romberg integration is an iterative
+process.  At the first step, the function is evaluated at the
+midpoint of the region of integration, and the value is multiplied by
+the width of the interval for the coarsest possible estimate.
+At the second step, the interval is divided into three parts,
+and the function is evaluated at the midpoint of each part; the
+sum of the values is multiplied by three.  At the third step,
+nine parts are used, at the fourth twenty-seven, and so on,
+tripling the number of subdivisions at each step.
+.PP
+Once the interval has been divided at least \fId\fR times,
+a polynomial is fitted to the integrals estimated in the last
+\fId\fR+1 divisions.  The integrals are considered to be a
+function of the square of the width of the subintervals
+(any good numerical analysis text will discuss this process
+under "Romberg integration").  The polynomial is extrapolated
+to a step size of zero, computing a value for the integral and
+an estimate of the error.
+.PP
+This process will be well-behaved only if the function is analytic
+over the region of integration; there may be removable singularities
+at either end of the region provided that the limit of the function
+(and of all its derivatives) exists as the ends are approached.
+Thus, \fBromberg\fR may be used to integrate a function like
+f(x)=sin(x)/x over an interval beginning or ending at zero.
+.PP
+Note that \fBromberg\fR will either fail to converge or else return
+incorrect error estimates if the function, or any of its derivatives,
+has a singularity anywhere in the region of integration (except for
+the case mentioned above).  Care must be used, therefore, in
+integrating a function like 1/(1-x**2) to avoid the places
+where the derivative is singular.
+.SH "IMPROPER INTEGRALS"
+Romberg integration is also useful for integrating functions over
+half-infinite intervals or functions that have singularities.
+The trick is to make a change of variable to eliminate the
+singularity, and to put the singularity at one end or the other
+of the region of integration.  The \fBmath::calculus\fR package
+supplies a number of \fBromberg\fR procedures to deal with the
+commoner cases.
+.TP
+\fBromberg_infinity\fR
+Integrates a function over a half-infinite interval; either
+\fIa\fR or \fIb\fR may be infinite.  \fIa\fR and \fIb\fR must be
+of the same sign; if you need to integrate across the axis,
+say, from a negative value to positive infinity,
+use \fBromberg\fR to integrate from the negative
+value to a small positive value, and then \fBromberg_infinity\fR
+to integrate from the positive value to positive infinity.  The
+\fBromberg_infinity\fR procedure works by making the change of
+variable u=1/x, so that the integral from a to b of f(x) is
+evaluated as the integral from 1/a to 1/b of f(1/u)/u**2.
+.TP
+\fBromberg_powerLawLower\fR and \fBromberg_powerLawUpper\fR
+Integrate a function that has an integrable power law singularity
+at either the lower or upper bound of the region of integration
+(or has a derivative with a power law singularity there).
+These procedures take a first parameter, \fIgamma\fR, which gives
+the power law.  The function or its first derivative are presumed to diverge as
+(x-\fIa\fR)**(-\fIgamma\fR) or (\fIb\fR-x)**(-\fIgamma\fR).  \fIgamma\fR
+must be greater than zero and less than 1.
+.sp
+These procedures are useful not only in integrating functions
+that go to infinity at one end of the region of integration, but
+also functions whose derivatives do not exist at the end of
+the region.  For instance, integrating f(x)=pow(x,0.25) with the
+origin as one end of the region will result in the \fBromberg\fR
+procedure greatly underestimating the error in the integral.
+The problem can be fixed by observing that the first derivative
+of f(x), f'(x)=x**(-3/4)/4, goes to infinity at the origin.  Integrating
+using \fBromberg_powerLawLower\fR with \fIgamma\fR set to 0.75
+gives much more orderly convergence.
+.sp
+These procedures operate by making the change of variable
+u=(x-a)**(1-gamma) (\fBromberg_powerLawLower\fR) or
+u=(b-x)**(1-gamma) (\fBromberg_powerLawUpper\fR).
+.sp
+To summarize the meaning of gamma:
+.RS
+.IP \(bu
+If f(x) ~ x**(-a) (0 < a < 1), use gamma = a
+.IP \(bu
+If f'(x) ~ x**(-b) (0 < b < 1), use gamma = b
+.RE
+.TP
+\fBromberg_sqrtSingLower\fR and \fBromberg_sqrtSingUpper\fR
+These procedures behave identically to \fBromberg_powerLawLower\fR and
+\fBromberg_powerLawUpper\fR for the common case of \fIgamma\fR=0.5;
+that is, they integrate a function with an inverse square root
+singularity at one end of the interval.  They have a simpler
+implementation involving square roots rather than arbitrary powers.
+.TP
+\fBromberg_expLower\fR and \fBromberg_expUpper\fR
+These procedures are for integrating a function that grows or
+decreases exponentially over a half-infinite interval.
+\fBromberg_expLower\fR handles exponentially growing functions, and
+allows the lower limit of integration to be an arbitrarily large
+negative number.  \fBromberg_expUpper\fR handles exponentially
+decaying functions and allows the upper limit of integration to
+be an arbitrary large positive number.  The functions make the
+change of variable u=exp(-x) and u=exp(x) respectively.
+.PP
+.SH "OTHER CHANGES OF VARIABLE"
+If you need an improper integral other than the ones listed here,
+a change of variable can be written in very few lines of Tcl.
+Because the Tcl coding that does it is somewhat arcane,
+we offer a worked example here.
+.PP
+Let's say that the function that we want to integrate is
+f(x)=exp(x)/sqrt(1-x*x) (not a very natural
+function, but a good example), and we want to integrate
+it over the interval (-1,1).  The denominator falls to zero
+at both ends of the interval. We wish to make a change of variable
+from x to u
+so that dx/sqrt(1-x**2) maps to du.  Choosing x=sin(u), we can
+find that dx=cos(u)*du, and sqrt(1-x**2)=cos(u).  The integral
+from a to b of f(x) is the integral from asin(a) to asin(b)
+of f(sin(u))*cos(u).
+.PP
+We can make a function \fBg\fR that accepts an arbitrary function
+\fBf\fR and the parameter u, and computes this new integrand.
+.nf
+
+proc g { f u } {
+    set x [expr { sin($u) }]
+    set cmd $f; lappend cmd $x; set y [eval $cmd]
+    return [expr { $y / cos($u) }]
+}
+
+.fi
+Now integrating \fBf\fR from \fIa\fR to \fIb\fR is the same
+as integrating \fBg\fR from \fIasin(a)\fR to \fIasin(b)\fR.
+It's a little tricky to get \fBf\fR consistently evaluated in
+the caller's scope; the following procedure does it.
+.nf
+
+proc romberg_sine { f a b args } {
+    set f [lreplace $f 0 0 [uplevel 1 [list namespace which [lindex $f 0]]]]
+    set f [list g $f]
+    return [eval [linsert $args 0 romberg $f [expr { asin($a) }] [expr { asin($b) }]]]
+}
+
+.fi
+This \fBromberg_sine\fR procedure will do any function with
+sqrt(1-x*x) in the denominator. Our sample function is
+f(x)=exp(x)/sqrt(1-x*x):
+.nf
+
+proc f { x } {
+    expr { exp($x) / sqrt( 1. - $x*$x ) }
+}
+
+.fi
+Integrating it is a matter of applying \fBromberg_sine\fR
+as we would any of the other \fBromberg\fR procedures:
+.nf
+
+foreach { value error } [romberg_sine f -1.0 1.0] break
+puts [format "integral is %.6g +/- %.6g" $value $error]
+
+integral is 3.97746 +/- 2.3557e-010
+
+.fi
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fImath :: calculus\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH "SEE ALSO"
+math::calculus, math::interpolate
+.SH CATEGORY
+Mathematics
+.SH COPYRIGHT
+.nf
+Copyright (c) 2004 Kevin B. Kenny <kennykb@acm.org>. All rights reserved. Redistribution permitted under the terms of the Open Publication License <http://www.opencontent.org/openpub/>
+
+.fi

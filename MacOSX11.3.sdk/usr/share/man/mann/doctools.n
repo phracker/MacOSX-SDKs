@@ -1,0 +1,661 @@
+'\"
+'\" Generated from file '/Library/Caches/com.apple.xbs/Sources/tcl/tcl-129.100.1/tcl_ext/tcllib/tcllib/modules/doctools/doctools.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2003-2010 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "doctools" n 1.4.10 doctools "Documentation tools"
+.BS
+.SH NAME
+doctools \- doctools - Processing documents
+.SH SYNOPSIS
+package require \fBTcl  8.2\fR
+.sp
+package require \fBdoctools  ?1.4.10?\fR
+.sp
+\fB::doctools::new\fR \fIobjectName\fR ?\fIoption value\fR...?
+.sp
+\fB::doctools::help\fR
+.sp
+\fB::doctools::search\fR \fIpath\fR
+.sp
+\fBobjectName\fR \fBmethod\fR ?\fIarg arg ...\fR?
+.sp
+\fIobjectName\fR \fBconfigure\fR
+.sp
+\fIobjectName\fR \fBconfigure\fR \fIoption\fR
+.sp
+\fIobjectName\fR \fBconfigure\fR \fB-option\fR \fIvalue\fR...
+.sp
+\fIobjectName\fR \fBcget\fR \fB-option\fR
+.sp
+\fIobjectName\fR \fBdestroy\fR
+.sp
+\fIobjectName\fR \fBformat\fR \fItext\fR
+.sp
+\fIobjectName\fR \fBmap\fR \fIsymbolic\fR \fIactual\fR
+.sp
+\fIobjectName\fR \fBparameters\fR
+.sp
+\fIobjectName\fR \fBsearch\fR \fIpath\fR
+.sp
+\fIobjectName\fR \fBsetparam\fR \fIname\fR \fIvalue\fR
+.sp
+\fIobjectName\fR \fBwarnings\fR
+.sp
+.BE
+.SH DESCRIPTION
+This package provides a class for the creation of objects able to
+process and convert text written in the \fIdoctools\fR markup
+language into any output format X for which a
+\fIformatting engine\fR is available.
+.PP
+A reader interested in the markup language itself should start with
+the \fIdoctools language introduction\fR and proceed from there to
+the formal specifications, i.e. the \fIdoctools language syntax\fR
+and the \fIdoctools language command reference\fR.
+.PP
+If on the other hand the reader wishes to write her own formatting
+engine for some format, i.e. is a \fIplugin writer\fR then reading
+and understanding the \fIdoctools plugin API reference\fR is an
+absolute necessity, as that document specifies the interaction between
+this package and its plugins, i.e. the formatting engines, in detail.
+.SH "PUBLIC API"
+.SS "PACKAGE COMMANDS"
+.TP
+\fB::doctools::new\fR \fIobjectName\fR ?\fIoption value\fR...?
+This command creates a new doctools object with an associated Tcl
+command whose name is \fIobjectName\fR. This \fIobject\fR command is
+explained in full detail in the sections \fBOBJECT COMMAND\fR
+and \fBOBJECT METHODS\fR. The object command will be created
+under the current namespace if the \fIobjectName\fR is not fully
+qualified, and in the specified namespace otherwise.
+.sp
+The options and their values coming after the name of the object are
+used to set the initial configuration of the object.
+.TP
+\fB::doctools::help\fR
+This is a convenience command for applications wishing to provide
+their user with a short description of the available formatting
+commands and their meanings. It returns a string containing a standard
+help text.
+.TP
+\fB::doctools::search\fR \fIpath\fR
+Whenever an object created by this the package has to map the name of
+a format to the file containing the code for its formatting engine it
+will search for the file in a number of directories stored in a
+list. See section \fBFORMAT MAPPING\fR for more explanations.
+.sp
+This list not only contains three default directories which are
+declared by the package itself, but is also extensible user of the
+package.
+This command is the means to do so. When given a \fIpath\fR to an
+existing and readable directory it will prepend that directory to the
+list of directories to search. This means that the \fIpath\fR added
+last is later searched through first.
+.sp
+An error will be thrown if the \fIpath\fR either does not exist, is
+not a directory, or is not readable.
+.PP
+.SS "OBJECT COMMAND"
+All commands created by \fB::doctools::new\fR have the following
+general form and may be used to invoke various operations on their
+doctools converter object.
+.TP
+\fBobjectName\fR \fBmethod\fR ?\fIarg arg ...\fR?
+The method \fBmethod\fR and its \fIarg\fR'uments determine the exact
+behavior of the command. See section \fBOBJECT METHODS\fR for
+the detailed specifications.
+.PP
+.SS "OBJECT METHODS"
+.TP
+\fIobjectName\fR \fBconfigure\fR
+The method returns a list of all known options and their current
+values when called without any arguments.
+.TP
+\fIobjectName\fR \fBconfigure\fR \fIoption\fR
+The method behaves like the method \fBcget\fR when called with a
+single argument and returns the value of the option specified by said
+argument.
+.TP
+\fIobjectName\fR \fBconfigure\fR \fB-option\fR \fIvalue\fR...
+The method reconfigures the specified \fBoption\fRs of the object,
+setting them to the associated \fIvalue\fRs, when called with an even
+number of arguments, at least two.
+.sp
+The legal options are described in the section
+\fBOBJECT CONFIGURATION\fR.
+.TP
+\fIobjectName\fR \fBcget\fR \fB-option\fR
+This method expects a legal configuration option as argument and will
+return the current value of that option for the object the method was
+invoked for.
+.sp
+The legal configuration options are described in section
+\fBOBJECT CONFIGURATION\fR.
+.TP
+\fIobjectName\fR \fBdestroy\fR
+This method destroys the object it is invoked for.
+.TP
+\fIobjectName\fR \fBformat\fR \fItext\fR
+This method runs the \fItext\fR through the configured formatting
+engine and returns the generated string as its result. An error will
+be thrown if no \fB-format\fR was configured for the object.
+.sp
+The method assumes that the \fItext\fR is in \fIdoctools\fR format as
+specified in the companion document \fIdoctools_fmt\fR. Errors will
+be thrown otherwise.
+.TP
+\fIobjectName\fR \fBmap\fR \fIsymbolic\fR \fIactual\fR
+This methods add one entry to the per-object mapping from
+\fIsymbolic\fR filenames to the \fIactual\fR uris.
+The object just stores this mapping and makes it available to the
+configured formatting engine through the command \fBdt_fmap\fR.
+This command is described in more detail in the
+\fIdoctools plugin API reference\fR which specifies the interaction
+between the objects created by this package and doctools formatting
+engines.
+.TP
+\fIobjectName\fR \fBparameters\fR
+This method returns a list containing the names of all engine
+parameters provided by the configured formatting engine. It will
+return an empty list if the object is not yet configured for a
+specific format.
+.TP
+\fIobjectName\fR \fBsearch\fR \fIpath\fR
+This method extends the per-object list of paths searched for doctools
+formatting engines. See also the command \fB::doctools::search\fR on
+how to extend the per-package list of paths. Note that the path
+entered last will be searched first.
+For more details see section \fBFORMAT MAPPING\fR.
+.TP
+\fIobjectName\fR \fBsetparam\fR \fIname\fR \fIvalue\fR
+This method sets the \fIname\fRd engine parameter to the specified
+\fIvalue\fR.
+It will throw an error if the object is either not yet configured for
+a specific format, or if the formatting engine for the configured
+format does not provide a parameter with the given \fIname\fR.
+The list of parameters provided by the configured formatting engine
+can be retrieved through the method \fBparameters\fR.
+.TP
+\fIobjectName\fR \fBwarnings\fR
+This method returns a list containing all the warnings which were
+generated by the configured formatting engine during the last
+invocation of the method \fBformat\fR.
+.PP
+.SS "OBJECT CONFIGURATION"
+All doctools objects understand the following configuration options:
+.TP
+\fB-file\fR \fIfile\fR
+The argument of this option is stored in the object and made available
+to the configured formatting engine through the commands \fBdt_file\fR
+and \fBdt_mainfile\fR.
+These commands are described in more detail in the companion document
+\fIdoctools_api\fR which specifies the API between the object and
+formatting engines.
+.sp
+The default value of this option is the empty string.
+.sp
+The configured formatting engine should interpret the value as the
+name of the file containing the document which is currently processed.
+.TP
+\fB-module\fR \fItext\fR
+The argument of this option is stored in the object and made available
+to the configured formatting engine through the command \fBdt_module\fR.
+This command is described in more detail in the companion document
+\fIdoctools_api\fR which specifies the API between the object and
+formatting engines.
+.sp
+The default value of this option is the empty string.
+.sp
+The configured formatting engine should interpret the value as the
+name of the module the file containing the document which is currently
+processed belongs to.
+.TP
+\fB-format\fR \fItext\fR
+The argument of this option specifies the format to generate and by
+implication the formatting engine to use when converting text via the
+method \fBformat\fR. Its default value is the empty string. The
+method \fBformat\fR cannot be used if this option is not set to a
+valid value at least once.
+.sp
+The package will immediately try to map the given name to a file
+containing the code for a formatting engine generating that format. An
+error will be thrown if this mapping fails. In that case a previously
+configured format is left untouched.
+.sp
+The section \fBFORMAT MAPPING\fR explains in detail how the
+package and object will look for engine implementations.
+.TP
+\fB-deprecated\fR \fIboolean\fR
+This option is a boolean flag. The object will generate warnings if
+this flag is set and the text given to method \fBformat\fR contains
+the deprecated markup command \fBstrong\fR.
+Its default value is \fBFALSE\fR. In other words, no warnings will
+be generated.
+.TP
+\fB-copyright\fR \fItext\fR
+The argument of this option is stored in the object and made available
+to the configured formatting engine through the command \fBdt_copyright\fR.
+This command is described in more detail in the companion document
+\fIdoctools_api\fR which specifies the API between the object and
+formatting engines.
+.sp
+The default value of this option is the empty string.
+.sp
+The configured formatting engine should interpret the value as a
+copyright assignment for the document which is currently processed, or
+the package described by it.
+.sp
+This information must be used if and only if the engine is unable to
+find any copyright assignments within the document itself. Such are
+specified by the formatting command \fBcopyright\fR. This command is
+described in more detail in the companion document \fIdoctools_fmt\fR
+which specifies the \fIdoctools\fR format itself.
+.PP
+.SS "FORMAT MAPPING"
+The package and object will perform the following algorithm when
+trying to map a format name \fIfoo\fR to a file containing an
+implementation of a formatting engine for \fIfoo\fR:
+.IP [1]
+If \fIfoo\fR is the name of an existing file then this file is
+directly taken as the implementation.
+.IP [2]
+If not, the list of per-object search paths is searched. For each
+directory in the list the package checks if that directory contains a
+file "\fIfmt.\fIfoo\fR\fR". If yes, then that file is taken as the
+implementation.
+.sp
+Note that this list of paths is initially empty and can be extended
+through the object method \fBsearch\fR.
+.IP [3]
+If not, the list of package paths is searched.
+For each directory in the list the package checks if that directory
+contains a file "\fIfmt.\fIfoo\fR\fR". If yes, then that file is taken
+as the implementation.
+.sp
+This list of paths can be extended
+through the command \fB::doctools::search\fR.
+It contains initially one path, the subdirectory "\fImpformats\fR" of
+the directory the package itself is located in.
+In other words, if the package implementation "\fIdoctools.tcl\fR" is
+installed in the directory "\fI/usr/local/lib/tcllib/doctools\fR" then
+it will by default search the
+directory "\fI/usr/local/lib/tcllib/doctools/mpformats\fR" for format
+implementations.
+.IP [4]
+The mapping fails.
+.PP
+.SH "PREDEFINED ENGINES"
+The package provides predefined engines for the following
+formats. Some of the engines support parameters. These will be
+explained below as well.
+.TP
+html
+This engine generates HTML markup, for processing by web browsers and
+the like. This engine supports four parameters:
+.RS
+.TP
+footer
+The value for this parameter has to be valid selfcontained HTML markup
+for the body section of a HTML document. The default value is the
+empty string. The value is inserted into the generated output just
+before the \fB</body>\fR tag, closing the body of the generated
+HTML.
+.sp
+This can be used to insert boilerplate footer markup into the
+generated document.
+.TP
+header
+The value for this parameter has to be valid selfcontained HTML markup
+for the body section of a HTML document. The default value is the
+empty string. The value is inserted into the generated output just
+after the \fB<body>\fR tag, starting the body of the generated HTML.
+.sp
+This can be used to insert boilerplate header markup into the
+generated document.
+.TP
+meta
+The value for this parameter has to be valid selfcontained HTML markup
+for the header section of a HTML document. The default value is the
+empty string. The value is inserted into the generated output just
+after the \fB<head>\fR tag, starting the header section of the
+generated HTML.
+.sp
+This can be used to insert boilerplate meta data markup into the
+generated document, like references to a stylesheet, standard meta
+keywords, etc.
+.TP
+xref
+The value for this parameter has to be a list of triples specifying
+cross-reference information. This information is used by the engine to
+create more hyperlinks. Each triple is a list containing a pattern,
+symbolic filename and fragment reference, in this order. If a pattern
+is specified multiple times the last occurence of the pattern will be
+used.
+.sp
+The engine will consult the xref database when encountering specific
+commands and will create a link if the relevant text matches one of
+the patterns. No link will be created if no match was found. The link
+will go to the uri \fBfile#fragment\fR listed in the relevant
+triple, after conversion of the symbolic file name to the actual uri
+via \fBdt_fmap\fR (see the \fIdoctools plugin API reference\fR).
+This file-to-uri mapping was build by calls to the method \fBmap\fR
+of the doctools object (See section \fBOBJECT METHODS\fR).
+.sp
+The following formatting commands will consult the xref database:
+.RS
+.TP
+\fBcmd\fR \fIword\fR
+The command will look for the patterns \fBsa,\fR\fIword\fR, and
+\fIword\fR, in this order. If this fails if it will convert \fIword\fR
+to all lowercase and try again.
+.TP
+\fBsyscmd\fR \fIword\fR
+The command will look for the patterns \fBsa,\fR\fIword\fR, and
+\fIword\fR, in this order. If this fails if it will convert \fIword\fR
+to all lowercase and try again.
+.TP
+\fBterm\fR \fIword\fR
+The command will look for the patterns \fBkw,\fR\fIword\fR,
+\fBsa,\fR\fIword\fR, and \fIword\fR, in this order. If this fails if
+it will convert \fIword\fR to all lowercase and try again.
+.TP
+\fBpackage\fR \fIword\fR
+The command will look for the patterns \fBsa,\fR\fIword\fR,
+\fBkw,\fR\fIword\fR, and \fIword\fR, in this order. If this fails if
+it will convert \fIword\fR to all lowercase and try again.
+.TP
+\fBsee_also\fR \fIword\fR...
+The command will look for the patterns \fBsa,\fR\fIword\fR, and
+\fIword\fR, in this order, for each \fIword\fR given to the
+command. If this fails if it will convert \fIword\fR to all lowercase
+and try again.
+.TP
+\fBkeywords\fR \fIword\fR...
+The command will look for the patterns \fBkw,\fR\fIword\fR, and
+\fIword\fR, in this order, for each \fIword\fR given to the
+command. If this fails if it will convert \fIword\fR to all lowercase
+and try again.
+.RE
+.RE
+.sp
+.TP
+latex
+This engine generates output suitable for the \fBlatex\fR text
+processor coming out of the TeX world.
+.TP
+list
+This engine retrieves version, section and title of the manpage from
+the document. As such it can be used to generate a directory listing
+for a set of manpages.
+.TP
+nroff
+This engine generates nroff output, for processing by \fBnroff\fR,
+or \fBgroff\fR. The result will be standard man pages as they are
+known in the unix world.
+.TP
+null
+This engine generates no outout at all. This can be used if one just
+wants to validate some input.
+.TP
+tmml
+This engine generates TMML markup as specified by Joe English. The Tcl
+Manpage Markup Language is a derivate of XML.
+.TP
+wiki
+This engine generates Wiki markup as understood by Jean Claude
+Wippler's \fBwikit\fR application.
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category \fIdoctools\fR of the
+\fITcllib SF Trackers\fR [http://sourceforge.net/tracker/?group_id=12883].
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH "SEE ALSO"
+doctools_intro, doctools_lang_cmdref, doctools_lang_intro, doctools_lang_syntax, doctools_plugin_apiref
+.SH KEYWORDS
+HTML, TMML, conversion, documentation, manpage, markup, nroff
+.SH CATEGORY
+Documentation tools
+.SH COPYRIGHT
+.nf
+Copyright (c) 2003-2010 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi
