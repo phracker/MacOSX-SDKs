@@ -1,0 +1,166 @@
+.Dd Feb 10, 2021     \" DATE
+.Dt DERQ 1           \" Program name and manual section number
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm derq
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Query and manipulate DER entitlements.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Ar query
+.Op Fl -pretty
+.Op Fl -raw
+.Op Fl f Ar format
+.Op Fl i Ar input
+.Op Fl o Ar output
+.Aq query statements
+.sp
+.Nm
+.Ar csops
+.Op Fl p Ar pid
+.Op Fl o Ar output
+.Op Fl -xml 
+.Aq query statements
+.sp
+.Nm
+.Ar macho
+.Op Fl i Ar input
+.Op Fl o Ar output
+.Op Fl -xml 
+.Aq query statements
+.Sh DESCRIPTION
+The
+.Nm
+command queries DER encoded entitlements using the CoreEntitlements library.
+.sp
+It currently supports querying from a Mach-O, file / input stream, as well as directly from a process using
+.Xr csops(2) .
+.sp
+After a succesful execution of the query statements on the 
+.Ar input
+,
+.Nm
+will output the active DER context to the
+.Ar output.
+.Pp                      \" Inserts a space
+.Sh OPTIONS
+A list of flags and their descriptions:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl -pretty                 \"-a flag as a list item
+When specified,
+.Nm
+will print the active context in a textual representation to 
+.Vt stderr .
+.It Fl -raw
+Signifies that the input might not be a DER encoded entitlements blob. This forces
+.Nm
+to treat the input as a raw DER object. Particularly this means that if a V1 entitlements is passed in, the active context will be set to the outer metadata object, and not the inner entitlements dictionary.
+.It Fl -xml
+Instruct the 
+.Vt macho
+or
+.Vt csops
+subcommands to query the embedded XML blob instead of the embedded DER blob.
+.It Fl i Ar input
+Allows you to specify which file should be used as the input.
+If not specified "-" is assumed, which signfies that the input will follow on 
+.Vt stdin .
+.It Fl o Ar output
+Allows you to specify which file should be used as the output.
+If not specified "-" is assumed, which signfies that 
+.Nm
+should use
+.Vt stdout
+for output.
+.It Fl p Ar pid
+Specifies the pid of a running process from which
+.Nm
+should extract the DER entitlements blob to be used as input.
+.It Fl f Ar format
+Specifies what format the input is. If this flag isn't passed in DER is assumed. The other supported format is "xml."
+.It Ar query statements ...
+A space seperated list of operations to be exected left-to-right. The operation syntax is described in
+.Sx SYNTAX .
+.El
+.Sh SYNTAX
+.Tn DERQL
+has very simplistic syntax that consists of a series of operations that are executed one after another. Execution stops either when the last operation is executed or an operation induces the execution engine into an invalid state.
+There are many operations that can produce an invalid state, such as selecting a key that doesn't exist, or indexing an array past the bounds. Invalid state is also produced when a matching operation fails.
+.Pp
+Currently
+.Nm
+supports 4 operations:
+.Bl -ohang -offset indent
+.It Sy CESelectIndex
+This operation selects an index in a zero indexed array. Any query statement that starts with a number character (0-9) implies the start of a
+.Vt CESelectIndex
+operation. Example
+invocation:
+invocatio:
+.Pp
+.Dl % derq query -i - -o - 1
+.Pp
+Will select the second element in the array passed in on
+.Vt stdin
+and output the selected value to
+.Vt stdout .
+.It Sy CESelectDictValue
+This operation selects the value associated with the passed in key in the actively selected dictionary. Any query statement that does not imply any operation will be parsed as
+.Vt CESelectDictValue.
+Meaning that any query statement that starts with an alphanumeric sequence will be treated as a
+.Vt CESelectDictValue
+operation. Example:
+.Pp
+.Dl % derq query application-identifier
+.Pp
+Will select the value that belongs to the key
+.Qq application-identifier
+from the dictionary passed in on
+.Vt stdin
+and output the selected value to
+.Vt stdout .
+.It Sy CEMatchBool
+This operation produces a valid output if the currently selected value is a boolean that has the value of
+.Sy true.
+Execution of this operation does not modify the selection. Any query statement that starts with "?" signifies this operation. Example:
+.Pp
+.Dl % derq query get-task-allow \& ?
+.Pp
+Will return a valid boolean only if the value for the key
+.Qq get-task-allow
+is a boolean and has the value of
+.Sy true .
+.It Sy CEMatchString
+This operation produces a valid output if the currently selected value is a string that is equal to the passed in value.
+Execution of this operation does not modify the selection. Any query statement that starts with "=" signifies this operation. Example:
+.Pp
+.Dl % derq query useractivity-team-identifier =appleiwork
+.Pp
+Will return a valid string only if the value for the key
+.Qq useractivity-team-identifier
+is exactly equal to
+.Qq appleiwork .
+.El
+.Sh EXAMPLES
+.Bl -ohang
+.It To check if a file has the string Qo secret-entitlement Qc as the first value in an array in a file named Qo application.entitlements Qc :
+.Dl % derq query -i application.entitlements 0 =secret-entitlement
+.sp
+.It To verify the DER entitlements validity of process 666 and to check that it has the Qo com.apple.application-identifier Qc equal to Qo P9Z4AN7VHQ.com.apple.radar.gm Qc :
+.Dl % derq csops -pid 666 com.apple.application-identifier =P9Z4AN7VHQ.com.apple.radar.gm
+.sp
+.It To check if the first array element of a key Qo com.apple.security.iokit-user-client-class Qc is equal to Qo AppleImage4UserClient Qc :
+.Dl % derq query com.apple.security.iokit-user-client-class 0 =AppleImage4UserClient
+.El
+.Sh DIAGNOSTICS
+.Ex -std
+.Pp
+In particular
+.Vt EX_DATAERR
+(66) is returned if the query could not be satisfied or resulted in invalid state.
+.Sh NOTES
+The correct pronunciation of
+.Nm
+sounds similar to "dirk".
+.Sh SEE ALSO
+.Xr codesign 1

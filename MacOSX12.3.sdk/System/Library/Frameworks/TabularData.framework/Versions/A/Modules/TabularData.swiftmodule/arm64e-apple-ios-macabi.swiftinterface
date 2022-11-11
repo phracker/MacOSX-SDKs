@@ -1,0 +1,2223 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.6 (swiftlang-5.6.0.323.32 clang-1316.0.20.8)
+// swift-module-flags: -target arm64e-apple-ios15.0-macabi -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -library-level api -module-name TabularData
+// swift-module-flags-ignorable: -user-module-version 7
+import Combine/*.TopLevelDecoder*/
+import Combine/*.TopLevelEncoder*/
+import Dispatch
+import Foundation
+import Swift
+import _Concurrency
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public protocol ColumnProtocol : Swift.BidirectionalCollection {
+  var name: Swift.String { get set }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public protocol OptionalColumnProtocol : TabularData.ColumnProtocol {
+  associatedtype WrappedElement where Self.Element == Self.WrappedElement?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public protocol AnyColumnProtocol {
+  var name: Swift.String { get set }
+  var count: Swift.Int { get }
+  var wrappedElementType: Any.Type { get }
+  subscript(position: Swift.Int) -> Any? { get }
+  subscript(range: Swift.Range<Swift.Int>) -> TabularData.AnyColumnSlice { get }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+@dynamicMemberLookup public struct DataFrame : TabularData.DataFrameProtocol {
+  public var columns: [TabularData.AnyColumn] {
+    get
+  }
+  public var rows: TabularData.DataFrame.Rows {
+    get
+    set
+  }
+  public var shape: (rows: Swift.Int, columns: Swift.Int) {
+    get
+  }
+  public init()
+  public init<S>(columns: S) where S : Swift.Sequence, S.Element == TabularData.AnyColumn
+  public init(_ other: TabularData.DataFrame.Slice)
+  public func indexOfColumn(_ columnName: Swift.String) -> Swift.Int?
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  @inlinable public func containsColumn<T>(_ id: TabularData.ColumnID<T>) -> Swift.Bool {
+        guard let index = indexOfColumn(id.name) else {
+            return false
+        }
+        return columns[index].wrappedElementType == T.self
+    }
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  @inlinable public func containsColumn<T>(_ name: Swift.String, _ type: T.Type) -> Swift.Bool {
+        guard let index = indexOfColumn(name) else {
+            return false
+        }
+        return columns[index].wrappedElementType == T.self
+    }
+  public func columnNames(forAlias alias: Swift.String) -> [Swift.String]
+  public mutating func addAlias(_ alias: Swift.String, forColumn columnName: Swift.String)
+  public mutating func removeAlias(_ alias: Swift.String)
+  public mutating func append<T>(column: TabularData.Column<T>)
+  public mutating func append(column: TabularData.AnyColumn)
+  public mutating func insert<T>(column: TabularData.Column<T>, at index: Swift.Int)
+  public mutating func insert(column: TabularData.AnyColumn, at index: Swift.Int)
+  public mutating func renameColumn(_ name: Swift.String, to newName: Swift.String)
+  public mutating func replaceColumn(_ name: Swift.String, with newColumn: TabularData.AnyColumn)
+  public mutating func replaceColumn<T>(_ id: TabularData.ColumnID<T>, with newColumn: TabularData.AnyColumn)
+  public mutating func replaceColumn<T>(_ name: Swift.String, with newColumn: TabularData.Column<T>)
+  public mutating func replaceColumn<T, U>(_ id: TabularData.ColumnID<T>, with newColumn: TabularData.Column<U>)
+  @discardableResult
+  public mutating func removeColumn<T>(_ id: TabularData.ColumnID<T>) -> TabularData.Column<T>
+  @discardableResult
+  public mutating func removeColumn(_ name: Swift.String) -> TabularData.AnyColumn
+  public mutating func transformColumn<From, To>(_ id: TabularData.ColumnID<From>, _ transform: (From?) throws -> To?) rethrows
+  public mutating func transformColumn<From, To>(_ id: TabularData.ColumnID<From>, _ transform: (From) throws -> To?) rethrows
+  public mutating func transformColumn<From, To>(_ name: Swift.String, _ transform: (From?) throws -> To?) rethrows
+  public mutating func transformColumn<From, To>(_ name: Swift.String, _ transform: (From) throws -> To?) rethrows
+  public mutating func append(row: TabularData.DataFrame.Row)
+  public mutating func append(row: Any?...)
+  public mutating func append(valuesByColumn dictionary: [Swift.String : Any?])
+  public mutating func appendEmptyRow()
+  public mutating func insert(row: TabularData.DataFrame.Row, at index: Swift.Int)
+  public mutating func removeRow(at index: Swift.Int)
+  public func prefix(_ maxLength: Swift.Int) -> TabularData.DataFrame.Slice
+  public func suffix(_ maxLength: Swift.Int) -> TabularData.DataFrame.Slice
+  public mutating func append(rowsOf other: TabularData.DataFrame)
+  public mutating func append(_ other: TabularData.DataFrame)
+  public mutating func append(_ other: TabularData.DataFrame.Slice)
+  public func filter<T>(on columnName: Swift.String, _ type: T.Type, _ isIncluded: (T?) throws -> Swift.Bool) rethrows -> TabularData.DataFrame.Slice
+  public func filter<T>(on columnID: TabularData.ColumnID<T>, _ isIncluded: (T?) throws -> Swift.Bool) rethrows -> TabularData.DataFrame.Slice
+  public func filter(_ isIncluded: (TabularData.DataFrame.Row) throws -> Swift.Bool) rethrows -> TabularData.DataFrame.Slice
+  public func selecting<S>(columnNames: S) -> TabularData.DataFrame where S : Swift.Sequence, S.Element == Swift.String
+  public func selecting(columnNames: Swift.String...) -> TabularData.DataFrame
+  public typealias ColumnType = TabularData.AnyColumn
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public subscript(dynamicMember columnName: Swift.String) -> TabularData.AnyColumn {
+    get
+    set
+  }
+  public subscript(columnName: Swift.String) -> TabularData.AnyColumn {
+    get
+    set
+  }
+  @_disfavoredOverload public subscript<T>(columnName: Swift.String, type: T.Type = T.self) -> [T?] {
+    get
+    set
+  }
+  public subscript<T>(columnName: Swift.String, type: T.Type) -> TabularData.Column<T> {
+    get
+    set
+  }
+  public subscript<T>(id: TabularData.ColumnID<T>) -> TabularData.Column<T> {
+    get
+    set
+  }
+  public subscript<S>(columnNames: S) -> TabularData.DataFrame where S : Swift.Sequence, S.Element == Swift.String {
+    get
+  }
+  public subscript(column index: Swift.Int) -> TabularData.AnyColumn {
+    get
+    set
+  }
+  public subscript<T>(column index: Swift.Int, type: T.Type) -> TabularData.Column<T> {
+    get
+    set
+  }
+  public subscript(row index: Swift.Int) -> TabularData.DataFrame.Row {
+    get
+    set
+  }
+  public subscript<C>(mask: C) -> TabularData.DataFrame.Slice where C : Swift.Collection, C.Element == Swift.Bool {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame : Swift.Hashable {
+  public static func == (lhs: TabularData.DataFrame, rhs: TabularData.DataFrame) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame : Swift.ExpressibleByDictionaryLiteral {
+  public init(dictionaryLiteral elements: (Swift.String, [Any?])...)
+  public typealias Key = Swift.String
+  public typealias Value = [Any?]
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public protocol AnyColumnPrototype {
+  var name: Swift.String { get set }
+  func makeColumn(capacity: Swift.Int) -> TabularData.AnyColumn
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrameProtocol {
+  public func randomSplit(by proportion: Swift.Double, seed: Swift.Int? = nil) -> (TabularData.DataFrame.Slice, TabularData.DataFrame.Slice)
+  public func randomSplit<G>(by proportion: Swift.Double, using generator: inout G) -> (TabularData.DataFrame.Slice, TabularData.DataFrame.Slice) where G : Swift.RandomNumberGenerator
+  public func stratifiedSplit(on columnName: Swift.String, by proportion: Swift.Double, randomSeed: Swift.Int? = nil) -> (TabularData.DataFrame, TabularData.DataFrame)
+  public func stratifiedSplit(on columnNames: Swift.String..., by proportion: Swift.Double, randomSeed: Swift.Int? = nil) -> (TabularData.DataFrame, TabularData.DataFrame)
+  public func stratifiedSplit<T>(on columnID: TabularData.ColumnID<T>, by proportion: Swift.Double, randomSeed: Swift.Int? = nil) -> (TabularData.DataFrame, TabularData.DataFrame) where T : Swift.Hashable
+  public func stratifiedSplit<T0, T1>(on columnID0: TabularData.ColumnID<T0>, _ columnID1: TabularData.ColumnID<T1>, by proportion: Swift.Double, randomSeed: Swift.Int? = nil) -> (TabularData.DataFrame, TabularData.DataFrame) where T0 : Swift.Hashable, T1 : Swift.Hashable
+  public func stratifiedSplit<T0, T1, T2>(on columnID0: TabularData.ColumnID<T0>, _ columnID1: TabularData.ColumnID<T1>, _ columnID2: TabularData.ColumnID<T2>, by proportion: Swift.Double, randomSeed: Swift.Int? = nil) -> (TabularData.DataFrame, TabularData.DataFrame) where T0 : Swift.Hashable, T1 : Swift.Hashable, T2 : Swift.Hashable
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column where WrappedElement : Swift.Hashable {
+  public func summary() -> TabularData.CategoricalSummary<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice where WrappedElement : Swift.Hashable {
+  public func summary() -> TabularData.CategoricalSummary<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice where WrappedElement : Swift.Hashable {
+  public func summary() -> TabularData.CategoricalSummary<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.FilledColumn where Base.WrappedElement : Swift.Hashable {
+  public func summary() -> TabularData.CategoricalSummary<TabularData.FilledColumn<Base>.WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumnSlice {
+  public func summary() -> TabularData.AnyCategoricalSummary
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func + <L, R>(lhs: L, rhs: R) -> TabularData.Column<R.Element> where L : TabularData.OptionalColumnProtocol, R : TabularData.ColumnProtocol, L.WrappedElement : Swift.AdditiveArithmetic, L.WrappedElement == R.Element
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func + <L, R>(lhs: L, rhs: R) -> TabularData.Column<L.Element> where L : TabularData.ColumnProtocol, R : TabularData.OptionalColumnProtocol, L.Element : Swift.AdditiveArithmetic, L.Element == R.WrappedElement
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func - <L, R>(lhs: L, rhs: R) -> TabularData.Column<R.Element> where L : TabularData.OptionalColumnProtocol, R : TabularData.ColumnProtocol, L.WrappedElement : Swift.AdditiveArithmetic, L.WrappedElement == R.Element
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func - <L, R>(lhs: L, rhs: R) -> TabularData.Column<L.Element> where L : TabularData.ColumnProtocol, R : TabularData.OptionalColumnProtocol, L.Element : Swift.AdditiveArithmetic, L.Element == R.WrappedElement
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func * <L, R>(lhs: L, rhs: R) -> TabularData.Column<R.Element> where L : TabularData.OptionalColumnProtocol, R : TabularData.ColumnProtocol, L.WrappedElement : Swift.Numeric, L.WrappedElement == R.Element
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func * <L, R>(lhs: L, rhs: R) -> TabularData.Column<L.Element> where L : TabularData.ColumnProtocol, R : TabularData.OptionalColumnProtocol, L.Element : Swift.Numeric, L.Element == R.WrappedElement
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func / <L, R>(lhs: L, rhs: R) -> TabularData.Column<R.Element> where L : TabularData.OptionalColumnProtocol, R : TabularData.ColumnProtocol, L.WrappedElement : Swift.BinaryInteger, L.WrappedElement == R.Element
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func / <L, R>(lhs: L, rhs: R) -> TabularData.Column<L.Element> where L : TabularData.ColumnProtocol, R : TabularData.OptionalColumnProtocol, L.Element : Swift.BinaryInteger, L.Element == R.WrappedElement
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func / <L, R>(lhs: L, rhs: R) -> TabularData.Column<R.Element> where L : TabularData.OptionalColumnProtocol, R : TabularData.ColumnProtocol, L.WrappedElement : Swift.FloatingPoint, L.WrappedElement == R.Element
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public func / <L, R>(lhs: L, rhs: R) -> TabularData.Column<L.Element> where L : TabularData.ColumnProtocol, R : TabularData.OptionalColumnProtocol, L.Element : Swift.FloatingPoint, L.Element == R.WrappedElement
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum JSONType {
+  case integer
+  case boolean
+  case double
+  case date
+  case string
+  case array
+  case object
+  public static func == (a: TabularData.JSONType, b: TabularData.JSONType) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnProtocol where Self.Element : Swift.AdditiveArithmetic {
+  public static func + (lhs: Self, rhs: Self) -> TabularData.Column<Self.Element>
+  public static func - (lhs: Self, rhs: Self) -> TabularData.Column<Self.Element>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnProtocol where Self.Element : Swift.Numeric {
+  public static func * (lhs: Self, rhs: Self) -> TabularData.Column<Self.Element>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnProtocol where Self.Element : Swift.BinaryInteger {
+  public static func / (lhs: Self, rhs: Self) -> TabularData.Column<Self.Element>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnProtocol where Self.Element : Swift.FloatingPoint {
+  public static func / (lhs: Self, rhs: Self) -> TabularData.Column<Self.Element>
+}
+extension TabularData.ColumnProtocol {
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public static func + (lhs: Self, rhs: Self.Element) -> TabularData.Column<Self.Element> where Self.Element : Swift.AdditiveArithmetic
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public static func + (lhs: Self.Element, rhs: Self) -> TabularData.Column<Self.Element> where Self.Element : Swift.AdditiveArithmetic
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public static func - (lhs: Self, rhs: Self.Element) -> TabularData.Column<Self.Element> where Self.Element : Swift.AdditiveArithmetic
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public static func - (lhs: Self.Element, rhs: Self) -> TabularData.Column<Self.Element> where Self.Element : Swift.AdditiveArithmetic
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnProtocol where Self.Element : Swift.Numeric {
+  public static func * (lhs: Self, rhs: Self.Element) -> TabularData.Column<Self.Element>
+  public static func * (lhs: Self.Element, rhs: Self) -> TabularData.Column<Self.Element>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnProtocol where Self.Element : Swift.BinaryInteger {
+  public static func / (lhs: Self, rhs: Self.Element) -> TabularData.Column<Self.Element>
+  public static func / (lhs: Self.Element, rhs: Self) -> TabularData.Column<Self.Element>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnProtocol where Self.Element : Swift.FloatingPoint {
+  public static func / (lhs: Self, rhs: Self.Element) -> TabularData.Column<Self.Element>
+  public static func / (lhs: Self.Element, rhs: Self) -> TabularData.Column<Self.Element>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnProtocol where Self.Element : Swift.Comparable {
+  public static func < (lhs: Self, rhs: Self.Element) -> [Swift.Bool]
+  public static func < (lhs: Self.Element, rhs: Self) -> [Swift.Bool]
+  public static func <= (lhs: Self, rhs: Self.Element) -> [Swift.Bool]
+  public static func <= (lhs: Self.Element, rhs: Self) -> [Swift.Bool]
+  public static func > (lhs: Self, rhs: Self.Element) -> [Swift.Bool]
+  public static func > (lhs: Self.Element, rhs: Self) -> [Swift.Bool]
+  public static func >= (lhs: Self, rhs: Self.Element) -> [Swift.Bool]
+  public static func >= (lhs: Self.Element, rhs: Self) -> [Swift.Bool]
+  public static func == (lhs: Self, rhs: Self.Element) -> [Swift.Bool]
+  public static func == (lhs: Self.Element, rhs: Self) -> [Swift.Bool]
+  public static func != (lhs: Self, rhs: Self.Element) -> [Swift.Bool]
+  public static func != (lhs: Self.Element, rhs: Self) -> [Swift.Bool]
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct JSONReadingOptions {
+  public var dateParsers: [(Swift.String) -> Foundation.Date?]
+  public init()
+  public mutating func addDateParseStrategy<T>(_ strategy: T) where T : Foundation.ParseStrategy, T.ParseInput == Swift.String, T.ParseOutput == Foundation.Date
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum SummaryColumnIDs {
+  public static let columnName: TabularData.ColumnID<Swift.String>
+  public static let mean: TabularData.ColumnID<Swift.Double>
+  public static let standardDeviation: TabularData.ColumnID<Swift.Double>
+  public static let minimum: TabularData.ColumnID<Swift.Double>
+  public static let maximum: TabularData.ColumnID<Swift.Double>
+  public static let median: TabularData.ColumnID<Swift.Double>
+  public static let firstQuartile: TabularData.ColumnID<Swift.Double>
+  public static let thirdQuartile: TabularData.ColumnID<Swift.Double>
+  public static let mode: TabularData.ColumnID<[Any]>
+  public static let uniqueCount: TabularData.ColumnID<Swift.Int>
+  public static let noneCount: TabularData.ColumnID<Swift.Int>
+  public static let someCount: TabularData.ColumnID<Swift.Int>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrameProtocol {
+  public func writeCSV(to url: Foundation.URL, options: TabularData.CSVWritingOptions = .init()) throws
+  public func csvRepresentation(options: TabularData.CSVWritingOptions = .init()) throws -> Foundation.Data
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  @dynamicMemberLookup public struct Slice : TabularData.DataFrameProtocol {
+    public var base: TabularData.DataFrame {
+      get
+    }
+    public var rows: TabularData.DataFrame.Rows {
+      get
+      set
+    }
+    public var columns: [TabularData.AnyColumnSlice] {
+      get
+    }
+    public var shape: (rows: Swift.Int, columns: Swift.Int) {
+      get
+    }
+    public typealias ColumnType = TabularData.AnyColumnSlice
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame.Slice {
+  public subscript(dynamicMember columnName: Swift.String) -> TabularData.AnyColumnSlice {
+    get
+  }
+  public subscript(columnName: Swift.String) -> TabularData.AnyColumnSlice {
+    get
+  }
+  public subscript<T>(columnName: Swift.String, type: T.Type) -> TabularData.DiscontiguousColumnSlice<T> {
+    get
+  }
+  public subscript<T>(columnID: TabularData.ColumnID<T>) -> TabularData.DiscontiguousColumnSlice<T> {
+    get
+  }
+  public subscript<T>(column index: Swift.Int, type: T.Type) -> TabularData.DiscontiguousColumnSlice<T> {
+    get
+  }
+  public subscript<S>(columnNames: S) -> TabularData.DataFrame.Slice where S : Swift.Sequence, S.Element == Swift.String {
+    get
+  }
+  public func filter<T>(on columnName: Swift.String, _ type: T.Type, _ isIncluded: (T?) throws -> Swift.Bool) rethrows -> TabularData.DataFrame.Slice
+  public func filter<T>(on columnID: TabularData.ColumnID<T>, _ isIncluded: (T?) throws -> Swift.Bool) rethrows -> TabularData.DataFrame.Slice
+  public func prefix(_ length: Swift.Int) -> TabularData.DataFrame.Slice
+  public func prefix(through position: Swift.Int) -> TabularData.DataFrame.Slice
+  public func prefix(upTo position: Swift.Int) -> TabularData.DataFrame.Slice
+  public func suffix(_ length: Swift.Int) -> TabularData.DataFrame.Slice
+  public func suffix(from position: Swift.Int) -> TabularData.DataFrame.Slice
+  public func selecting<S>(columnNames: S) -> TabularData.DataFrame.Slice where S : Swift.Sequence, S.Element == Swift.String
+  public func selecting(columnNames: Swift.String...) -> TabularData.DataFrame.Slice
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame.Slice : Swift.Hashable {
+  public static func == (lhs: TabularData.DataFrame.Slice, rhs: TabularData.DataFrame.Slice) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct Column<WrappedElement> : TabularData.OptionalColumnProtocol {
+  public typealias Element = WrappedElement?
+  public var name: Swift.String
+  public var count: Swift.Int {
+    get
+  }
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public var missingCount: Swift.Int {
+    get
+  }
+  public var wrappedElementType: Any.Type {
+    get
+  }
+  public var prototype: TabularData.AnyColumnPrototype {
+    get
+  }
+  public init(name: Swift.String, capacity: Swift.Int)
+  public init(_ id: TabularData.ColumnID<WrappedElement>, capacity: Swift.Int)
+  public init<S>(name: Swift.String, contents: S) where S : Swift.Sequence, S.Element == TabularData.Column<WrappedElement>.Element
+  public init<S>(name: Swift.String, contents: S) where WrappedElement == S.Element, S : Swift.Sequence
+  public init<S>(_ id: TabularData.ColumnID<S.Element>, contents: S) where S : Swift.Sequence, S.Element == TabularData.Column<WrappedElement>.Element
+  public init<S>(_ id: TabularData.ColumnID<S.Element>, contents: S) where WrappedElement == S.Element, S : Swift.Sequence
+  public init(_ slice: TabularData.ColumnSlice<WrappedElement>)
+  public mutating func append(_ element: TabularData.Column<WrappedElement>.Element)
+  public mutating func append(_ element: WrappedElement)
+  public mutating func append<S>(contentsOf sequence: S) where S : Swift.Sequence, S.Element == TabularData.Column<WrappedElement>.Element
+  public mutating func append<S>(contentsOf sequence: S) where WrappedElement == S.Element, S : Swift.Sequence
+  public mutating func remove(at index: Swift.Int)
+  public func map<T>(_ transform: (TabularData.Column<WrappedElement>.Element) throws -> T?) rethrows -> TabularData.Column<T>
+  public func mapNonNil<T>(_ transform: (WrappedElement) throws -> T?) rethrows -> TabularData.Column<T>
+  public mutating func transform(_ transform: (TabularData.Column<WrappedElement>.Element) throws -> TabularData.Column<WrappedElement>.Element) rethrows
+  public mutating func transform(_ transform: (WrappedElement) throws -> WrappedElement) rethrows
+  public func filter(_ isIncluded: (TabularData.Column<WrappedElement>.Element) throws -> Swift.Bool) rethrows -> TabularData.DiscontiguousColumnSlice<WrappedElement>
+  public func eraseToAnyColumn() -> TabularData.AnyColumn
+  public typealias Index = Swift.Int
+  public typealias Indices = Swift.Range<Swift.Int>
+  public typealias Iterator = Swift.IndexingIterator<TabularData.Column<WrappedElement>>
+  public typealias SubSequence = TabularData.ColumnSlice<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column : Swift.RandomAccessCollection, Swift.MutableCollection {
+  public var startIndex: Swift.Int {
+    get
+  }
+  public var endIndex: Swift.Int {
+    get
+  }
+  public func index(after i: Swift.Int) -> Swift.Int
+  public func index(before i: Swift.Int) -> Swift.Int
+  public subscript(position: Swift.Int) -> TabularData.Column<WrappedElement>.Element {
+    get
+    set
+  }
+  @usableFromInline
+  internal func isNil(at index: Swift.Int) -> Swift.Bool
+  public subscript(bounds: Swift.Range<Swift.Int>) -> TabularData.ColumnSlice<WrappedElement> {
+    get
+    set
+  }
+  @inlinable public subscript<R>(range: R) -> TabularData.ColumnSlice<WrappedElement> where R : Swift.RangeExpression, R.Bound == Swift.Int {
+    get {
+            self[range.relative(to: self)]
+        }
+    set {
+            self[range.relative(to: self)] = newValue
+        }
+  }
+  public subscript<C>(mask: C) -> TabularData.DiscontiguousColumnSlice<WrappedElement> where C : Swift.Collection, C.Element == Swift.Bool {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column : Swift.Equatable where WrappedElement : Swift.Equatable {
+  public static func == (a: TabularData.Column<WrappedElement>, b: TabularData.Column<WrappedElement>) -> Swift.Bool
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column : Swift.Hashable where WrappedElement : Swift.Hashable {
+  public func distinct() -> TabularData.DiscontiguousColumnSlice<WrappedElement>
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column : Swift.Encodable where WrappedElement : Swift.Encodable {
+  public func encode(to encoder: Swift.Encoder) throws
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column : Swift.Decodable where WrappedElement : Swift.Decodable {
+  public init(from decoder: Swift.Decoder) throws
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct ColumnID<T> {
+  public var name: Swift.String
+  public init(_ name: Swift.String, _ type: T.Type)
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnID : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct ColumnSlice<WrappedElement> : TabularData.OptionalColumnProtocol {
+  public typealias Element = WrappedElement?
+  public typealias Index = Swift.Int
+  @usableFromInline
+  internal var slice: Swift.Slice<TabularData.Column<WrappedElement>>
+  @inlinable public var name: Swift.String {
+    get {
+            slice.base.name
+        }
+    set {
+            var newBase = slice.base
+            newBase.name = newValue
+            slice = Slice(base: newBase, bounds: slice.startIndex ..< slice.endIndex)
+        }
+  }
+  @inlinable public var wrappedElementType: Any.Type {
+    get {
+        WrappedElement.self
+    }
+  }
+  public var prototype: TabularData.AnyColumnPrototype {
+    get
+  }
+  @usableFromInline
+  internal init(_ slice: Swift.Slice<TabularData.Column<WrappedElement>>)
+  @usableFromInline
+  internal init(base: TabularData.Column<WrappedElement>, bounds: Swift.Range<Swift.Int>)
+  @inlinable public init(_ column: TabularData.Column<WrappedElement>) {
+        self.init(base: column, bounds: 0 ..< column.count)
+    }
+  @inlinable public func map<T>(_ transform: (TabularData.ColumnSlice<WrappedElement>.Element) throws -> T?) rethrows -> TabularData.Column<T> {
+        try Column<T>(name: name, contents: slice.map(transform))
+    }
+  public func filter(_ isIncluded: (TabularData.ColumnSlice<WrappedElement>.Element) throws -> Swift.Bool) rethrows -> TabularData.DiscontiguousColumnSlice<WrappedElement>
+  public func eraseToAnyColumn() -> TabularData.AnyColumnSlice
+  public typealias Indices = Swift.Range<TabularData.ColumnSlice<WrappedElement>.Index>
+  public typealias Iterator = Swift.IndexingIterator<TabularData.ColumnSlice<WrappedElement>>
+  public typealias SubSequence = TabularData.ColumnSlice<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice : Swift.RandomAccessCollection, Swift.MutableCollection {
+  @inlinable public var startIndex: Swift.Int {
+    get { slice.startIndex }
+  }
+  @inlinable public var endIndex: Swift.Int {
+    get { slice.endIndex }
+  }
+  @inlinable public func index(after i: Swift.Int) -> Swift.Int {
+        slice.index(after: i)
+    }
+  @inlinable public func index(before i: Swift.Int) -> Swift.Int {
+        slice.index(before: i)
+    }
+  @inlinable public var count: Swift.Int {
+    get {
+        slice.count
+    }
+  }
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  @inlinable public var missingCount: Swift.Int {
+    get {
+        indices.filter({ slice.base.isNil(at: $0) }).count
+    }
+  }
+  @inlinable public subscript(position: Swift.Int) -> TabularData.ColumnSlice<WrappedElement>.Element {
+    get {
+            slice[position]
+        }
+    set {
+            slice[position] = newValue
+        }
+  }
+  public func isNil(at index: Swift.Int) -> Swift.Bool
+  @inlinable public subscript(range: Swift.Range<Swift.Int>) -> TabularData.ColumnSlice<WrappedElement> {
+    get {
+            ColumnSlice(slice[range])
+        }
+    set {
+            slice[range] = newValue.slice
+        }
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice : Swift.Equatable where WrappedElement : Swift.Equatable {
+  public static func == (lhs: TabularData.ColumnSlice<WrappedElement>, rhs: TabularData.ColumnSlice<WrappedElement>) -> Swift.Bool
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice : Swift.Hashable where WrappedElement : Swift.Hashable {
+  public func hash(into hasher: inout Swift.Hasher)
+  public func distinct() -> TabularData.DiscontiguousColumnSlice<WrappedElement>
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+@usableFromInline
+internal struct PackedOptionalsBuffer<Element> {
+  @usableFromInline
+  internal let rawBuffer: Swift.UnsafeMutableRawBufferPointer
+  @inlinable internal static var headerSize: Swift.Int {
+    get {
+        Alignment.roundToAligment(MemoryLayout<Header>.stride)
+    }
+  }
+  @inlinable internal static func nilBitmapSize(capacity: Swift.Int) -> Swift.Int {
+        Alignment.roundToAligment(capacity / 8)
+    }
+  @inlinable internal var nilBitmapSize: Swift.Int {
+    get {
+        Self.nilBitmapSize(capacity: capacity)
+    }
+  }
+  @inlinable internal var headerAddress: Swift.UnsafeMutablePointer<TabularData.PackedOptionalsBuffer<Element>.Header> {
+    get {
+        rawBuffer.baseAddress!.assumingMemoryBound(to: Header.self)
+    }
+  }
+  @inlinable internal var nilBitmapBuffer: Swift.UnsafeMutableBufferPointer<Swift.UInt8> {
+    get {
+        let address = rawBuffer.baseAddress!
+            .advanced(by: Self.headerSize)
+            .assumingMemoryBound(to: UInt8.self)
+        return UnsafeMutableBufferPointer(start: address, count: nilBitmapSize)
+    }
+  }
+  @inlinable internal var firstElementAddress: Swift.UnsafeMutablePointer<Element> {
+    get {
+        rawBuffer.baseAddress!
+            .advanced(by: Self.headerSize)
+            .advanced(by: nilBitmapSize)
+            .assumingMemoryBound(to: Element.self)
+    }
+  }
+  @inlinable internal var elementsBuffer: Swift.UnsafeMutableBufferPointer<Element> {
+    get {
+        UnsafeMutableBufferPointer(start: firstElementAddress, count: capacity)
+    }
+  }
+  @inlinable internal var capacity: Swift.Int {
+    get {
+        headerAddress.pointee.capacity
+    }
+  }
+  @inlinable internal var count: Swift.Int {
+    get {
+            headerAddress.pointee.count
+        }
+    nonmutating set {
+            headerAddress.pointee.count = newValue
+        }
+  }
+  @inlinable internal var nilCount: Swift.Int {
+    get {
+            headerAddress.pointee.nilCount
+        }
+    nonmutating set {
+            headerAddress.pointee.nilCount = newValue
+        }
+  }
+  @usableFromInline
+  internal init(rawBuffer: Swift.UnsafeMutableRawBufferPointer)
+  @inlinable internal static func allocate(capacity: Swift.Int) -> TabularData.PackedOptionalsBuffer<Element> {
+        let headerSize = Self.headerSize
+        let nilBitmapSize = Self.nilBitmapSize(capacity: capacity)
+
+        let elementsBufferSize = MemoryLayout<Element>.stride * capacity
+        let rawBuffer = UnsafeMutableRawBufferPointer.allocate(
+            byteCount: headerSize + nilBitmapSize + elementsBufferSize,
+            alignment: Alignment.bufferAlignment
+        )
+
+        rawBuffer.baseAddress!
+            .bindMemory(to: Header.self, capacity: 1)
+            .initialize(to: Header(capacity: capacity))
+
+        rawBuffer.baseAddress!
+            .advanced(by: headerSize)
+            .bindMemory(to: UInt8.self, capacity: nilBitmapSize)
+            .initialize(repeating: 0, count: nilBitmapSize)
+
+        rawBuffer.baseAddress!
+            .advanced(by: headerSize + nilBitmapSize)
+            .bindMemory(to: Element.self, capacity: capacity)
+
+        return PackedOptionalsBuffer<Element>(rawBuffer: rawBuffer)
+    }
+  @inlinable internal init(copying other: TabularData.PackedOptionalsBuffer<Element>, capacity: Swift.Int) {
+        precondition(capacity >= other.capacity)
+
+        let headerSize = Self.headerSize
+        let nilBitmapSize = Self.nilBitmapSize(capacity: capacity)
+
+        let elementsBufferSize = MemoryLayout<Element>.stride * capacity
+        self.init(rawBuffer: UnsafeMutableRawBufferPointer.allocate(
+            byteCount: headerSize + nilBitmapSize + elementsBufferSize,
+            alignment: Alignment.bufferAlignment
+        ))
+
+        rawBuffer.baseAddress!
+            .bindMemory(to: Header.self, capacity: 1)
+            .initialize(
+                to: Header(
+                    capacity: capacity,
+                    count: other.count,
+                    nilCount: other.nilCount
+                )
+            )
+
+        let nilBuffer = rawBuffer.baseAddress!
+            .advanced(by: headerSize)
+            .bindMemory(to: UInt8.self, capacity: nilBitmapSize)
+        nilBuffer.initialize(from: other.nilBitmapBuffer.baseAddress!, count: other.nilBitmapSize)
+        (nilBuffer + other.nilBitmapSize).initialize(repeating: 0, count: nilBitmapSize - other.nilBitmapSize)
+
+        let elements = rawBuffer.baseAddress!
+            .advanced(by: headerSize + nilBitmapSize)
+            .bindMemory(to: Element.self, capacity: capacity)
+
+        let otherElements = other.firstElementAddress
+        for i in 0 ..< count where !isNil(at: i) {
+            (elements + i).initialize(to: (otherElements + i).pointee)
+        }
+    }
+  @inlinable internal init(moving other: TabularData.PackedOptionalsBuffer<Element>, capacity: Swift.Int) {
+        precondition(capacity >= other.capacity)
+
+        let headerSize = Self.headerSize
+        let nilBitmapSize = Self.nilBitmapSize(capacity: capacity)
+
+        let elementsBufferSize = MemoryLayout<Element>.stride * capacity
+        self.init(rawBuffer: UnsafeMutableRawBufferPointer.allocate(
+            byteCount: headerSize + nilBitmapSize + elementsBufferSize,
+            alignment: Alignment.bufferAlignment
+        ))
+
+        rawBuffer.baseAddress!
+            .bindMemory(to: Header.self, capacity: 1)
+            .initialize(
+                to: Header(
+                    capacity: capacity,
+                    count: other.count,
+                    nilCount: other.nilCount
+                )
+            )
+
+        let nilBuffer = rawBuffer.baseAddress!
+            .advanced(by: headerSize)
+            .bindMemory(to: UInt8.self, capacity: nilBitmapSize)
+        nilBuffer.initialize(from: other.nilBitmapBuffer.baseAddress!, count: other.nilBitmapSize)
+        (nilBuffer + other.nilBitmapSize).initialize(repeating: 0, count: nilBitmapSize - other.nilBitmapSize)
+
+        let elements = rawBuffer.baseAddress!
+            .advanced(by: headerSize + nilBitmapSize)
+            .bindMemory(to: Element.self, capacity: capacity)
+
+        let otherElements = other.firstElementAddress
+        for i in 0 ..< count where !isNil(at: i) {
+            (elements + i).moveInitialize(from: otherElements + i, count: 1)
+        }
+
+        // Leave the other buffer in a consisten state
+        other.nilBitmapBuffer.assign(repeating: 0)
+        other.nilCount = count
+    }
+  @inlinable internal func deallocate() {
+        let elements = firstElementAddress
+        for i in 0 ..< count where !isNil(at: i) {
+            (elements + i).deinitialize(count: 1)
+        }
+        nilBitmapBuffer.baseAddress!.deinitialize(count: nilBitmapSize)
+        headerAddress.deinitialize(count: 1)
+        rawBuffer.deallocate()
+    }
+  @inlinable internal func isNil(at index: Swift.Int) -> Swift.Bool {
+        let (byteIndex, bitIndex) = index.quotientAndRemainder(dividingBy: 8)
+        return nilBitmapBuffer[byteIndex] & (1 << bitIndex) == 0
+    }
+  @inlinable internal func setNil(at index: Swift.Int) {
+        let (byteIndex, bitIndex) = index.quotientAndRemainder(dividingBy: 8)
+        nilBitmapBuffer[byteIndex] &= ~(1 << bitIndex)
+    }
+  @inlinable internal func setNonNil(at index: Swift.Int) {
+        let (byteIndex, bitIndex) = index.quotientAndRemainder(dividingBy: 8)
+        nilBitmapBuffer[byteIndex] |= (1 << bitIndex)
+    }
+  @inlinable internal func resize(by change: Swift.Int) {
+        assert(count + change >= 0)
+        assert(count + change <= capacity)
+
+        let headerAddress = self.headerAddress
+        let elements = firstElementAddress
+
+        if change < 0 {
+            for i in count + change ..< count {
+                if isNil(at: i) {
+                    headerAddress.pointee.nilCount -= 1
+                } else {
+                    (elements + i).deinitialize(count: 1)
+                    setNil(at: i)
+                }
+            }
+        } else {
+            headerAddress.pointee.nilCount += change
+        }
+
+        headerAddress.pointee.count += change
+    }
+  @inlinable internal func clear(at index: Swift.Int) {
+        guard !isNil(at: index) else {
+            return
+        }
+
+        (firstElementAddress + index).deinitialize(count: 1)
+        setNil(at: index)
+        nilCount += 1
+    }
+  @inlinable internal func append(_ newElement: Element?) {
+        assert(count < capacity)
+        assert(isNil(at: count))
+
+        if let newElement = newElement {
+            (firstElementAddress + count).initialize(to: newElement)
+            setNonNil(at: count)
+        } else {
+            nilCount += 1
+        }
+        count += 1
+    }
+  @inlinable internal func swapAt(_ i: Swift.Int, _ j: Swift.Int) {
+        let elements = firstElementAddress
+
+        switch (isNil(at: i), isNil(at: j)) {
+        case (true, true):
+            return
+        case (true, false):
+            (elements + i).moveInitialize(from: elements + j, count: 1)
+            setNonNil(at: i)
+            setNil(at: j)
+        case (false, true):
+            (elements + j).moveInitialize(from: elements + i, count: 1)
+            setNonNil(at: j)
+            setNil(at: i)
+        case (false, false):
+            swap(&elements[j], &elements[i])
+        }
+    }
+  @inlinable internal func move(from i: Swift.Int, to j: Swift.Int) {
+        let elements = firstElementAddress
+
+        switch (isNil(at: i), isNil(at: j)) {
+        case (true, true):
+            return
+        case (true, false):
+            (elements + j).deinitialize(count: 1)
+            setNil(at: j)
+            nilCount += 1
+        case (false, true):
+            (elements + j).moveInitialize(from: elements + i, count: 1)
+            setNil(at: i)
+            setNonNil(at: j)
+        case (false, false):
+            (elements + j).moveAssign(from: elements + i, count: 1)
+            setNil(at: i)
+            nilCount += 1
+        }
+    }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.PackedOptionalsBuffer : Swift.MutableCollection, Swift.RandomAccessCollection {
+  @inlinable internal var startIndex: Swift.Int {
+    get { 0 }
+  }
+  @inlinable internal var endIndex: Swift.Int {
+    get { count }
+  }
+  @inlinable internal func index(after i: Swift.Int) -> Swift.Int { i + 1 }
+  @inlinable internal func index(before i: Swift.Int) -> Swift.Int { i - 1 }
+  @inlinable internal func distance(from start: Swift.Int, to end: Swift.Int) -> Swift.Int { end - start }
+  @inlinable internal var isEmpty: Swift.Bool {
+    get { count == 0 }
+  }
+  @inlinable internal var underestimatedCount: Swift.Int {
+    get { count }
+  }
+  @inlinable internal subscript(position: Swift.Int) -> Element? {
+    get {
+            return isNil(at: position) ? nil : firstElementAddress[position]
+        }
+    nonmutating set {
+            guard let newValue = newValue else {
+                clear(at: position)
+                return
+            }
+            if isNil(at: position) {
+                (firstElementAddress + position).initialize(to: newValue)
+                setNonNil(at: position)
+                nilCount -= 1
+            } else {
+                firstElementAddress[position] = newValue
+            }
+        }
+  }
+  @usableFromInline
+  internal typealias Index = Swift.Int
+  @usableFromInline
+  internal typealias Indices = Swift.Range<TabularData.PackedOptionalsBuffer<Element>.Index>
+  @usableFromInline
+  internal typealias Iterator = Swift.IndexingIterator<TabularData.PackedOptionalsBuffer<Element>>
+  @usableFromInline
+  internal typealias SubSequence = Swift.Slice<TabularData.PackedOptionalsBuffer<Element>>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.PackedOptionalsBuffer : Swift.RangeReplaceableCollection {
+  @usableFromInline
+  internal init()
+  @inlinable internal func replaceSubrange<C>(_ subrange: Swift.Range<Swift.Int>, with newCount: Swift.Int, elementsOf newValues: C) where C : Swift.Collection, C.Element == Element? {
+        let oldCount = self.count
+        let eraseCount = subrange.count
+        let growth = newCount - eraseCount
+
+        let oldTailIndex = subrange.upperBound
+        let newTailIndex = oldTailIndex + growth
+        let tailCount = oldCount - subrange.upperBound
+
+        if growth > 0 {
+            resize(by: growth)
+            // Slide the tail part of the buffer forwards, in reverse order
+            // so as not to self-clobber.
+            for i in (oldTailIndex ..< newTailIndex).reversed() {
+                swapAt(i, i + growth)
+            }
+
+            // Assign over the original subrange
+            var i = newValues.startIndex
+            for j in subrange {
+                self[j] = newValues[i]
+                newValues.formIndex(after: &i)
+            }
+            // Initialize the hole left by sliding the tail forward
+            for j in oldTailIndex..<newTailIndex {
+                self[j] = newValues[i]
+                newValues.formIndex(after: &i)
+            }
+            assert(i == newValues.endIndex, "invalid Collection: count differed in successive traversals")
+        } else { // The buffer is not growing.
+            // Assign all the new elements into the start of the subrange
+            var i = subrange.lowerBound
+            var j = newValues.startIndex
+            for _ in 0..<newCount {
+                self[i] = newValues[j]
+                i += 1
+                newValues.formIndex(after: &j)
+            }
+            assert(j == newValues.endIndex, "invalid Collection: count differed in successive traversals")
+
+            // Exit the method if the size didn't change.
+            if growth == 0 {
+                return
+            }
+
+            // Move the tail backward to cover the shrinkage.
+            let shrinkage = -growth
+            if tailCount > shrinkage { // If the tail length exceeds the shrinkage
+                // Assign over the rest of the replaced range with the first part of the tail.
+                for i in oldTailIndex ..< oldTailIndex + shrinkage {
+                    move(from: i, to: i + growth)
+                }
+
+                // Slide the rest of the tail back
+                for i in oldTailIndex + shrinkage ..< oldTailIndex + tailCount {
+                    move(from: i, to: i - shrinkage)
+                }
+            } else { // Tail fits within erased elements
+                // Assign over the start of the replaced range with the tail
+                for i in oldTailIndex ..< oldTailIndex + tailCount {
+                    move(from: i, to: i + growth)
+                }
+
+                for i in newTailIndex + tailCount ..< newTailIndex + shrinkage {
+                    clear(at: i)
+                }
+            }
+            resize(by: growth)
+        }
+    }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.PackedOptionalsBuffer : Swift.CustomReflectable {
+  @usableFromInline
+  internal var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.PackedOptionalsBuffer {
+  @usableFromInline
+  internal struct Header {
+    @usableFromInline
+    internal var capacity: Swift.Int
+    @usableFromInline
+    internal var count: Swift.Int
+    @usableFromInline
+    internal var nilCount: Swift.Int
+    @usableFromInline
+    internal init(capacity: Swift.Int, count: Swift.Int = 0, nilCount: Swift.Int = 0)
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+@usableFromInline
+internal struct Alignment {
+  @usableFromInline
+  internal static let bufferAlignment: Swift.Int
+  @inlinable internal static func roundToAligment(_ size: Swift.Int) -> Swift.Int {
+        return bufferAlignment * ((size - 1) / bufferAlignment + 1)
+    }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public func summary() -> TabularData.DataFrame
+  public func summary(of columnNames: Swift.String...) -> TabularData.DataFrame
+  public func summary(ofColumns columnIndices: Swift.Int...) -> TabularData.DataFrame
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame.Slice {
+  public func summary() -> TabularData.DataFrame
+  public func summary(of columnNames: Swift.String...) -> TabularData.DataFrame
+  public func summary(ofColumns columnIndices: Swift.Int...) -> TabularData.DataFrame
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public mutating func combineColumns<E1, E2, R>(_ columnName1: Swift.String, _ columnName2: Swift.String, into newColumnName: Swift.String, transform: (E1?, E2?) throws -> R?) rethrows
+  public mutating func combineColumns<E1, E2, R>(_ columnID1: TabularData.ColumnID<E1>, _ columnID2: TabularData.ColumnID<E2>, into newColumnName: Swift.String, transform: (E1?, E2?) throws -> R?) rethrows
+  public mutating func combineColumns<E1, E2, E3, R>(_ columnName1: Swift.String, _ columnName2: Swift.String, _ columnName3: Swift.String, into newColumnName: Swift.String, transform: (E1?, E2?, E3?) throws -> R?) rethrows
+  public mutating func combineColumns<E1, E2, E3, R>(_ columnID1: TabularData.ColumnID<E1>, _ columnID2: TabularData.ColumnID<E2>, _ columnID3: TabularData.ColumnID<E3>, into newColumnName: Swift.String, transform: (E1?, E2?, E3?) throws -> R?) rethrows
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum SFrameReadingError : Swift.Error {
+  case missingArchive
+  case badArchive(Swift.String)
+  case unsupportedArchive(Swift.String)
+  case unsupportedType(Swift.Int)
+  case unsupportedLayout(Swift.String)
+  case badEncoding(Swift.String)
+  case missingColumn(Swift.String)
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.SFrameReadingError : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public init(contentsOfCSVFile url: Foundation.URL, columns: [Swift.String]? = nil, rows: Swift.Range<Swift.Int>? = nil, types: [Swift.String : TabularData.CSVType] = [:], options: TabularData.CSVReadingOptions = .init()) throws
+  public init(csvData data: Foundation.Data, columns: [Swift.String]? = nil, rows: Swift.Range<Swift.Int>? = nil, types: [Swift.String : TabularData.CSVType] = [:], options: TabularData.CSVReadingOptions = .init()) throws
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public protocol DataFrameProtocol {
+  associatedtype ColumnType : TabularData.AnyColumnProtocol
+  var base: TabularData.DataFrame { get }
+  var rows: TabularData.DataFrame.Rows { get set }
+  var columns: [Self.ColumnType] { get }
+  var shape: (rows: Swift.Int, columns: Swift.Int) { get }
+  subscript(range: Swift.Range<Swift.Int>) -> TabularData.DataFrame.Slice { get set }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public var base: TabularData.DataFrame {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrameProtocol {
+  public var isEmpty: Swift.Bool {
+    get
+  }
+  public subscript(range: Swift.Range<Swift.Int>) -> TabularData.DataFrame.Slice {
+    get
+    set
+  }
+  @inlinable public subscript<R>(r: R) -> TabularData.DataFrame.Slice where R : Swift.RangeExpression, R.Bound == Swift.Int {
+    get {
+            self[r.relative(to: rows.indices)]
+        }
+    set {
+            self[r.relative(to: rows.indices)] = newValue
+        }
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct AnyCategoricalSummary : Swift.Equatable {
+  public var someCount: Swift.Int
+  public var noneCount: Swift.Int
+  public var totalCount: Swift.Int {
+    get
+  }
+  public var uniqueCount: Swift.Int
+  public var mode: [Any]
+  public var modeType: Any.Type
+  public init<T>(_ summary: TabularData.CategoricalSummary<T>) where T : Swift.Hashable
+  public init(_ summary: TabularData.CategoricalSummary<Swift.AnyHashable>)
+  public static func == (lhs: TabularData.AnyCategoricalSummary, rhs: TabularData.AnyCategoricalSummary) -> Swift.Bool
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column {
+  public func decoded<T, Decoder>(_ type: T.Type, using decoder: Decoder) throws -> TabularData.Column<T> where WrappedElement == Decoder.Input, T : Swift.Decodable, Decoder : Combine.TopLevelDecoder
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumn {
+  public func decoded<T, Decoder>(_ type: T.Type, using decoder: Decoder) throws -> TabularData.AnyColumn where T : Swift.Decodable, Decoder : Combine.TopLevelDecoder
+  public mutating func decode<T, Decoder>(_ type: T.Type, using decoder: Decoder) throws where T : Swift.Decodable, Decoder : Combine.TopLevelDecoder
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public mutating func decode<T, Decoder>(_ type: T.Type, inColumn columnName: Swift.String, using decoder: Decoder) throws where T : Swift.Decodable, Decoder : Combine.TopLevelDecoder
+  public mutating func decode<T, Decoder>(_ type: T.Type, inColumn id: TabularData.ColumnID<Decoder.Input>, using decoder: Decoder) throws where T : Swift.Decodable, Decoder : Combine.TopLevelDecoder
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct ColumnDecodingError : Swift.Error, Foundation.LocalizedError, Swift.CustomDebugStringConvertible {
+  public var columnName: Swift.String
+  public var rowIndex: Swift.Int
+  public var decodingError: Swift.DecodingError
+  public init(columnName: Swift.String, rowIndex: Swift.Int, decodingError: Swift.DecodingError)
+  public var debugDescription: Swift.String {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public protocol GroupSummaries : Swift.CustomStringConvertible {
+  subscript(keys: Any?...) -> TabularData.DataFrame? { get }
+  var description: Swift.String { get }
+  func description(options: TabularData.FormattingOptions) -> Swift.String
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrameProtocol {
+  public func sorted(on columnName: Swift.String, order: TabularData.Order = .ascending) -> TabularData.DataFrame
+  public func sorted<T>(on columnName: Swift.String, _ type: T.Type, order: TabularData.Order = .ascending) -> TabularData.DataFrame where T : Swift.Comparable
+  public func sorted<T>(on columnID: TabularData.ColumnID<T>, order: TabularData.Order = .ascending) -> TabularData.DataFrame where T : Swift.Comparable
+  public func sorted<T0, T1>(on columnID0: TabularData.ColumnID<T0>, _ columnID1: TabularData.ColumnID<T1>, order: TabularData.Order = .ascending) -> TabularData.DataFrame where T0 : Swift.Comparable, T1 : Swift.Comparable
+  public func sorted<T0, T1, T2>(on columnID0: TabularData.ColumnID<T0>, _ columnID1: TabularData.ColumnID<T1>, _ columnID2: TabularData.ColumnID<T2>, order: TabularData.Order = .ascending) -> TabularData.DataFrame where T0 : Swift.Comparable, T1 : Swift.Comparable, T2 : Swift.Comparable
+  public func sorted<T>(on columnName: Swift.String, _ type: T.Type, by areInIncreasingOrder: (T, T) throws -> Swift.Bool) rethrows -> TabularData.DataFrame
+  public func sorted<T>(on columnID: TabularData.ColumnID<T>, by areInIncreasingOrder: (T, T) throws -> Swift.Bool) rethrows -> TabularData.DataFrame
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public mutating func sort(on columnName: Swift.String, order: TabularData.Order = .ascending)
+  public mutating func sort<T>(on columnName: Swift.String, _ type: T.Type, order: TabularData.Order = .ascending) where T : Swift.Comparable
+  public mutating func sort<T>(on columnID: TabularData.ColumnID<T>, order: TabularData.Order = .ascending) where T : Swift.Comparable
+  public mutating func sort<T0, T1>(on columnID0: TabularData.ColumnID<T0>, _ columnID1: TabularData.ColumnID<T1>, order: TabularData.Order = .ascending) where T0 : Swift.Comparable, T1 : Swift.Comparable
+  public mutating func sort<T0, T1, T2>(on columnID0: TabularData.ColumnID<T0>, _ columnID1: TabularData.ColumnID<T1>, _ columnID2: TabularData.ColumnID<T2>, order: TabularData.Order = .ascending) where T0 : Swift.Comparable, T1 : Swift.Comparable, T2 : Swift.Comparable
+  public mutating func sort<T>(on columnID: TabularData.ColumnID<T>, by areInIncreasingOrder: (T, T) throws -> Swift.Bool) rethrows
+  public mutating func sort<T>(on columnName: Swift.String, _ type: T.Type, by areInIncreasingOrder: (T, T) throws -> Swift.Bool) rethrows
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum JSONReadingError : Swift.Error {
+  case unsupportedStructure
+  case wrongType(row: Swift.Int, column: Swift.String, expectedType: TabularData.JSONType, value: Any)
+  case incompatibleValues(column: Swift.String)
+  case failedToParse(row: Swift.Int, column: Swift.String, type: TabularData.JSONType, contents: Swift.String)
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.JSONReadingError : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct CategoricalSummary<Element> : Swift.Hashable, Swift.CustomDebugStringConvertible where Element : Swift.Hashable {
+  public var someCount: Swift.Int
+  public var noneCount: Swift.Int
+  public var totalCount: Swift.Int {
+    get
+  }
+  public var uniqueCount: Swift.Int
+  public var mode: [Element]
+  public init()
+  public init(someCount: Swift.Int, noneCount: Swift.Int, uniqueCount: Swift.Int, mode: [Element])
+  public var debugDescription: Swift.String {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+  public static func == (a: TabularData.CategoricalSummary<Element>, b: TabularData.CategoricalSummary<Element>) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame : Swift.CustomStringConvertible, Swift.CustomDebugStringConvertible, Swift.CustomReflectable {
+  public var description: Swift.String {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame.Slice : Swift.CustomStringConvertible, Swift.CustomDebugStringConvertible, Swift.CustomReflectable {
+  public var description: Swift.String {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame.Row : Swift.CustomStringConvertible, Swift.CustomDebugStringConvertible, Swift.CustomReflectable {
+  public var description: Swift.String {
+    get
+  }
+  public func description(options: TabularData.FormattingOptions) -> Swift.String
+  public var debugDescription: Swift.String {
+    get
+  }
+  public var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrameProtocol {
+  public func description(options: TabularData.FormattingOptions) -> Swift.String
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum CSVReadingError : Swift.Error {
+  case badEncoding(row: Swift.Int, column: Swift.Int, cellContents: Foundation.Data)
+  case unsupportedEncoding(Swift.String)
+  case misplacedQuote(row: Swift.Int, column: Swift.Int)
+  case wrongNumberOfColumns(row: Swift.Int, columns: Swift.Int, expected: Swift.Int)
+  case failedToParse(row: Swift.Int, column: Swift.Int, type: TabularData.CSVType, cellContents: Foundation.Data)
+  case missingColumn(columnName: Swift.String)
+  public var row: Swift.Int {
+    get
+  }
+  public var column: Swift.Int? {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.CSVReadingError : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column {
+  public static func += (lhs: inout TabularData.Column<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.AdditiveArithmetic
+  public static func -= (lhs: inout TabularData.Column<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.AdditiveArithmetic
+  public static func *= (lhs: inout TabularData.Column<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.Numeric
+  public static func /= (lhs: inout TabularData.Column<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.BinaryInteger
+  public static func /= (lhs: inout TabularData.Column<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.FloatingPoint
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice {
+  public static func += (lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.AdditiveArithmetic
+  public static func -= (lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.AdditiveArithmetic
+  public static func *= (lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.Numeric
+  public static func /= (lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.BinaryInteger
+  public static func /= (lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.FloatingPoint
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice {
+  public static func += (lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.AdditiveArithmetic
+  public static func -= (lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.AdditiveArithmetic
+  public static func *= (lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.Numeric
+  public static func /= (lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.BinaryInteger
+  public static func /= (lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: WrappedElement) where WrappedElement : Swift.FloatingPoint
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct ShapedData<Element> {
+  public let shape: [Swift.Int]
+  public let strides: [Swift.Int]
+  public let contents: [Element]
+  public init(shape: [Swift.Int], strides: [Swift.Int], contents: [Element])
+  public subscript(indices: Swift.Int...) -> Element {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ShapedData : Swift.Equatable where Element : Swift.Equatable {
+  public static func == (a: TabularData.ShapedData<Element>, b: TabularData.ShapedData<Element>) -> Swift.Bool
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ShapedData : Swift.Hashable where Element : Swift.Hashable {
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct DiscontiguousColumnSlice<WrappedElement> : TabularData.OptionalColumnProtocol {
+  public typealias Element = WrappedElement?
+  public typealias Index = Swift.Int
+  public var name: Swift.String {
+    get
+    set
+  }
+  @inlinable public var wrappedElementType: Any.Type {
+    get {
+        WrappedElement.self
+    }
+  }
+  public var prototype: TabularData.AnyColumnPrototype {
+    get
+  }
+  public init(_ column: TabularData.Column<WrappedElement>)
+  public init(column: TabularData.Column<WrappedElement>, ranges: [Swift.Range<Swift.Int>])
+  public func map<T>(_ transform: (TabularData.DiscontiguousColumnSlice<WrappedElement>.Element) throws -> T?) rethrows -> TabularData.Column<T>
+  public func filter(_ isIncluded: (TabularData.DiscontiguousColumnSlice<WrappedElement>.Element) throws -> Swift.Bool) rethrows -> TabularData.DiscontiguousColumnSlice<WrappedElement>
+  public func eraseToAnyColumn() -> TabularData.AnyColumnSlice
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice : Swift.BidirectionalCollection, Swift.MutableCollection {
+  public var startIndex: Swift.Int {
+    get
+  }
+  public var endIndex: Swift.Int {
+    get
+  }
+  public func index(after i: Swift.Int) -> Swift.Int
+  public func index(before i: Swift.Int) -> Swift.Int
+  public var count: Swift.Int {
+    get
+  }
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public var missingCount: Swift.Int {
+    get
+  }
+  public subscript(position: Swift.Int) -> TabularData.DiscontiguousColumnSlice<WrappedElement>.Element {
+    get
+    set
+  }
+  public func isNil(at index: Swift.Int) -> Swift.Bool
+  public subscript(range: Swift.Range<Swift.Int>) -> TabularData.DiscontiguousColumnSlice<WrappedElement> {
+    get
+    set
+  }
+  @inlinable public subscript<R>(range: R) -> TabularData.DiscontiguousColumnSlice<WrappedElement> where R : Swift.RangeExpression, R.Bound == Swift.Int {
+    get {
+            self[range.relative(to: self)]
+        }
+    set {
+            self[range.relative(to: self)] = newValue
+        }
+  }
+  @inlinable public subscript(range: (Swift.UnboundedRange_) -> ()) -> TabularData.DiscontiguousColumnSlice<WrappedElement> {
+    get {
+            self[startIndex...]
+        }
+    set {
+            self[startIndex...] = newValue
+        }
+  }
+  public typealias Indices = Swift.DefaultIndices<TabularData.DiscontiguousColumnSlice<WrappedElement>>
+  public typealias Iterator = Swift.IndexingIterator<TabularData.DiscontiguousColumnSlice<WrappedElement>>
+  public typealias SubSequence = TabularData.DiscontiguousColumnSlice<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice : Swift.Equatable where WrappedElement : Swift.Equatable {
+  public static func == (lhs: TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: TabularData.DiscontiguousColumnSlice<WrappedElement>) -> Swift.Bool
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice : Swift.Hashable where WrappedElement : Swift.Hashable {
+  public func hash(into hasher: inout Swift.Hasher)
+  public func distinct() -> TabularData.DiscontiguousColumnSlice<WrappedElement>
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column {
+  public static func += <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, WrappedElement == C.Element, C : Swift.Collection
+  public static func += <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, C : Swift.Collection, C.Element == TabularData.Column<WrappedElement>.Element
+  public static func -= <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, WrappedElement == C.Element, C : Swift.Collection
+  public static func -= <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, C : Swift.Collection, C.Element == TabularData.Column<WrappedElement>.Element
+  public static func *= <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.Numeric, WrappedElement == C.Element, C : Swift.Collection
+  public static func *= <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.Numeric, C : Swift.Collection, C.Element == TabularData.Column<WrappedElement>.Element
+  public static func /= <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.BinaryInteger, WrappedElement == C.Element, C : Swift.Collection
+  public static func /= <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.BinaryInteger, C : Swift.Collection, C.Element == TabularData.Column<WrappedElement>.Element
+  public static func /= <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.FloatingPoint, WrappedElement == C.Element, C : Swift.Collection
+  public static func /= <C>(lhs: inout TabularData.Column<WrappedElement>, rhs: C) where WrappedElement : Swift.FloatingPoint, C : Swift.Collection, C.Element == TabularData.Column<WrappedElement>.Element
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice {
+  public static func += <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, WrappedElement == C.Element, C : Swift.Collection
+  public static func += <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, C : Swift.Collection, C.Element == TabularData.ColumnSlice<WrappedElement>.Element
+  public static func -= <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, WrappedElement == C.Element, C : Swift.Collection
+  public static func -= <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, C : Swift.Collection, C.Element == TabularData.ColumnSlice<WrappedElement>.Element
+  public static func *= <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.Numeric, WrappedElement == C.Element, C : Swift.Collection
+  public static func *= <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.Numeric, C : Swift.Collection, C.Element == TabularData.ColumnSlice<WrappedElement>.Element
+  public static func /= <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.BinaryInteger, WrappedElement == C.Element, C : Swift.Collection
+  public static func /= <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.BinaryInteger, C : Swift.Collection, C.Element == TabularData.ColumnSlice<WrappedElement>.Element
+  public static func /= <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.FloatingPoint, WrappedElement == C.Element, C : Swift.Collection
+  public static func /= <C>(lhs: inout TabularData.ColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.FloatingPoint, C : Swift.Collection, C.Element == TabularData.ColumnSlice<WrappedElement>.Element
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice {
+  public static func += <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, WrappedElement == C.Element, C : Swift.Collection
+  public static func += <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, C : Swift.Collection, C.Element == TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+  public static func -= <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, WrappedElement == C.Element, C : Swift.Collection
+  public static func -= <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.AdditiveArithmetic, C : Swift.Collection, C.Element == TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+  public static func *= <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.Numeric, WrappedElement == C.Element, C : Swift.Collection
+  public static func *= <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.Numeric, C : Swift.Collection, C.Element == TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+  public static func /= <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.BinaryInteger, WrappedElement == C.Element, C : Swift.Collection
+  public static func /= <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.BinaryInteger, C : Swift.Collection, C.Element == TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+  public static func /= <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.FloatingPoint, WrappedElement == C.Element, C : Swift.Collection
+  public static func /= <C>(lhs: inout TabularData.DiscontiguousColumnSlice<WrappedElement>, rhs: C) where WrappedElement : Swift.FloatingPoint, C : Swift.Collection, C.Element == TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public init(contentsOfJSONFile url: Foundation.URL, columns: [Swift.String]? = nil, types: [Swift.String : TabularData.JSONType] = [:], options: TabularData.JSONReadingOptions = .init()) throws
+  public init(jsonData data: Foundation.Data, columns: [Swift.String]? = nil, types: [Swift.String : TabularData.JSONType] = [:], options: TabularData.JSONReadingOptions = .init()) throws
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column where WrappedElement : Swift.Encodable {
+  public func encoded<Encoder>(using encoder: Encoder) throws -> TabularData.Column<Encoder.Output> where Encoder : Combine.TopLevelEncoder
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumn {
+  public func encoded<T, Encoder>(_ type: T.Type, using encoder: Encoder) throws -> TabularData.AnyColumn where T : Swift.Encodable, Encoder : Combine.TopLevelEncoder
+  public mutating func encode<T, Encoder>(_ type: T.Type, using encoder: Encoder) throws where T : Swift.Encodable, Encoder : Combine.TopLevelEncoder
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public mutating func encodeColumn<T, Encoder>(_ columnName: Swift.String, _ type: T.Type, using encoder: Encoder) throws where T : Swift.Encodable, Encoder : Combine.TopLevelEncoder
+  public mutating func encodeColumn<T, Encoder>(_ id: TabularData.ColumnID<T>, using encoder: Encoder) throws where T : Swift.Encodable, Encoder : Combine.TopLevelEncoder
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct ColumnEncodingError : Swift.Error, Foundation.LocalizedError, Swift.CustomDebugStringConvertible {
+  public var columnName: Swift.String
+  public var rowIndex: Swift.Int
+  public var encodingError: Swift.EncodingError
+  public init(columnName: Swift.String, rowIndex: Swift.Int, encodingError: Swift.EncodingError)
+  public var debugDescription: Swift.String {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct AnyColumnSlice : TabularData.AnyColumnProtocol, Swift.Hashable {
+  public var name: Swift.String {
+    get
+    set
+  }
+  public var wrappedElementType: Any.Type {
+    get
+  }
+  public var count: Swift.Int {
+    get
+  }
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public var missingCount: Swift.Int {
+    get
+  }
+  public func assumingType<T>(_ type: T.Type) -> TabularData.DiscontiguousColumnSlice<T>
+  public func isNil(at index: Swift.Int) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumnSlice : Swift.RandomAccessCollection, Swift.MutableCollection {
+  public var startIndex: Swift.Int {
+    get
+  }
+  public var endIndex: Swift.Int {
+    get
+  }
+  public func index(after i: Swift.Int) -> Swift.Int
+  public func index(before i: Swift.Int) -> Swift.Int
+  public subscript(position: Swift.Int) -> Any? {
+    get
+    set
+  }
+  public subscript(range: Swift.Range<Swift.Int>) -> TabularData.AnyColumnSlice {
+    get
+    set
+  }
+  public static func == (lhs: TabularData.AnyColumnSlice, rhs: TabularData.AnyColumnSlice) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public typealias Element = Any?
+  public typealias Index = Swift.Int
+  public typealias Indices = Swift.Range<Swift.Int>
+  public typealias Iterator = Swift.IndexingIterator<TabularData.AnyColumnSlice>
+  public typealias SubSequence = TabularData.AnyColumnSlice
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumnSlice : Swift.CustomStringConvertible, Swift.CustomDebugStringConvertible, Swift.CustomReflectable {
+  public var description: Swift.String {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumnSlice {
+  public func distinct() -> TabularData.AnyColumnSlice
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public mutating func explodeColumn<T>(_ id: TabularData.ColumnID<T>) where T : Swift.Collection
+  public mutating func explodeColumn<T>(_ name: Swift.String, _ type: T.Type) where T : Swift.Collection
+  public func explodingColumn<T>(_ name: Swift.String, _ type: T.Type) -> TabularData.DataFrame where T : Swift.Collection
+  public func explodingColumn<T>(_ id: TabularData.ColumnID<T>) -> TabularData.DataFrame where T : Swift.Collection
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public protocol RowGroupingProtocol : Swift.CustomStringConvertible {
+  var count: Swift.Int { get }
+  func ungrouped() -> TabularData.DataFrame
+  func counts(order: TabularData.Order?) -> TabularData.DataFrame
+  func aggregated<Element, Result>(on columnNames: [Swift.String], naming: (Swift.String) -> Swift.String, transform: (TabularData.DiscontiguousColumnSlice<Element>) throws -> Result?) rethrows -> TabularData.DataFrame
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  func filter(_ isIncluded: (TabularData.DataFrame.Slice) throws -> Swift.Bool) rethrows -> Self
+  func mapGroups(_ transform: (TabularData.DataFrame.Slice) throws -> TabularData.DataFrame) rethrows -> Self
+  func randomSplit(by proportion: Swift.Double, seed: Swift.Int?) -> (Self, Self)
+  func summary() -> TabularData.GroupSummaries
+  func summary(of columnNames: [Swift.String]) -> TabularData.GroupSummaries
+  subscript(keys: Any?...) -> TabularData.DataFrame.Slice? { get }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.RowGroupingProtocol {
+  public func counts() -> TabularData.DataFrame
+  public func sums<N>(_ columnName: Swift.String, _ type: N.Type, order: TabularData.Order? = nil) -> TabularData.DataFrame where N : Swift.AdditiveArithmetic, N : Swift.Comparable
+  public func sums<N>(_ columnID: TabularData.ColumnID<N>, order: TabularData.Order? = nil) -> TabularData.DataFrame where N : Swift.AdditiveArithmetic, N : Swift.Comparable
+  public func means<N>(_ columnName: Swift.String, _ type: N.Type, order: TabularData.Order? = nil) -> TabularData.DataFrame where N : Swift.FloatingPoint
+  public func means<N>(_ columnID: TabularData.ColumnID<N>, order: TabularData.Order? = nil) -> TabularData.DataFrame where N : Swift.FloatingPoint
+  public func minimums<N>(_ columnName: Swift.String, _ type: N.Type, order: TabularData.Order? = nil) -> TabularData.DataFrame where N : Swift.Comparable
+  public func minimums<N>(_ columnID: TabularData.ColumnID<N>, order: TabularData.Order? = nil) -> TabularData.DataFrame where N : Swift.Comparable
+  public func maximums<N>(_ columnName: Swift.String, _ type: N.Type, order: TabularData.Order? = nil) -> TabularData.DataFrame where N : Swift.Comparable
+  public func maximums<N>(_ columnID: TabularData.ColumnID<N>, order: TabularData.Order? = nil) -> TabularData.DataFrame where N : Swift.Comparable
+  public func aggregated<Element, Result>(on columnNames: Swift.String..., naming: (Swift.String) -> Swift.String, transform: (TabularData.DiscontiguousColumnSlice<Element>) throws -> Result?) rethrows -> TabularData.DataFrame
+  public func aggregated<Element, Result>(on columnID: TabularData.ColumnID<Element>, into aggregatedColumnName: Swift.String? = nil, transform: (TabularData.DiscontiguousColumnSlice<Element>) throws -> Result) rethrows -> TabularData.DataFrame
+  public func randomSplit(by proportion: Swift.Double) -> (Self, Self)
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum Order {
+  case ascending
+  case descending
+  public func areOrdered<T>(_ lhs: T, _ rhs: T) -> Swift.Bool where T : Swift.Comparable
+  public static func == (a: TabularData.Order, b: TabularData.Order) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.FilledColumn where Base.WrappedElement : Swift.Comparable {
+  public func min() -> TabularData.FilledColumn<Base>.Element?
+  public func max() -> TabularData.FilledColumn<Base>.Element?
+  public func argmin() -> TabularData.FilledColumn<Base>.Index?
+  public func argmax() -> TabularData.FilledColumn<Base>.Index?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.FilledColumn where Base.WrappedElement : Swift.BinaryInteger {
+  public func sum() -> TabularData.FilledColumn<Base>.Element
+  public func mean() -> Swift.Double?
+  public func standardDeviation(deltaDegreesOfFreedom: Swift.Int = 1) -> Swift.Double?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.FilledColumn where Base.WrappedElement : Swift.FloatingPoint {
+  public func sum() -> TabularData.FilledColumn<Base>.Element
+  public func mean() -> TabularData.FilledColumn<Base>.Element?
+  public func standardDeviation(deltaDegreesOfFreedom: Swift.Int = 1) -> TabularData.FilledColumn<Base>.Element?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol {
+  public func filled(with value: Self.WrappedElement) -> TabularData.FilledColumn<Self>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct FilledColumn<Base> : TabularData.ColumnProtocol where Base : TabularData.OptionalColumnProtocol {
+  public typealias Element = Base.WrappedElement
+  public typealias WrappedElement = Base.WrappedElement
+  @usableFromInline
+  internal var base: Base
+  @usableFromInline
+  internal let defaultValue: Base.WrappedElement
+  public var name: Swift.String {
+    get
+    set
+  }
+  @inlinable public var startIndex: Base.Index {
+    get { base.startIndex }
+  }
+  @inlinable public var endIndex: Base.Index {
+    get { base.endIndex }
+  }
+  @inlinable public func index(after i: Base.Index) -> Base.Index { base.index(after: i) }
+  @inlinable public func index(before i: Base.Index) -> Base.Index { base.index(before: i) }
+  @inlinable public subscript(position: Base.Index) -> Base.WrappedElement {
+    get {
+        base[position] ?? defaultValue
+    }
+  }
+  public typealias Index = Base.Index
+  public typealias Indices = Swift.DefaultIndices<TabularData.FilledColumn<Base>>
+  public typealias Iterator = Swift.IndexingIterator<TabularData.FilledColumn<Base>>
+  public typealias SubSequence = Swift.Slice<TabularData.FilledColumn<Base>>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public init(contentsOfSFrameDirectory url: Foundation.URL, columns: [Swift.String]? = nil, rows: Swift.Range<Swift.Int>? = nil) throws
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct CSVReadingOptions {
+  public var hasHeaderRow: Swift.Bool
+  public var nilEncodings: Swift.Set<Swift.String>
+  public var trueEncodings: Swift.Set<Swift.String>
+  public var falseEncodings: Swift.Set<Swift.String>
+  public var floatingPointType: TabularData.CSVType
+  public var dateParsers: [(Swift.String) -> Foundation.Date?]
+  public var ignoresEmptyLines: Swift.Bool
+  public var usesQuoting: Swift.Bool
+  public var usesEscaping: Swift.Bool
+  public var delimiter: Swift.Character {
+    get
+  }
+  public var escapeCharacter: Swift.Character {
+    get
+  }
+  public init(hasHeaderRow: Swift.Bool = true, nilEncodings: Swift.Set<Swift.String> = ["", "#N/A", "#N/A N/A", "#NA", "N/A", "NA", "NULL", "n/a", "nil", "null"], trueEncodings: Swift.Set<Swift.String> = ["1", "True", "TRUE", "true"], falseEncodings: Swift.Set<Swift.String> = ["0", "False", "FALSE", "false"], floatingPointType: TabularData.CSVType = .double, ignoresEmptyLines: Swift.Bool = true, usesQuoting: Swift.Bool = true, usesEscaping: Swift.Bool = false, delimiter: Swift.Character = Character(","), escapeCharacter: Swift.Character = Character("\\"))
+  public mutating func addDateParseStrategy<T>(_ strategy: T) where T : Foundation.ParseStrategy, T.ParseInput == Swift.String, T.ParseOutput == Foundation.Date
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct CSVWritingOptions {
+  public var includesHeader: Swift.Bool
+  @available(*, deprecated, message: "Use dateFormatter instead.")
+  public var dateFormat: Swift.String?
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  public var dateFormatter: (Foundation.Date) -> Swift.String {
+    get
+    set
+  }
+  public var nilEncoding: Swift.String
+  public var trueEncoding: Swift.String
+  public var falseEncoding: Swift.String
+  public var newline: Swift.String
+  public var delimiter: Swift.Character
+  @_alwaysEmitIntoClient public init() {
+        // Unfortunately the only initializer available on the first version of TabularData is the deprecated one. We
+        // need to use it here to ensure that this default initializer works on all versions. Using
+        // `@_alwaysEmitIntoClient` means that this initializer can be used even with original version of the
+        // framework.
+        self.init(
+            includesHeader: true,
+            dateFormat: nil,
+            nilEncoding: "",
+            trueEncoding: "true",
+            falseEncoding: "false",
+            newline: "\n",
+            delimiter: ","
+        )
+    }
+  @available(*, deprecated, message: "Use dateFormatter instead or dateFormat.")
+  public init(includesHeader: Swift.Bool = true, dateFormat: Swift.String?, nilEncoding: Swift.String = "", trueEncoding: Swift.String = "true", falseEncoding: Swift.String = "false", newline: Swift.String = "\n", delimiter: Swift.Character = ",")
+  @_alwaysEmitIntoClient public init(includesHeader: Swift.Bool = true, nilEncoding: Swift.String = "", trueEncoding: Swift.String = "true", falseEncoding: Swift.String = "false", newline: Swift.String = "\n", delimiter: Swift.Character = ",") {
+        self.init()
+        self.includesHeader = includesHeader
+        self.nilEncoding = nilEncoding
+        self.trueEncoding = trueEncoding
+        self.falseEncoding = falseEncoding
+        self.delimiter = delimiter
+    }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum CSVWritingError : Swift.Error {
+  case badEncoding(row: Swift.Int, column: Swift.String, Foundation.Data)
+  public var row: Swift.Int {
+    get
+  }
+  public var column: Swift.String? {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.CSVWritingError : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct RowGrouping<GroupingKey> : TabularData.RowGroupingProtocol where GroupingKey : Swift.Hashable {
+  public var description: Swift.String {
+    get
+  }
+  public init<D>(groups: [(GroupingKey?, D)], groupKeysColumnName: Swift.String) where D : TabularData.DataFrameProtocol
+  public func counts(order: TabularData.Order? = nil) -> TabularData.DataFrame
+  public func aggregated<Element, Result>(on columnNames: [Swift.String], naming: (Swift.String) -> Swift.String, transform: (TabularData.DiscontiguousColumnSlice<Element>) throws -> Result?) rethrows -> TabularData.DataFrame
+  public func ungrouped() -> TabularData.DataFrame
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  public func filter(_ isIncluded: (TabularData.DataFrame.Slice) throws -> Swift.Bool) rethrows -> TabularData.RowGrouping<GroupingKey>
+  public func mapGroups(_ transform: (TabularData.DataFrame.Slice) throws -> TabularData.DataFrame) rethrows -> TabularData.RowGrouping<GroupingKey>
+  public subscript(keys: Any?...) -> TabularData.DataFrame.Slice? {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.RowGrouping {
+  public func randomSplit(by proportion: Swift.Double, seed: Swift.Int? = nil) -> (TabularData.RowGrouping<GroupingKey>, TabularData.RowGrouping<GroupingKey>)
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.RowGrouping {
+  public init<D>(frame: D, columnName: Swift.String, timeUnit: Foundation.Calendar.Component) where GroupingKey == Swift.Int, D : TabularData.DataFrameProtocol
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.RowGrouping : Swift.RandomAccessCollection {
+  public var startIndex: Swift.Int {
+    get
+  }
+  public var endIndex: Swift.Int {
+    get
+  }
+  public func index(after i: Swift.Int) -> Swift.Int
+  public func index(before i: Swift.Int) -> Swift.Int
+  public var count: Swift.Int {
+    get
+  }
+  public subscript(position: Swift.Int) -> (key: GroupingKey?, group: TabularData.DataFrame.Slice) {
+    get
+  }
+  public typealias Element = (key: GroupingKey?, group: TabularData.DataFrame.Slice)
+  public typealias Index = Swift.Int
+  public typealias Indices = Swift.Range<Swift.Int>
+  public typealias Iterator = Swift.IndexingIterator<TabularData.RowGrouping<GroupingKey>>
+  public typealias SubSequence = Swift.Slice<TabularData.RowGrouping<GroupingKey>>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct NumericSummary<Element> : Swift.Hashable, Swift.CustomDebugStringConvertible where Element : Swift.BinaryFloatingPoint {
+  public var someCount: Swift.Int
+  public var noneCount: Swift.Int
+  public var totalCount: Swift.Int {
+    get
+  }
+  public var median: Element
+  public var firstQuartile: Element
+  public var thirdQuartile: Element
+  public var mean: Element
+  public var standardDeviation: Element
+  public var min: Element
+  public var max: Element
+  public init()
+  public init(someCount: Swift.Int, noneCount: Swift.Int, mean: Element, standardDeviation: Element, min: Element, max: Element, median: Element, firstQuartile: Element, thirdQuartile: Element)
+  public var debugDescription: Swift.String {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+  public static func == (a: TabularData.NumericSummary<Element>, b: TabularData.NumericSummary<Element>) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public struct Row {
+    public var base: TabularData.DataFrame {
+      get
+    }
+    public let index: Swift.Int
+    public subscript<T>(position: Swift.Int, type: T.Type) -> T? {
+      get
+      set
+    }
+    public subscript<T>(columnName: Swift.String, type: T.Type) -> T? {
+      get
+      set
+    }
+    public subscript(columnName: Swift.String) -> Any? {
+      get
+      set
+    }
+    public subscript<T>(columnID: TabularData.ColumnID<T>) -> T? {
+      get
+      set
+    }
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public struct Rows : Swift.BidirectionalCollection, Swift.MutableCollection {
+    public var startIndex: Swift.Int {
+      get
+    }
+    public var endIndex: Swift.Int {
+      get
+    }
+    public var count: Swift.Int {
+      get
+    }
+    public func index(after i: Swift.Int) -> Swift.Int
+    public func index(before i: Swift.Int) -> Swift.Int
+    public subscript(position: Swift.Int) -> TabularData.DataFrame.Row {
+      get
+      set
+    }
+    public subscript(bounds: Swift.Range<Swift.Int>) -> TabularData.DataFrame.Rows {
+      get
+      set
+    }
+    public typealias Element = TabularData.DataFrame.Row
+    public typealias Index = Swift.Int
+    public typealias Indices = Swift.DefaultIndices<TabularData.DataFrame.Rows>
+    public typealias Iterator = Swift.IndexingIterator<TabularData.DataFrame.Rows>
+    public typealias SubSequence = TabularData.DataFrame.Rows
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame.Row : Swift.RandomAccessCollection, Swift.MutableCollection {
+  public var startIndex: Swift.Int {
+    get
+  }
+  public var endIndex: Swift.Int {
+    get
+  }
+  public func index(after i: Swift.Int) -> Swift.Int
+  public func index(before i: Swift.Int) -> Swift.Int
+  public var count: Swift.Int {
+    get
+  }
+  public subscript(position: Swift.Int) -> Any? {
+    get
+    set
+  }
+  public subscript(bounds: Swift.Range<Swift.Int>) -> Swift.Slice<TabularData.DataFrame.Row> {
+    get
+    set
+  }
+  public typealias Element = Any?
+  public typealias Index = Swift.Int
+  public typealias Indices = Swift.Range<Swift.Int>
+  public typealias Iterator = Swift.IndexingIterator<TabularData.DataFrame.Row>
+  public typealias SubSequence = Swift.Slice<TabularData.DataFrame.Row>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame.Row : Swift.Hashable {
+  public static func == (lhs: TabularData.DataFrame.Row, rhs: TabularData.DataFrame.Row) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column where WrappedElement : Swift.Comparable {
+  public func min() -> TabularData.Column<WrappedElement>.Element
+  public func max() -> TabularData.Column<WrappedElement>.Element
+  public func argmin() -> Swift.Int?
+  public func argmax() -> Swift.Int?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice where WrappedElement : Swift.Comparable {
+  public func min() -> TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+  public func max() -> TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+  public func argmin() -> Swift.Int?
+  public func argmax() -> Swift.Int?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice where WrappedElement : Swift.Comparable {
+  public func min() -> TabularData.ColumnSlice<WrappedElement>.Element
+  public func max() -> TabularData.ColumnSlice<WrappedElement>.Element
+  public func argmin() -> Swift.Int?
+  public func argmax() -> Swift.Int?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column where WrappedElement : Swift.AdditiveArithmetic {
+  public func sum() -> WrappedElement
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice where WrappedElement : Swift.AdditiveArithmetic {
+  public func sum() -> WrappedElement
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice where WrappedElement : Swift.AdditiveArithmetic {
+  public func sum() -> WrappedElement
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column where WrappedElement : Swift.FloatingPoint {
+  public func mean() -> TabularData.Column<WrappedElement>.Element
+  public func standardDeviation(deltaDegreesOfFreedom: Swift.Int = 1) -> TabularData.Column<WrappedElement>.Element
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice where WrappedElement : Swift.FloatingPoint {
+  public func mean() -> TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+  public func standardDeviation(deltaDegreesOfFreedom: Swift.Int = 1) -> TabularData.DiscontiguousColumnSlice<WrappedElement>.Element
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice where WrappedElement : Swift.FloatingPoint {
+  public func mean() -> TabularData.ColumnSlice<WrappedElement>.Element
+  public func standardDeviation(deltaDegreesOfFreedom: Swift.Int = 1) -> TabularData.ColumnSlice<WrappedElement>.Element
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column where WrappedElement : Swift.BinaryInteger {
+  public func mean() -> Swift.Double?
+  public func standardDeviation(deltaDegreesOfFreedom: Swift.Int = 1) -> Swift.Double?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice where WrappedElement : Swift.BinaryInteger {
+  public func mean() -> Swift.Double?
+  public func standardDeviation(deltaDegreesOfFreedom: Swift.Int = 1) -> Swift.Double?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice where WrappedElement : Swift.BinaryInteger {
+  public func mean() -> Swift.Double?
+  public func standardDeviation(deltaDegreesOfFreedom: Swift.Int = 1) -> Swift.Double?
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum CSVType {
+  case integer
+  case boolean
+  case float
+  case double
+  case date
+  case string
+  case data
+  public static func == (a: TabularData.CSVType, b: TabularData.CSVType) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame {
+  public func grouped(by columnName: Swift.String) -> TabularData.RowGroupingProtocol
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrame.Slice {
+  public func grouped(by columnName: Swift.String) -> TabularData.RowGroupingProtocol
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrameProtocol {
+  public func grouped<GroupingKey>(by columnID: TabularData.ColumnID<GroupingKey>) -> TabularData.RowGrouping<GroupingKey> where GroupingKey : Swift.Hashable
+  public func grouped<InputKey, GroupingKey>(by columnName: Swift.String, transform: (InputKey?) -> GroupingKey?) -> TabularData.RowGrouping<GroupingKey> where GroupingKey : Swift.Hashable
+  public func grouped<InputKey, GroupingKey>(by columnID: TabularData.ColumnID<InputKey>, transform: (InputKey?) -> GroupingKey?) -> TabularData.RowGrouping<GroupingKey> where GroupingKey : Swift.Hashable
+  public func grouped(by columnName: Swift.String, timeUnit: Foundation.Calendar.Component) -> TabularData.RowGrouping<Swift.Int>
+  public func grouped(by columnID: TabularData.ColumnID<Foundation.Date>, timeUnit: Foundation.Calendar.Component) -> TabularData.RowGrouping<Swift.Int>
+  public func grouped(by columnNames: Swift.String...) -> some TabularData.RowGroupingProtocol
+  
+  @_disfavoredOverload public func grouped<T>(by columnIDs: TabularData.ColumnID<T>...) -> some TabularData.RowGroupingProtocol where T : Swift.Hashable
+  
+  public func grouped<T0, T1>(by column0: TabularData.ColumnID<T0>, _ column1: TabularData.ColumnID<T1>) -> some TabularData.RowGroupingProtocol where T0 : Swift.Hashable, T1 : Swift.Hashable
+  
+  public func grouped<T0, T1, T2>(by column0: TabularData.ColumnID<T0>, _ column1: TabularData.ColumnID<T1>, _ column2: TabularData.ColumnID<T2>) -> some TabularData.RowGroupingProtocol where T0 : Swift.Hashable, T1 : Swift.Hashable, T2 : Swift.Hashable
+  
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.RowGroupingProtocol {
+  public func summary(of columnNames: Swift.String...) -> TabularData.GroupSummaries
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.RowGrouping {
+  public func summary() -> TabularData.GroupSummaries
+  public func summary(of columnNames: [Swift.String]) -> TabularData.GroupSummaries
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+@usableFromInline
+final internal class PackedOptionalsStorage<Element> {
+  @usableFromInline
+  final internal var buffer: TabularData.PackedOptionalsBuffer<Element>
+  @inlinable final internal var capacity: Swift.Int {
+    get { buffer.capacity }
+  }
+  @inlinable final internal var count: Swift.Int {
+    get { buffer.count }
+  }
+  @inlinable final internal var nilCount: Swift.Int {
+    get { buffer.nilCount }
+  }
+  @usableFromInline
+  internal init(capacity: Swift.Int)
+  @usableFromInline
+  internal init(copying other: TabularData.PackedOptionalsStorage<Element>, capacity: Swift.Int)
+  @objc deinit
+  @inlinable final internal func grow(minimumCapacity: Swift.Int, growForAppend: Swift.Bool) {
+        let newCapacity = growCapacity(minimumCapacity: minimumCapacity, growForAppend: growForAppend)
+        let newBuffer = PackedOptionalsBuffer<Element>(moving: buffer, capacity: newCapacity)
+        buffer.deallocate()
+        buffer = newBuffer
+    }
+  @inlinable final internal func createNew(minimumCapacity: Swift.Int, growForAppend: Swift.Bool) -> TabularData.PackedOptionalsStorage<Element> {
+        let newCapacity = growCapacity(minimumCapacity: minimumCapacity, growForAppend: growForAppend)
+        assert(newCapacity >= count)
+        return PackedOptionalsStorage(copying: self, capacity: newCapacity)
+    }
+  @usableFromInline
+  final internal func growCapacity(minimumCapacity: Swift.Int, growForAppend: Swift.Bool) -> Swift.Int
+  @inlinable final internal func resize(by change: Swift.Int) {
+        buffer.resize(by: change)
+    }
+  @inlinable final internal func append(_ element: Element?) {
+        buffer.append(element)
+    }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column : Swift.CustomStringConvertible, Swift.CustomDebugStringConvertible, Swift.CustomReflectable {
+  public var description: Swift.String {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice : Swift.CustomStringConvertible, Swift.CustomDebugStringConvertible, Swift.CustomReflectable {
+  public var description: Swift.String {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice : Swift.CustomStringConvertible, Swift.CustomDebugStringConvertible, Swift.CustomReflectable {
+  public var description: Swift.String {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol {
+  public func description(options: TabularData.FormattingOptions) -> Swift.String
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.FilledColumn : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public func description(options: TabularData.FormattingOptions) -> Swift.String
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public enum JoinKind {
+  case inner
+  case left
+  case right
+  case full
+  public static func == (a: TabularData.JoinKind, b: TabularData.JoinKind) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DataFrameProtocol {
+  public func joined<R>(_ other: R, on columnName: Swift.String, kind: TabularData.JoinKind = .inner) -> TabularData.DataFrame where R : TabularData.DataFrameProtocol
+  public func joined<R, T>(_ other: R, on columnID: TabularData.ColumnID<T>, kind: TabularData.JoinKind = .inner) -> TabularData.DataFrame where R : TabularData.DataFrameProtocol, T : Swift.Hashable
+  public func joined<R>(_ other: R, on columnNames: (left: Swift.String, right: Swift.String), kind: TabularData.JoinKind = .inner) -> TabularData.DataFrame where R : TabularData.DataFrameProtocol
+  public func joined<R, T>(_ other: R, on columnIDs: (left: TabularData.ColumnID<T>, right: TabularData.ColumnID<T>), kind: TabularData.JoinKind = .inner) -> TabularData.DataFrame where R : TabularData.DataFrameProtocol, T : Swift.Hashable
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct AnyColumn : TabularData.AnyColumnProtocol, Swift.Hashable {
+  public var name: Swift.String {
+    get
+    set
+  }
+  public var wrappedElementType: Any.Type {
+    get
+  }
+  public var prototype: TabularData.AnyColumnPrototype {
+    get
+  }
+  public var count: Swift.Int {
+    get
+  }
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public var missingCount: Swift.Int {
+    get
+  }
+  public func assumingType<T>(_ type: T.Type) -> TabularData.Column<T>
+  public func isNil(at index: Swift.Int) -> Swift.Bool
+  public mutating func append(_ element: Any?)
+  public mutating func append(contentsOf other: TabularData.AnyColumn)
+  public mutating func append(contentsOf other: TabularData.AnyColumnSlice)
+  public mutating func remove(at index: Swift.Int)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumn : Swift.RandomAccessCollection, Swift.MutableCollection {
+  public var startIndex: Swift.Int {
+    get
+  }
+  public var endIndex: Swift.Int {
+    get
+  }
+  public func index(after i: Swift.Int) -> Swift.Int
+  public func index(before i: Swift.Int) -> Swift.Int
+  public subscript(position: Swift.Int) -> Any? {
+    get
+    set
+  }
+  public subscript(range: Swift.Range<Swift.Int>) -> TabularData.AnyColumnSlice {
+    get
+    set
+  }
+  public subscript<C>(mask: C) -> TabularData.AnyColumnSlice where C : Swift.Collection, C.Element == Swift.Bool {
+    get
+  }
+  public static func == (lhs: TabularData.AnyColumn, rhs: TabularData.AnyColumn) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public typealias Element = Any?
+  public typealias Index = Swift.Int
+  public typealias Indices = Swift.Range<Swift.Int>
+  public typealias Iterator = Swift.IndexingIterator<TabularData.AnyColumn>
+  public typealias SubSequence = TabularData.AnyColumnSlice
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumn : Swift.CustomStringConvertible, Swift.CustomDebugStringConvertible, Swift.CustomReflectable {
+  public var description: Swift.String {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public var customMirror: Swift.Mirror {
+    get
+  }
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.AnyColumn {
+  public func distinct() -> TabularData.AnyColumnSlice
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column where WrappedElement : Swift.BinaryFloatingPoint {
+  public func numericSummary() -> TabularData.NumericSummary<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice where WrappedElement : Swift.BinaryFloatingPoint {
+  public func numericSummary() -> TabularData.NumericSummary<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice where WrappedElement : Swift.BinaryFloatingPoint {
+  public func numericSummary() -> TabularData.NumericSummary<WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.FilledColumn where Base.WrappedElement : Swift.BinaryFloatingPoint {
+  public func numericSummary() -> TabularData.NumericSummary<Base.WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.FilledColumn where Base.WrappedElement : Swift.BinaryInteger {
+  public func numericSummary() -> TabularData.NumericSummary<Swift.Double>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Column where WrappedElement : Swift.BinaryInteger {
+  public func numericSummary() -> TabularData.NumericSummary<Swift.Double>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.ColumnSlice where WrappedElement : Swift.BinaryInteger {
+  public func numericSummary() -> TabularData.NumericSummary<Swift.Double>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.DiscontiguousColumnSlice where WrappedElement : Swift.BinaryInteger {
+  public func numericSummary() -> TabularData.NumericSummary<Swift.Double>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+public struct FormattingOptions {
+  public var maximumLineWidth: Swift.Int
+  public var maximumCellWidth: Swift.Int
+  public var maximumRowCount: Swift.Int
+  public var includesColumnTypes: Swift.Bool
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  public var floatingPointFormatStyle: Foundation.FloatingPointFormatStyle<Swift.Double> {
+    get
+    set
+  }
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  public var integerFormatStyle: Foundation.IntegerFormatStyle<Swift.Int> {
+    get
+    set
+  }
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  public var dateFormatStyle: Foundation.Date.FormatStyle {
+    get
+    set
+  }
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  public var locale: Foundation.Locale {
+    get
+    set
+  }
+  public init()
+  @available(macOS 12.3, iOS 15.4, tvOS 15.4, watchOS 8.5, *)
+  public init(locale: Foundation.Locale)
+  public init(maximumLineWidth: Swift.Int, maximumCellWidth: Swift.Int = 50, maximumRowCount: Swift.Int = 20, includesColumnTypes: Swift.Bool = true)
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol where Self.WrappedElement : Swift.AdditiveArithmetic {
+  public static func + (lhs: Self, rhs: Self) -> TabularData.Column<Self.WrappedElement>
+  public static func - (lhs: Self, rhs: Self) -> TabularData.Column<Self.WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol where Self.WrappedElement : Swift.Numeric {
+  public static func * (lhs: Self, rhs: Self) -> TabularData.Column<Self.WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol where Self.WrappedElement : Swift.BinaryInteger {
+  public static func / (lhs: Self, rhs: Self) -> TabularData.Column<Self.WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol where Self.WrappedElement : Swift.FloatingPoint {
+  public static func / (lhs: Self, rhs: Self) -> TabularData.Column<Self.WrappedElement>
+}
+extension TabularData.OptionalColumnProtocol {
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public static func + (lhs: Self, rhs: Self.WrappedElement) -> TabularData.Column<Self.WrappedElement> where Self.WrappedElement : Swift.AdditiveArithmetic
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public static func + (lhs: Self.WrappedElement, rhs: Self) -> TabularData.Column<Self.WrappedElement> where Self.WrappedElement : Swift.AdditiveArithmetic
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public static func - (lhs: Self, rhs: Self.WrappedElement) -> TabularData.Column<Self.WrappedElement> where Self.WrappedElement : Swift.AdditiveArithmetic
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public static func - (lhs: Self.WrappedElement, rhs: Self) -> TabularData.Column<Self.WrappedElement> where Self.WrappedElement : Swift.AdditiveArithmetic
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol where Self.WrappedElement : Swift.Numeric {
+  public static func * (lhs: Self, rhs: Self.WrappedElement) -> TabularData.Column<Self.WrappedElement>
+  public static func * (lhs: Self.WrappedElement, rhs: Self) -> TabularData.Column<Self.WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol where Self.WrappedElement : Swift.BinaryInteger {
+  public static func / (lhs: Self, rhs: Self.WrappedElement) -> TabularData.Column<Self.WrappedElement>
+  public static func / (lhs: Self.WrappedElement, rhs: Self) -> TabularData.Column<Self.WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.OptionalColumnProtocol where Self.WrappedElement : Swift.FloatingPoint {
+  public static func / (lhs: Self, rhs: Self.WrappedElement) -> TabularData.Column<Self.WrappedElement>
+  public static func / (lhs: Self.WrappedElement, rhs: Self) -> TabularData.Column<Self.WrappedElement>
+}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.JSONType : Swift.Equatable {}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.JSONType : Swift.Hashable {}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Order : Swift.Equatable {}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.Order : Swift.Hashable {}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.CSVType : Swift.Equatable {}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.CSVType : Swift.Hashable {}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.JoinKind : Swift.Equatable {}
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+extension TabularData.JoinKind : Swift.Hashable {}

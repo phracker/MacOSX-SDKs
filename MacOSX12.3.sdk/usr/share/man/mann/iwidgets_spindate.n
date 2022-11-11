@@ -1,0 +1,460 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) spindate.n
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::spindate iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::spindate \- Create and manipulate time spinner widgets
+.SH SYNOPSIS
+\fBiwidgets::spindate\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Spindate
+
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBbackground\fR	\fBcursor\fR	\fBforeground\fR	\fBrelief\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "ASSOCIATED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBtextBackground\fR	\fBtextFont\fR
+.fi
+.LP
+See the "entryfield" manual entry for details on the above associated options.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBlabelFont\fR	\fBlabelMargin\fR
+.fi
+.LP
+See the "labeledwidget" manual entry for details on the above associated 
+options.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBarrowOrient\fR	\fBrepeatDelay\fR	\fBrepeatInterval\fR
+.fi
+.LP
+See the "spinner" manual entry for details on the above associated options.
+
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBdateMargin\fR
+Class:	\fBMargin\fR
+Command-Line Switch:	\fB-datemargin\fR
+.fi
+.IP
+Specifies the margin space between the month, day, and year spinners is 
+any of the forms accpetable to \fBTcl_GetPixels\fR.  The default is 1 pixel.
+.LP
+.nf
+Name:	\fBdayLabel\fR
+Class:	\fBText\fR
+Command-Line Switch:	\fB-daylabel\fR
+.fi
+.IP
+Specifies the text of the label for the day spinner.  The default is
+"Day".
+.LP
+.nf
+Name:	\fBdayOn\fR
+Class:	\fBdayOn\fR
+Command-Line Switch:	\fB-dayon\fR
+.fi
+.IP
+Specifies whether or not to display the day spinner in any of the forms
+acceptable to \fBTcl_GetBoolean\fR.  The default is true.
+.LP
+.nf
+Name:	\fBdayWidth\fR
+Class:	\fBWidth\fR
+Command-Line Switch:	\fB-daywidth\fR
+.fi
+.IP
+Specifies the width of the day spinner in any of the forms acceptable to
+\fBTcl_GetPixels\fR.  The default is 3 pixels.
+.LP
+.nf
+Name:	\fBlabelPos\fR
+Class:	\fBPosition\fR
+Command-Line Switch:	\fB-labelpos\fR
+.fi
+.IP
+Specifies the position of the label along the sides of the various 
+spinners: \fBn\fR, \fBe\fR, \fBs\fR, or \fBw\fR.  The default is w.
+.LP
+.nf
+Name:	\fBmonthFormat\fR
+Class:	\fBMonthFormat\fR
+Command-Line Switch:	\fB-monthformat\fR
+.fi
+.IP
+Specifies the format of month display, \fBinteger\fR (1-12) or \fBbrief\fR
+strings (Jan - Dec), or \fBfull\fR strings (January - December).
+.LP
+.nf
+Name:	\fBmonthLabel\fR
+Class:	\fBText\fR
+Command-Line Switch:	\fB-monthlabel\fR
+.fi
+.IP
+Specifies the text of the label for the month spinner.  The default is "Month".
+.LP
+.nf
+Name:	\fBmonthOn\fR
+Class:	\fBmonthOn\fR
+Command-Line Switch:	\fB-monthon\fR
+.fi
+.IP
+Specifies whether or not to display the month spinner in any of the forms
+acceptable to \fBTcl_GetBoolean\fR.  The default is true.
+.LP
+.nf
+Name:	\fBmonthWidth\fR
+Class:	\fBWidth\fR
+Command-Line Switch:	\fB-monthwidth\fR
+.fi
+.IP
+Specifies the width of the month spinner in any of the forms acceptable to
+\fBTcl_GetPixels\fR.  The default is 3 pixels.
+.LP
+.nf
+Name:	\fBorient\fR
+Class:	\fBOrient\fR
+Command-Line Switch:	\fB-orient\fR
+.fi
+.IP
+Specifies the orientation of the month, day, and year spinners: \fBvertical\fR or \fBhorizontal\fR.  The default is horizontal.
+.LP
+.nf
+Name:	\fByearDigits\fR
+Class:	\fBYearDigits\fR
+Command-Line Switch:	\fB-yeardigits\fR
+.fi
+.IP
+Specifies the number of digits to be displayed as the value for the year 
+spinner.  The valid values are 2 and 4.  The default is 2.
+.LP
+.nf
+Name:	\fByearLabel\fR
+Class:	\fBText\fR
+Command-Line Switch:	\fB-yearlabel\fR
+.fi
+.IP
+Specifies the text of the label for the year spinner.  The default is
+"Year"
+.LP
+.nf
+Name:	\fByearOn\fR
+Class:	\fByearOn\fR
+Command-Line Switch:	\fB-yearon\fR
+.fi
+.IP
+Specifies whether or not to display the year spinner in any of the forms
+acceptable to \fBTcl_GetBoolean\fR.  The default is true.
+.LP
+.nf
+Name:	\fByearWidth\fR
+Class:	\fBWidth\fR
+Command-Line Switch:	\fB-yearwidth\fR
+.fi
+.IP
+Specifies the width of the year spinner in any of the forms acceptable to
+\fBTcl_GetPixels\fR.  The default is 3 pixels.
+.LP
+.nf
+.BE
+
+.SH DESCRIPTION
+.PP
+
+The \fBiwidgets::spindate\fR command creates a set of spinners for use in date value
+entry.  The set includes an month, day, and year spinner widget.
+
+.SH "METHODS"
+.PP
+The \fBiwidgets::spindate\fR command creates a new Tcl command whose
+name is \fIpathName\fR. This
+command may be used to invoke various
+operations on the widget. It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command. The following
+commands are possible for spindate widgets:
+
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::spindate\fR
+command.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::spindate\fR
+command.
+.TP
+\fIpathName \fBget\fR ?\fBformat\fR?
+Returns the current contents of the spindate widget in a format of 
+string or as an integer clock value using the \fB-string\fR and \fB-clicks\fR
+format options respectively.  The default is by string.  Reference the 
+clock command for more information on obtaining dates and their 
+formats.
+.TP
+\fIpathName \fBshow\fR \fIdate\fR
+Changes the currently displayed date to be that of the date 
+argument.  The date may be specified either as a string, an
+integer clock value or the keyword "now".  Reference the clock 
+command for more information on obtaining dates and their formats.
+
+.ta 4c
+.SH "COMPONENTS"
+.LP
+.nf
+Name:	\fBmonth\fR
+Class:	\fBSpinner\fR
+.fi
+.IP
+The month spinner component is the month spinner of the date spinner.
+See the Spinner widget manual entry for details on the month component item.
+.LP
+.nf
+Name:	\fBday\fR
+Class:	\fBSpinint\fR
+.fi
+.IP
+The day spinner component is the day spinner of the date spinner.
+See the SpinInt widget manual entry for details on the day component item.
+.LP
+.nf
+Name:	\fByear\fR
+Class:	\fBSpinint\fR
+.fi
+.IP
+The year spinner component is the year spinner of the date spinner.
+See the SpinInt widget manual entry for	details on the year component item.
+.fi
+
+.SH EXAMPLE
+.DS
+package require Iwidgets 4.0
+iwidgets::spindate .sd
+pack .sd -padx 10 -pady 10
+.DE
+.SH AUTHOR
+Sue Yockey
+.DE
+Mark L. Ulferts
+.SH KEYWORDS
+spindate, spinint, spinner, entryfield, entry, widget
+

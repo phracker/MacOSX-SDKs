@@ -1,0 +1,130 @@
+.\" Process this file with
+.\" groff -man -Tascii fwkdp.1 | less
+.\"
+.Dd July 7, 2015
+.Dt "fwkdp" 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm fwkdp
+.Nd FireWire KDP Tool
+.Sh SYNOPSIS
+.Nm
+.Op Fl -setargs Ns Op = Ns Ar boot-args
+.Op Fl -proxy
+.Op Fl -core
+.Op Fl -verbose
+.Op Fl -disable
+.Op Fl -erase
+.Op Fl -ioff
+.Op Fl -restart
+.Op Fl -help
+.Sh DESCRIPTION
+Use fwkdp to act as a proxy for the kernel debugging KDP protocol over FireWire. It will also accept kernel core dump images transmitted over FireWire. Additionally, fwkdp can be used to set the boot-args necessary for a target machine which is to be debugged.
+.Pp
+As a complete technology, FireWireKDP redirects the kernel debugging KDP protocol over FireWire. It enables live LLDB debugging of a trapped kernel over a FireWire cable, just as you would over Ethernet.  It provides the following advantages over remote Ethernet kernel debugging:
+.Bl -dash -offset indent -compact
+.It
+Available sooner in the kernel's startup.
+.It
+Available until right when the cpu is powered down at sleep and almost as soon as the cpu is powered when waking.
+.It
+No IP network configuration is required.
+.El
+.Pp
+FireWireKDP also enables Remote Kernel Core Dumps over FireWire. This allows you to debug a static kernel at a later time without the need to be connected at the time of debug. To enable kernel core dumps, see section "CORE DUMPS". For more info on debugging with Kernel Core Dumps, please see: Technical Note TN2118: Debugging With Kernel Core Dumps.
+.Pp
+FireWireKDP works in two parts: kernel software on the target side (machine to be debugged) and user-space software on the side of the host. Now, the target side software is integrated into the OS. This means that AppleFireWireKDP.kext is no longer necessary. See the installation instructions below.
+.Sh OPTIONS
+.Bl -tag -width XXXXX
+.It Fl -setargs Ns Oo = Ns Ar boot-args Oc , Fl r Ns Oo Ns Ar boot-args Oc
+Sets the nvram boot-args on the current machine to
+.Ar boot-args Ns
+\&. This flag should only be used on the target machine (which is contrary to all other usage cases, when it is used on the host). If
+.Ar boot-args
+is not passed, the tool will prompt the user as to which boot-args are to be set.
+.It Fl -proxy Ns , Fl p
+Use proxy mode only.
+.It Fl -core Ns , Fl c
+Use core dump receive mode only.
+.It Fl -verbose Ns , Fl v
+Verbose mode.
+.It Fl -disable Ns , Fl x
+Sets the nvram boot-args on the current machine to "debug=0x146" which disables kprintf logging. This flag should only be used on the target machine (which is contrary to typical usage cases, when this tool is used on the host).
+.It Fl -erase Ns , Fl e
+Deletes the boot-args variable from nvram. This flag should only be used on the target machine (which is contrary to typical usage cases, when this tool is used on the host).
+.It Fl -ioff
+Turns off interactive mode.
+.It Fl -restart
+Automatically restarts the machine only after the nvram has been modified by this tool.
+.It Fl -help Ns , Fl h
+Displays usage info for fwkdp.
+.El
+.Sh COMPATABILITY
+FireWireKDP doesn't interfere with the loading of the normal FireWire stack - it only touches the FireWire hardware when the kernel debugger is invoked, either by a panic, NMI, trap, or similar.
+.Pp
+Furthermore, FireWireKDP is designed to work cooperatively with FireWireKPrintf. To use both you must use a combination of boot-args such as "debug=0x14e kdp_match_name=firewire".
+.Pp
+To use FireWireKDP on a non-built-in FireWire interface (e.g. when using a Thunderbolt to FireWire adapter) add fwkdp=0x8000 to your boot-args.
+.Sh USAGE
+Connect two Macs via FireWire and follow the steps below.
+.Pp
+On the target (machine to be debugged):
+.Bl -enum -offset indent -compact
+.It
+Use fwkdp to set the kernel boot arguments to enable live debugging:
+.Dl % fwkdp -r
+If using FireWireKDP with FireWireKPrintf try:
+.Dl % sudo nvram boot-args="debug=0x14e kdp_match_name=firewire"
+.It
+Reboot the target.
+.It
+Break into debug mode as you would with Ethernet.  (NMI button, panic, debugger traps, etc.)
+.El
+.Pp
+On the debugger machine:
+.Bl -enum -offset indent -compact
+.It
+Run fwkdp:
+.Dl % fwkdp
+The FireWireKDP tool defaults to both proxy and core-dump receive mode. It is a stateless translator that shunts data between the network KDP/UDP port and the FireWire connection.  Once started it can be left running indefinitely.
+.It
+Run LLDB with the target operating system's symbol file.
+.Dl % lldb kernel.development
+See the Apple Development Kits webpage for the proper "Kernel Debug Kit" which will contain the proper "kernel.development" or "kernel.debug" "symbol file. See step 6 for more info.
+.It
+Within LLDB, allow script loading to import the appropriate kernel macros (commonly found along with symbolic mach_kernel).
+.Dl (lldb) settings set target.load-script-from-symbol-file true
+.It
+Within LLDB, attach using kdp-remote.
+.Dl (lldb) kdp-remote localhost
+.It
+The connection should be established. Use lldb as you would over Ethernet.
+.It
+For more info on remote kernel debugging, please see "Two-machine Debugging" of the I/O Kit Device Driver Design Guidelines and Technical Note TN2118: Debugging With Kernel Core Dumps.
+.El
+.Sh CORE DUMPS
+To capture kernel core dumps, set the proper bits of the boot-args' debug variable and kdp_match_name equal to "firewire". In addition, an IP address for the receiving computer is also required, although it's meaningless over FireWire.
+.Pp
+On the target machine, set the boot-args and restart.
+.Dl % sudo nvram boot-args="debug=0xd46 _panicd_ip=1.2.3.4 kdp_match_name=firewire"
+.Pp
+Connect the machine to be debugged to a second Mac with a FireWire cable. Run "fwkdp" from a Terminal window on the second Mac; it will wait for the target to transmit it's core after it drops to the debugger (panic, NMI, etc.). For more info on the debugging with Kernel Core Dumps, please see Technical Note TN2118: Debugging With Kernel Core Dumps.
+.Sh NOTES
+Post-Panic Hot-Plugs
+.Dl Some Macs do not support post-panic debugging after hot-plugging another Mac. To avoid this problem, keep a debugger Mac connected in anticipation of a panic.
+.Pp
+64-bit Debugging
+.Dl FireWireKDP does work when running the kernel in 64-bit mode.
+.Pp
+Sleep/Wake Notes
+.Dl FireWireKDP will work if the target has been through a sleep/wake cycle. However, if FireWireKDP has run (e.g. drop into debugger and conitnue) on the target once, it might not work again if the machine is sleep/wake cycled afterwards. Therefore, if you would like to debug a sleep/wake issue with FireWireKDP, do not sleep between breaks to the debugger.
+.Pp
+Other FireWire Devices
+.Dl To avoid conflicts it is best not to have other FireWire devices plugged into the host or target machines while using any FireWire debugging tools. However, it is possible to connect more than one target machine to a single host (e.g. to collect core dumps).
+.Pp
+Second FireWire Interface
+.Dl FireWireKDP does not work on multiple FireWire interfaces. Please use a built-in FireWire port without installing any FireWire add-in cards.
+.Sh FILES
+/usr/bin/fwkdp   is installed as part of the Mac OS X Developer Tools.
+.Sh "SEE ALSO"
+.Xr fwkpfv(1)

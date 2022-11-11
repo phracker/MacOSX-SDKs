@@ -1,0 +1,182 @@
+.\" Copyright (c) 2012 Apple Inc
+.\" All rights reserved.
+.Dd August 16, 2012
+.Dt EXP 3
+.Os BSD 4
+.Sh NAME
+.Nm exp ,
+.Nm exp2 ,
+.Nm expm1
+.Nd exponential functions
+.Sh SYNOPSIS
+.Fd #include <math.h>
+.Ft float
+.Fn expf "float x"
+.Ft double
+.Fn exp "double x"
+.Ft long double
+.Fn expl "long double x"
+.Ft float
+.Fn exp2f "float x"
+.Ft double
+.Fn exp2 "double x"
+.Ft long double
+.Fn exp2l "long double x"
+.Ft float
+.Fn expm1f "float x"
+.Ft double
+.Fn expm1 "double x"
+.Ft long double
+.Fn expm1l "long double x"
+.Ft float
+.Fn __exp10f "float x"
+.Ft double
+.Fn __exp10 "double x"
+.Sh DESCRIPTION
+The
+.Fn exp
+function computes e**x, the base-e exponential of
+.Fa x .
+.Pp
+The
+.Fn exp2
+function computes 2**x, the base-2 exponential of
+.Fa x .
+.Pp
+The
+.Fn __exp10
+function computes 10**x; it is not defined in the C standard, and therefore
+may not be portable to other platforms.  It is provided as a convenience to
+programmers because it may be computed more efficiently than pow(10,x).
+.Pp
+If
+.Fa x
+is nearly zero, then the common expression
+.Fn exp "x"
+- 1.0
+will suffer from catastrophic cancellation and the result will have little or
+no precision.  The
+.Fn expm1
+function provides an alternative means to do this calculation without the risk
+of significant loss of precision.  If you find yourself using this function,
+you are likely to also be interested in the 
+.Fn log1p
+function.
+.Pp
+Note that computations numerically equivalent to
+.Fn exp "x"
+- 1.0
+are often hidden in more complicated expressions; some amount of algebraic
+manipulation may be necessary to take advantage of the
+.Fn expm1
+function.  Consider the following example, abstracted from a developer's
+actual production code in a bug report:
+.Bd -literal -offset indent
+double z = exp(-x/y)*(x*x/y/y + 2*x/y + 2) - 2
+.Ed
+.Pp
+When 
+.Fa x
+is small relative to
+.Fa y ,
+this expression is approximately equal to:
+.Bd -literal -offset indent
+double z = 2*(exp(-x/y) - 1)
+.Ed
+.Pp
+and all precision of the result is lost in the computation due to catastrophic
+cancellation.  The developer was aware that they were losing precision, but
+didn't know what to do about it.  To remedy the situation, we do a little
+algebra and re-write the expression to take advantage of the
+.Fn expm1
+function:
+.Bd -literal -offset indent
+  exp(-x/y)*(x*x/y/y + 2*x/y + 2) - 2
+= (2*exp(-x/y) - 2) + exp(-x/y)*((x*x)/(y*y) + 2*x/y)
+.Ed
+.Pp
+This transformation allows the result to be computed to a high degree of 
+accuracy as follows:
+.Bd -literal -offset indent
+const double r = x/y;
+const double emrm1 = expm1(-r);
+double z = 2.0*emrm1 + (1.0 + emrm1)*(2.0 + r)*r;
+.Ed
+.Pp
+It is not always easy to spot such opportunities for improvement; if an
+expression involving 
+.Fn exp
+seems to be suffering from an undue loss of accuracy, try a few simple
+algebraic operations to see if you can identify a factor with the form
+.Fn exp "x"
+- 1.0, and substitute
+.Fn expm1 "x"
+in its place.
+.Sh SPECIAL VALUES
+.Fn exp "±0"
+and
+.Fn exp2 "±0"
+return 1.
+.Pp
+.Fn exp "-infinity"
+and
+.Fn exp2 "-infinity"
+return +0.
+.Pp
+.Fn exp "+infinity"
+and
+.Fn exp2 "+infinity"
+return +infinity.
+.Pp
+.Fn expm1 "±0"
+returns ±0.
+.Pp
+.Fn expm1 "-infinity"
+returns -1.
+.Pp
+.Fn expm1 "+infinity"
+returns +infinity.
+.Pp
+For all these functions, a range error occurs if the magnitude of x is too large.
+.Sh VECTOR OPERATIONS
+If you need to apply the 
+.Fn exp
+functions to SIMD vectors or arrays, using the following functions provided
+by the Accelerate.framework may give significantly better performance:
+.Pp
+.Fd #include <Accelerate/Accelerate.h>
+.Pp
+.Ft vFloat
+.Fn vexpf "vFloat x" ;
+.br
+.Ft vFloat
+.Fn vexpm1f "vFloat x" ;
+.br
+.Ft void
+.Fn vvexpf "float *y" "const float *x" "const int *n" ;
+.br
+.Ft void
+.Fn vvexp "double *y" "const double *x" "const int *n" ;
+.br
+.Ft void
+.Fn vvexpm1f "float *y" "const float *x" "const int *n" ;
+.br
+.Ft void
+.Fn vvexpm1 "double *y" "const double *x" "const int *n" ;
+.br
+.Ft void
+.Fn vvexp2f "float *y" "const float *x" "const int *n" ;
+.br
+.Ft void
+.Fn vvexp2 "double *y" "const double *x" "const int *n" ;
+.Sh SEE ALSO
+.Xr log 3 ,
+.Xr pow 3 ,
+.Xr math 3
+.Sh STANDARDS
+The
+.Fn exp ,
+.Fn exp2 ,
+and
+.Fn expm1
+functions conform to ISO/IEC 9899:2011.

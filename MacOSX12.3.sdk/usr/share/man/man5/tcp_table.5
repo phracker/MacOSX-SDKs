@@ -1,0 +1,129 @@
+.TH TCP_TABLE 5 
+.ad
+.fi
+.SH NAME
+tcp_table
+\-
+Postfix client/server table lookup protocol
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap \-q "\fIstring\fB" tcp:\fIhost:port\fR
+
+\fBpostmap \-q \- tcp:\fIhost:port\fB <\fIinputfile\fR
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix mail system uses optional tables for address
+rewriting or mail routing. These tables are usually in
+\fBdbm\fR or \fBdb\fR format. Alternatively, table lookups
+can be directed to a TCP server.
+
+To find out what types of lookup tables your Postfix system
+supports use the "\fBpostconf \-m\fR" command.
+
+To test lookup tables, use the "\fBpostmap \-q\fR" command as
+described in the SYNOPSIS above.
+.SH "PROTOCOL DESCRIPTION"
+.na
+.nf
+.ad
+.fi
+The TCP map class implements a very simple protocol: the client
+sends a request, and the server sends one reply. Requests and
+replies are sent as one line of ASCII text, terminated by the
+ASCII newline character. Request and reply parameters (see below)
+are separated by whitespace.
+
+Send and receive operations must complete in 100 seconds.
+.SH "REQUEST FORMAT"
+.na
+.nf
+.ad
+.fi
+Each request specifies a command, a lookup key, and possibly a
+lookup result.
+.IP "\fBget\fR SPACE \fIkey\fR NEWLINE"
+Look up data under the specified key.
+.IP "\fBput\fR SPACE \fIkey\fR SPACE \fIvalue\fR NEWLINE"
+This request is currently not implemented.
+.SH "REPLY FORMAT"
+.na
+.nf
+.ad
+.fi
+Each reply specifies a status code and text. Replies must be no
+longer than 4096 characters including the newline terminator.
+.IP "\fB500\fR SPACE \fItext\fR NEWLINE"
+In case of a lookup request, the requested data does not exist.
+In case of an update request, the request was rejected.
+The text describes the nature of the problem.
+.IP "\fB400\fR SPACE \fItext\fR NEWLINE"
+This indicates an error condition. The text describes the nature of
+the problem. The client should retry the request later.
+.IP "\fB200\fR SPACE \fItext\fR NEWLINE"
+The request was successful. In the case of a lookup request,
+the text contains an encoded version of the requested data.
+.SH "ENCODING"
+.na
+.nf
+.ad
+.fi
+In request and reply parameters, the character %, each non\-printing
+character, and each whitespace character must be replaced by %XX,
+where XX is the corresponding ASCII hexadecimal character value. The
+hexadecimal codes can be specified in any case (upper, lower, mixed).
+
+The Postfix client always encodes a request.
+The server may omit the encoding as long as the reply
+is guaranteed to not contain the % or NEWLINE character.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+Do not use TCP lookup tables for security critical purposes.
+The client\-server connection is not protected and the server
+is not authenticated.
+.SH BUGS
+.ad
+.fi
+Only the lookup method is currently implemented.
+
+The client does not hang up when the connection is idle for
+a long time.
+.SH "SEE ALSO"
+.na
+.nf
+postmap(1), Postfix lookup table manager
+regexp_table(5), format of regular expression tables
+pcre_table(5), format of PCRE tables
+cidr_table(5), format of CIDR tables
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA
