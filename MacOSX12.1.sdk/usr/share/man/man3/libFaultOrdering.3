@@ -1,0 +1,59 @@
+.\" Copyright (c) 2018, Apple Inc. All rights reserved.
+.Dd Sep. 14, 2018
+.Dt "libFaultOrdering" 3
+.Os "Mac OS X"
+.Sh NAME
+.Nm libFaultOrdering
+.Nd a runtime debugging library using page faults to determine per-module page
+utilization
+.Sh DESCRIPTION
+.Nm libFaultOrdering
+utilizes dyld's library notification callback to vm_protect the __TEXT pages of
+libraries as they're loaded to be non-executable and installs an exception
+handler to catch the faults. When a fault occurs, libFaultOrdering restores
+executable privileges to the page and records the fault address, allowing the
+library's user to see what symbol was first utilized on the __TEXT page.
+.Pp
+To use this library, insert it into a process at launch via:
+DYLD_INSERT_LIBRARIES=/usr/local/lib/libFaultOrdering.dylib
+.Pp
+Note: this will only work for processes that are not considered "restricted" by
+dyld due to being setuid(), utilizing private entitlements, or running with
+library validation enabled.
+.Pp
+Upon a successful exit() (i.e. not SIGKILL), this library will print out
+statistics on how many __TEXT pages were faulted in an ascii-art form like so:
+.Bd -literal
+  Module: leaks - 0x10f067000 (31 pages)
+  19/31 faulted (61.29%) with 5 discontiguous ranges
+  [xxx--xxxxxxx---xx------x-xxxxxx]
+.Ed
+.Pp
+In the printed summaries like the one above, each 'x' represents a VM page that
+was faulted, and each '-' represents a page that was not.
+.Sh ENVIRONMENT OPTIONS:
+.Bl -tag -width "ORDER_FILE_OUTPUT_DIR=<path>"
+.It Ev VERBOSE_FAULTS=1
+The first time a __TEXT page is faulted in, print the symbol which caused the
+fault.
+.It Ev ORDER_FILE_OUTPUT_DIR=<path>
+Append the faulted symbols to an order file located at
+"<path>/<module-name>.order" If this path does not already exist for a given
+module, it will not be created, and the file will be treated as append-only.
+Uniquing/merging symbols in the append-only order file is left as an exercise
+to the user and will likely require ~20-80 re-link cycles to get a fairly good
+ordering as only the first symbol on each page is reported when the page is
+first faulted in.
+.It Ev DYLD_SHARED_REGION=avoid
+As libraries in dyld's shared region can't be vm_protected to selectively remove
+executable privileges, usage of this environment variable can allow gathering
+statistics of libraries that would normally be loaded from the
+.Xr dyld 1
+shared cache by forcing dyld to attempt to load them from disk if possible.
+.El
+.Sh EXAMPLE USAGE
+VERBOSE_FAULTS=1 DYLD_INSERT_LIBRARIES=/usr/local/lib/libFaultOrdering.dylib
+/Applications/Calculator.app/Contents/MacOS/Calculator
+.Sh SEE ALSO
+.Xr dyld 1
+.Xr libgmalloc 3

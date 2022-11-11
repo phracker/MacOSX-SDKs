@@ -1,0 +1,446 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) optionmenu.n 1.21 94/12/17 16:04:44
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::optionmenu iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::optionmenu \- Create and manipulate a option menu widget
+.SH SYNOPSIS
+\fBiwidgets::optionmenu\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Optionmenu
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fB
+activeBackground  activeBorderWidth  activeForeground    background
+borderWidth       cursor             disabledForeground  font
+foreground        highlightColor     highlightThickness  relief\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "INHERITED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBdisabledForeground\fR	\fBlabelBitmap\fR	\fBlabelFont\fR	\fBlabelImage\fR
+\fBlabelMargin\fR	\fBlabelPos\fR	\fBlabelText\fR	\fBlabelVariable\fR
+\fBstate\fR	\fBsticky\fR
+.fi
+.LP
+See the "LabeledWidget" manual entry for details on the inherited options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBclickTime\fR
+Class:	\fBClickTime\fR
+Command-Line Switch:	\fB-clicktime\fR
+.fi
+.IP
+Interval time, in msec, used to determine that a single mouse 
+click has occurred. Used to post menu on a "quick" mouse click.
+\fBNote\fR: changing this value may cause the sigle-click 
+functionality to not work properly.  The default is 150 msec.
+.LP
+.nf
+Name:	\fBcommand\fR
+Class:	\fBCommand\fR
+Command-Line Switch:	\fB-command\fR
+.fi
+.IP
+Specifies a Tcl command procedure to be evaluated following a  change in 
+the current option menu selection.
+.LP
+.nf
+Name:	\fBcyclicOn\fR
+Class:	\fBCyclicOn\fR
+Command-Line Switch:	\fB-cyclicon\fR
+.fi
+.IP
+Turns on/off the 3rd mouse button capability. The value may be specified
+in any of the forms acceptable to \fBTcl_GetBoolean\fR.  This feature
+allows the right mouse button to cycle through the popup 
+menu list without poping it up. The right mouse button cycles through
+the menu in reverse order.  The default is true.
+.LP
+.nf
+Name:	\fBpopupCursor\fR
+Class:	\fBCursor\fR
+Command-Line Switch:	\fB-popupcursor\fR
+.fi
+.IP
+Specifies  the mouse cursor to be used for the popup menu.  The value may 
+have any of the  forms  acceptable to \fBTk_GetCursor\fR.
+.LP
+.nf
+Name:	\fBstate\fR
+Class:	\fBState\fR
+Command-Line Switch:	\fB-state\fR
+.fi
+.IP
+Specified one of two states for the optionmenu: \fBnormal\fR, or
+\fBdisabled\fR.  If the optionmenu is disabled, then option menu
+selection is ignored.
+.LP
+.nf
+Name:	\fBwidth\fR
+Class:	\fBWidth\fR
+Command-Line Switch:	\fB-width\fR
+.fi
+.IP
+Specifies a fixed size for the menu button label in any of the forms
+acceptable to \Tk_GetPixels\fR.  If the text
+is too small to fit in the label, the text is clipped. 
+Note: Normally, when a new list is created, or new items are 
+added to an existing list, the menu button label is resized 
+automatically.  Setting this option overrides that functionality.
+.LP
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::optionmenu\fR command creates an option menu widget with options 
+to manage it.  An option menu displays a frame containing a label and a button.
+A pop-up menu will allow for the value of the button to change.
+
+.SH "METHODS"
+.PP
+The \fBiwidgets::optionmenu\fR command creates a new Tcl command whose
+name is \fIpathName\fR.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+.DS 
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command.  
+.PP
+Many of the widget commands for an optionmenu take as one argument an
+indicator of which entry of the option menu to operate on.  These
+indicators are called \fIindex\fRes and may be specified in
+any of the following forms:
+.TP 12
+\fInumber\fR
+Specifies the entry numerically, where 0 corresponds
+to the top-most entry of the option menu, 1 to the entry below it, and
+so on.
+.TP 12
+\fBend\fR
+Indicates the bottommost entry in the menu.  If there are no
+entries in the menu then -1 is returned.
+.TP 12
+\fBselect\fR
+Returns the numerical index of the currently selected option menu entry.
+If no entries exist in the menu, then -1 is returned.
+.TP 12
+\fIpattern\fR
+If the index doesn't satisfy one of the above forms then this
+form is used.  \fIPattern\fR is pattern-matched against the label of
+each entry in the option menu, in order from the top down, until a
+matching entry is found.  The rules of \fBTcl_StringMatch\fR
+are used.
+.PP
+The following widget commands are possible for optionmenu widgets:
+
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::optionmenu\fR
+command.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::optionmenu\fR
+command.
+.TP
+\fIpathName \fBdelete \fIfirst\fR ?\fIlast\fR?
+Delete all of the option menu entries between \fIfirst\fR and
+\fIlast\fR inclusive.  If \fIlast\fR is omitted then it defaults 
+to \fIfirst\fR.
+.TP
+\fIpathName \fBdisable \fIindex\fR
+Disable the option menu entry specified by \fIindex\fR. 
+Disabling a menu item will prevent the user from being able to select 
+this item from the menu.  This only effects the state of the item 
+in the menu, in other words, should the item be the currently 
+selected item, the programmer is responsible for determining this condition 
+and taking appropriate action.
+.TP
+\fIpathName \fBenable \fIindex\fR
+Enable the option menu entry specified by \fIindex\fR.
+Enabling a menu item allows the user to select this item from the menu.
+.TP
+\fIpathName \fBget\fR ?\fIfirst\fR? ?\fIlast\fR?
+If no arguments are specified, this operation returns the currently
+selected option menu item.  Otherwise, it returns the name of the
+option at index \fIfirst\fR, or a range of options between \fIfirst\fR
+and \fIlast\fR.
+.TP
+\fIpathName \fBindex \fIindex\fR
+Returns the numerical index corresponding to \fIindex\fR.
+.TP
+\fIpathName \fBinsert \fIindex string\fR ?\fIstring\fR?
+Insert an item, or list of items, into the menu at location \fIindex\fR.
+.TP
+\fIpathName \fBselect \fIindex\fR
+Select an item from the option menu to be displayed as the currently 
+selected item.
+.TP
+\fIpathName \fBsort \fImode\fR
+Sort the current menu in either \fBascending\fR, or \fBdescending\fR order.
+The values \fBincreasing\fR, or \fBdecreasing\fR are also accepted.
+
+.SH "COMPONENTS"
+.LP
+.nf
+Name:	\fBmenuBtn\fR
+Class:	\fBMenubutton\fR
+.fi
+.IP
+The menuBtn component is the option menu button which displays the current
+choice from the popup menu.  See the "menubutton" widget manual entry
+for details on the menuBtn component item.
+.LP
+.nf
+Name:	\fBpopupMenu\fR
+Class:	\fBMenu\fR
+.fi
+.IP
+The popupMenu component is menu displayed upon selection of the menu button.
+The menu contains the choices for the option menu.  See the "menu" widget 
+manual entry for details on the popupMenu component item.
+.fi
+
+.SH EXAMPLE
+.DS
+ package require Iwidgets 4.0
+ iwidgets::optionmenu .om -labelmargin 5 \\
+     -labelon true -labelpos w -labeltext "Operating System :"
+
+ .om insert end Unix VMS Linux OS/2 {Windows NT} DOS
+ .om sort ascending
+ .om select Linux
+
+ pack .om  -padx 10 -pady 10
+.DE
+.SH ACKNOWLEDGEMENTS:
+Michael J. McLennan
+.IP
+Borrowed some ideas (next & previous) from OptionButton class. 
+.LP
+Steven B. Jaggers
+.IP
+Provided an initial prototype in [incr Tcl].
+.LP
+Bret Schuhmacher
+.IP
+Helped with popup menu functionality.
+.LP
+.SH AUTHOR
+Alfredo Jahn
+.SH KEYWORDS
+optionmenu, widget

@@ -1,0 +1,202 @@
+.Dd May 1, 2007       \" DATE 
+.Dt ACCELERATE 7          \" Program name and manual section number 
+.Os MacOS X
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm Accelerate
+.Nm vecLib
+.Nm vImage
+.Nm Neon 
+.Nm vMathLib
+.Nm BLAS
+.Nm LAPACK
+.Nm vDSP
+.Nm Vector Computation
+.Nm Extended Math Library
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd This man page introduces the Accelerate umbrella framework, its constituent libraries and programming support in Mac OS X. 
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+The Accelerate framework (/System/Library/Frameworks/Accelerate.framework) contains thousands of hand tuned high performance 
+library routines for common problems in signal and image processing and general and scientific computing.  These routines are provided 
+to help developers and Apple frameworks alike make better use of onboard hardware SIMD vector engines (such as SSE and Neon)
+and multiple processors for best performance, without the need to invest in the complexity that SIMD and multithreaded 
+programming sometimes requires.  
+.Pp
+A typical Accelerate.framework function will be presented as a single function that accomplishes a task -- e.g. do a discrete Fourier transform, 
+or blur an image, or perhaps just multiply two arrays of floats together. Once called, a typical Accelerate.framework function will examine 
+available hardware and select a tuned version of the algorithm for best performance on that hardware for that problem size, image 
+shape, etc.  That function will usually be hand-tuned vectorized code (i.e. uses SSE or Neon). For large enough problems, the function may automatically 
+split up the work across multiple processors using Grand Central Dispatch (GCD) or pthreads, all without involvement of the caller. The speedups so obtained 
+can be quite significant due to impressive synergies between SIMD vector engines and multithreading.  Vectorization typically will enchance performance many fold -- 2, 4, or even 10 fold
+improvement is normal. Multithreading can then further accelerate your code many fold according to the number of processors on your system. Some vectorized,
+multithreaded Accelerate.framework functions run hundreds of times faster than their scalar, single threaded counterparts!
+.Pp
+Accelerate.framework is intended to help you towards greater application performance regardless of your current investment in high performance technologies. 
+If you have already written your own threading engine, you can use methods such as the kvImageDoNotTile flag or the VECLIB_MAXIMUM_THREADS environment 
+variable to disable internal multithreading so that it does not contend with your threading engine (note: the value of VECLIB_MAXIMUM_THREADS may be cached
+by the library and reused; if you need to ensure single-threaded execution, you should set VECLIB_MAXIMUM_THREADS before making any Accelerate calls).
+If you have pseudo-real-time scheduling needs, Accelerate.framework functions that otherwise might allocate their own temporary memory on the heap allow
+you to pass in preallocated temporary buffers, so as to avoid potential locking in malloc. If you are interested in writing your own vector code, perhaps to
+speed up areas of your application which is not covered by Accelerate functionality, the framework headers provide cross platform vector types that you can
+use to enhance the portability of some vector code and facilitate debugging, as well as a number of basic library routines to make writing vector code easier,
+such as the interfaces found in vMathLib, a library of math routines (e.g. sin, cos, pow, etc.) for SIMD vectors. 
+.Pp
+To use Accelerate.framework headers: 
+.br
+.in +.5i
+#include <Accelerate/Accelerate.h>
+.in -.5i
+.Pp 
+To link to Accelerate.framework, simply add -framework Accelerate to your compiler line:
+.br
+.in +.5i
+cc -framework Accelerate my_file.c
+.in -.5i
+.Pp
+For help with linking to frameworks in Xcode, see also: 
+.br
+.in +.5i
+http://developer.apple.com/library/mac/#documentation/MacOSX/Conceptual/BPFrameworks/Tasks/IncludingFrameworks.html
+.in -.5i
+.Sh For further information:
+.Pp
+Browse a comprehensive introduction to the Accelerate framework:   
+.br
+.in +.5i
+http://developer.apple.com/performance/accelerateframework.html
+.in -.5i
+.Pp
+.Sh Accelerate Umbrella Framework
+The Accelerate umbrella framework encompasses all the libraries provided with
+MacOS X that Apple has optimized for high performance vector and numerical computing. Subsequent sections describe the sub-frameworks that comprise the Accelerate framework. 
+.Pp
+Please link to Accelerate.framework. The positioning of interfaces within sub-frameworks and libraries within Accelerate.framework is subject to change. 
+.Sh vImage Framework 
+This framework is designed to provide a suite of image processing primitives. Convolutions, Morphological operators,
+and Geometric transforms (e.g. scale, shear, warp, rotate) are provided. Alpha compositing and histogram operations are also
+supported, in addition to various conversion routines between different image formats.  vImage uses your image data in place without costly packing and unpacking from 
+wrapper objects, using a simple descriptor of the image using base address, height, width and row bytes (to allow for tiling and row padding). Four core formats are supported:
+.Pp
+.in +.5i
+Planar8 - a single channel, 8-bit per channel image
+.br
+ARGB8888 - a four channel, 8-bit per channel image.* 
+.br
+PlanarF - a single channel, floating point image. 
+.br
+ARGBFFFF - a four channel, floating point image.* 
+.Pp
+*Most functions are channel order agnostic, but where it matters, RGBA and BGRA forms may also be provided.
+.in -.5i
+.Pp
+Other formats are supported by conversion to core format prior to applying various vImage functions. The conversion cost is typically very small, and is in
+many cases faster than attempting to do the conversion just in time within the function, because many redundant conversions  to a arithmetic format usable by 
+the core vector units, some hidden from you, can be avoided.  The formats provided reflect core performance competencies of the vector hardware rather than 
+the wide diversity of image formats out there.
+.Pp
+For more information, see:
+.Pp
+.in +.5i
+ http://developer.apple.com/library/mac/#documentation/Performance/Conceptual/vImage/Introduction/Introduction.html
+.in -.5i
+.Sh vecLib Framework
+The vecLib framework is a collection of facilities covering digital signal processing (vDSP), 
+matrix computations (BLAS), numerical linear algebra (LAPACK) and mathematical routines (vForce/vMathLib)
+.Pp
+The vDSP, BLAS and LAPACK components of vecLib run on the scalar and vector domain.  
+vecLib automatically detects the presence of the vector engine and uses it.  
+vMathLib mirrors the existing scalar libm on the vector engine.  vMathLib runs only on the vector 
+engine.
+.Pp
+For more information, see:
+.Pp
+.in +.5i
+ http://developer.apple.com/library/mac/#documentation/Performance/Conceptual/vecLib/Reference/reference.html
+.in -.5i
+.Sh vDSP
+The vDSP Library provides mathematical functions for applications such as speech, 
+sound, audio, and video processing, diagnostic medical imaging, 
+radar signal processing, seismic analysis, and scientific data processing.
+.Pp
+The vDSP functions operate on real and complex data types. The functions include 
+data type conversions, fast Fourier transforms (FFTs), 
+and vector-to-vector and vector-to-scalar operations.
+.Pp
+The vDSP functions have been implemented in two ways: 
+as vectorized code, using the vector unit on the ARM and Intel microprocessors, 
+and as scalar code, which runs on all machines. Vector code often has special alignment
+restrictions. If your data is not properly aligned it is common for vDSP to use the 
+scalar path as a fallback. For best results on Intel, align your data to a multiple of 16 bytes. 
+(Malloc naturally aligns memory blocks that it allocates to 16 bytes on MacOS X.)
+.Pp
+It is noteworthy that vDSP's FFTs are one of the fastest implementations 
+of the Discrete Fourier Transforms available anywhere.
+.Pp
+The vDSP Library itself is included as part of vecLib in Mac OS X. 
+The header file, vDSP.h, defines 
+data types used by the vDSP functions and symbols accepted as flag arguments to vDSP functions.
+.Pp
+vDSP functions are available in single and double precision.  Note that only the 
+single precision is vectorized on ARM due to the underlying instruction set architecture 
+of the vector engine on board. The Intel vector unit supports both 
+single and double precision, so double precision operations can be vectorized on Intel 
+processors.
+.Pp
+For more information about vDSP see:
+.Pp
+.in +.5i
+<http://developer.apple.com/hardwaredrivers/ve/downloads/vDSP_Library.pdf>
+.in -.5i
+.Sh BLAS
+The Basic Linear Algebra Subroutines (BLAS) are high quality, industry standard routines for performing 
+basic vector and matrix operations. Level 1 BLAS consists of vector-vector operations, 
+Level 2 BLAS consists of matrix-vector operations, and Level 3 BLAS have matrix-matrix operations. 
+The efficiency, portability, and the wide adoption of the BLAS 
+have made them commonplace in the development of high quality linear algebra software 
+such as LAPACK and in  other technologies requiring fast vector and matrix calculations.  
+All of the industry standard FORTRAN and C BLAS entry points, as well as some common
+extensions, are exported by the vecLib framework.
+.Pp
+For more information refer to:
+.Pp
+.in +.5i
+<http://www.netlib.org/blas/faq.html>
+.in -.5i
+.Sh LAPACK
+LAPACK provides routines for solving systems of simultaneous linear equations, 
+least-squares solutions of linear systems of equations, eigenvalue problems, 
+and singular value problems. 
+The associated matrix factorizations (LU, Cholesky, QR, SVD, Schur, generalized Schur) are also provided, 
+as are related computations such 
+as reordering of the Schur factorizations and estimating condition numbers. Dense
+and banded matrices are handled, but not general sparse matrices. In all areas, 
+similar functionality is provided for real and complex matrices, in both single and double precision.  
+LAPACK in vecLib makes full use of the optimized BLAS and 
+fully benefits from their performance. 
+All the industry standard FORTRAN LAPACK entry points are exported from the vecLib framework.
+C programs may make calls to the FORTRAN entry points using the prototypes set out in
+"/System/Library/Frameworks/vecLib.framework/Headers/clapack.h". 
+.Pp
+For more information, please see:
+.Pp
+.in +.5i
+<http://www.netlib.org/lapack/index.html>
+.in -.5i
+.Pp
+LAPACK follows FORTRAN calling conventions (even when called from C code).  Users must
+be aware that ALL arguments are passed by reference.  This includes all scalar arguments
+such as matrix dimensions and scale factors.  Additionally, please note that two-dimensional
+arrays such as matrices are stored in column-major order; this differs from how C
+programmers customarily lay out such arrays.
+.Pp
+For more information refer to <http://www.netlib.org/clapack/readme>.
+.Sh SEE ALSO 
+You may also be interested in the system math library, which provides high-quality implementations
+of basic mathematical functions like exp, log, pow, sin, cos...  See math(3) for more information.
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Sh BUGS
+Accelerate.framework is not magic! It will not vectorize or multithread your code for you, just because you linked against the framework.
+You have to actually call the functions exported by the Accelerate.framework, and then only those functions from the framework that you called will be Accelerated.
+.\" .Sh HISTORY 

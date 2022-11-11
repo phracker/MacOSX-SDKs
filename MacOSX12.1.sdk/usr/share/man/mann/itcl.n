@@ -1,0 +1,382 @@
+'\"
+'\" Copyright (c) 1993-1998  Lucent Technologies, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" RCS: $Id: itcl.n,v 1.3 2004/09/25 22:50:43 davygrvy Exp $
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" SCCS: @(#) man.macros 1.9 97/08/22 18:50:59
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH itcl n 3.0 itcl "[incr\ Tcl]"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+itcl \- object-oriented extensions to Tcl
+.BE
+
+.SH DESCRIPTION
+.PP
+\fB[incr\ Tcl]\fR provides object-oriented extensions to Tcl, much as
+C++ provides object-oriented extensions to C.  The emphasis of this
+work, however, is not to create a whiz-bang object-oriented
+programming environment.  Rather, it is to support more structured
+programming practices in Tcl without changing the flavor of the language.
+More than anything else, \fB[incr\ Tcl]\fR provides a means of
+encapsulating related procedures together with their shared data
+in a namespace that is hidden from the outside world.
+It encourages better programming by promoting the object-oriented
+"library" mindset.  It also allows for code re-use through inheritance.
+
+.SH CLASSES
+.PP
+The fundamental construct in \fB[incr\ Tcl]\fR is the class definition.
+Each class acts as a template for actual objects that can be created.
+Each object has its own unique bundle of data, which contains instances
+of the "variables" defined in the class.  Special procedures called
+"methods" are used to manipulate individual objects.  Methods are just
+like the operations that are used to manipulate Tk widgets.  The
+"\fBbutton\fR" widget, for example, has methods such as "flash" and
+"invoke" that cause a particular button to blink and invoke its command.
+.PP
+Within the body of a method, the "variables" defined in the class
+are automatically available.  They need not be declared with anything
+like the \fBglobal\fR command.  Within another class method, a method
+can be invoked like any other command\-simply by using its name.
+From any other context, the method name must be prefaced by an object
+name, which provides a context for the data that the method can access.
+.PP
+Each class has its own namespace containing things that are common
+to all objects which belong to the class.  For example, "common" data
+members are shared by all objects in the class.  They are global
+variables that exist in the class namespace, but since they are
+included in the class definition, they need not be declared using
+the \fBglobal\fR command; they are automatically available to any
+code executing in the class context.  A class can also create
+ordinary global variables, but these must be declared using the
+\fBglobal\fR command each time they are used.
+.PP
+Classes can also have ordinary procedures declared as "procs".
+Within another class method or proc, a proc can be invoked like
+any other command\-simply by using its name.  From any other context,
+the procedure name should be qualified with the class namespace
+like "\fIclassName\fB::\fIproc\fR".  Class procs execute in the
+class context, and therefore have automatic access to all "common"
+data members.  However, they cannot access object-specific "variables",
+since they are invoked without reference to any specific object.
+They are usually used to perform generic operations which affect
+all objects belonging to the class.
+.PP
+Each of the elements in a class can be declared "public", "protected"
+or "private".  Public elements can be accessed by the class, by
+derived classes (other classes that inherit this class), and by
+external clients that use the class.  Protected elements can be
+accessed by the class, and by derived classes.  Private elements
+are only accessible in the class where they are defined.
+.PP
+The "public" elements within a class define its interface to the
+external world.  Public methods define the operations that can
+be used to manipulate an object.  Public variables are recognized
+as configuration options by the "configure" and "cget" methods
+that are built into each class.  The public interface says
+\fIwhat\fR an object will do but not \fIhow\fR it will do it.
+Protected and private members, along with the bodies of class
+methods and procs, provide the implementation details.  Insulating
+the application developer from these details leaves the class designer
+free to change them at any time, without warning, and without affecting
+programs that rely on the class.  It is precisely this encapsulation
+that makes object-oriented programs easier to understand and maintain.
+.PP
+The fact that \fB[incr\ Tcl]\fR objects look like Tk widgets is
+no accident.  \fB[incr\ Tcl]\fR was designed this way, to blend
+naturally into a Tcl/Tk application.  But \fB[incr\ Tcl]\fR
+extends the Tk paradigm from being merely object-based to being
+fully object-oriented.  An object-oriented system supports
+inheritance, allowing classes to share common behaviors by
+inheriting them from an ancestor or base class.  Having a base
+class as a common abstraction allows a programmer to treat
+related classes in a similar manner.  For example, a toaster
+and a blender perform different (specialized) functions, but
+both share the abstraction of being appliances.  By abstracting
+common behaviors into a base class, code can be \fIshared\fR rather
+than \fIcopied\fR.  The resulting application is easier to
+understand and maintain, and derived classes (e.g., specialized
+appliances) can be added or removed more easily.
+.PP
+This description was merely a brief overview of object-oriented
+programming and \fB[incr\ Tcl]\fR.  A more tutorial introduction is
+presented in the paper included with this distribution.  See the
+\fBclass\fR command for more details on creating and using classes.
+
+.SH NAMESPACES
+.PP
+\fB[incr\ Tcl]\fR now includes a complete namespace facility.
+A namespace is a collection of commands and global variables that
+is kept apart from the usual global scope.  This allows Tcl code
+libraries to be packaged in a well-defined manner, and prevents
+unwanted interactions with other libraries.  A namespace can also
+have child namespaces within it, so one library can contain its
+own private copy of many other libraries.  A namespace can also
+be used to wrap up a group of related classes.  The global scope
+(named "\fC::\fR") is the root namespace for an interpreter; all
+other namespaces are contained within it.
+.PP
+See the \fBnamespace\fR command for details on creating and
+using namespaces.
+
+.SH MEGA-WIDGETS
+.PP
+Mega-widgets are high-level widgets that are constructed using
+Tk widgets as component parts, usually without any C code.  A
+fileselectionbox, for example, may have a few listboxes, some
+entry widgets and some control buttons.  These individual widgets
+are put together in a way that makes them act like one big
+widget.
+.PP
+\fB[incr\ Tk]\fR is a framework for building mega-widgets.  It
+uses \fB[incr\ Tcl]\fR to support the object paradigm, and adds
+base classes which provide default widget behaviors.  See the
+\fBitk\fR man page for more details.
+.PP
+\fB[incr\ Widgets]\fR is a library of mega-widgets built using
+\fB[incr\ Tk]\fR.  It contains more than 30 different widget
+classes that can be used right out of the box to build Tcl/Tk
+applications.  Each widget class has its own man page describing
+the features available.
+
+.SH KEYWORDS
+class, object, object-oriented, namespace, mega-widget

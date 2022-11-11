@@ -1,0 +1,171 @@
+.TH "MPSLSTMDescriptor" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSLSTMDescriptor
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSRNNLayer\&.h>\fP
+.PP
+Inherits \fBMPSRNNDescriptor\fP\&.
+.SS "Class Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) + \fBcreateLSTMDescriptorWithInputFeatureChannels:outputFeatureChannels:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "BOOL \fBmemoryWeightsAreDiagonal\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBinputGateInputWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBinputGateRecurrentWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBinputGateMemoryWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBforgetGateInputWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBforgetGateRecurrentWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBforgetGateMemoryWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBoutputGateInputWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBoutputGateRecurrentWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBoutputGateMemoryWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBcellGateInputWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBcellGateRecurrentWeights\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBcellGateMemoryWeights\fP"
+.br
+.ti -1c
+.RI "\fBMPSCNNNeuronType\fP \fBcellToOutputNeuronType\fP"
+.br
+.ti -1c
+.RI "float \fBcellToOutputNeuronParamA\fP"
+.br
+.ti -1c
+.RI "float \fBcellToOutputNeuronParamB\fP"
+.br
+.ti -1c
+.RI "float \fBcellToOutputNeuronParamC\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  The \fBMPSLSTMDescriptor\fP specifies a LSTM block/layer descriptor\&. The RNN layer initialized with a \fBMPSLSTMDescriptor\fP transforms the input data (image or matrix), the memory cell data and previous output with a set of filters, each producing one feature map in the output data and memory cell, according to the LSTM formulae detailed below\&. The user may provide the LSTM unit a single input or a sequence of inputs\&. 
+.PP
+.nf
+Description of operation:
+
+.fi
+.PP
+.PP
+Let x_j be the input data (at time index t of sequence, j index containing quadruplet: batch index, x,y and feature index (x=y=0 for matrices))\&. Let h0_j be the recurrent input (previous output) data from previous time step (at time index t-1 of sequence)\&. Let h1_i be the output data produced at this time step\&. Let c0_j be the previous memory cell data (at time index t-1 of sequence)\&. Let c1_i be the new memory cell data (at time index t-1 of sequence)\&.
+.PP
+Let Wi_ij, Ui_ij, Vi_ij, be the input gate weights for input, recurrent input and memory cell (peephole) data respectively Let bi_i be the bias for the input gate
+.PP
+Let Wf_ij, Uf_ij, Vf_ij, be the forget gate weights for input, recurrent input and memory cell data respectively Let bf_i be the bias for the forget gate
+.PP
+Let Wo_ij, Uo_ij, Vo_ij, be the output gate weights for input, recurrent input and memory cell data respectively Let bo_i be the bias for the output gate
+.PP
+Let Wc_ij, Uc_ij, Vc_ij, be the memory cell gate weights for input, recurrent input and memory cell data respectively Let bc_i be the bias for the memory cell gate
+.PP
+Let gi(x), gf(x), go(x), gc(x) be neuron activation function for the input, forget, output gate and memory cell gate Let gh(x) be the activation function applied to result memory cell data
+.PP
+Then the new memory cell data c1_j and output image h1_i are computed as follows: 
+.PP
+.nf
+    I_i = gi(  Wi_ij * x_j  +  Ui_ij * h0_j  +  Vi_ij * c0_j  + bi_i  )
+    F_i = gf(  Wf_ij * x_j  +  Uf_ij * h0_j  +  Vf_ij * c0_j  + bf_i  )
+    C_i = gc(  Wc_ij * x_j  +  Uc_ij * h0_j  +  Vc_ij * c0_j  + bc_i  )
+
+c1_i = F_i c0_i  +  I_i C_i
+
+    O_i = go(  Wo_ij * x_j  +  Uo_ij * h0_j  +  Vo_ij * c1_j  + bo_i  )
+
+h1_i = O_i gh( c1_i )
+
+.fi
+.PP
+.PP
+The '*' stands for convolution (see \fBMPSRNNImageInferenceLayer\fP) or matrix-vector/matrix multiplication (see \fBMPSRNNMatrixInferenceLayer\fP)\&. Summation is over index j (except for the batch index), but there is no summation over repeated index i - the output index\&. Note that for validity all intermediate images have to be of same size and all U and V matrices have to be square (ie\&. outputFeatureChannels == inputFeatureChannels in those)\&. Also the bias terms are scalars wrt\&. spatial dimensions\&. 
+.SH "Method Documentation"
+.PP 
+.SS "+ (nonnull instancetype) createLSTMDescriptorWithInputFeatureChannels: (NSUInteger) inputFeatureChannels(NSUInteger) outputFeatureChannels"
+Creates a LSTM descriptor\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIinputFeatureChannels\fP The number of feature channels in the input image/matrix\&. Must be >= 1\&. 
+.br
+\fIoutputFeatureChannels\fP The number of feature channels in the output image/matrix\&. Must be >= 1\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid MPSNNLSTMDescriptor object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- cellGateInputWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Wc_ij', bias 'bc_i' and neuron 'gc' from the LSTM formula\&. If nil then assumed zero weights, bias and no neuron (identity mapping)\&. Defaults to nil\&. 
+.SS "\- cellGateMemoryWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Vc_ij' - the 'peephole' weights - from the LSTM formula\&. if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features in the memory cell image/matrix\&. If nil then assumed zero weights\&. Defaults to nil\&. 
+.SS "\- cellGateRecurrentWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Uc_ij' from the LSTM formula\&. If nil then assumed zero weights\&. Defaults to nil\&. 
+.SS "\- cellToOutputNeuronParamA\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Neuron parameter \fBA\fP for 'gh'\&. Defaults to 1\&.0f\&. 
+.SS "\- cellToOutputNeuronParamB\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Neuron parameter B for 'gh'\&. Defaults to 1\&.0f\&. 
+.SS "\- cellToOutputNeuronParamC\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Neuron parameter C for 'gh'\&. Defaults to 1\&.0f\&. 
+.SS "\- cellToOutputNeuronType\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Neuron type definition for 'gh', see \fBMPSCNNNeuronType\fP\&. Defaults to MPSCNNNeuronTypeTanH\&. 
+.SS "\- forgetGateInputWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Wf_ij', bias 'bf_i' and neuron 'gf' from the LSTM formula\&. If nil then assumed zero weights, bias and no neuron (identity mapping)\&.Defaults to nil\&. 
+.SS "\- forgetGateMemoryWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Vf_ij' - the 'peephole' weights - from the LSTM formula\&. if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features in the memory cell image/matrix\&. If nil then assumed zero weights\&. Defaults to nil\&. 
+.SS "\- forgetGateRecurrentWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Uf_ij' from the LSTM formula\&. If nil then assumed zero weights\&. Defaults to nil\&. 
+.SS "\- inputGateInputWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Wi_ij', bias 'bi_i' and neuron 'gi' from the LSTM formula\&. If nil then assumed zero weights, bias and no neuron (identity mapping)\&. Defaults to nil\&. 
+.SS "\- inputGateMemoryWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Vi_ij' - the 'peephole' weights - from the LSTM formula\&. if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features in the memory cell image/matrix\&. If nil then assumed zero weights\&. Defaults to nil\&. 
+.SS "\- inputGateRecurrentWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Ui_ij' from the LSTM formula\&. If nil then assumed zero weights\&. Defaults to nil\&. 
+.SS "\- memoryWeightsAreDiagonal\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+If YES, then the 'peephole' weight matrices will be diagonal matrices represented as vectors of length the number of features in memory cells, that will be multiplied pointwise with the peephole matrix or image in order to achieve the diagonal (nonmixing) update\&. Defaults to NO\&. 
+.SS "\- outputGateInputWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Wo_ij', bias 'bo_i' and neuron 'go' from the LSTM formula\&. If nil then assumed zero weights, bias and no neuron (identity mapping)\&. Defaults to nil\&. 
+.SS "\- outputGateMemoryWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Vo_ij' - the 'peephole' weights - from the LSTM\&. if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features in the memory cell image/matrix\&. If nil then assumed zero weights\&. Defaults to nil\&. 
+.SS "\- outputGateRecurrentWeights\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Contains weights 'Uo_ij' from the LSTM formula\&. If nil then assumed zero weights\&. Defaults to nil\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

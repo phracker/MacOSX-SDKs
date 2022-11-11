@@ -1,0 +1,82 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:45
+.ds Dm 7 May 22 14:
+.ds Xs 10486     5
+.TH GLLINESTIPPLE 3G
+.SH NAME
+.B "glLineStipple
+\- specify the line stipple pattern
+
+.SH C SPECIFICATION
+void \f3glLineStipple\fP(
+GLint \fIfactor\fP,
+.nf
+.ta \w'\f3void \fPglLineStipple( 'u
+	GLushort \fIpattern\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fIpattern\fP\ \ 'u 
+\f2factor\fP
+Specifies a multiplier for each bit in the line stipple pattern.
+If \f2factor\fP is 3,
+for example,
+each bit in the pattern is used three times
+before the next bit in the pattern is used.
+\f2factor\fP is clamped to the range [1, 256] and defaults to 1.
+.TP
+\f2pattern\fP
+Specifies a 16-bit integer whose bit pattern determines
+which fragments of a line will be drawn when the line is rasterized.
+Bit zero is used first; the default pattern is all 1's.
+.SH DESCRIPTION
+Line stippling masks out certain fragments produced by rasterization;
+those fragments will not be drawn.
+The masking is achieved by using three parameters:
+the 16-bit line stipple pattern \f2pattern\fP,
+the repeat count \f2factor\fP,
+and an integer stipple counter s. 
+.P
+Counter s is reset to 0 whenever \%\f3glBegin\fP is called,
+and before each line segment of a \%\f3glBegin\fP(\%\f3GL_LINES\fP)/\%\f3glEnd\fP
+sequence is generated.
+It is incremented after each fragment of a unit width aliased line segment is generated,
+or after each i fragments of an i width line segment are generated.
+The i fragments associated with count s are masked out if
+.sp
+.ce
+\f2pattern\fP bit (s / factor) mod 16 
+.sp
+is 0, otherwise these fragments are sent to the frame buffer.
+Bit zero of \f2pattern\fP is the least significant bit.
+.P
+Antialiased lines are treated as a sequence of 1 * width rectangles
+for purposes of stippling.
+Whether rectagle s is rasterized or not depends on the fragment rule
+described for aliased lines,
+counting rectangles rather than groups of fragments.
+.P
+To enable and disable line stippling, call \%\f3glEnable\fP and \%\f3glDisable\fP
+with argument \%\f3GL_LINE_STIPPLE\fP.
+When enabled,
+the line stipple pattern is applied as described above.
+When disabled,
+it is as if the pattern were all 1's.
+Initially, line stippling is disabled.
+.SH ERRORS
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glLineStipple\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_LINE_STIPPLE_PATTERN\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_LINE_STIPPLE_REPEAT\fP
+.br
+\%\f3glIsEnabled\fP with argument \%\f3GL_LINE_STIPPLE\fP
+.SH SEE ALSO
+\%\f3glLineWidth\fP,
+\%\f3glPolygonStipple\fP

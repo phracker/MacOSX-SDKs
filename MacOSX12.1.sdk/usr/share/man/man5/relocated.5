@@ -1,0 +1,192 @@
+.TH RELOCATED 5 
+.ad
+.fi
+.SH NAME
+relocated
+\-
+Postfix relocated table format
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap /etc/postfix/relocated\fR
+.SH DESCRIPTION
+.ad
+.fi
+The optional \fBrelocated\fR(5) table provides the information that is
+used in "user has moved to \fInew_location\fR" bounce messages.
+
+Normally, the \fBrelocated\fR(5) table is specified as a text file
+that serves as input to the \fBpostmap\fR(1) command.
+The result, an indexed file in \fBdbm\fR or \fBdb\fR format,
+is used for fast searching by the mail system. Execute the command
+"\fBpostmap /etc/postfix/relocated\fR" to rebuild an indexed
+file after changing the corresponding relocated table.
+
+When the table is provided via other means such as NIS, LDAP
+or SQL, the same lookups are done as for ordinary indexed files.
+
+Alternatively, the table can be provided as a regular\-expression
+map where patterns are given as regular expressions, or lookups
+can be directed to TCP\-based server. In those case, the lookups
+are done in a slightly different way as described below under
+"REGULAR EXPRESSION TABLES" or "TCP\-BASED TABLES".
+
+Table lookups are case insensitive.
+.SH "CASE FOLDING"
+.na
+.nf
+.ad
+.fi
+The search string is folded to lowercase before database
+lookup. As of Postfix 2.3, the search string is not case
+folded with database types such as regexp: or pcre: whose
+lookup fields can match both upper and lower case.
+.SH "TABLE FORMAT"
+.na
+.nf
+.ad
+.fi
+The input format for the \fBpostmap\fR(1) command is as follows:
+.IP \(bu
+An entry has one of the following form:
+
+.nf
+     \fIpattern      new_location\fR
+.fi
+
+Where \fInew_location\fR specifies contact information such as
+an email address, or perhaps a street address or telephone number.
+.IP \(bu
+Empty lines and whitespace\-only lines are ignored, as
+are lines whose first non\-whitespace character is a `#'.
+.IP \(bu
+A logical line starts with non\-whitespace text. A line that
+starts with whitespace continues a logical line.
+.SH "TABLE SEARCH ORDER"
+.na
+.nf
+.ad
+.fi
+With lookups from indexed files such as DB or DBM, or from networked
+tables such as NIS, LDAP or SQL, patterns are tried in the order as
+listed below:
+.IP \fIuser\fR@\fIdomain\fR
+Matches \fIuser\fR@\fIdomain\fR. This form has precedence over all
+other forms.
+.IP \fIuser\fR
+Matches \fIuser\fR@\fIsite\fR when \fIsite\fR is $\fBmyorigin\fR,
+when \fIsite\fR is listed in $\fBmydestination\fR, or when \fIsite\fR
+is listed in $\fBinet_interfaces\fR or $\fBproxy_interfaces\fR.
+.IP @\fIdomain\fR
+Matches other addresses in \fIdomain\fR. This form has the lowest
+precedence.
+.SH "ADDRESS EXTENSION"
+.na
+.nf
+.fi
+.ad
+When a mail address localpart contains the optional recipient delimiter
+(e.g., \fIuser+foo\fR@\fIdomain\fR), the lookup order becomes:
+\fIuser+foo\fR@\fIdomain\fR, \fIuser\fR@\fIdomain\fR, \fIuser+foo\fR,
+\fIuser\fR, and @\fIdomain\fR.
+.SH "REGULAR EXPRESSION TABLES"
+.na
+.nf
+.ad
+.fi
+This section describes how the table lookups change when the table
+is given in the form of regular expressions or when lookups are
+directed to a TCP\-based server. For a description of regular
+expression lookup table syntax, see \fBregexp_table\fR(5) or
+\fBpcre_table\fR(5). For a description of the TCP client/server
+table lookup protocol, see \fBtcp_table\fR(5).
+This feature is not available up to and including Postfix version 2.4.
+
+Each pattern is a regular expression that is applied to the entire
+address being looked up. Thus, \fIuser@domain\fR mail addresses are not
+broken up into their \fIuser\fR and \fI@domain\fR constituent parts,
+nor is \fIuser+foo\fR broken up into \fIuser\fR and \fIfoo\fR.
+
+Patterns are applied in the order as specified in the table, until a
+pattern is found that matches the search string.
+
+Results are the same as with indexed file lookups, with
+the additional feature that parenthesized substrings from the
+pattern can be interpolated as \fB$1\fR, \fB$2\fR and so on.
+.SH "TCP-BASED TABLES"
+.na
+.nf
+.ad
+.fi
+This section describes how the table lookups change when lookups
+are directed to a TCP\-based server. For a description of the TCP
+client/server lookup protocol, see \fBtcp_table\fR(5).
+This feature is not available up to and including Postfix version 2.4.
+
+Each lookup operation uses the entire address once.  Thus,
+\fIuser@domain\fR mail addresses are not broken up into their
+\fIuser\fR and \fI@domain\fR constituent parts, nor is
+\fIuser+foo\fR broken up into \fIuser\fR and \fIfoo\fR.
+
+Results are the same as with indexed file lookups.
+.SH BUGS
+.ad
+.fi
+The table format does not understand quoting conventions.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+The following \fBmain.cf\fR parameters are especially relevant.
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP \fBrelocated_maps\fR
+List of lookup tables for relocated users or sites.
+.PP
+Other parameters of interest:
+.IP \fBinet_interfaces\fR
+The network interface addresses that this system receives mail on.
+You need to stop and start Postfix when this parameter changes.
+.IP \fBmydestination\fR
+List of domains that this mail system considers local.
+.IP \fBmyorigin\fR
+The domain that is appended to locally\-posted mail.
+.IP \fBproxy_interfaces\fR
+Other interfaces that this machine receives mail on by way of a
+proxy agent or network address translator.
+.SH "SEE ALSO"
+.na
+.nf
+trivial\-rewrite(8), address resolver
+postmap(1), Postfix lookup table manager
+postconf(5), configuration parameters
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+ADDRESS_REWRITING_README, address rewriting guide
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

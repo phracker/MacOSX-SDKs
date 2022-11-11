@@ -1,0 +1,163 @@
+.TH "MPSCNNYOLOLossDescriptor" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNYOLOLossDescriptor
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNLoss\&.h>\fP
+.PP
+Inherits NSObject, and <NSCopying>\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinit\fP"
+.br
+.in -1c
+.SS "Class Methods"
+
+.in +1c
+.ti -1c
+.RI "(nullable \fBMPSCNNYOLOLossDescriptor\fP *) + \fBcnnLossDescriptorWithXYLossType:WHLossType:confidenceLossType:classesLossType:reductionType:anchorBoxes:numberOfAnchorBoxes:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "\fBMPSCNNLossDescriptor\fP * \fBXYLossDescriptor\fP"
+.br
+.ti -1c
+.RI "\fBMPSCNNLossDescriptor\fP * \fBWHLossDescriptor\fP"
+.br
+.ti -1c
+.RI "\fBMPSCNNLossDescriptor\fP * \fBconfidenceLossDescriptor\fP"
+.br
+.ti -1c
+.RI "\fBMPSCNNLossDescriptor\fP * \fBclassesLossDescriptor\fP"
+.br
+.ti -1c
+.RI "\fBMPSCNNReductionType\fP \fBreductionType\fP"
+.br
+.ti -1c
+.RI "BOOL \fBrescore\fP"
+.br
+.ti -1c
+.RI "float \fBscaleXY\fP"
+.br
+.ti -1c
+.RI "float \fBscaleWH\fP"
+.br
+.ti -1c
+.RI "float \fBscaleNoObject\fP"
+.br
+.ti -1c
+.RI "float \fBscaleObject\fP"
+.br
+.ti -1c
+.RI "float \fBscaleClass\fP"
+.br
+.ti -1c
+.RI "float \fBminIOUForObjectPresence\fP"
+.br
+.ti -1c
+.RI "float \fBmaxIOUForObjectAbsence\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBnumberOfAnchorBoxes\fP"
+.br
+.ti -1c
+.RI "NSData * \fBanchorBoxes\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework\&.  The \fBMPSCNNYOLOLossDescriptor\fP specifies a loss filter descriptor that is used to create a \fBMPSCNNLoss\fP filter\&. The \fBMPSCNNYOLOLoss\fP is a filter that has been specialized for object detection tasks and follows a specific layout for the feature-channels of the input, output, weight and label data\&.
+.PP
+The layout of the data within the feature-channels is as follows: 
+.PP
+.nf
+Each anchorbox uses ( 2+2+1 + numberOfClasses = 5 + numberOfClasses ) feature channels.
+
+.fi
+.PP
+.PP
+Therefore the total number of feature channels used is: (5 + numberOfClasses) * numberOfAnchorBoxes\&. The first feature channel for anchorbox index 'anchorIdx' is at fcIndex = (5 + numberOfClasses) * anchorIdx, and the feature channels within each anchorbox are stored in the layout: 'XYWHCFFFFFF\&.\&.\&.', where (XY) are the so-called raw x and y coordinates of the bounding box within each gridcell and (WH) are the corresponding width and height\&. 'C' signifies a confidence for having an object in the cell and FFFFF\&.\&.\&. are the feature channel values for each class of object to be classified in the object detector\&.
+.PP
+The YOLO-loss filter works by operating mostly independently on each anchorbox:
+.IP "\(bu" 2
+The XY-channels of the inputs are first transformed to relative XY-values by applying the sigmoid-neuron on them, after which they are passed through the loss function defined by \fBXYLossDescriptor\fP, which is typically chosen to be the \fBMPSCNNLossTypeMeanSquaredError\fP type loss function\&.
+.IP "\(bu" 2
+The WH-channels contain the raw width and height of the bounding box and they are operated with the loss function defined by \fBWHLossDescriptor\fP, which is typically of type \fBMPSCNNLossTypeHuber\fP\&.
+.IP "\(bu" 2
+The C-channel contains the confidence value of having an object in the bounding box and it is operated by the loss function defined by \fBconfidenceLossDescriptor\fP, which is typically chosen to be \fBMPSCNNLossTypeSigmoidCrossEntropy\fP\&.
+.IP "\(bu" 2
+The FFFFF\&.\&.\&. (number of channels is number of classes) channels contains the raw feature channels for object classes, used to identify which objects are the most probable ones in the bounding box and these channels are passed through the loss function defined by \fBclassesLossDescriptor\fP, which in typical cases is of the type \fBMPSCNNLossTypeSoftMaxCrossEntropy\fP\&.
+.PP
+.PP
+For details on how to set up the label values and anchorboxes see https://arxiv.org/abs/1612.08242 
+.SH "Method Documentation"
+.PP 
+.SS "+ (nullable \fBMPSCNNYOLOLossDescriptor\fP*) cnnLossDescriptorWithXYLossType: (\fBMPSCNNLossType\fP) XYLossType(\fBMPSCNNLossType\fP) WHLossType(\fBMPSCNNLossType\fP) confidenceLossType(\fBMPSCNNLossType\fP) classesLossType(\fBMPSCNNReductionType\fP) reductionType(NSData *__nonnull) anchorBoxes(NSUInteger) numberOfAnchorBoxes"
+Make a descriptor for a \fBMPSCNNYOLOLoss\fP object\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIXYLossType\fP The type of spatial position loss filter\&. 
+.br
+\fIWHLossType\fP The type of spatial size loss filter\&. 
+.br
+\fIconfidenceLossType\fP The type of confidence filter\&. 
+.br
+\fIclassesLossType\fP The type of classes filter\&. 
+.br
+\fIreductionType\fP The type of a reduction operation to apply\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSCNNYOLOLossDescriptor\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) init "
+
+.SH "Property Documentation"
+.PP 
+.SS "\- anchorBoxes\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+NSData containing the width and height for numberOfAnchorBoxes anchor boxes 
+.SS "\- classesLossDescriptor\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The type of a loss filter\&.  This parameter specifies the type of a loss filter\&. 
+.SS "\- confidenceLossDescriptor\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The type of a loss filter\&.  This parameter specifies the type of a loss filter\&. 
+.SS "\- (float) maxIOUForObjectAbsence\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- (float) minIOUForObjectPresence\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.SS "\- numberOfAnchorBoxes\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+number of anchor boxes used to detect object per grid cell 
+.SS "\- reductionType\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+ReductionType shared accross all losses (so they may generate same sized output) 
+.SS "\- rescore\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Rescore pertains to multiplying the confidence groundTruth with IOU (intersection over union) of predicted bounding box and the groundTruth boundingBox\&. Default is YES 
+.SS "\- scaleClass\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+scale factor for no object classes loss and loss gradient default is 2\&.0 
+.SS "\- scaleNoObject\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+scale factor for no object confidence loss and loss gradient default is 5\&.0 
+.SS "\- scaleObject\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+scale factor for no object confidence loss and loss gradient default is 100\&.0 
+.SS "\- scaleWH\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+scale factor for WH loss and loss gradient default is 10\&.0 
+.SS "\- scaleXY\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+scale factor for XY loss and loss gradient default is 10\&.0 
+.SS "\- WHLossDescriptor\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The type of a loss filter\&.  This parameter specifies the type of a loss filter\&. 
+.SS "\- XYLossDescriptor\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The type of a loss filter\&.  This parameter specifies the type of a loss filter\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

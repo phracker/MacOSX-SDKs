@@ -1,0 +1,251 @@
+.\" Copyright (c) 2011 Apple Inc. All rights reserved.
+.Dd 1 July, 2011
+.Dt xpc_array_create 3
+.Os Darwin
+.Sh NAME
+.Nm xpc_array_create
+.Nd creation and management of XPC arrays
+.Sh SYNOPSIS
+.Fd #include <xpc/xpc.h>
+.Ft xpc_object_t
+.Fo xpc_array_create
+.Fa "const xpc_object_t *objects"
+.Fa "size_t count"
+.Fc
+.Ft void
+.Fo xpc_array_set_value
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "xpc_object_t value"
+.Fc
+.Ft void
+.Fo xpc_array_append_value
+.Fa "xpc_object_t array"
+.Fa "xpc_object_t value"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_array_get_value
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Ft size_t
+.Fo xpc_array_get_count
+.Fa "xpc_object_t array"
+.Fc
+.Ft bool
+.Fo xpc_array_apply
+.Fa "xpc_object_t array"
+.Fa "xpc_array_applier_t applier"
+.Fc
+.Ft void
+.Fo xpc_array_set_bool
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "bool value"
+.Fc
+.Ft void
+.Fo xpc_array_set_int64
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "int64_t value"
+.Fc
+.Ft void
+.Fo xpc_array_set_uint64
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "uint64_t value"
+.Fc
+.Ft void
+.Fo xpc_array_set_double
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "double value"
+.Fc
+.Ft void
+.Fo xpc_array_set_date
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "int64_t value"
+.Fc
+.Ft void
+.Fo xpc_array_set_data
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "const void *bytes"
+.Fa "size_t length"
+.Fc
+.Ft void
+.Fo xpc_array_set_string
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "const char *value"
+.Fc
+.Ft void
+.Fo xpc_array_set_uuid
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "const uuid_t value"
+.Fc
+.Ft void
+.Fo xpc_array_set_fd
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "int value"
+.Fc
+.Ft void
+.Fo xpc_array_set_connection
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "xpc_connection_t value"
+.Fc
+.Ft bool
+.Fo xpc_array_get_bool
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Ft int64_t
+.Fo xpc_array_get_int64
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Ft uint64_t
+.Fo xpc_array_get_uint64
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Ft double
+.Fo xpc_array_get_double
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Ft int64_t
+.Fo xpc_array_get_date
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Ft const void *
+.Fo xpc_array_get_data
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fa "size_t *length"
+.Fc
+.Ft const uint8_t *
+.Fo xpc_array_get_uuid
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Ft const char *
+.Fo xpc_array_get_string
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Ft int
+.Fo xpc_array_dup_fd
+.Fa "xpc_object_t array"
+.Fa "size_t index"
+.Fc
+.Sh ARRAYS
+XPC arrays are collections of XPC objects ordered by index. The index is
+zero-based. XPC arrays are contiguous, and values must exist at all indexes
+between zero and the greatest index of the array. A hole in the array can be
+simulated by using a null object as returned by
+.Xr xpc_null_create 3 .
+.Sh CREATION
+The
+.Fn xpc_array_create
+function returns a newly created array. The caller may optionally provide
+.Fa objects ,
+a C array of XPC object references,
+to initialize the array. The
+.Fa count
+is used to specify the size of the C array.
+If
+.Fa objects
+is NULL, then
+.Fa count
+must be zero. If
+.Fa count
+specifies more elements than are actually present in
+.Fa values
+or if
+.Fa values
+is NULL
+and
+.Fa count
+is non-zero, the behavior is undefined.
+.Sh GETTING AND SETTING VALUES
+The
+.Fn xpc_array_append_value
+function may be used to append a
+.Fa value
+to the end of an
+.Fa array .
+This operation increases the count of the values in the array by one.
+.Pp
+The
+.Fa value
+of a specific
+.Fa index
+in the
+.Fa array
+may be set using the
+.Fn xpc_array_set_value
+function.
+The
+.Fa value
+must be non-NULL, and the
+.Fa index
+must already exist (i.e. less than the
+.Fa count
+provided at creation or extended through previous append operations).
+.Pp
+The value at a specific
+.Fa index
+of an
+.Fa array
+may be retrieved using the
+.Fn xpc_array_get_value
+function.
+The result of getting a non-existing
+.Fa index
+(i.e. one that was not specified at creation or through a previous append
+operation) in undefined.
+.Sh PRIMITIVE GET AND SET FUNCTIONS
+Various functions exist for retrieving primitive C and operating system types
+directly from an array without the need for an intermediate boxed object. See
+.Xr xpc_object 3
+for more information.
+.Pp
+The special
+.Ft XPC_ARRAY_APPEND
+constant may be used to append a value to the end of the
+.Fa array
+instead of operating on a specific
+.Fa index .
+.Pp
+.Sh ITERATION
+The
+.Fn xpc_array_apply
+function may be used to iterate the
+.Fa index
+and
+.Fa value
+pairs of an
+.Fa array
+using an
+.Fa applier
+callback block. The callback block is invoked for each pair and must return a
+.Ft bool
+indicating whether the iteration should continue (true if it should continue,
+false if it should not).
+The
+.Fn xpc_array_apply
+function will return true if the
+.Fa applier
+block was called and returned true for all pairs, or false if it was not (i.e. the
+.Fa applier
+returned false during the iteration, which may have caused iteration to stop early).
+.Sh SEE ALSO
+.Xr xpc_object 3 ,
+.Xr xpc_objects 3 ,
+.Xr xpc_dictionary_create 3

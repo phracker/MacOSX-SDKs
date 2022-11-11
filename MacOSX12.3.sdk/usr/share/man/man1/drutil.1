@@ -1,0 +1,479 @@
+.Dd May 18, 2004
+.Dt DRUTIL 1
+.Os "Mac OS X"
+.Pp
+.Sh NAME
+.Nm drutil
+.Nd interact with CD/DVD burners
+.Sh SYNOPSIS
+.Nm drutil
+.Ar verb
+.Op options
+.Sh DESCRIPTION
+.Nm
+uses the DiscRecording framework to interact with attached 
+burning devices.  Common verbs include
+.Sy "burn",
+.Sy "erase",
+.Sy "eject",
+.Sy "help",
+.Sy "info",
+.Sy "list",
+.Sy "status",
+and
+.Sy "tray".
+.Pp
+The rest of the verbs are:
+.Sy "bulkerase",
+.Sy "cdtext",
+.Sy "discinfo",
+.Sy "dumpiso",
+.Sy "dumpudf",
+.Sy "filename",
+.Sy "getconfig",
+.Sy "poll",
+.Sy "size",
+.Sy "subchannel",
+.Sy "trackinfo",
+and
+.Sy "version".
+.Sh VERBS
+.Bd -ragged
+Each verb is listed with its description and individual arguments.
+Drive selection arguments must appear before individual arguments.
+Drive selection and argument descriptions can be found after the verb
+descriptions in the Drive Selection Criteria section.
+.Bl -hang -width "imageinfo"
+.\"
+.\"             -- -drive --
+.It Sy -drive Ar drive(s)
+.br
+Lets you specify a drive or drives, per the output of
+.Sy "list",
+for those verbs that can operate on one or more drives.
+See the Drive Selection Criterion section for more info.
+.\"             -- help --
+.It Sy help Ar verb
+.br
+Display the usage information for the specified verb.
+.\"
+.\"             -- atip --
+.It Sy atip
+.br
+Displays the Absolute Time in Pre-Groove (ATIP) for inserted CD-R/RW media.
+.Pp
+.\"
+.\"             -- bulkerase --
+.It Sy bulkerase Ar type
+.br
+Starts bulk erase mode, in which the drive will continually
+erase inserted -RW media, eject it, and prompt for another disc until
+terminated.
+.Pp
+.Bl -hang -width "verbose" -compact
+Types of erase:
+.It Sy quick
+Performs a quick erase, doing the minimal amount of work to make the 
+disc appear blank. This operation typically takes only a minute or two. 
+.Pp
+.It Sy full
+Performs a complete erase, erasing every block on the disk. This 
+operation is slow (on the order of 30 minutes) to complete.
+.El
+.\"
+.\"             -- burn --
+.It Sy burn Ar options Ar path
+.br
+Burns a valid directory or image file to disc. The default is to burn the
+specified directory to a new filesystem. The 
+.Sy "-audio" 
+option creates an
+audio CD (redbook) in which any valid QuickTime audio file present in the path
+is converted to a track (in alphabetical order). If a file is specified (valid 
+image files only: .dmg, .iso, .cue/bin, and .toc) the contents of the image file
+are burned. Pre-burn and post-burn options, and filesystem exclusions can be
+specificed for enhanced functionality. Last option takes precedence. Invalid commands are ignored.
+.Pp
+.Bl -hang -width "verbose" -compact
+.It Ar path
+A valid path to a directory or file.
+.Pp
+.It Ar options
+Specify an arbitrary valid burn option(s):
+.Sy "-test",
+.Sy "-appendable",
+.Sy "-erase",
+.Sy "-mount",
+.Sy "-noverify",
+.Sy "-nohfsplus",
+.Sy "-noiso9660",
+.Sy "-nojoliet",
+.Sy "-noudf",
+.Sy "-nofs",
+.Sy "-audio",
+.Sy "-speed",
+.Sy "-pregap".
+Or specify a default burn option:
+.Sy "-notest",
+.Sy "-noappendable",
+.Sy "-noerase",
+.Sy "-allfs",
+.Sy "-hfsplus",
+.Sy "-iso9660",
+.Sy "-joliet",
+.Sy "-udf",
+.Sy "-data",
+.Sy "-eject",
+.Sy "-verify".
+.El
+.\"
+.\"             -- cdtext --
+.It Sy cdtext
+.br
+Reads and displays any CD-Text information reported by the drive. The drive
+must contain an audio CD, and be capable of reading CD-Text.
+.Pp
+.\"
+.\"             -- discinfo --
+.It Sy discinfo Op -xml
+.br
+Displays detailed information about present media.
+.Pp
+From the MMC command of the same name.
+.Pp
+.\"
+.\"             -- dumpiso --
+.It Sy dumpiso Ar device Ar block Op format
+.br
+Tool to inspect and interpret ISO-9660 and Joliet structures on the media.
+.Pp
+.Bl -hang -width "verbose" -compact
+.It Ar device
+Disk node, e.g. /dev/disk1, /dev/disk1s1, /dev/rdisk1.
+.Pp
+.It Ar block
+Block number to dump (in decimal or 0x hex notation). Blocks are
+assumed to be 2048-byte blocks.
+.Pp
+.It Ar format
+How to interpret the block. If format is not specified, dumpiso will attempt to guess. 
+If present, this argument should be one of the following:
+.Sy "None",
+.Sy "Boot",
+.Sy "BootCat",
+.Sy "PVD",
+.Sy "SVD",
+.Sy "VPD",
+.Sy "VDST",
+.Sy "MPath",
+.Sy "LPath",
+.Sy "Dir",
+.Sy "HFSPlusVH".
+.El
+.\"
+.\"             -- dumpudf --
+.It Sy dumpudf Ar device Ar block
+.br
+Tool to inspect and interpret UDF structures on the media.
+.Pp
+.Bl -hang -width "verbose" -compact
+.It Ar device
+Disk node, e.g. /dev/disk1, /dev/disk1s1, /dev/rdisk1.
+.Pp
+.It Ar block
+Block number to dump (in decimal or 0x hex notation). Blocks are
+assumed to be 2048-byte blocks.
+.Pp
+.El
+.\"
+.\"             -- eject --
+.It Sy eject
+.br
+Synonym for
+.Nm
+.Sy "tray eject".
+.Pp
+.\"
+.\"             -- erase --
+.It Sy erase Ar type
+.br
+Erases -RW media in the drive(s) and ejects it.
+.Pp
+.Bl -hang -width "verbose" -compact
+Types of erase:
+.It Sy quick
+Performs a quick erase, doing the minimal amount of work to make the 
+disc appear blank. This operation typically takes only a minute or two. 
+.Pp
+.It Sy full
+Performs a complete erase, erasing every block on the disk. This 
+operation is slow (on the order of 30 minutes) to complete.
+.El
+.\"
+.\"             -- filename --
+.It Sy filename Ar name 
+.br
+Shows how the specified filename will be modified to comply with the
+naming rules of the filesystems that DiscRecording generates.
+.Pp
+.\"
+.\"             -- getconfig --
+.It Sy getconfig Ar type
+.br
+Displays device feature and profile list.
+.Pp
+.Bl -hang -width "verbose" -compact
+Types of config information:
+.It Sy current
+Displays current features and profiles for a drive.
+.Pp
+.It Sy supported
+Displays all supported features and profiles for a drive.
+.El
+.\"
+.\"             -- info --
+.It Sy info Op -xml
+.br
+Displays various pieces of information for each drive,
+including how it's connected to the computer and a summary
+of capabilities.
+.Pp
+.\"
+.\"             -- list --
+.It Sy list Op -xml
+.br
+Lists all burning devices connected to the machine.
+.Pp
+.\"
+.\"             -- poll --
+.It Sy poll
+.br
+Displays device and media notifications until terminated.
+.Pp
+.\"
+.\"             -- size --
+.It Sy size Ar options Ar path
+.br
+Estimates the size of a valid directory or image file (in blocks). The default is to estimate 
+the size of the specified path as a hybrid filesystem. The 
+.Sy "-audio" 
+option calculates the contents of the directory as an audio CD (redbook) (for applicable files). If a file
+is specified (valid image files only: .dmg, .iso, .cue/bin, and .toc) the contents of the image file
+will be calculated. Filesystem exclusions can be specificed for enhanced functionality. Calculated size will
+be compared against blank media that is found unless the 
+.Sy "-nodrive"
+argument is specified. Last option takes precedence. Invalid commands are ignored.
+.Pp
+.Bl -hang -width "verbose" -compact
+.It Ar path
+A valid path to a directory or file.
+.Pp
+.It Ar options
+Specify an arbitrary valid burn option(s):
+.Sy "-nodrive",
+.Sy "-nohfsplus",
+.Sy "-noiso9660",
+.Sy "-nojoliet",
+.Sy "-noudf",
+.Sy "-nofs",
+.Sy "-audio",
+.Sy "-pregap".
+Or specify a default burn option:
+.Sy "-allfs",
+.Sy "-hfsplus",
+.Sy "-iso9660",
+.Sy "-joliet",
+.Sy "-udf",
+.Sy "-data".
+.El
+.\"
+.\"             -- status --
+.It Sy status Op -xml
+.br
+Displays detailed media-specific information.
+.Pp
+.\"
+.\"             -- subchannel --
+.It Sy subchannel
+.br
+Displays information from the subchannels on CD media. This
+prints the MCN (media catalog number) for the disc, and the
+ISRC (international standard recording code) for all tracks.
+This command only works when CD media is present.
+.Pp
+From the MMC command of the same name.
+.Pp
+.\"
+.\"             -- toc --
+.It Sy toc
+.br
+Displays table of contents (TOC) of inserted media.
+.Pp
+.\"
+.\"             -- trackinfo --
+.It Sy trackinfo Op -xml
+.br
+Displays detailed information about all tracks present
+on the media.
+.Pp
+From the MMC command of the same name.
+.Pp
+.\"
+.\"             -- tray --
+.It Sy tray Ar command
+.br
+Performs a tray/media related command. Note that some drives
+do not have trays, and some have trays but may lack motorized
+eject or inject capability.
+.Pp
+.Bl -hang -width "verbose" -compact
+Tray commands:
+.It Sy open
+Opens a drive's tray, if no media is present and the
+drive has a tray capable of motorized eject.
+.Pp
+.It Sy close
+Closes a drive's tray, if the drive has a tray capable
+of motorized inject.
+.Pp
+.It Sy eject
+Ejects media from the drive, if the drive has a tray capable
+of motorized eject. If no media is present, this is equivalent
+to
+.Sy "open".
+If media is present and can be unmounted, it will be unmounted
+and then ejected.
+If media is present but cannot be unmounted, the eject will fail.
+.El
+.\"
+.\"             -- version --
+.It Sy version
+.br
+Displays operating system and DiscRecording framework version numbers.
+.Pp
+.El
+.Ed
+.Sh OPTIONS
+.Bd -ragged
+.Bl -hang -width "imageinfo"
+.\"
+.\"             -- -xml --
+.It Sy -xml
+.br
+When specified (valid options only:
+.Sy "discinfo",
+.Sy "info",
+.Sy "list",
+.Sy "status", and
+.Sy "trackinfo")
+the output for the specified verb will be shown in xml format.
+.El
+.Ed
+.Sh DRIVE SELECTION CRITERIA
+.Bd -ragged
+Some functions of
+.Nm
+operate on a specific drive. Since any number of
+drives may be available, and they may come and go at any time, the device
+selection arguments provide a method for selecting among them.
+.Pp
+The candidate list starts out as a list of all attached drives. One or more
+arguments of the form
+.Sy -drive
+.Ar drive(s)
+may be specified. Each argument has the
+effect of narrowing the candidate list, depending on what
+.Ar drive(s)
+is. It may be:
+.Pp
+.Bl -bullet -width "verbose" -offset left -compact
+.It
+A positive decimal number, assumed to be a 1-based index into the
+candidate list. The candidate list is trimmed to just that device.
+.Pp
+.It
+One of the following keywords:
+.Sy "internal",
+.Sy "external",
+.Sy "usb",
+.Sy "firewire",
+.Sy "atapi",
+.Sy "scsi".
+The candidate list is trimmed to devices which match the specified 
+location / bus. Case is ignored in this comparison.
+.Pp
+.It
+Any other string, assumed to be a vendor/product name. The 
+candidate list is trimmed to devices whose vendor or product 
+strings exactly match the argument. Case (but not whitespace) is 
+ignored in this comparison.
+.El
+.Pp
+Multiple
+.Sy -drive
+arguments may be specified; each argument narrows the
+candidate list further. After all the
+.Sy -drive
+arguments have been processed, the candidate list is considered. If
+it contains exactly one item, that drive is used. If it contains
+zero items,
+.Nm
+prints an error message and exits. If it contains more than one item,
+the selected function is executed on all drives remaining in the list.
+.Pp
+.Ed
+.Sh EXAMPLES
+.Bd -ragged
+Simple verbs with no drive commands
+.Pp
+.Dl drutil help status
+        Displays help for the verb "status".
+.br
+.Dl drutil list
+        Displays a list of attached devices.
+.br
+.Dl drutil info
+		Displays miscellaneous information for all attached devices.
+.br
+.Dl drutil status
+		Displays media-specific information for all attached devices.
+.br
+.Dl drutil -drive internal burn -noverify -eject -speed 24 ~/Documents
+        Burns the Documents directory to the internal drive without
+        verifying, then ejects the disc.
+.br
+.Dl drutil -drive internal info -xml > driveInfo.xml
+        Creates a XML file containing info about internal drives.
+.Pp
+Examples of drive selection
+.Pp
+.Dl drutil -drive 1 tray close
+        Closes the tray of the first burning device seen, if possible.
+.br
+.Dl drutil -drive external info
+        Lists drive specific information for all externally
+        connected burning devices.
+.br
+.Dl drutil -drive firewire status
+        Lists media specific information for media present in
+        attached firewire burning devices.
+.br
+.Dl drutil -drive VENDOR tray open
+        Opens the tray of all burning devices whose vendor id is 
+        VENDOR, if possible.
+.br
+.Dl drutil -drive 'CD-RW CDW827ES' getconfig supported
+        Lists supported features and profiles for attached devices
+        whose product id is 'CD-RW CDW827ES'.
+.Pp
+.Ed
+.Sh HISTORY
+.Bd -ragged
+.Nm
+first appeared in MacOS X 10.3.
+.Ed
+.Pp
+.Sh SEE ALSO
+.Ns Xr diskutil 1 ,
+.Ns Xr hdiutil 1 ,
+/usr/sbin/disktool (run with no args for usage).

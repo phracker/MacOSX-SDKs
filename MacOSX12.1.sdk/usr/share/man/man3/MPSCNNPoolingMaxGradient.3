@@ -1,0 +1,98 @@
+.TH "MPSCNNPoolingMaxGradient" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNPoolingMaxGradient
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNPooling\&.h>\fP
+.PP
+Inherits \fBMPSCNNPoolingGradient\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  Specifies the filter for computing the gradient of the max pooling filter\&. The operation backpropagates a gradient vector using chain rule\&.
+.PP
+Dilated Max pooling forward pass is defined as: 
+.PP
+.nf
+out(x) = max_{dx \in Window(x)} in(s*x+D*dx), where
+
+.fi
+.PP
+.PP
+the pooling window definition 'Window(x)' follows \fBMPSCNNPooling\fP specification, 's' is the pixel stride and in() is the source input image and D is the dilation factor\&. For \fBMPSCNNPoolingMaxGradient\fP the dilationRate 'D' is one\&. NOTE: For even-sized pooling windows with dilation rate greater than one the effective pooling window is centered around s*x with non-even windows leaning towards top-left corner\&. For example if kernel width = 2, dilation rate = 3, then the pooling considers positions '-2' and '+1' relative to the pooling window center 's*x'\&.
+.PP
+Hence the partial derivative of the output value wrt\&. to the input value needed in the gradient backpropagation in \fBMPSCNNPoolingGradient\fP is: 
+.PP
+.nf
+d out(x)/d in(y) = delta_{x_m, y}, where
+
+.fi
+.PP
+.PP
+delta_{x,y} is the Kronecker delta symbol (see \fBMPSCNNPoolingAverageGradient\fP) and x_m is the index of the maximum value in the corresponding pooling window\&.
+.PP
+In practice this means that the gradient value for the destination image at pixel 'x' is the sum over these contributions coming from all pooling windows that contribute to the max pooling computation in the forward pass, multiplied by the input gradient value in the source area of the corresponding pooling window\&. If there are multiple maximal values within a single pooling window one of them is picked for the gradient and this decision is implementation specific, which means that it can vary between different architectures and even between different filter parameters\&.
+.PP
+Note: The gradient max pooling needs the secondary input image in order to compute the indices of maximal values for each pooling window, but this means redundant computations\&. Later we may add encode calls to \fBMPSCNNPoolingMax\fP that produce a state that contains the coordinates of the maximal values to be consumed by the gradient filters\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  See \fBMPSKernel::initWithCoder\fP\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSCNNPoolingMaxGradient\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSCNNPoolingMaxGradient\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSCNNPoolingMaxGradient\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNPoolingGradient\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(NSUInteger) kernelWidth(NSUInteger) kernelHeight(NSUInteger) strideInPixelsX(NSUInteger) strideInPixelsY"
+Initialize a gradient max pooling filter 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device the filter will run on 
+.br
+\fIkernelWidth\fP The width of the kernel\&. Can be an odd or even value\&. 
+.br
+\fIkernelHeight\fP The height of the kernel\&. Can be an odd or even value\&. 
+.br
+\fIstrideInPixelsX\fP The input stride (upsampling factor) in the x dimension\&. 
+.br
+\fIstrideInPixelsY\fP The input stride (upsampling factor) in the y dimension\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSCNNPoolingGradient\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNPoolingGradient\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

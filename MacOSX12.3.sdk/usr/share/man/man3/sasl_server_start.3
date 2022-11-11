@@ -1,0 +1,105 @@
+.\" -*- nroff -*-
+.\" 
+.\" Copyright (c) 2001 Carnegie Mellon University.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer. 
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in
+.\"    the documentation and/or other materials provided with the
+.\"    distribution.
+.\"
+.\" 3. The name "Carnegie Mellon University" must not be used to
+.\"    endorse or promote products derived from this software without
+.\"    prior written permission. For permission or any other legal
+.\"    details, please contact  
+.\"      Office of Technology Transfer
+.\"      Carnegie Mellon University
+.\"      5000 Forbes Avenue
+.\"      Pittsburgh, PA  15213-3890
+.\"      (412) 268-4387, fax: (412) 268-7395
+.\"      tech-transfer@andrew.cmu.edu
+.\"
+.\" 4. Redistributions of any form whatsoever must retain the following
+.\"    acknowledgment:
+.\"    "This product includes software developed by Computing Services
+.\"     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+.\"
+.\" CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+.\" THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+.\" AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+.\" FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+.\" AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+.\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\" 
+.TH sasl_server_start 3 "10 July 2001" SASL "SASL man pages"
+.SH NAME
+sasl_server_start \- Begin an authentication negotiation
+
+
+.SH SYNOPSIS
+.nf
+.B #include <sasl/sasl.h>
+.sp
+.BI "int sasl_server_start(sasl_conn_t * " conn ", "
+.BI "		           const char * " mech ", "
+.BI "		           const char * " clientin ", "
+.BI "		           unsigned * " clientinlen ", "
+.BI "		           const char ** " serverout ", "
+.BI "		           unsigned * " serveroutlen ");"
+.fi
+.SH DESCRIPTION
+
+.B sasl_server_start()
+begins the authentication with the mechanism specified with mech. This
+fails if the mechanism is not supported. SASL_OK is returned if the
+authentication is complete and the user is
+authenticated. SASL_CONTINUE is returned if one or more steps are
+still required in the authentication. All other return values indicate
+failure.
+
+.PP
+.I conn
+is the SASL context for this connection
+.PP
+.I mech
+is the mechanism name that the client requested
+.PP
+.I clientin
+is the client initial response, NULL if the protocol lacks support for
+client-send-first or if the other end did not have an initial send.  Note that
+no initial client send is distinct from an initial send of a null string,
+and the protocol MUST account for this difference.
+
+.PP
+.I clientinlen
+is the length of initial response
+.PP
+.I serverout
+is created by the plugin library. It is the initial server response to send to the client. This is allocated/freed by the library and it is the job of the client to send it over the network to the server. Also protocol specific encoding (such as base64 encoding) must needs to be done by the server.
+.PP
+.I serveroutlen
+is set to the length of initial server challenge
+.PP
+
+.PP
+
+.SH "RETURN VALUE"
+
+sasl_server_start returns an integer which corresponds to one of the
+SASL errorcodes. SASL_OK indicates that authentication is completed
+successfully. SASL_CONTINUE indicates success and that there are
+more steps needed in the authentication. All other return codes
+indicate errors and should either be handled or the authentication
+session should be quit.
+
+.SH "CONFORMING TO"
+RFC 4422
+.SH "SEE ALSO"
+sasl(3), sasl_errors(3), sasl_server_init(3), sasl_server_new(3), sasl_server_step(3)
