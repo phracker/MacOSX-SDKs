@@ -1,0 +1,228 @@
+.TH ALIASES 5 
+.ad
+.fi
+.SH NAME
+aliases
+\-
+Postfix local alias database format
+.SH "SYNOPSIS"
+.na
+.nf
+.fi
+\fBnewaliases\fR
+.SH DESCRIPTION
+.ad
+.fi
+The \fBaliases\fR(5) table provides a system\-wide mechanism to
+redirect mail for local recipients. The redirections are
+processed by the Postfix \fBlocal\fR(8) delivery agent.
+
+Normally, the \fBaliases\fR(5) table is specified as a text file
+that serves as input to the \fBpostalias\fR(1) command. The
+result, an indexed file in \fBdbm\fR or \fBdb\fR format, is
+used for fast lookup by the mail system. Execute the command
+\fBnewaliases\fR in order to rebuild the indexed file after
+changing the Postfix alias database.
+
+When the table is provided via other means such as NIS, LDAP
+or SQL, the same lookups are done as for ordinary indexed files.
+
+Alternatively, the table can be provided as a regular\-expression
+map where patterns are given as regular expressions. In
+this case, the lookups are done in a slightly different way
+as described below under "REGULAR EXPRESSION TABLES".
+
+Users can control delivery of their own mail by setting
+up \fB.forward\fR files in their home directory.
+Lines in per\-user \fB.forward\fR files have the same syntax
+as the right\-hand side of \fBaliases\fR(5) entries.
+
+The format of the alias database input file is as follows:
+.IP \(bu
+An alias definition has the form
+.sp
+.nf
+     \fIname\fR: \fIvalue1\fR, \fIvalue2\fR, \fI...\fR
+.fi
+.IP \(bu
+Empty lines and whitespace\-only lines are ignored, as
+are lines whose first non\-whitespace character is a `#'.
+.IP \(bu
+A logical line starts with non\-whitespace text. A line that
+starts with whitespace continues a logical line.
+.PP
+The \fIname\fR is a local address (no domain part).
+Use double quotes when the name contains any special characters
+such as whitespace, `#', `:', or `@'. The \fIname\fR is folded to
+lowercase, in order to make database lookups case insensitive.
+.PP
+In addition, when an alias exists for \fBowner\-\fIname\fR, delivery
+diagnostics are directed to that address, instead of to the originator
+of the message.
+This is typically used to direct delivery errors to the maintainer of
+a mailing list, who is in a better position to deal with mailing
+list delivery problems than the originator of the undelivered mail.
+.PP
+The \fIvalue\fR contains one or more of the following:
+.IP \fIaddress\fR
+Mail is forwarded to \fIaddress\fR, which is compatible
+with the RFC 822 standard.
+.IP \fI/file/name\fR
+Mail is appended to \fI/file/name\fR. See \fBlocal\fR(8)
+for details of delivery to file.
+Delivery is not limited to regular files.  For example, to dispose
+of unwanted mail, deflect it to \fB/dev/null\fR.
+.IP "|\fIcommand\fR"
+Mail is piped into \fIcommand\fR. Commands that contain special
+characters, such as whitespace, should be enclosed between double
+quotes. See \fBlocal\fR(8) for details of delivery to command.
+.sp
+When the command fails, a limited amount of command output is
+mailed back to the sender.  The file \fB/usr/include/sysexits.h\fR
+defines the expected exit status codes. For example, use
+\fB"|exit 67"\fR to simulate a "user unknown" error, and
+\fB"|exit 0"\fR to implement an expensive black hole.
+.IP \fB:include:\fI/file/name\fR
+Mail is sent to the destinations listed in the named file.
+Lines in \fB:include:\fR files have the same syntax
+as the right\-hand side of alias entries.
+.sp
+A destination can be any destination that is described in this
+manual page. However, delivery to "|\fIcommand\fR" and
+\fI/file/name\fR is disallowed by default. To enable, edit the
+\fBallow_mail_to_commands\fR and \fBallow_mail_to_files\fR
+configuration parameters.
+.SH "ADDRESS EXTENSION"
+.na
+.nf
+.ad
+.fi
+When alias database search fails, and the recipient localpart
+contains the optional recipient delimiter (e.g., \fIuser+foo\fR),
+the search is repeated for the unextended address (e.g., \fIuser\fR).
+
+The \fBpropagate_unmatched_extensions\fR parameter controls
+whether an unmatched address extension (\fI+foo\fR) is
+propagated to the result of table lookup.
+.SH "CASE FOLDING"
+.na
+.nf
+.ad
+.fi
+The local(8) delivery agent always folds the search string
+to lowercase before database lookup.
+.SH "REGULAR EXPRESSION TABLES"
+.na
+.nf
+.ad
+.fi
+This section describes how the table lookups change when the table
+is given in the form of regular expressions. For a description of
+regular expression lookup table syntax, see \fBregexp_table\fR(5)
+or \fBpcre_table\fR(5). NOTE: these formats do not use ":" at the
+end of a pattern.
+
+Each regular expression is applied to the entire search
+string. Thus, a search string \fIuser+foo\fR is not broken
+up into \fIuser\fR and \fIfoo\fR.
+
+Regular expressions are applied in the order as specified
+in the table, until a regular expression is found that
+matches the search string.
+
+Lookup results are the same as with indexed file lookups.
+For security reasons there is no support for \fB$1\fR,
+\fB$2\fR etc. substring interpolation.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBlocal\fR(8) delivery agent disallows regular expression
+substitution of $1 etc. in \fBalias_maps\fR, because that
+would open a security hole.
+
+The \fBlocal\fR(8) delivery agent will silently ignore
+requests to use the \fBproxymap\fR(8) server within
+\fBalias_maps\fR. Instead it will open the table directly.
+Before Postfix version 2.2, the \fBlocal\fR(8) delivery
+agent will terminate with a fatal error.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+The following \fBmain.cf\fR parameters are especially relevant.
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP \fBalias_database\fR
+List of alias databases that are updated by the
+\fBnewaliases\fR(1) command.
+.IP \fBalias_maps\fR
+List of alias databases queried by the \fBlocal\fR(8) delivery agent.
+.IP \fBallow_mail_to_commands\fR
+Restrict the usage of mail delivery to external command.
+.IP \fBallow_mail_to_files\fR
+Restrict the usage of mail delivery to external file.
+.IP \fBexpand_owner_alias\fR
+When delivering to an alias that has an \fBowner\-\fR companion alias,
+set the envelope sender address to the right\-hand side of the
+owner alias, instead using of the left\-hand side address.
+.IP \fBpropagate_unmatched_extensions\fR
+A list of address rewriting or forwarding mechanisms that
+propagate an address extension from the original address
+to the result. Specify zero or more of \fBcanonical\fR,
+\fBvirtual\fR, \fBalias\fR, \fBforward\fR, \fBinclude\fR,
+or \fBgeneric\fR.
+.IP \fBowner_request_special\fR
+Give special treatment to \fBowner\-\fIlistname\fR and
+\fIlistname\fB\-request\fR
+addresses.
+.IP \fBrecipient_delimiter\fR
+Delimiter that separates recipients from address extensions.
+.PP
+Available in Postfix version 2.3 and later:
+.IP \fBfrozen_delivered_to\fR
+Update the local(8) delivery agent's Delivered\-To: address
+(see prepend_delivered_header) only once, at the start of
+a delivery; do not update the Delivered\-To: address while
+expanding aliases or .forward files.
+.SH "STANDARDS"
+.na
+.nf
+RFC 822 (ARPA Internet Text Messages)
+.SH "SEE ALSO"
+.na
+.nf
+local(8), local delivery agent
+newaliases(1), create/update alias database
+postalias(1), create/update alias database
+postconf(5), configuration parameters
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

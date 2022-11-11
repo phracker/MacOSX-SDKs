@@ -1,0 +1,506 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) notebook.n
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::notebook iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+'\"
+'\"
+.SH NAME
+iwidgets::notebook \- create and manipulate notebook widgets
+.SH SYNOPSIS
+\fBiwidgets::notebook\fR \fIpathName\fR ?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Notebook
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBbackground\fR	\fBforeground\fR	\fBscrollCommand\fR	\fBwidth\fR
+\fBcursor\fR	\fBheight\fR	
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBauto\fR
+Class:	\fBAuto\fR
+Command-Line Switch:	\fB-auto\fR
+.fi
+.IP
+Specifies whether to use the automatic packing/unpacking algorithm of the
+notebook. A value of \fBtrue\fR indicates that page frames will be unpacked 
+and packed acoording to the algorithm described in the \fBselect\fR command. 
+A value of \fBfalse\fR leaves the current page packed and subsequent selects, 
+next, or previous commands do not switch pages automatically. In either 
+case the page's associated command (see the \fBadd\fR command's description 
+of the \fBcommand\fR option) is invoked. The value may have any of the 
+forms accepted by the \fBTcl_GetBoolean\fR, such as true, false, 0, 1, yes, 
+or no.
+.IP
+For example, if a series of pages in a notebook simply change certain display
+configurations of a graphical display, the \fB-auto\fR flag could be used. 
+By setting it, the \fB-command\fR procs could do the appropriate reconfiguring
+of the page when the page is switched.
+.BE
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::notebook\fR command creates a new window (given by the pathName 
+argument) and makes it into a notebook widget. Additional options, described 
+above may be specified on the command line or in the option database to 
+configure aspects of the notebook such as its colors, font, and text. 
+The \fBiwidgets::notebook\fR command returns its \fIpathName\fR argument. At the time 
+this command is invoked, there must not exist a window named pathName, but 
+pathName's parent must exist.
+
+A notebook is a widget that contains a set of pages. It displays one page from 
+the set as the selected page. When a page is selected, the page's contents are 
+displayed in the page area. When first created a notebook has no pages. Pages 
+may be added or deleted using widget commands described below.
+
+.SH "NOTEBOOK PAGES"
+.PP
+A notebook's pages area contains a single child site \fBframe\fR. When a new 
+page is created it is a child of this frame. The page's child site frame 
+serves as a geometry container for applications to pack widgets into. It is 
+this frame that is automatically unpacked or packed when the \fBauto\fR 
+option is \fBtrue\fR. This creates the effect of one page being visible at 
+a time. When a new page is selected, the previously selected page's child 
+site frame is automatically unpacked from the notebook's child site frame 
+and the newly selected page's child site is packed into the notebook's 
+child site frame.
+
+However, sometimes it is desirable to handle page changes in a different 
+manner. By specifying the \fBauto\fR option as \fBfalse\fR, child site 
+packing can be disabled and done differently. For example, all widgets might 
+be packed into the first page's child site frame. Then when a new page is 
+selected, the application can reconfigure the widgets and give the appearance
+that the page was flipped.
+
+In both cases the \fBcommand\fR option for a page specifies a Tcl Command to
+execute when the page is selected. In the case of \fBauto\fR being \fBtrue\fR, 
+it is called between the unpacking of the previously selected page and the 
+packing of the newly selected page.
+
+.SH "WIDGET-SPECIFIC METHODS"
+.PP
+The \fBiwidgets::notebookfR command creates a new Tcl command whose name 
+is \fIpathName\fR. This command may be used to invoke various operations 
+on the widget. It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIoption\fR and the \fIarg\fRs
+determine the exact behavior of the command.
+.PP
+Many of the widget commands for a notebook take as one argument an indicator 
+of which page of the notebook to operate on. These indicators are called 
+indexes and may be specified in any of the following forms:
+.TP
+\fInumber\fR
+Specifies the index of the the component. For menus, 0 corresponds to the 
+left-most menu of the menu bar. For entries, 0 corresponds to the top-most 
+entry of the menu.
+\fInumber\fR
+Specifies the page numerically, where 0 corresponds to the first page in 
+the notebook, 1 to the second, and so on.
+.TP
+\fBselect\fR
+Specifies the currently selected page's index. If no page is currently 
+selected, the value -1 is returned.
+.TP
+\fBend\fR
+Specifes the last page in the notebooks's index. If the notebook is empty 
+this will return -1.
+.TP
+\fIpattern\fR
+If the index doesn't satisfy the form of a number, then this form is used. 
+Pattern is pattern-matched against the \fBlabel\fR of each page in the 
+notebook, in order from the first to the last page, until a matching entry 
+is found. The rules of \fBTcl_StringMatch\fR are used.
+.PP
+'.............................................................................
+The following commands are possible for notebook widgets:
+.TP
+\fIpathName\fR \fBadd\fR ?\fIoption value\fR?
+Add a new page at the end of the notebook. A new child site frame is 
+created. Returns the child site pathName. If additional arguments are 
+present, they specify any of the following options:
+.RS
+.TP
+\fB-background\fR \fIvalue\fR
+Specifies a background color to use for displaying the child site frame 
+of this page. If this option is specified as an empty string (the default), 
+then the background option for the overall notebook is used.
+.TP
+\fB-command\fR \fIvalue\fR
+Specifies a Tcl command to be executed when this page is selected. This 
+allows the programmer a hook to reconfigure this page's widgets or any other
+page's widgets.
+.IP
+If the notebook has the auto option set to true, when a page is selected 
+this command will be called immediately after the previously selected page 
+is unpacked and immediately before this page is selected. The index value 
+select is valid during this Tcl command. `index select' will return this 
+page's page number. 
+.IP
+If the auto option is set to false, when a page is selected the unpack and 
+pack calls are bypassed. This Tcl command is still called.
+.TP
+\fB-foreground\fR \fIvalue\fR
+Specifies a foreground color to use for displaying tab labels when tabs are 
+in their normal unselected state. If this option is specified as an empty 
+string (the default), then the foreground option for the overall notebook 
+is used. 
+.TP
+\fB-label\fR \fIvalue\fR
+Specifies a string to associate with this page. This label serves as an 
+additional identifier used to reference the page. This label may be used 
+for the index value in widget commands. 
+.RE
+.TP
+\fIpathName\fR \fBchildSite\fR ?\fIindex\fR?
+If passed no arguments, returns a list of pathNames for all the pages in 
+the notebook. If the notebook is empty, an empty list is returned
+.IP
+If index is passed, it returns the pathName for the page's child site 
+frame specified by index. Widgets that are created with this pathName will 
+be displayed when the associated page is selected. If index is not a valid 
+index, an empty string is returned. 
+.TP
+\fIpathName\fR \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given by \fIoption\fR.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+Query or modify the configuration options of the widget. If no \fIoption\fR 
+is specified, returns a list describing all of the available options 
+for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for information on the 
+format of this list). If \fIoption\fR is specified with no \fIvalue\fR, 
+then the command returns a list describing the one named option (this 
+list will be identical to the corresponding sublist of the value returned 
+if no option is specified). If one or more option-value pairs are specified, 
+then the command modifies the given widget option(s) to have the given 
+value(s); in this case the command returns an empty string. \fIOption\fR 
+may have any of the values accepted by the \fBiwidgets::notebook\fR command.
+.TP
+\fIpathName\fR \fBdelete\fR \fIindex1\fR ?i\fRndex2?
+Delete all of the pages between \fIindex1\fR and \fIindex2\fR inclusive. 
+If \fIindex2\fR is omitted then it defaults to \fIindex1\fR. Returns an 
+empty string.
+.TP
+\fIpathName\fR \fBindex\fR \fIindex\fR
+Returns the numerical index corresponding to \fIindex\fR.
+.TP
+\fBpathName\fR \fBinsert\fR \fIindex\fR ?\fIoption\fR \fIvalue\fR?
+Insert a new page in the notebook before the page specified by \fIindex\fR. 
+A new child site \fBframe\fR is created. See the \fBadd\fR command for 
+valid options. Returns the child site pathName.
+.TP
+\fIpathName\fR \fBnext\fR
+Advances the selected page to the next page (order is determined by insertion 
+order). If the currently selected page is the last page in the notebook, 
+the selection wraps around to the first page in the notebook. 
+.IP
+For notebooks with auto set to true the current page's child site is 
+unpacked from the notebook's child site frame. Then the next page's child 
+site is packed into the notebooks child site frame. The Tcl command given 
+with the command option will be invoked between these two operations.
+.IP
+For notebooks with auto set to false the Tcl command given with the 
+command option will be invoked.
+.TP
+\fIpathName\fR \fBpagecget\fR \fIindex\fR ?\fIoption\fR?
+Returns the current value of the configuration option given by \fIoption\fR 
+for the page specified by \fIindex\fR. The valid available options are the 
+same as available to the \fBadd\fR command.
+.TP
+\fIpathName\fR \fBpageconfigure\fR \fIindex\fR ?\fIoption\fR? ?\fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+This command is similar to the configure command, except that it applies to 
+the options for an individual page, whereas configure applies to the options 
+for the notebook. Options may have any of the values accepted by the add 
+widget command. If options are specified, options are modified as indicated 
+in the command and the command returns an empty string. If no options are 
+specified, returns a list describing the current options for 
+page \fIindex\fR (see \fBTk_ConfigureInfo\fR for information on the 
+format of this list).
+.TP
+\fIpathName\fR \fBprev\fR
+Moves the selected page to the previous page (order is determined by 
+insertion order). If the currently selected page is the first page in the 
+notebook, the selection wraps around to the last page in the notebook.
+.IP
+For notebooks with \fBauto\fR set to \fBtrue\fR the current page's child 
+site is unpacked from the notebook's child site frame. Then the previous 
+page's child site is packed into the notebooks child site frame. The Tcl 
+command given with the command option will be invoked between these two 
+operations.
+.IP
+For notebooks with \fBauto\fR set to \fBfalse\fR the Tcl command given with 
+the command option will be invoked.
+.TP
+\fIpathName\fR \fBselect\fR \fIindex\fR
+Selects the page specified by \fIindex\fR as the currently selected page.
+.IP
+For notebooks with \fBauto\fR set to \fBtrue\fR the current page's child 
+site is unpacked from the notebook's child site frame. Then the index page's 
+child site is packed into the notebooks child site frame. The Tcl command 
+given with the command option will be invoked between these two operations.
+.IP
+For notebooks with \fBauto\fR set to \fBfalse\fR the Tcl command given with 
+the command option will be invoked.
+.TP
+\fIpathName\fR \fBview\fR
+Returns the currently selected page. This command is for compatibility 
+with the scrollbar widget.
+.TP
+\fIpathName\fR \fBview\fR \fIindex\fR
+Selects the page specified by \fIindex\fR as the currently selected page. 
+This command is for compatibility with the scrollbar widget.
+.TP
+\fIpathName\fR \fBview\fR \fImoveto\fR \fIfraction\fR
+Uses the fraction value to determine the corresponding page to move to. 
+This command is for compatibility with the scrollbar widget.
+.TP
+\fIpathName\fR \fBview\fR \fIscroll\fR \fInum\fR \fIwhat\fR
+Uses the \fInum\fR value to determine how many pages to move forward or 
+backward (num can be negative or positive). The \fIwhat\fR argument is 
+ignored. This command is for compatibility with the scrollbar widget.
+
+.SH EXAMPLE
+.PP
+Following is an example that creates a notebook with two pages. In this example, we use a scrollbar widget to control the notebook widget.
+.nf
+.IP
+.ta 2c 8c 12c
+.DS
+package require Iwidgets 4.0
+# Create the notebook widget and pack it.
+  iwidgets::notebook .nb -width 100 -height 100
+  pack .nb -anchor nw \\
+	-fill both \\
+	-expand yes \\
+	-side left \\
+	-padx 10 \\
+	-pady 10
+.IP
+# Add two pages to the notebook, labelled 
+# "Page One" and "Page Two", respectively.
+  .nb add -label "Page One"
+  .nb add -label "Page Two"
+.IP
+# Get the child site frames of these two pages.
+  set page1CS [.nb childsite 0]
+  set page2CS [.nb childsite "Page Two"]
+.IP
+# Create buttons on each page of the notebook
+  button $page1CS.b -text "Button One"
+  pack $page1CS.b
+  button $page2CS.b -text "Button Two"
+  pack $page2CS.b
+.IP
+# Select the first page of the notebook
+  .nb select 0
+.IP
+# Create the scrollbar and associate teh scrollbar
+# and the notebook together, then pack the scrollbar
+  scrollbar .scroll -command ".nb view"
+  .nb configure -scrollcommand ".scroll set"
+  pack .scroll -fill y -expand yes -pady 10
+.DE
+.fi
+.SH AUTHOR
+Bill W. Scott
+.SH KEYWORDS
+notebook page 

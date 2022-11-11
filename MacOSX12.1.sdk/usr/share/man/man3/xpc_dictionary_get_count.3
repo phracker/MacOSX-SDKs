@@ -1,0 +1,327 @@
+.\" Copyright (c) 2011 Apple Inc. All rights reserved.
+.Dd 1 July, 2011
+.Dt xpc_dictionary_create 3
+.Os Darwin
+.Sh NAME
+.Nm xpc_dictionary_create
+.Nd creation and management of XPC messages
+.Sh SYNOPSIS
+.Fd #include <xpc/xpc.h>
+.Ft xpc_object_t
+.Fo xpc_dictionary_create
+.Fa "const char * const *keys"
+.Fa "const xpc_object_t *values"
+.Fa "size_t count"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_dictionary_create_reply
+.Fa "xpc_object_t original"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_value
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "xpc_object_t value"
+.Fc
+.Ft xpc_object_t
+.Fo xpc_dictionary_get_value
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Ft size_t
+.Fo xpc_dictionary_get_count
+.Fa "xpc_object_t dictionary"
+.Fc
+.Ft bool
+.Fo xpc_dictionary_apply
+.Fa "xpc_object_t dictionary"
+.Fa "xpc_dictionary_applier_t applier"
+.Fc
+.Ft xpc_connection_t
+.Fo xpc_dictionary_get_remote_connection
+.Fa "xpc_object_t dictionary"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_bool
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "bool value"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_int64
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "int64_t value"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_uint64
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "uint64_t value"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_double
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "double value"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_date
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "int64_t value"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_data
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "const void *value"
+.Fa "size_t length"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_string
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "const char *value"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_uuid
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "const uuid_t value"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_fd
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "int value"
+.Fc
+.Ft void
+.Fo xpc_dictionary_set_connection
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "xpc_connection_t connection"
+.Fc
+.Ft bool
+.Fo xpc_dictionary_get_bool
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Ft int64_t
+.Fo xpc_dictionary_get_int64
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Ft uint64_t
+.Fo xpc_dictionary_get_uint64
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Ft double
+.Fo xpc_dictionary_get_double
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Ft int64_t
+.Fo xpc_dictionary_get_date
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Ft const void *
+.Fo xpc_dictionary_get_data
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fa "size_t *length"
+.Fc
+.Ft const uint8_t *
+.Fo xpc_dictionary_get_uuid
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Ft const char *
+.Fo xpc_dictionary_get_string
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Ft int
+.Fo xpc_dictionary_dup_fd
+.Fa "xpc_object_t dictionary"
+.Fa "const char *key"
+.Fc
+.Sh DICTIONARIES
+XPC dictionaries are collections of XPC objects that map keys (expressed as C
+strings) to values.
+.Pp
+Objects of dictionary collection type are mutable and will automatically
+expand to accommodate new keys and values that are inserted into the dictionary.
+.Ss CREATION
+The
+.Fn xpc_dictionary_create
+function returns a newly created dictionary.
+The caller may optionally provide corresponding C arrays of
+.Fa keys
+and
+.Fa values
+to initialize the dictionary.
+All
+.Fa values
+must be XPC objects and are automatically retained by the XPC framework as they
+are inserted into the dictionary.
+The
+.Fa count
+is used to specify the size of the C arrays. Both arrays must be of the same
+size. The behavior when
+.Fa count
+is greater than the number of elements in either of the C arrays is undefined.
+These arguments are optional and NULL may be passed to both
+.Fa keys
+and
+.Fa values
+with a 
+.Fa count
+of zero, resulting in an empty dictionary.
+.Ss GETTING AND SETTING VALUES
+The
+.Fn xpc_dictionary_set_value
+function may be used to insert or replace the
+.Fa value
+of a specified
+.Fa key
+in a
+.Fa dictionary .
+The XPC framework will retain a reference to the
+.Fa value
+while it is present in the
+.Fa dictionary ,
+and will release the reference when it is removed.
+The
+.Fa value
+provided may be NULL, in which case the
+.Fa key
+will be removed from the dictionary.
+.Pp
+The value of a specific
+.Fa key
+in the
+.Fa dictionary
+may be retrieved using the
+.Fn xpc_dictionary_get_value
+function. This function returns the value for the specified
+.Fa key
+if it exists or NULL if it does not.
+.Ss PRIMITIVE GET AND SET FUNCTIONS
+Various functions exist for retrieving primitive C and operating system types
+directly from a dictionary without the need for an intermediate boxed object.
+See
+.Xr xpc_object 3
+for more information.
+.Ss ITERATION
+The
+.Fn xpc_dictionary_apply
+function may be used to iterate the
+.Fa key
+and
+.Fa value
+pairs of a
+.Fa dictionary
+using an
+.Fa applier
+callback block. The callback block is invoked for each pair and must return a
+.Ft bool
+indicating whether the iteration should continue (true if it should continue,
+false if it should not).
+The
+.Fn xpc_dictionary_apply
+function will return true if the
+.Fa applier
+block was called and returned true for all pairs, or false if it was not (i.e. the
+.Fa applier
+returned false during the iteration, which may have caused iteration to stop early).
+.Pp
+Note that the C language does not require an explicit return type to be declared
+for a block when the return expression is unambigous. Therefore the formal block
+declaration
+.Bd -literal -offset indent
+(void)xpc_dictionary_apply(dictionary, ^ bool (const char *key, xpc_object_t value) {
+	// Do iteration.
+	return true;
+});
+.Ed
+.Pp
+may instead be written as follows (omitting the declared return type, and
+explicitly casting the return value to the desired type):
+.Bd -literal -offset indent
+(void)xpc_dictionary_apply(dictionary, ^(const char *key, xpc_object_t value) {
+	// Do iteration.
+	return (bool)true;
+});
+.Ed
+.Pp
+.Em Important :
+the behavior of modifying the contents of an XPC dictionary during iteration
+is undefined.
+.Sh DICTIONARIES AS MESSAGES
+All messages sent and received by XPC connections are dictionaries. As a result,
+several functions are available to assist with the use of dictionaries as XPC
+messages.
+.Pp
+The
+.Fn xpc_dictionary_get_remote_connection
+function may be used to return the underlying XPC connection through which a
+message was received.
+.Pp
+When a client sends a message using the
+.Xr xpc_connection_send_message_with_reply 3
+function, a specific reply message must be created with
+.Fn xpc_dictionary_create_reply .
+This function returns a new dictionary which shares the underlying remote
+connection as the
+.Fa original
+message. A reply dictionary may be used the same as any other dictionary, but it
+must be sent to the connection returned by
+.Fn xpc_dictionary_get_remote_connection ,
+at which point the sender's reply block will be invoked when the reply message
+is received.
+.Pp
+.Em Note :
+Message dictionaries have side effects attached to their lifetimes and the
+lifetimes of reply messages created from them, so close attention should be paid
+to the lifetimes of such dictionaries. For details, see
+.Xr xpc_transaction_begin 3 .
+.Sh DICTIONARIES AS ERRORS
+Errors encountered by the XPC framework are delivered to the event handler
+of a connection as a dictionary of type
+.Ft XPC_TYPE_ERROR .
+See
+.Xr xpc_get_type 3
+for more information about XPC object types.
+These error dictionaries may be directly compared against the following
+constants:
+.Bl -bullet -compact -offset indent
+.It
+.Ft XPC_ERROR_CONNECTION_INTERRUPTED
+.It
+.Ft XPC_ERROR_CONNECTION_INVALID
+.It
+.Ft XPC_ERROR_CONNECTION_TERMINATION_IMMINENT
+.El
+.Pp
+.Em Important :
+these dictionaries are constant singletons and must not be modified.
+.Pp
+Error dictionaries contain a single
+.Ft XPC_ERROR_KEY_DESCRIPTION
+key. The value of this key is a string object which encapsulates a
+human-readable description of the error condition. This value is guaranteed
+to be a string type and it is safe to use the
+.Fn xpc_dictionary_get_string
+function directly to obtain a C string representation of the description.
+The contents of this string is intended for diagnostic use and is subject to
+change in future releases.
+.Pp
+Additional keys and values may be added to the error dictionaries over time.
+.Sh SEE ALSO
+.Xr xpc_object 3 ,
+.Xr xpc_objects 3 ,
+.Xr xpc_connection_create 3 ,
+.Xr xpc_array_create 3

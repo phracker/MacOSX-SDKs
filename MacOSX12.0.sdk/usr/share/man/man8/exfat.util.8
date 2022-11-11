@@ -1,0 +1,170 @@
+.\" Copyright (c) 2009-2010 Apple Inc.  All rights reserved.
+.\"
+.Dd January 19, 2010
+.Dt EXFAT.UTIL 8 
+.Os Darwin
+.Sh NAME
+.Nm exfat.util
+.Nd ExFAT file system utility
+.Sh SYNOPSIS
+.Nm
+.Fl p Ar device removable writable
+.Nm
+.Fl k Ar device
+.Nm
+.Fl s Ar device
+.Nm
+.Fl m Ar device directory removable writable nosuid nodev
+.Nm
+.Fl u Ar device
+.Sh DESCRIPTION
+The
+.Nm
+command supports the probing of ExFAT file systems, and getting or setting a
+volume UUID.
+.Pp
+Options:
+.Bl -tag -width Ds
+.It Fl p Ar device removable writable
+Probe the
+.Ar device
+to determine whether it contains an ExFAT file system.  The
+.Ar removable
+and
+.Ar writable
+arguments are ignored for compatibility with other file system utilities.
+If the device appears to contain an ExFAT file system, the exit status is 255.
+If the file system contains a label (volume name), that name is written to
+standard output.
+If the device does not appear to contain an ExFAT file system, the exit status is 254.
+An exit status of 252 indicates that an I/O error occurred.
+.It Fl k Ar device
+Return the volume UUID of the ExFAT file system on
+.Ar device .
+If the device appears to contain an ExFAT file system, the volume's UUID is
+written to standard output (as formatted by
+.Xr uuid_unparse 3 ) ,
+and the exit status is 253.
+If the root directory contains a Volume GUID entry, that GUID is the value returned;
+otherwise, the 32-bit volume serial number stored in the boot sector is converted
+to a UUID and returned.
+If the device does not appear to contain an ExFAT file system, the exit status is 254.
+An exit status of 252 indicates that an I/O error occurred.
+.Pp
+.Ar device
+may be mounted or unmounted.
+If it is mounted, the UUID is obtained through the file system using the
+.Xr getattrlist 2
+call.
+If the device is not mounted,
+.Nm
+reads from the device directly.
+.It Fl s Ar device
+Set a new UUID for the ExFAT file system on
+.Ar device ,
+which must not be mounted.  This generates a new UUID using
+.Xr uuid_generate 3
+and stores that UUID in a Volume GUID entry in the root directory (creating
+one if one does not exist, or updating an existing entry).
+If the UUID is successfully set, the exit status is 253.
+If the device does not appear to contain an ExFAT file system, the exit status is 254.
+An exit status of 252 indicates that
+.Ar device
+was already mounted, or an I/O error occurred.
+.It Fl m Ar device directory removable writable nosuid nodev
+Deprecated.
+Mount the ExFAT file system from
+.Ar device
+onto
+.Ar directory .
+The
+.Ar removable
+argument should be either
+.Cm removable
+if the device is removable, or
+.Cm fixed
+otherwise.
+The actual argument value is currently ignored.
+The
+.Ar writable
+argument must be either
+.Cm readonly
+or
+.Cm writable
+which mounts the volume read-only or read/write, respectively.
+The
+.Ar nosuid
+argument must be either
+.Cm suid
+or
+.Cm nosuid .
+That argument is passed as a mount option.
+The
+.Ar nodev
+argument must be either
+.Cm dev
+or
+.Cm nodev .
+That argument is passed as a mount option.
+.It Fl u Ar device
+Deprecated.
+Unmount the file system on
+.Ar device .
+If the unmount is successful, the exit status is 253.
+.El
+.Sh FILES
+The
+.Nm
+command is installed in the
+.Pa /System/Library/Filesystems/exfat.fs/Contents/Resources
+directory, which is typically not in a shell's search path.
+.Sh COMPATIBILITY
+The
+.Fl m
+and
+.Fl u
+options are deprecated.
+The preferred way to mount an ExFAT volume is to let
+.Xr diskarbitrationd 8
+mount it automatically when the device is discovered, or use the
+.Xr diskutil 8
+command to explicitly mount a device.
+You may also use the
+.Xr mount 8
+or
+.Xr mount_exfat 8
+commands directly.
+The preferred way to unmount an ExFAT volume is with the
+.Xr diskutil 8
+command.
+Note that using the
+.Xr umount 8
+command usually will not work because various process are likely to have open
+files, which will prevent the unmount.
+The
+.Xr diskutil 8
+command will send a notification that causes many such processes to close their
+open files so that the unmount will succeed.
+.Sh SEE ALSO 
+.Xr mount_exfat 8 ,
+.Xr fsck_exfat 8 ,
+.Xr diskarbitrationd 8,
+.Xr diskutil 8 ,
+.Xr uuid 3,
+.Xr uuid_unparse 3 ,
+.Xr uuid_generate 3 ,
+.Xr getattrlist 2
+.Sh HISTORY
+The
+.Nm
+utility first appeared in Mac OS X 10.6.3.
+.Sh BUGS
+The choice of non-zero exit status to indicate success was an unfortunate design decision.
+.Pp
+The
+.Fl u
+option usually does not work since several processes in Mac OS X leave files open on
+mounted volumes, thus preventing the unmount.
+The
+.Xr diskutil 8
+command is preferred for unmounting.

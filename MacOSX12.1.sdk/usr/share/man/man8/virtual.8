@@ -1,0 +1,341 @@
+.TH VIRTUAL 8 
+.ad
+.fi
+.SH NAME
+virtual
+\-
+Postfix virtual domain mail delivery agent
+.SH "SYNOPSIS"
+.na
+.nf
+\fBvirtual\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBvirtual\fR(8) delivery agent is designed for virtual mail
+hosting services. Originally based on the Postfix \fBlocal\fR(8)
+delivery
+agent, this agent looks up recipients with map lookups of their
+full recipient address, instead of using hard\-coded unix password
+file lookups of the address local part only.
+
+This delivery agent only delivers mail.  Other features such as
+mail forwarding, out\-of\-office notifications, etc., must be
+configured via virtual_alias maps or via similar lookup mechanisms.
+.SH "MAILBOX LOCATION"
+.na
+.nf
+.ad
+.fi
+The mailbox location is controlled by the \fBvirtual_mailbox_base\fR
+and \fBvirtual_mailbox_maps\fR configuration parameters (see below).
+The \fBvirtual_mailbox_maps\fR table is indexed by the recipient
+address as described under TABLE SEARCH ORDER below.
+
+The mailbox pathname is constructed as follows:
+
+.nf
+  \fB$virtual_mailbox_base/$virtual_mailbox_maps(\fIrecipient\fB)\fR
+.fi
+
+where \fIrecipient\fR is the full recipient address.
+.SH "UNIX MAILBOX FORMAT"
+.na
+.nf
+.ad
+.fi
+When the mailbox location does not end in \fB/\fR, the message
+is delivered in UNIX mailbox format.   This format stores multiple
+messages in one textfile.
+
+The \fBvirtual\fR(8) delivery agent prepends a "\fBFrom \fIsender
+time_stamp\fR" envelope header to each message, prepends a
+\fBDelivered\-To:\fR message header with the envelope recipient
+address,
+prepends an \fBX\-Original\-To:\fR header with the recipient address as
+given to Postfix,
+prepends a \fBReturn\-Path:\fR message header with the
+envelope sender address, prepends a \fB>\fR character to lines
+beginning with "\fBFrom \fR", and appends an empty line.
+
+The mailbox is locked for exclusive access while delivery is in
+progress. In case of problems, an attempt is made to truncate the
+mailbox to its original length.
+.SH "QMAIL MAILDIR FORMAT"
+.na
+.nf
+.ad
+.fi
+When the mailbox location ends in \fB/\fR, the message is delivered
+in qmail \fBmaildir\fR format. This format stores one message per file.
+
+The \fBvirtual\fR(8) delivery agent prepends a \fBDelivered\-To:\fR
+message header with the final envelope recipient address,
+prepends an \fBX\-Original\-To:\fR header with the recipient address as
+given to Postfix, and prepends a
+\fBReturn\-Path:\fR message header with the envelope sender address.
+
+By definition, \fBmaildir\fR format does not require application\-level
+file locking during mail delivery or retrieval.
+.SH "MAILBOX OWNERSHIP"
+.na
+.nf
+.ad
+.fi
+Mailbox ownership is controlled by the \fBvirtual_uid_maps\fR
+and \fBvirtual_gid_maps\fR lookup tables, which are indexed
+with the full recipient address. Each table provides
+a string with the numerical user and group ID, respectively.
+
+The \fBvirtual_minimum_uid\fR parameter imposes a lower bound on
+numerical user ID values that may be specified in any
+\fBvirtual_uid_maps\fR.
+.SH "CASE FOLDING"
+.na
+.nf
+.ad
+.fi
+All delivery decisions are made using the full recipient
+address, folded to lower case. See also the next section
+for a few exceptions with optional address extensions.
+.SH "TABLE SEARCH ORDER"
+.na
+.nf
+.ad
+.fi
+Normally, a lookup table is specified as a text file that
+serves as input to the \fBpostmap\fR(1) command. The result, an
+indexed file in \fBdbm\fR or \fBdb\fR format, is used for fast
+searching by the mail system.
+
+The search order is as follows. The search stops
+upon the first successful lookup.
+.IP \(bu
+When the recipient has an optional address extension the
+\fIuser+extension@domain.tld\fR address is looked up first.
+.sp
+With Postfix versions before 2.1, the optional address extension
+is always ignored.
+.IP \(bu
+The \fIuser@domain.tld\fR address, without address extension,
+is looked up next.
+.IP \(bu
+Finally, the recipient \fI@domain\fR is looked up.
+.PP
+When the table is provided via other means such as NIS, LDAP
+or SQL, the same lookups are done as for ordinary indexed files.
+
+Alternatively, a table can be provided as a regular\-expression
+map where patterns are given as regular expressions. In that case,
+only the full recipient address is given to the regular\-expression
+map.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBvirtual\fR(8) delivery agent is not security sensitive, provided
+that the lookup tables with recipient user/group ID information are
+adequately protected. This program is not designed to run chrooted.
+
+The \fBvirtual\fR(8) delivery agent disallows regular expression
+substitution of $1 etc. in regular expression lookup tables,
+because that would open a security hole.
+
+The \fBvirtual\fR(8) delivery agent will silently ignore requests
+to use the \fBproxymap\fR(8) server. Instead it will open the
+table directly. Before Postfix version 2.2, the virtual
+delivery agent will terminate with a fatal error.
+.SH "STANDARDS"
+.na
+.nf
+RFC 822 (ARPA Internet Text Messages)
+.SH DIAGNOSTICS
+.ad
+.fi
+Mail bounces when the recipient has no mailbox or when the
+recipient is over disk quota. In all other cases, mail for
+an existing recipient is deferred and a warning is logged.
+
+Problems and transactions are logged to \fBsyslogd\fR(8).
+Corrupted message files are marked so that the queue
+manager can move them to the \fBcorrupt\fR queue afterwards.
+
+Depending on the setting of the \fBnotify_classes\fR parameter,
+the postmaster is notified of bounces and of other trouble.
+.SH BUGS
+.ad
+.fi
+This delivery agent supports address extensions in email
+addresses and in lookup table keys, but does not propagate
+address extension information to the result of table lookup.
+
+Postfix should have lookup tables that can return multiple result
+attributes. In order to avoid the inconvenience of maintaining
+three tables, use an LDAP or MYSQL database.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are picked up automatically, as
+\fBvirtual\fR(8)
+processes run for only a limited amount of time. Use the command
+"\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.SH "MAILBOX DELIVERY CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBvirtual_mailbox_base (empty)\fR"
+A prefix that the \fBvirtual\fR(8) delivery agent prepends to all pathname
+results from $virtual_mailbox_maps table lookups.
+.IP "\fBvirtual_mailbox_maps (empty)\fR"
+Optional lookup tables with all valid addresses in the domains that
+match $virtual_mailbox_domains.
+.IP "\fBvirtual_minimum_uid (100)\fR"
+The minimum user ID value that the \fBvirtual\fR(8) delivery agent accepts
+as a result from $virtual_uid_maps table lookup.
+.IP "\fBvirtual_uid_maps (empty)\fR"
+Lookup tables with the per\-recipient user ID that the \fBvirtual\fR(8)
+delivery agent uses while writing to the recipient's mailbox.
+.IP "\fBvirtual_gid_maps (empty)\fR"
+Lookup tables with the per\-recipient group ID for \fBvirtual\fR(8) mailbox
+delivery.
+.PP
+Available in Postfix version 2.0 and later:
+.IP "\fBvirtual_mailbox_domains ($virtual_mailbox_maps)\fR"
+Postfix is final destination for the specified list of domains;
+mail is delivered via the $virtual_transport mail delivery transport.
+.IP "\fBvirtual_transport (virtual)\fR"
+The default mail delivery transport and next\-hop destination for
+final delivery to domains listed with $virtual_mailbox_domains.
+.PP
+Available in Postfix version 2.5.3 and later:
+.IP "\fBstrict_mailbox_ownership (yes)\fR"
+Defer delivery when a mailbox file is not owned by its recipient.
+.SH "LOCKING CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBvirtual_mailbox_lock (see 'postconf -d' output)\fR"
+How to lock a UNIX\-style \fBvirtual\fR(8) mailbox before attempting
+delivery.
+.IP "\fBdeliver_lock_attempts (20)\fR"
+The maximal number of attempts to acquire an exclusive lock on a
+mailbox file or \fBbounce\fR(8) logfile.
+.IP "\fBdeliver_lock_delay (1s)\fR"
+The time between attempts to acquire an exclusive lock on a mailbox
+file or \fBbounce\fR(8) logfile.
+.IP "\fBstale_lock_time (500s)\fR"
+The time after which a stale exclusive mailbox lockfile is removed.
+.SH "RESOURCE AND RATE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBvirtual_destination_concurrency_limit ($default_destination_concurrency_limit)\fR"
+The maximal number of parallel deliveries to the same destination
+via the virtual message delivery transport.
+.IP "\fBvirtual_destination_recipient_limit ($default_destination_recipient_limit)\fR"
+The maximal number of recipients per message for the virtual
+message delivery transport.
+.IP "\fBvirtual_mailbox_limit (51200000)\fR"
+The maximal size in bytes of an individual \fBvirtual\fR(8) mailbox or
+maildir file, or zero (no limit).
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBdelay_logging_resolution_limit (2)\fR"
+The maximal number of digits after the decimal point when logging
+sub\-second delay values.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.PP
+Available in Postfix version 3.0 and later:
+.IP "\fBvirtual_delivery_status_filter ($default_delivery_status_filter)\fR"
+Optional filter for the \fBvirtual\fR(8) delivery agent to change the
+delivery status code or explanatory text of successful or unsuccessful
+deliveries.
+.SH "SEE ALSO"
+.na
+.nf
+qmgr(8), queue manager
+bounce(8), delivery status reports
+postconf(5), configuration parameters
+syslogd(8), system logging
+.SH "README_FILES"
+.na
+.nf
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+VIRTUAL_README, domain hosting howto
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+.ad
+.fi
+This delivery agent was originally based on the Postfix local delivery
+agent. Modifications mainly consisted of removing code that either
+was not applicable or that was not safe in this context: aliases,
+~user/.forward files, delivery to "|command" or to /file/name.
+
+The \fBDelivered\-To:\fR message header appears in the \fBqmail\fR
+system by Daniel Bernstein.
+
+The \fBmaildir\fR structure appears in the \fBqmail\fR system
+by Daniel Bernstein.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA
+
+Andrew McNamara
+andrewm@connect.com.au
+connect.com.au Pty. Ltd.
+Level 3, 213 Miller St
+North Sydney 2060, NSW, Australia

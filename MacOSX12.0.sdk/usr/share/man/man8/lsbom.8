@@ -1,0 +1,156 @@
+.\"Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+.\"
+.\"This file contains Original Code and/or Modifications of Original Code
+.\"as defined in and that are subject to the Apple Public Source License
+.\"Version 2.0 (the 'License'). You may not use this file except in
+.\"compliance with the License. Please obtain a copy of the License at
+.\"http://www.opensource.apple.com/apsl/ and read it before using this
+.\"file.
+.\"
+.\"The Original Code and all software distributed under the License are
+.\"distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\"EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\"INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\"FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\"Please see the License for the specific language governing rights and
+.\"limitations under the License.
+
+.\" to preview: /usr/bin/nroff -msafer -mandoc lsbom.8
+.\"
+
+.Dd May 7, 2008
+.Dt LSBOM 8 
+.Os "Mac OS X"
+.Sh NAME
+.Nm lsbom
+.Nd list contents of a bom file
+.Sh SYNOPSIS
+.Nm
+.Op Fl b
+.Op Fl c
+.Op Fl d
+.Op Fl f
+.Op Fl l
+.Op Fl m
+.Op Fl s
+.Op Fl x
+.Op Fl -arch Ar archVal
+.Op Fl p Ar parameters
+.Ar bom ...
+.Nm
+.Fl h |
+. Fl -help
+.Sh DESCRIPTION
+The
+.Nm
+command interprets the contents of binary bom
+.Pf ( Xr bom 5 Ns )
+files. For each file in a 
+.Ar bom Ns , 
+.Nm
+prints the file path and/or requested information.
+.Pp
+If no options are given, 
+.Nm
+will display the output formatted such that each line contains the path of the entry, its mode (octal), and its UID/GID. There are slight differences in the output for plain files, directories, symbolic links, and device files as follows:
+.Pp
+.Bl -tag -width "symbolic links"
+.It plain files 
+the UID/GID is followed by the file size and a 32-bit CRC checksum of the file's contents.
+.It symbolic links
+the UID/GID is followed by the size and checksum of the link path, and the link path itself.
+.It device files
+the UID/GID file number is followed by the device number.
+.El
+.Pp
+The 
+.Fl p
+option can be used to specify a user-defined format for
+.Nm lsbom Ns 's
+output. The format string consists of one or more characters described below where each character represents a data type. Data types will be separated by tab characters, and each line will end with a newline character. One can use this mechanism to create output similar to the 
+.Xr ls 1
+command.
+.Pp
+The options are:
+.Bl -tag -width "XXarchXarchVal"
+.It Fl h
+print full usage
+.It Fl b
+list block devices
+.It Fl c
+list character devices
+.It Fl d
+list directories
+.It Fl f
+list files
+.It Fl l
+list symbolic links
+.It Fl m
+print modified times (for plain files only)
+.It Fl s
+print only the path of each file
+.It Fl x 
+suppress modes for directories and symlinks
+.It Fl -arch Ar archVal
+when displaying plain files that represent Universal Mach-O binaries, print the size and checksum of the file contents for the specified archVal (either "ppc", "ppc64", or "i386")
+.It Fl p Ar parameters
+print only some of the results
+.Nm Note:
+each option can only be used once:
+.Bl -tag -compact -offset indent
+.It c
+32-bit checksum
+.It f
+file name
+.It F
+file name with quotes (i.e. "/mach_kernel")
+.It g
+group id
+.It G
+group name
+.It m
+file mode (permissions)
+.It M
+symbolic file mode (i.e. "dr-xr-xr-x" )
+.It s
+file size
+.It S
+formatted size
+.It t
+mod time
+.It T
+formatted mod time
+.It u
+user id
+.It U
+user name
+.It /
+user id/group id
+.It ?
+user name/group name
+.El
+.El
+.Sh EXAMPLES
+.Bl -tag -width "lsbom -p MUGsf bomfile"
+.It lsbom bomfile
+list the contents of bomfile
+.It lsbom -s bomfile
+list only the paths of the contents of the bomfile
+.It lsbom -f -l bomfile
+list the plain files and symbolic links of the bomfiles (but not directories or devices)
+.It lsbom -p MUGsf bomfiles
+list the contents of bomfile displaying only the files' modes, user name, group name, size, and filename
+.El
+.Sh SEE ALSO 
+.Xr bom 5 , 
+.Xr ditto 8 ,
+.Xr mkbom 8 ,
+.Xr pkgutil 1
+.Sh HISTORY 
+The
+.Nm
+command appeared in NeXTSTEP as a tool to browse the contents of bom files used during installation.
+.Pp
+The 
+.Fl p
+flag appeared in Mac OS X 10.1 in an attempt to make lsbom's output more convenient for human beings.

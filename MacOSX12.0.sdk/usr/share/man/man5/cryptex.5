@@ -1,0 +1,316 @@
+.Dd 4 September, 2020
+.Dt cryptex 5
+.Os Darwin
+.Sh NAME
+.Nm cryptex
+.Nd Cryptex filesystem hierarchy specification
+.Sh DESCRIPTION
+A cryptex is a cryptographically-sealed archive which encapsulates a well-
+defined filesystem hierarchy. The host operating system recognizes the hierarchy
+of the cryptex and extends itself with the content of that hierarchy. The name
+.Qq cryptex
+is a portmanteau for
+.Qq CRYPTographically-sealed EXtension .
+.Pp
+Unlike other archive formats
+.Po
+e.g.
+.Xr tar 1 ,
+.Xr cpio 1 ,
+etc.
+.Pc ,
+the content of a cryptex is not intended to be merged to a filesystem
+root. Conventionally, archives are merged to the root filesystem so that the
+operating system can discover new or updated content at a set of pre-determined
+paths that are relative to the filesystem root. For example, the user's chosen
+shell may discover executables in
+.Pa /usr/bin ,
+and therefore new executables must be merged into that location in order for the
+shell to discover them.
+.Pp
+However, as Darwin has more aggressively defended its operating system bits from
+tampering (e.g. via the Signed System Volume), it has become necessary to begin
+recognizing other content roots that are separate from the system but otherwise
+writeable by the user. For example, the shell may also discover executables in
+.Pa /usr/local/bin ,
+which resides on the data volume rather than the signed and immutable system
+volume.
+.Pp
+But these extra roots essentially force a single package of software to "break
+itself up" in order to be installed. Shell tools must be copied to one
+location, dynamic libraries to another, daemons to still another, etc. Once this
+is done, all provenance for the software is more or less lost unless the
+operating system employs complex monitoring and tracking of filesystem events.
+.Pp
+Instead of extracting content and merging it to another filesystem, a cryptex is
+instead mounted at a randomly-chosen location when the system boots. Its content
+may then be examined by any subsystems which are interested in discovering
+content from cryptexes. In other words, subsystems must explicitly be taught
+about the possible existence of cryptex content, and the usefulness of cryptexes
+is directly proportional to the number of subsystems that agree to look for
+their contents.
+.Pp
+This scheme maintains the structure of a software package as a single entity
+that is always handled as such. Prior to mounting the filesystem, the operating
+system can verify that the archive file itself has not been tampered with by
+taking a measurement of it and comparing to a known-good measurement before
+agreeing to mount it.
+.Sh FILESYSTEM HIERARCHY
+A cryptex houses a filesystem that very much
+.Em appears
+as though it is intended to be merged to the root of a Darwin operating system.
+This is intentional. The distribution root produced by building a Darwin project
+should be able to be used as a cryptex assuming all relevant subsystems have
+been taught about cryptex content. Thus, cryptexes can be thought of as
+.Em positionally-independent distribution roots .
+.Ss VIEWS
+Cryptexes formalize the conventions surrounding the
+.Pa Library
+directory locations and precedence into
+.Em views .
+These conventions are documented in the
+.Dq File System Programming Guide
+available on Apple Developer Documentation Archive.
+.Pp
+Views are distinguished by root directories in the filesystem, and each the view
+in which a piece of content resides has implications about the intended scope of
+that content. Defined views are
+.Pp
+.TS
+tab(;);
+lbe lbe lbe
+l ld.
+VIEW 			;ROOT(S) 				;PURPOSE
+Application		;T{
+.Bl -tag -width -indent -compact
+.It Pa ./
+.It Pa ./opt
+.It Pa ./usr/local
+.El
+T};\
+T{
+Content which is private to the cryptex and should not be discovered by other
+subsystems
+T}
+;;
+Platform		;T{
+.Bl -tag -width -indent -compact
+.It Pa ./System
+.It Pa ./usr
+.El
+T};\
+T{
+Content which is published to the broader platform and should be discovered by
+other subsystems
+T}
+.TE
+.Ss CONTENT
+Cryptexes impose the restriction that for a piece of content, there is only one
+directory within a view which may house that content, and two types of content
+may not share a directory. This is a generally agreed-upon convention in Darwin
+and other POSIX-comforming or Unix-like operating systems, but there are
+typically no technical barriers in place to enforce it.
+.Pp
+The
+.Nm
+subsystem provides these barriers by requiring
+.Em a priori
+knowledge of a type of content before it can be published for discovery to the
+broader operating system. Because the
+.Nm
+subsystem maintains complete control over where cryptexes are published and
+available in the filesystem, other subsystems cannot simply crawl the filesystem
+and reliably discover content they are interested in. These subsystems must ask
+the
+.Nm
+subsystem for a
+.Em type of content
+of a
+.Em specific name
+within a
+.Em specific view .
+The path to a given piece of content is constructed from this
+.Em (view, type, name)
+tuple. Put another way, rather than inferring information about content type and
+scope from a filesystem path, cryptexes construct the filesystem path from
+information about content type and scope.
+.Ss ENUMERATED CONTENT TYPES
+Several types of content are already enumerated, though most are not discovered
+by other subsystems. Of the ones that are, only certain views are currently
+supported.
+.Pp
+.TS
+tab(;);
+lbe lbe lbe lbe
+l ld.
+CONTENT TYPE ;DIRECTORY ;DESCRIPTION ;IMPLEMENTATION NOTES
+Shell tool\
+;T{
+.Pa bin
+T}\
+;T{
+Binaries directly executed by the user in a shell
+T}\
+;T{
+Automatic discovery not implemented, though the
+.Em CRYPTEX_PATH
+environment variable will provide a location which can be added by the user to
+his or her shell search path
+T}
+;;;
+Dynamically-linked library\
+;T{
+.Pa lib
+T}\
+;T{
+Shared libraries which may be mapped as executable into an already-executing
+process
+T}\
+;T{
+Libraries in the Application view are discovered and respected by the linker
+such that processes within a cryptex can use libraries within that same cryptex
+T}
+;;;
+System executable\
+;T{
+.Pa libexec
+T}\
+;T{
+A binary which is used by other programs and not meant to be directly executed
+by the user
+T}\
+;T{
+Not implemented
+T}
+;;;
+Daemon\
+;T{
+.Pa Library/LaunchDaemons
+T}\
+;T{
+A
+.Xr launchd.plist 5
+which describes and defines a
+.Xr launchd 8
+service
+T}\
+;T{
+Daemons in the Application view are discovered and bootstrapped automatically
+when the cryptex is mounted
+T}
+;;;
+Agent\
+;T{
+.Pa Library/LaunchAgents
+T}\
+;T{
+A
+.Xr launchd.plist 5
+which describes and defines a user-specific
+.Xr launchd 8
+service
+T}\
+;T{
+Not implemented
+T}
+;;;
+Manual page\
+;T{
+.Pa share/man
+T}\
+;T{
+A
+.Xr man 1
+page which documented a component within the cryptex
+T}\
+;T{
+Not implemented
+T}
+;;;
+Application\
+;T{
+.Pa Applications
+T}\
+;T{
+A GUI application which is directly launched by the user
+T}\
+;T{
+Not implemented
+T}
+;;;
+Cocoa framework\
+;T{
+.Pa Library/Frameworks
+T}\
+;T{
+A specially-packaged dynamically-linked library which may include headers,
+resources, and versioning in a single directory structure
+T}\
+;T{
+Not implemented
+T}
+.TE
+.Ss EXAMPLE PATH DERIVATIONS
+.TS
+tab(;);
+lbe lbe lbe lbe
+l ld.
+VIEW ;CONTENT TYPE ;NAME; PATH(S)
+Platform ;Dynamically-linked library; libfoo.dylib \
+;T{
+.Bl -tag -width -indent -compact
+.It Pa ./usr/lib/libfoo.dylib
+.It Pa ./System/lib/libfoo.dylib
+.El
+T}
+;;;
+Application ;System executable; barbaz \
+;T{
+.Bl -tag -width -indent -compact
+.It Pa ./libexec/barbaz
+.It Pa ./opt/libexec/barbaz
+.It Pa ./usr/local/libexec/barbaz
+.El
+T}
+.TE
+.Pp
+All paths to a resource are considered exactly equivalent, and if the cryptex is
+built with different pieces of content at equivalent paths, the one returned by
+a query for that tuple is undefined.
+.Ss CONTENT WITHIN VIEWS
+.Pp
+The impact of a piece of content being located within a particular view is
+assigned by the subsystem which handles that content. For example,
+.Xr dyld 1
+may impose linkage policy on a dynamic library based on the view in which it
+resides.
+.Pp
+.TS
+tab(;);
+lbe lbe lbe
+l ld.
+LIBRARY PATH ;VIEW ;EXAMPLE POLICY
+T{
+.Pa ./usr/lib/libfoo.dylib
+T};Platform ;T{
+Any process may link
+T}
+T{
+.Pa ./lib/libbar.dylib
+T};Application ;T{
+Only processes within the same cryptex may link
+T}
+.TE
+.Sh DISCOVERY
+Discovery of cryptex resources is currently accomplished by an ad hoc collection
+of methods that are subsystem-specific. In a forthcoming release, a more uniform
+and extensible discovery interface and contract will be implemented.
+.Pp
+Nothing about the current implementation's behavior should be considered stable,
+and implementation needs have been largely driven by the needs of the Security
+Research Device program. The details of these behaviors should be expected to
+change.
+.Sh SEE ALSO
+.Xr cryptexctl 1 ,
+.Xr hier 7 ,
+.Xr cryptexd 8 ,

@@ -1,0 +1,207 @@
+.TH QMQPD 8 
+.ad
+.fi
+.SH NAME
+qmqpd
+\-
+Postfix QMQP server
+.SH "SYNOPSIS"
+.na
+.nf
+\fBqmqpd\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix QMQP server receives one message per connection.
+Each message is piped through the \fBcleanup\fR(8)
+daemon, and is placed into the \fBincoming\fR queue as one
+single queue file.  The program expects to be run from the
+\fBmaster\fR(8) process manager.
+
+The QMQP server implements one access policy: only explicitly
+authorized client hosts are allowed to use the service.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The QMQP server is moderately security\-sensitive. It talks to QMQP
+clients and to DNS servers on the network. The QMQP server can be
+run chrooted at fixed low privilege.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+.SH BUGS
+.ad
+.fi
+The QMQP protocol provides only one server reply per message
+delivery. It is therefore not possible to reject individual
+recipients.
+
+The QMQP protocol requires the server to receive the entire
+message before replying. If a message is malformed, or if any
+netstring component is longer than acceptable, Postfix replies
+immediately and closes the connection. It is left up to the
+client to handle the situation.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are picked up automatically, as \fBqmqpd\fR(8)
+processes run for only a limited amount of time. Use the command
+"\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.SH "CONTENT INSPECTION CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBcontent_filter (empty)\fR"
+After the message is queued, send the entire message to the
+specified \fItransport:destination\fR.
+.IP "\fBreceive_override_options (empty)\fR"
+Enable or disable recipient validation, built\-in content
+filtering, or address mapping.
+.SH "SMTPUTF8 CONTROLS"
+.na
+.nf
+.ad
+.fi
+Preliminary SMTPUTF8 support is introduced with Postfix 3.0.
+.IP "\fBsmtputf8_enable (yes)\fR"
+Enable preliminary SMTPUTF8 support for the protocols described
+in RFC 6531..6533.
+.IP "\fBsmtputf8_autodetect_classes (sendmail, verify)\fR"
+Detect that a message requires SMTPUTF8 support for the specified
+mail origin classes.
+.PP
+Available in Postfix version 3.2 and later:
+.IP "\fBenable_idna2003_compatibility (no)\fR"
+Enable 'transitional' compatibility between IDNA2003 and IDNA2008,
+when converting UTF\-8 domain names to/from the ASCII form that is
+used for DNS lookups.
+.SH "RESOURCE AND RATE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBline_length_limit (2048)\fR"
+Upon input, long lines are chopped up into pieces of at most
+this length; upon delivery, long lines are reconstructed.
+.IP "\fBhopcount_limit (50)\fR"
+The maximal number of Received:  message headers that is allowed
+in the primary message headers.
+.IP "\fBmessage_size_limit (10240000)\fR"
+The maximal size in bytes of a message, including envelope information.
+.IP "\fBqmqpd_timeout (300s)\fR"
+The time limit for sending or receiving information over the network.
+.SH "TROUBLE SHOOTING CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBdebug_peer_level (2)\fR"
+The increment in verbose logging level when a remote client or
+server matches a pattern in the debug_peer_list parameter.
+.IP "\fBdebug_peer_list (empty)\fR"
+Optional list of remote client or server hostname or network
+address patterns that cause the verbose logging level to increase
+by the amount specified in $debug_peer_level.
+.IP "\fBsoft_bounce (no)\fR"
+Safety net to keep mail queued that would otherwise be returned to
+the sender.
+.SH "TARPIT CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBqmqpd_error_delay (1s)\fR"
+How long the Postfix QMQP server will pause before sending a negative
+reply to the remote QMQP client.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqmqpd_authorized_clients (empty)\fR"
+What remote QMQP clients are allowed to connect to the Postfix QMQP
+server port.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.IP "\fBverp_delimiter_filter (\-=+)\fR"
+The characters Postfix accepts as VERP delimiter characters on the
+Postfix \fBsendmail\fR(1) command line and in SMTP commands.
+.PP
+Available in Postfix version 2.5 and later:
+.IP "\fBqmqpd_client_port_logging (no)\fR"
+Enable logging of the remote QMQP client port in addition to
+the hostname and IP address.
+.SH "SEE ALSO"
+.na
+.nf
+http://cr.yp.to/proto/qmqp.html, QMQP protocol
+cleanup(8), message canonicalization
+master(8), process manager
+syslogd(8), system logging
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+QMQP_README, Postfix ezmlm\-idx howto.
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+.ad
+.fi
+The qmqpd service was introduced with Postfix version 1.1.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

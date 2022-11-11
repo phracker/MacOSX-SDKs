@@ -1,0 +1,153 @@
+.\" see 'man mdoc' for syntax examples
+.\" this should go in /usr/share/man/man1/
+.Dd October 20, 2020
+.Dt profiles 1
+.Os macOS
+.Sh NAME
+.Nm profiles
+.Nd Profiles Tool for macOS.
+.Sh SYNOPSIS
+.Nm
+.Ar verb
+.Op Ar options
+.Sh DESCRIPTION
+.Nm
+is used to handle various profile types on macOS.   Starting with macOS 11.0 (profiles tool 8.0 or later), this tool cannot be
+    used to install configuration profiles.  You should add your profiles using the System Preferences Profiles
+    preference pane.    Additionally, startup profiles are no longer supported.
+.Sh VERBS
+Each command verb is listed with its description and optional individual arguments.   Most commands use the -type option to determine which kind of profile should be used in the command.  For those commands, if no type is specified, the default will be to use the configuration profile type.
+.\"
+.\" List-Begin-Verbs
+.Bl -hang -width "imageinfo"
+.\"
+.\"             -- help --
+.It Sy help
+.br
+Shows abbreviated help
+.Pp
+.\"             -- list --
+.It Sy list
+.Sy -type Ar profile_type
+.Sy -user Ar user_name
+.Sy -output Ar output_path
+.br
+List profiles for a user or when running as root, the device.
+.Pp
+.\"             -- show --
+.It Sy show
+.Sy -type Ar profile_type
+.Sy -user Ar user_name
+.Sy -output Ar output_path
+.br
+Show expanded information for profiles.   For an enrollment, this will show the current DEP configuration.
+.Pp
+.\"             -- remove --
+.It Sy remove
+.Sy -type Ar profile_type
+.Sy -user Ar user_name
+.Sy -identifier Ar identifier
+.Sy -uuid Ar uuid
+.Sy -path Ar file_path
+.Sy -forced
+.Sy -all
+.br
+Remove profiles. Attempting to remove a configuration profile requring a removal password without the correct password will fail.
+.Pp
+.\"             -- status --
+.It Sy status
+.Sy -type Ar profile_type
+.br
+Display status of the profiles installed on this client.   When displaying the enrollment type status, if the MDM enrollment was user approved, the status output will show "(User Approved)".
+.Pp
+.\"             -- sync --
+.It Sy sync
+.Sy -type configuration
+.br
+For configuration profiles, synchronize current installed set of profiles with the local users and remove any configuration profiles that belong to users that no longer exist on this computer.
+.Pp
+.\"             -- renew --
+.It Sy renew
+.Sy -type Ar profile_type
+.Sy -identifier Ar identifier
+.Sy -output Ar output_path
+.br
+For configuration profiles, renews any certificates for the specified profile.  For Device Enrollment Program (DEP) enrollments, retry to obtain the device enrollment configuration, and re-enable the user notification if enrollment wasn't completed.
+.Pp
+.\"             -- validate --
+.It Sy validate
+.Sy -type Ar profile_type
+.Sy -path Ar file_path
+.br
+For provisioning profiles, validate the provisioning profile located at the file_path.
+For enrollments, re-validate the installed DEP server information and update any local information, displaying any major changes.  If this information is different from the current enrolled server, this will not unenroll the client from the current server.
+.Pp
+.\"             -- version --
+.It Sy version
+.br
+Displays current tool version.
+.El
+.\"
+.Pp
+.Sh OPTIONS
+.Bl -tag -width indent
+.Pp
+.It Fl type Ar profile_type
+The profile_type can be one of either: "configuration", "provisioning", "bootstraptoken", or "enrollment" (DEP).  If a command requires a profile type and none is specified, "configuration" will be used.
+.It Fl path Ar file_path
+A file path or "-" to represent stdout.   When used by the remove command for startup profiles, this should only contain the file name of the profile.
+.It Fl user Ar user_name
+An OD short user name.   In most cases if no user was specified, then the current user will be used.   If no user option was specified and the process runs as root, the computer/device profiles will be used in the command.
+.It Fl uuid Ar profile_uuid
+A canonical form UUID to specify a profile's PayloadUUID, such as 5A15247B-899C-474D-B1D7-DBD82BDE5684.   Only used by the remove provisioning profile command.
+.It Fl identifier Ar profile_identifier
+A profile identifier (PayloadIdentifier) to specify a profile.
+.It Fl output Ar output_path
+The output path location.  The output_path argument must be specified to use this option, Use 'stdout' to send this informaton to the console.  File output will be written as an XML plist file, or you can use 'stdout-xml' to write XML to the console.  The toplevel key of the dictionary will contain either the user name, or _computerLevel for device or provisioning profile information.
+.It Fl password Ar password
+An optional password used when removing a configuration profile which requires the password removal option.
+.It Fl forced
+This will prevent confirmation requests, and when trying to remove all configuration profles for a user, it will ignore any errors during removal.
+.It Fl all
+For configuration profiles, when running as root, the use of this option with the list or show commands will display all profiles installed on the system.   When removing profiles, using this option will remove all profiles for that user (or device).
+.It Fl verbose
+Display additional information.
+.El
+.Pp
+.Sh PROFILE TYPES
+.Bl -tag -width indent
+.Pp
+.It configuration
+A configuration profile.
+.It provisioning
+A provisioning profile.
+.It enrollment
+A device enrollment program (DEP) or mobile device management (MDM) enrollment profile or feature.
+.It bootstraptoken
+Bootstrap Token options.   Requires MDM supervised client.
+.El
+.Pp
+.Sh EXAMPLES
+.Pp
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It profiles remove -path /profiles/testfile2.mobileconfig
+Removes the configuration profile file '/profiles/testfile2.mobileconfig' into the current user.
+.It profiles list -type provisioning
+Displays a list of installed provisioning profiles.
+.It profiles list -all
+When running as root, this will list all configuration profiles on the system.
+.It profiles show
+Displays extended information for installed configuration profiles for the current user.
+.It profiles status -type startup
+Displays information on whether or not startup profiles are set up.
+.It profiles remove -identifier com.example.profile1 -password pass
+Removes any installed profiles with the identifier com.example.profile1 in the current user and using a removal password of 'pass'.
+.It profiles show -type enrollment
+Displays the current DEP configuration information.
+.It profiles renew -type enrollment
+Re-enables the DEP user notification enrollment messages.
+.It profiles install -type bootstraptoken
+Creates or updates the Bootstrap Token APFS record and escrows the information to the server.
+.El                      \" Ends the list
+.Sh SEE ALSO
+.Xr profiles.old 1

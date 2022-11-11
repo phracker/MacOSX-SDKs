@@ -1,0 +1,160 @@
+.TH "MPSImagePyramid" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSImagePyramid
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSImageConvolution\&.h>\fP
+.PP
+Inherits \fBMPSUnaryImageKernel\fP\&.
+.PP
+Inherited by \fBMPSImageGaussianPyramid\fP, and \fBMPSImageLaplacianPyramid\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:centerWeight:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:kernelWidth:kernelHeight:weights:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBkernelHeight\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBkernelWidth\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+The \fBMPSImagePyramid\fP is a base class for creating different kinds of pyramid images 
+.PP
+.nf
+        Currently supported pyramid-types are:
+        @ref MPSImageGaussianPyramid
+
+        The Gaussian image pyramid kernel is enqueued as a in-place operation using
+        @ref MPSUnaryImageKernel::encodeToCommandBuffer:inPlaceTexture:fallbackCopyAllocator:
+        and all mipmap levels after level=1, present in the provided image are filled using
+        the provided filtering kernel. The fallbackCopyAllocator parameter is not used.
+
+        The Gaussian image pyramid filter ignores @ref clipRect and @ref offset and fills
+        the entire mipmap levels.
+
+.fi
+.PP
+.PP
+\fBNote:\fP
+.RS 4
+Make sure your texture type is compatible with mipmapping and supports texture views (see \fBMTLTextureUsagePixelFormatView\fP)\&. 
+.PP
+Recall the size of the nth mipmap level: 
+.PP
+.nf
+w_n = max(1, floor(w_0 / 2^n))
+h_n = max(1, floor(h_0 / 2^n)),
+
+.fi
+.PP
+ where w_0, h_0 are the zeroth level width and height\&. ie the image dimensions themselves\&. 
+.RE
+.PP
+
+.SH "Method Documentation"
+.PP 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  See \fBMPSKernel::initWithCoder\fP\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSCNNPooling\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSCNNPooling\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSCNNPooling\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSUnaryImageKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Initialize a downwards 5-tap image pyramid with the default filter kernel and device 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device the filter will run on
+.RE
+.PP
+The filter kernel is the outer product of w = [ 1/16, 1/4, 3/8, 1/4, 1/16 ]^T, with itself
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid object or nil, if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSUnaryImageKernel\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(float) centerWeight"
+Initialize a downwards 5-tap image pyramid with a central weight parameter and device 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device the filter will run on 
+.br
+\fIcenterWeight\fP Defines form of the filter-kernel through the outer product ww^T, where w = [ (1/4 - a/2), 1/4, a, 1/4, (1/4 - a/2) ]^T and 'a' is centerWeight\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(NSUInteger) kernelWidth(NSUInteger) kernelHeight(const float *__nonnull) kernelWeights"
+Initialize a downwards n-tap pyramid with a custom filter kernel and device 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device the filter will run on 
+.br
+\fIkernelWidth\fP The width of the filtering kernel\&. See \fBMPSImageConvolution\fP\&. 
+.br
+\fIkernelHeight\fP The height of the filtering kernel\&. See \fBMPSImageConvolution\fP\&. 
+.br
+\fIkernelWeights\fP \fBA\fP pointer to an array of kernelWidth * kernelHeight values to be used as the kernel\&. These are in row major order\&. See \fBMPSImageConvolution\fP\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- kernelHeight\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The height of the filter window\&. Must be an odd number\&. 
+.SS "\- kernelWidth\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The width of the filter window\&. Must be an odd number\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

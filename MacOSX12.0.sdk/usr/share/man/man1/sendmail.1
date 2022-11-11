@@ -1,0 +1,474 @@
+.TH SENDMAIL 1 
+.ad
+.fi
+.SH NAME
+sendmail
+\-
+Postfix to Sendmail compatibility interface
+.SH "SYNOPSIS"
+.na
+.nf
+\fBsendmail\fR [\fIoption ...\fR] [\fIrecipient ...\fR]
+
+\fBmailq\fR
+\fBsendmail \-bp\fR
+
+\fBnewaliases\fR
+\fBsendmail \-I\fR
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix \fBsendmail\fR(1) command implements the Postfix
+to Sendmail compatibility interface.
+For the sake of compatibility with existing applications, some
+Sendmail command\-line options are recognized but silently ignored.
+
+By default, Postfix \fBsendmail\fR(1) reads a message from
+standard input
+until EOF or until it reads a line with only a \fB.\fR character,
+and arranges for delivery.  Postfix \fBsendmail\fR(1) relies on the
+\fBpostdrop\fR(1) command to create a queue file in the \fBmaildrop\fR
+directory.
+
+Specific command aliases are provided for other common modes of
+operation:
+.IP \fBmailq\fR
+List the mail queue. Each entry shows the queue file ID, message
+size, arrival time, sender, and the recipients that still need to
+be delivered.  If mail could not be delivered upon the last attempt,
+the reason for failure is shown. The queue ID string is
+followed by an optional status character:
+.RS
+.IP \fB*\fR
+The message is in the \fBactive\fR queue, i.e. the message is
+selected for delivery.
+.IP \fB!\fR
+The message is in the \fBhold\fR queue, i.e. no further delivery
+attempt will be made until the mail is taken off hold.
+.RE
+.IP
+This mode of operation is implemented by executing the
+\fBpostqueue\fR(1) command.
+.IP \fBnewaliases\fR
+Initialize the alias database.  If no input file is specified (with
+the \fB\-oA\fR option, see below), the program processes the file(s)
+specified with the \fBalias_database\fR configuration parameter.
+If no alias database type is specified, the program uses the type
+specified with the \fBdefault_database_type\fR configuration parameter.
+This mode of operation is implemented by running the \fBpostalias\fR(1)
+command.
+.sp
+Note: it may take a minute or so before an alias database update
+becomes visible. Use the "\fBpostfix reload\fR" command to eliminate
+this delay.
+.PP
+These and other features can be selected by specifying the
+appropriate combination of command\-line options. Some features are
+controlled by parameters in the \fBmain.cf\fR configuration file.
+
+The following options are recognized:
+.IP "\fB\-Am\fR (ignored)"
+.IP "\fB\-Ac\fR (ignored)"
+Postfix sendmail uses the same configuration file regardless of
+whether or not a message is an initial submission.
+.IP "\fB\-B \fIbody_type\fR"
+The message body MIME type: \fB7BIT\fR or \fB8BITMIME\fR.
+.IP \fB\-bd\fR
+Go into daemon mode. This mode of operation is implemented by
+executing the "\fBpostfix start\fR" command.
+.IP "\fB\-bh\fR (ignored)"
+.IP "\fB\-bH\fR (ignored)"
+Postfix has no persistent host status database.
+.IP \fB\-bi\fR
+Initialize alias database. See the \fBnewaliases\fR
+command above.
+.IP \fB\-bl\fR
+Go into daemon mode. To accept only local connections as
+with Sendmail\'s \fB\-bl\fR option, specify "\fBinet_interfaces
+= loopback\fR" in the Postfix \fBmain.cf\fR configuration
+file.
+.IP \fB\-bm\fR
+Read mail from standard input and arrange for delivery.
+This is the default mode of operation.
+.IP \fB\-bp\fR
+List the mail queue. See the \fBmailq\fR command above.
+.IP \fB\-bs\fR
+Stand\-alone SMTP server mode. Read SMTP commands from
+standard input, and write responses to standard output.
+In stand\-alone SMTP server mode, mail relaying and other
+access controls are disabled by default. To enable them,
+run the process as the \fBmail_owner\fR user.
+.sp
+This mode of operation is implemented by running the
+\fBsmtpd\fR(8) daemon.
+.IP \fB\-bv\fR
+Do not collect or deliver a message. Instead, send an email
+report after verifying each recipient address.  This is useful
+for testing address rewriting and routing configurations.
+.sp
+This feature is available in Postfix version 2.1 and later.
+.IP "\fB\-C \fIconfig_file\fR"
+.IP "\fB\-C \fIconfig_dir\fR"
+The path name of the Postfix \fBmain.cf\fR file, or of its
+parent directory. This information is ignored with Postfix
+versions before 2.3.
+
+With Postfix version 3.2 and later, a non\-default directory
+must be authorized in the default \fBmain.cf\fR file, through
+the alternate_config_directories or multi_instance_directories
+parameters.
+
+With all Postfix versions, you can specify a directory pathname
+with the MAIL_CONFIG environment variable to override the
+location of configuration files.
+.IP "\fB\-F \fIfull_name\fR"
+Set the sender full name. This overrides the NAME environment
+variable, and is used only with messages that
+have no \fBFrom:\fR message header.
+.IP "\fB\-f \fIsender\fR"
+Set the envelope sender address. This is the address where
+delivery problems are sent to. With Postfix versions before 2.1, the
+\fBErrors\-To:\fR message header overrides the error return address.
+.IP \fB\-G\fR
+Gateway (relay) submission, as opposed to initial user
+submission.  Either do not rewrite addresses at all, or
+update incomplete addresses with the domain information
+specified with \fBremote_header_rewrite_domain\fR.
+
+This option is ignored before Postfix version 2.3.
+.IP "\fB\-h \fIhop_count\fR (ignored)"
+Hop count limit. Use the \fBhopcount_limit\fR configuration
+parameter instead.
+.IP \fB\-I\fR
+Initialize alias database. See the \fBnewaliases\fR
+command above.
+.IP "\fB\-i\fR"
+When reading a message from standard input, don\'t treat a line
+with only a \fB.\fR character as the end of input.
+.IP "\fB\-L \fIlabel\fR (ignored)"
+The logging label. Use the \fBsyslog_name\fR configuration
+parameter instead.
+.IP "\fB\-m\fR (ignored)"
+Backwards compatibility.
+.IP "\fB\-N \fIdsn\fR (default: 'delay, failure')"
+Delivery status notification control. Specify either a
+comma\-separated list with one or more of \fBfailure\fR (send
+notification when delivery fails), \fBdelay\fR (send
+notification when delivery is delayed), or \fBsuccess\fR
+(send notification when the message is delivered); or specify
+\fBnever\fR (don't send any notifications at all).
+
+This feature is available in Postfix 2.3 and later.
+.IP "\fB\-n\fR (ignored)"
+Backwards compatibility.
+.IP "\fB\-oA\fIalias_database\fR"
+Non\-default alias database. Specify \fIpathname\fR or
+\fItype\fR:\fIpathname\fR. See \fBpostalias\fR(1) for
+details.
+.IP "\fB\-O \fIoption=value\fR (ignored)"
+Set the named \fIoption\fR to \fIvalue\fR. Use the equivalent
+configuration parameter in \fBmain.cf\fR instead.
+.IP "\fB\-o7\fR (ignored)"
+.IP "\fB\-o8\fR (ignored)"
+To send 8\-bit or binary content, use an appropriate MIME encapsulation
+and specify the appropriate \fB\-B\fR command\-line option.
+.IP "\fB\-oi\fR"
+When reading a message from standard input, don\'t treat a line
+with only a \fB.\fR character as the end of input.
+.IP "\fB\-om\fR (ignored)"
+The sender is never eliminated from alias etc. expansions.
+.IP "\fB\-o \fIx value\fR (ignored)"
+Set option \fIx\fR to \fIvalue\fR. Use the equivalent
+configuration parameter in \fBmain.cf\fR instead.
+.IP "\fB\-r \fIsender\fR"
+Set the envelope sender address. This is the address where
+delivery problems are sent to. With Postfix versions before 2.1, the
+\fBErrors\-To:\fR message header overrides the error return address.
+.IP "\fB\-R \fIreturn\fR"
+Delivery status notification control.  Specify "hdrs" to
+return only the header when a message bounces, "full" to
+return a full copy (the default behavior).
+
+The \fB\-R\fR option specifies an upper bound; Postfix will
+return only the header, when a full copy would exceed the
+bounce_size_limit setting.
+
+This option is ignored before Postfix version 2.10.
+.IP \fB\-q\fR
+Attempt to deliver all queued mail. This is implemented by
+executing the \fBpostqueue\fR(1) command.
+
+Warning: flushing undeliverable mail frequently will result in
+poor delivery performance of all other mail.
+.IP "\fB\-q\fIinterval\fR (ignored)"
+The interval between queue runs. Use the \fBqueue_run_delay\fR
+configuration parameter instead.
+.IP \fB\-qI\fIqueueid\fR
+Schedule immediate delivery of mail with the specified queue
+ID.  This option is implemented by executing the
+\fBpostqueue\fR(1) command, and is available with Postfix
+version 2.4 and later.
+.IP \fB\-qR\fIsite\fR
+Schedule immediate delivery of all mail that is queued for the named
+\fIsite\fR. This option accepts only \fIsite\fR names that are
+eligible for the "fast flush" service, and is implemented by
+executing the \fBpostqueue\fR(1) command.
+See \fBflush\fR(8) for more information about the "fast flush"
+service.
+.IP \fB\-qS\fIsite\fR
+This command is not implemented. Use the slower "\fBsendmail \-q\fR"
+command instead.
+.IP \fB\-t\fR
+Extract recipients from message headers. These are added to any
+recipients specified on the command line.
+
+With Postfix versions prior to 2.1, this option requires that
+no recipient addresses are specified on the command line.
+.IP "\fB\-U\fR (ignored)"
+Initial user submission.
+.IP "\fB\-V \fIenvid\fR"
+Specify the envelope ID for notification by servers that
+support DSN.
+
+This feature is available in Postfix 2.3 and later.
+.IP "\fB\-XV\fR (Postfix 2.2 and earlier: \fB\-V\fR)"
+Variable Envelope Return Path. Given an envelope sender address
+of the form \fIowner\-listname\fR@\fIorigin\fR, each recipient
+\fIuser\fR@\fIdomain\fR receives mail with a personalized envelope
+sender address.
+.sp
+By default, the personalized envelope sender address is
+\fIowner\-listname\fB+\fIuser\fB=\fIdomain\fR@\fIorigin\fR. The default
+\fB+\fR and \fB=\fR characters are configurable with the
+\fBdefault_verp_delimiters\fR configuration parameter.
+.IP "\fB\-XV\fIxy\fR (Postfix 2.2 and earlier: \fB\-V\fIxy\fR)"
+As \fB\-XV\fR, but uses \fIx\fR and \fIy\fR as the VERP delimiter
+characters, instead of the characters specified with the
+\fBdefault_verp_delimiters\fR configuration parameter.
+.IP \fB\-v\fR
+Send an email report of the first delivery attempt (Postfix
+versions 2.1 and later). Mail delivery
+always happens in the background. When multiple \fB\-v\fR
+options are given, enable verbose logging for debugging purposes.
+.IP "\fB\-X \fIlog_file\fR (ignored)"
+Log mailer traffic. Use the \fBdebug_peer_list\fR and
+\fBdebug_peer_level\fR configuration parameters instead.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+By design, this program is not set\-user (or group) id. However,
+it must handle data from untrusted, possibly remote, users.
+Thus, the usual precautions need to be taken against malicious
+inputs.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems are logged to \fBsyslogd\fR(8) and to the standard error
+stream.
+.SH "ENVIRONMENT"
+.na
+.nf
+.ad
+.fi
+.IP \fBMAIL_CONFIG\fR
+Directory with Postfix configuration files.
+.IP "\fBMAIL_VERBOSE\fR (value does not matter)"
+Enable verbose logging for debugging purposes.
+.IP "\fBMAIL_DEBUG\fR (value does not matter)"
+Enable debugging with an external command, as specified with the
+\fBdebugger_command\fR configuration parameter.
+.IP \fBNAME\fR
+The sender full name. This is used only with messages that
+have no \fBFrom:\fR message header. See also the \fB\-F\fR
+option above.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+The following \fBmain.cf\fR parameters are especially relevant to
+this program.
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.SH "COMPATIBILITY CONTROLS"
+.na
+.nf
+.ad
+.fi
+Available with Postfix 2.9 and later:
+.IP "\fBsendmail_fix_line_endings (always)\fR"
+Controls how the Postfix sendmail command converts email message
+line endings from <CR><LF> into UNIX format (<LF>).
+.SH "TROUBLE SHOOTING CONTROLS"
+.na
+.nf
+.ad
+.fi
+The DEBUG_README file gives examples of how to trouble shoot a
+Postfix system.
+.IP "\fBdebugger_command (empty)\fR"
+The external command to execute when a Postfix daemon program is
+invoked with the \-D option.
+.IP "\fBdebug_peer_level (2)\fR"
+The increment in verbose logging level when a remote client or
+server matches a pattern in the debug_peer_list parameter.
+.IP "\fBdebug_peer_list (empty)\fR"
+Optional list of remote client or server hostname or network
+address patterns that cause the verbose logging level to increase
+by the amount specified in $debug_peer_level.
+.SH "ACCESS CONTROLS"
+.na
+.nf
+.ad
+.fi
+Available in Postfix version 2.2 and later:
+.IP "\fBauthorized_flush_users (static:anyone)\fR"
+List of users who are authorized to flush the queue.
+.IP "\fBauthorized_mailq_users (static:anyone)\fR"
+List of users who are authorized to view the queue.
+.IP "\fBauthorized_submit_users (static:anyone)\fR"
+List of users who are authorized to submit mail with the \fBsendmail\fR(1)
+command (and with the privileged \fBpostdrop\fR(1) helper command).
+.SH "RESOURCE AND RATE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBbounce_size_limit (50000)\fR"
+The maximal amount of original message text that is sent in a
+non\-delivery notification.
+.IP "\fBfork_attempts (5)\fR"
+The maximal number of attempts to fork() a child process.
+.IP "\fBfork_delay (1s)\fR"
+The delay between attempts to fork() a child process.
+.IP "\fBhopcount_limit (50)\fR"
+The maximal number of Received:  message headers that is allowed
+in the primary message headers.
+.IP "\fBqueue_run_delay (300s)\fR"
+The time between deferred queue scans by the queue manager;
+prior to Postfix 2.4 the default value was 1000s.
+.SH "FAST FLUSH CONTROLS"
+.na
+.nf
+.ad
+.fi
+The ETRN_README file describes configuration and operation
+details for the Postfix "fast flush" service.
+.IP "\fBfast_flush_domains ($relay_domains)\fR"
+Optional list of destinations that are eligible for per\-destination
+logfiles with mail that is queued to those destinations.
+.SH "VERP CONTROLS"
+.na
+.nf
+.ad
+.fi
+The VERP_README file describes configuration and operation
+details of Postfix support for variable envelope return
+path addresses.
+.IP "\fBdefault_verp_delimiters (+=)\fR"
+The two default VERP delimiter characters.
+.IP "\fBverp_delimiter_filter (\-=+)\fR"
+The characters Postfix accepts as VERP delimiter characters on the
+Postfix \fBsendmail\fR(1) command line and in SMTP commands.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBalias_database (see 'postconf -d' output)\fR"
+The alias databases for \fBlocal\fR(8) delivery that are updated with
+"\fBnewaliases\fR" or with "\fBsendmail \-bi\fR".
+.IP "\fBcommand_directory (see 'postconf -d' output)\fR"
+The location of all postfix administrative commands.
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_directory (see 'postconf -d' output)\fR"
+The directory with Postfix support programs and daemon programs.
+.IP "\fBdefault_database_type (see 'postconf -d' output)\fR"
+The default database type for use in \fBnewaliases\fR(1), \fBpostalias\fR(1)
+and \fBpostmap\fR(1) commands.
+.IP "\fBdelay_warning_time (0h)\fR"
+The time after which the sender receives a copy of the message
+headers of mail that is still queued.
+.IP "\fBimport_environment (see 'postconf -d' output)\fR"
+The list of environment parameters that a privileged Postfix
+process will import from a non\-Postfix parent process, or name=value
+environment overrides.
+.IP "\fBmail_owner (postfix)\fR"
+The UNIX system account that owns the Postfix queue and most Postfix
+daemon processes.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBremote_header_rewrite_domain (empty)\fR"
+Don't rewrite message headers from remote clients at all when
+this parameter is empty; otherwise, rewrite message headers and
+append the specified domain name to incomplete addresses.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.PP
+Postfix 3.2 and later:
+.IP "\fBalternate_config_directories (empty)\fR"
+A list of non\-default Postfix configuration directories that may
+be specified with "\-c config_directory" on the command line (in the
+case of \fBsendmail\fR(1), with "\-C config_directory"), or via the MAIL_CONFIG
+environment parameter.
+.IP "\fBmulti_instance_directories (empty)\fR"
+An optional list of non\-default Postfix configuration directories;
+these directories belong to additional Postfix instances that share
+the Postfix executable files and documentation with the default
+Postfix instance, and that are started, stopped, etc., together
+with the default Postfix instance.
+.SH "FILES"
+.na
+.nf
+/var/spool/postfix, mail queue
+/etc/postfix, configuration files
+.SH "SEE ALSO"
+.na
+.nf
+pickup(8), mail pickup daemon
+qmgr(8), queue manager
+smtpd(8), SMTP server
+flush(8), fast flush service
+postsuper(1), queue maintenance
+postalias(1), create/update/query alias database
+postdrop(1), mail posting utility
+postfix(1), mail system control
+postqueue(1), mail queue control
+syslogd(8), system logging
+.SH "README_FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DEBUG_README, Postfix debugging howto
+ETRN_README, Postfix ETRN howto
+VERP_README, Postfix VERP howto
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

@@ -1,0 +1,320 @@
+.TH tapi\-installapi 1 2019-03-25 Darwin "TAPI Tool Documentation"
+.SH NAME
+tapi\-installapi \- Create a text-based stub file by scanning the header files
+.SH SYNOPSIS
+\fItapi installapi\fR [options] <directory>
+
+.SH DESCRIPTION
+.PP
+The installapi command creates a text-based stub file (.tbd) by parsing the
+header files that are associated with a framework/dynamic library. The headers
+are parsed per default in Objective-C syntax mode. C++ support is still
+experimental.
+
+.SH REQUIRED OPTIONS
+.PP
+\-target <triple>
+.RS 4
+Specifies the architecture, platform, and deployment target to use for parsing
+the header files. At least one target option must be specified. The <triple>
+is the same as the one that is used by clang and has the general format
+<arch>-<vendor>-<system>-<abi>. The architecture <arch> specifies the
+architecture slice (for example 'x86_64' or 'arm64'). The only supported vendor
+by this tool is 'apple'. The system encodes the platform and deployment target.
+The abi is optional and the only supported value is 'simulator'.
+
+Examples:
+.br
+x86_64-apple-macosx10.14 - creates an x86_64 architecture slice for macOS with
+a deployment target of 10.14.
+.br
+arm64-apple-ios12.0 - creates an arm64 architecture slice for iOS with
+a deployment target of 12.0.
+.br
+x86_64-apple-ios12.0-simulator - creates an x86_64 architecture slice for the
+iOS simulator with a deployment target of 12.0.
+.RE
+
+.PP
+\-install_name <path>
+.RS 4
+Sets an internal "install path" (LC_ID_DYLIB) in a dynamic library.
+.RE
+
+.SH COMMON OPTIONS
+.PP
+\-ObjC
+.RS 4
+Treat source input files as Objective-C inputs (default).
+.RE
+
+.PP
+\-ObjC++
+.RS 4
+Treat source input files as Objective-C++ inputs.
+.RE
+
+.PP
+\-x <language>
+.RS 4
+Treat subsequent input files as having type <language>. Supported values for
+language are c, c++, objective-c, and objective-c++.
+.RE
+
+.PP
+\-std=<value>
+.RS 4
+Language standard to compile for.
+.RE
+
+.PP
+\-current_version <value>
+.RS 4
+Specifies the current version number of the library.
+.RE
+
+.PP
+\-compatibility_version <value>
+.RS 4
+Specifies the compatibility version number of the library.
+.RE
+
+.PP
+\-D <value>
+.br
+\-U <value>
+.RS 4
+Define/undefine macro.
+.RE
+
+.PP
+\-isysroot <directory>
+.RS 4
+Specifies the path to the SDK directory.
+.RE
+
+.PP
+\-I <value>
+.RS 4
+Add directory to include search path.
+.RE
+
+.PP
+\-iframework <value>
+.RS 4
+Add directory to system frameworks search path. The use of 
+-Xplatform_<platform> before the option limits the effect to the 
+provided platform.
+.RE
+
+.PP
+\-L <value>
+.RS 4
+Add directory to the library search path.
+.RE
+
+.PP
+\-F <value>
+.RS 4
+Add directory to framework include search path.
+.RE
+
+.PP
+\-\-verify\-mode=<value>
+.RS 4
+Specify the severity of the validation. Supported values are ErrorsOnly,
+ErrorsAndWarnings, and Pedantic.
+.RE
+
+.PP
+\-verify\-against <value>
+.RS 4
+Verify the specified dynamic library/framework against the headers.
+.RE
+
+.PP
+\-o <file>
+.RS 4
+Write output to <file>.
+.RE
+
+.PP
+\-\-demangle
+.RS 4
+Demangle C++ symbols when printing warnings and errors.
+.RE
+
+.PP
+\-\-filelist=<path>
+.RS 4
+The specified file (JSON) contains a list of headers to parse.
+.RE
+
+.PP
+\-\-help
+.RS 4
+Prints the list of options.
+.RE
+
+.SH RARELY USED OPTIONS
+.PP
+\-allowable_client <value>
+.RS 4
+Restricts what can link against the dynamic library being created. Per default
+this option applies to all provided architectures. The use of -Xarch_<arch>
+before the option limits the effect to the provided architecture <arch>.
+.RE
+
+.PP
+\-reexport_framework <framework_name>
+.RS 4
+Specifies that all the symbols in that framework should be available to clients 
+linking to the library being created. Per default this option applies to all 
+provided architectures. The use of -Xarch_<arch> before
+the option limits the effect to the provided architecture <arch>.
+.RE
+
+.PP
+\-reexport_library <path_to_library>
+.RS 4
+Specifies that all the symbols in that library should be available to clients 
+linking to the library being created. Per default this option applies to all 
+provided architectures. The use of -Xarch_<arch> before
+the option limits the effect to the provided architecture <arch>.
+.RE
+
+.PP
+\-reexport_l<name>
+.RS 4
+Behaves the same as -reexport_library but searchs for name as libname.dylib 
+or libname.a in the library search paths.
+.RE
+
+.PP
+\-umbrella <framework_name>
+.RS 4
+Specifies that the dylib being linked is re-exported through an umbrella
+framework of the specified name.
+.RE
+
+.PP
+\-fno\-rtti
+.RS 4
+Disable generation of rtti information.
+.RE
+
+.PP
+\-fprofile\-instr\-generate
+.RS 4
+Add extra symbols for InstallAPI that are created by code coverage.
+.RE
+
+.PP
+\-extra\-public\-header <path>
+.RS 4
+Add additional public header file/directory for parsing.
+.RE
+
+.PP
+\-extra\-private\-header <path>
+.RS 4
+Add additional private header file/directory for parsing.
+.RE
+
+.PP
+\-exclude\-public\-header <glob>
+.RS 4
+Exclude public headers that match the glob from parsing.
+.RE
+
+.PP
+\-exclude\-private\-header <glob>
+.RS 4
+Exclude private header that match the glob from parsing.
+.RE
+
+.PP
+\-fapplication\-extension
+.RS 4
+Restrict code to those available for App Extensions.
+.RE
+
+.PP
+\-ferror\-limit <N>
+.RS 4
+Set the maximum number of errors to emit before stopping (0 = no limit).
+.RE
+
+.PP
+\-alias_list <path>
+.RS 4
+The specified file contains a list of aliases. The symbol name and its alias are
+on one line, separated by whitespace.  Lines starting with # are ignored. Per
+default this option applies to all provided architectures. The use of
+-Xarch_<arch> before the option limits the effect to the provided architecture
+<arch>.
+.RE
+
+.PP
+\-swift\-installapi\-interface <path>
+.RS 4
+The specified path is to an intermediate tapi output file used to account for 
+and ignoring symbols generated from an earlier swift invocation within a build for 
+final api verification. Multiple intermediate tapi output files can be provided 
+in the same invocation but must be for the same dylib and different targets.
+
+.RE
+
+.SH DEPRECATED OPTIONS
+.PP
+\-arch <architecture>
+.RS 4
+Specifies the architectures to use for parsing the headers. At least one
+architecture must be specified. This option has been replaced by \-target
+option.
+.RE
+
+.PP
+\-macosx_version_min <value>
+.br
+\-ios_version_min <value>
+.br
+\-watchos_version_min <value>
+.br
+\-tvos_version_min <value>
+.br
+.RS 4
+This is set to indicate the oldest platform version that that the output is to
+be used on. This option has been replaced by the \-target option.
+.RE
+
+.SH ENVIRONMENT VARIABLES
+.PP
+MACOSX_DEPLOYMENT_TARGET
+.br
+IPHONEOS_DEPLOYMENT_TARGET
+.br
+TVOS_DEPLOYMENT_TARGET
+.br
+WATCHOS_DEPLOYMENT_TARGET
+.RS 4
+This is set to indicate the oldest platform version that that the output is to
+be used on. See also \-macosx_version_min, \-ios_version_min,
+\-watchos_version_min, or \-tvos_version_min. These environment variables are
+ignored if any of the minimum deployment targets or the \-target option have
+been specified on the command line.
+.RE
+
+.PP
+LD_NO_ENCRYPT
+.br
+LD_APPLICATION_EXTENSION_SAFE
+.RS 4
+Defining either of these environment variables has the same effect as specifying
+\-fapplication\-extension on the command line. These enironment variables are
+ignored if \-fapplication\-extension or \-fno\-application\-extension are
+specified on the command line.
+.RE
+
+.SH SEE ALSO
+tapi(1), ld(1)

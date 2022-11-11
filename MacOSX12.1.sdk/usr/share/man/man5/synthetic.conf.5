@@ -1,0 +1,110 @@
+.\" Copyright (c) 2019 Apple Inc. All rights reserved.
+.\"
+.\" The contents of this file constitute Original Code as defined in and
+.\" are subject to the Apple Public Source License Version 1.1 (the
+.\" "License").  You may not use this file except in compliance with the
+.\" License.  Please obtain a copy of the License at
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\"
+.\" This Original Code and all software distributed under the License are
+.\" distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+.\" License for the specific language governing rights and limitations
+.\" under the License.
+.\"
+.\"     @(#)synthetic.conf(5)
+.Dd September 3, 2019
+.Dt SYNTHETIC.CONF 5
+.Os "Darwin/macOS"
+.Sh NAME
+.Nm synthetic.conf
+.Nd synthetic symbolic link and directory manifest
+.Sh DESCRIPTION
+.Nm
+describes virtual symbolic links and empty directories to be created at the root
+mount point.
+Because the root mount point is read-only as of macOS 10.15,
+physical files may not be created at this location.
+All writeable paths must
+reside on the data volume, which is mounted at
+.Em /System/Volumes/Data .
+.Pp
+.Nm
+provides a mechanism for some limited, user-controlled file-creation at
+.Em / .
+The synthetic entities described in this file are synthesized by the kernel
+during early system boot.
+They are not physically present on the disk, but when
+the system is booted, they behave as if they were within certain parameters.
+.Pp
+.Nm
+is intended to be used for creating mount points at
+.Em /
+(e.g. for use as NFS mount points in enterprise deployments) and symbolic links
+(e.g. for creating a package manager root without modifying the system volume).
+.Nm
+is read by
+.Xr apfs.util 8
+during early system boot.
+.Sh FILES
+.Pa /etc/synthetic.conf
+.Sh CONFIGURATION DIRECTORY
+Individual subsystems may add their own synthetic manifests to
+.Em /etc/synthetic.d
+to avoid having to append to to share the content of
+.Nm .
+This is similar to the mechanisms which exist for shell and manual page paths,
+.Em paths.d
+and
+.Em manpaths.d ,
+respectively.
+If multiple manifests specify the same synthetic link or directory
+name, the one respected by the implementation is undefined.
+The structure of
+these manifests is identical to that of
+.Nm .
+.Sh FORMAT
+.Nm
+specifies a single synthetic entity per line.
+Each line may have one or two
+columns, separated by a tab character.
+If a line has a single column, it denotes
+a virtual empty directory to be created at
+.Em / .
+If a line has two columns, it denotes a symbolic link at / whose link target is
+given in the second column.
+.Pp
+In either case, the first column denotes the name of the entity to be created at
+.Em / .
+.Pp
+A line beginning with the
+.Em #
+character indicates a comment that is not parsed.
+.Sh SYNTHETIC ENTITIES
+Synthetic entities may not be deleted at runtime.
+In order to delete a synthetic
+entity, it must be removed from
+.Nm ,
+and the host must be rebooted.
+.Pp
+New files and directories may not be created within a synthetic empty directory.
+.Sh EXAMPLES
+.Bd -literal -offset indent
+# create an empty directory named "foo" at / which may be mounted over
+foo
+
+# create a symbolic link named "bar" at / which points to
+# "System/Volumes/Data/bar", a writeable location at the root of the data volume
+bar	System/Volumes/Data/bar
+
+# create a symbolic link named "baz" at / which points to "Users/me/baz"
+baz	Users/me/baz
+.Ed
+.Sh DIRECTORIES
+.Pa /etc/synthetic.d
+.Sh SEE ALSO
+.Xr reboot 2 ,
+.Xr apfs.util 8 ,
+.Xr shutdown 8

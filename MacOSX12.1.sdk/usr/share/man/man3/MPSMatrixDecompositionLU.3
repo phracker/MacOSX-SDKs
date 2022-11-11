@@ -1,0 +1,89 @@
+.TH "MPSMatrixDecompositionLU" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSMatrixDecompositionLU
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSMatrixDecomposition\&.h>\fP
+.PP
+Inherits \fBMPSMatrixUnaryKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:rows:columns:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceMatrix:resultMatrix:pivotIndices:status:\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework\&.
+.PP
+\fBA\fP kernel for computing the LU factorization of a matrix using partial pivoting with row interchanges\&.
+.PP
+\fBA\fP \fBMPSMatrixDecompositionLU\fP object computes an LU factorization: 
+.PP
+.nf
+            P * A = L * U
+
+        A is a matrix for which the LU factorization is to be computed.
+        L is a unit lower triangular matrix and U is an upper triangular
+        matrix.  P is a permutation matrix.
+.fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSMatrix\fP *__nonnull) sourceMatrix(\fBMPSMatrix\fP *__nonnull) resultMatrix(\fBMPSMatrix\fP *__nonnull) pivotIndices(__nullable id< MTLBuffer >) status"
+Encode a \fBMPSMatrixDecompositionLU\fP kernel into a command Buffer\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter
+.br
+\fIsourceMatrix\fP \fBA\fP valid \fBMPSMatrix\fP containing the source data\&. Must have enough space to hold a rows x columns matrix\&.
+.br
+\fIresultMatrix\fP \fBA\fP valid \fBMPSMatrix\fP to contain the result\&. Must have enough space to hold a rows x columns matrix\&.
+.br
+\fIpivotIndices\fP \fBA\fP valid \fBMPSMatrix\fP to contain the pivot indices\&. Must have enough space to hold an array of size 1xmin(rows, columns) values\&. Element type must be MPSDataTypeUInt32\&.
+.br
+\fIstatus\fP \fBA\fP MTLBuffer which indicates the resulting MPSMatrixDecompositionStatus value\&.
+.RE
+.PP
+This function encodes the \fBMPSMatrixDecompositionLU\fP object to a valid command buffer\&.
+.PP
+Upon completion the array pivotIndices contains, for each index i, the row interchanged with row i\&.
+.PP
+If during the computation U[k, k], for some k, is determined to be exactly zero MPSMatrixDecompositionStatusSingular will be returned in the provided status buffer\&. The data referenced by the MTLBuffer is not valid until the command buffer has completed execution\&. If the matrix return status is not desired NULL may be provided\&.
+.PP
+Upon successful factorization, resultMatrix contains the resulting lower triangular factor (without the unit diagonal elements) in its strictly lower triangular region and the upper triangular factor in its upper triangular region\&.
+.PP
+This kernel functions either in-place, if the result matrix completely aliases the source matrix, or out-of-place\&. If there is any partial overlap between input and output data the results are undefined\&. 
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(NSUInteger) rows(NSUInteger) columns"
+Initialize an \fBMPSMatrixDecompositionLU\fP object on a device
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&.
+.br
+\fIrows\fP The number of rows in the source matrix\&.
+.br
+\fIcolumns\fP The number of columns in the source matrix\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSMatrixDecompositionLU\fP object or nil, if failure\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

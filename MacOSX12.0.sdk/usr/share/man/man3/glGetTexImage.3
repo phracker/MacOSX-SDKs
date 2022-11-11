@@ -1,0 +1,205 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:45
+.ds Dm 7 May 22 14:
+.ds Xs 02939     8
+.TH GLGETTEXIMAGE 3G
+.SH NAME
+.B "glGetTexImage
+\- return a texture image
+
+.SH C SPECIFICATION
+void \f3glGetTexImage\fP(
+GLenum \fItarget\fP,
+.nf
+.ta \w'\f3void \fPglGetTexImage( 'u
+	GLint \fIlevel\fP,
+	GLenum \fIformat\fP,
+	GLenum \fItype\fP,
+	GLvoid \fI*pixels\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\f2target\fP\ \ 'u 
+\f2target\fP
+Specifies which texture is to be obtained.
+\%\f3GL_TEXTURE_1D\fP, \%\f3GL_TEXTURE_2D\fP, and \%\f3GL_TEXTURE_3D\fP  are accepted.
+.TP
+\f2level\fP
+Specifies the level-of-detail number of the desired image.
+Level 0 is the base image level.
+Level n is the nth mipmap reduction image.
+.TP
+\f2format\fP
+Specifies a pixel  for the returned data.
+The supported formats are
+\%\f3GL_RED\fP,
+\%\f3GL_GREEN\fP,
+\%\f3GL_BLUE\fP,
+\%\f3GL_ALPHA\fP,
+\%\f3GL_RGB\fP,
+\%\f3GL_BGR\fP,
+\%\f3GL_RGBA\fP,
+\%\f3GL_BGRA\fP,
+\%\f3GL_LUMINANCE\fP, and
+\%\f3GL_LUMINANCE_ALPHA\fP.
+.TP
+\f2type\fP
+Specifies a pixel type for the returned data.
+The supported types are
+\%\f3GL_UNSIGNED_BYTE\fP,
+\%\f3GL_BYTE\fP,
+\%\f3GL_UNSIGNED_SHORT\fP,
+\%\f3GL_SHORT\fP,
+\%\f3GL_UNSIGNED_INT\fP,
+\%\f3GL_INT\fP,
+\%\f3GL_FLOAT\fP,
+\%\f3GL_UNSIGNED_BYTE_3_3_2\fP,
+\%\f3GL_UNSIGNED_BYTE_2_3_3_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_5_5_1\fP,
+\%\f3GL_UNSIGNED_SHORT_1_5_5_5_REV\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8_REV\fP,
+\%\f3GL_UNSIGNED_INT_10_10_10_2\fP, and
+\%\f3GL_UNSIGNED_INT_2_10_10_10_REV\fP.
+.TP
+\f2pixels\fP
+Returns the texture image.
+Should be a pointer to an array of the type specified by \f2type\fP.
+.SH DESCRIPTION
+\%\f3glGetTexImage\fP returns a texture image into \f2pixels\fP.
+\f2target\fP specifies whether the desired texture image is one specified by
+\%\f3glTexImage1D\fP (\%\f3GL_TEXTURE_1D\fP),
+\%\f3glTexImage2D\fP (\%\f3GL_TEXTURE_2D\fP), or
+\%\f3glTexImage3D\fP (\%\f3GL_TEXTURE_3D\fP).
+\f2level\fP specifies the level-of-detail number of the desired image.
+\f2format\fP and \f2type\fP specify the  and type of the desired image array.
+See the reference pages \%\f3glTexImage1D\fP and \%\f3glDrawPixels\fP
+for a description of the acceptable values for the \f2format\fP and \f2type\fP
+parameters, respectively.
+.P
+To understand the operation of \%\f3glGetTexImage\fP, consider the selected internal
+four-component texture image to be an RGBA color buffer the size of the image.
+The semantics of \%\f3glGetTexImage\fP are then identical to those of \%\f3glReadPixels\fP,
+with the exception that no pixel transfer operations are performed,
+when called with the same \f2format\fP and \f2type\fP,
+with \f2x\fP and \f2y\fP set to 0,
+\f2width\fP set to the width of the texture image
+(including border if one was specified),
+and \f2height\fP set to 1 for 1D images,
+or to the height of the texture image
+(including border if one was specified)
+for 2D images.
+.BP
+Because the internal texture image is an RGBA image,
+pixel formats \%\f3GL_COLOR_INDEX\fP,
+\%\f3GL_STENCIL_INDEX\fP,
+and \%\f3GL_DEPTH_COMPONENT\fP are not accepted,
+and pixel type \%\f3GL_BITMAP\fP is not accepted.
+.P
+If the selected texture image does not contain four components,
+the following mappings are applied.
+Single-component textures are treated as RGBA buffers with red set
+to the single-component value,
+green set to 0,  blue set to 0, and alpha set to 1.
+Two-component textures are treated as RGBA buffers with red set to
+the value of component zero,
+alpha set to the value of component one,
+and green and blue set to 0.
+Finally,
+three-component textures are treated as RGBA buffers with red set to
+component zero,
+green set to component one,
+blue set to component two,
+and alpha set to 1.
+.P
+To determine the required size of \f2pixels\fP,
+use \%\f3glGetTexLevelParameter\fP to determine the dimensions of the
+internal texture image,
+then scale the required number of pixels by the storage required for
+each pixel,
+based on \f2format\fP and \f2type\fP.
+Be sure to take the pixel storage parameters into account,
+especially \%\f3GL_PACK_ALIGNMENT\fP.
+.SH NOTES
+If an error is generated,
+no change is made to the contents of \f2pixels\fP.
+.P
+When the \%\f3GL_ARB_multitexture\fP extension is supported, \%\f3glGetTexImage\fP returns
+the texture image for the active texture unit.
+.P
+The types \%\f3GL_UNSIGNED_BYTE_3_3_2\fP,
+\%\f3GL_UNSIGNED_BYTE_2_3_3_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_5_5_1\fP,
+\%\f3GL_UNSIGNED_SHORT_1_5_5_5_REV\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8_REV\fP,
+\%\f3GL_UNSIGNED_INT_10_10_10_2\fP, 
+\%\f3GL_UNSIGNED_INT_2_10_10_10_REV\fP, 
+and the formats
+\%\f3GL_BGR\fP, and \%\f3GL_BGRA\fP are available only if the GL version is
+1.2 or greater.
+.SH ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated if \f2target\fP, \f2format\fP, or \f2type\fP is not
+an accepted value.
+.P
+\%\f3GL_INVALID_VALUE\fP is generated if \f2level\fP is less than 0.
+.P 
+\%\f3GL_INVALID_VALUE\fP may be generated if \f2level\fP is greater
+than log2(max),
+where max is the returned value of \%\f3GL_MAX_TEXTURE_SIZE\fP.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glGetTexImage\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.P
+\%\f3GL_INVALID_OPERATION\fP is returned if \f2type\fP is one of
+\%\f3GL_UNSIGNED_BYTE_3_3_2\fP,
+\%\f3GL_UNSIGNED_BYTE_2_3_3_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5\fP, or
+\%\f3GL_UNSIGNED_SHORT_5_6_5_REV\fP and \f2format\fP is not \%\f3GL_RGB\fP.
+.P
+\%\f3GL_INVALID_OPERATION\fP is returned if \f2type\fP is one of
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_5_5_1\fP,
+\%\f3GL_UNSIGNED_SHORT_1_5_5_5_REV\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8_REV\fP,
+\%\f3GL_UNSIGNED_INT_10_10_10_2\fP, or
+\%\f3GL_UNSIGNED_INT_2_10_10_10_REV\fP, and \f2format\fP is neither \%\f3GL_RGBA\fP 
+or \%\f3GL_BGRA\fP.
+.SH ASSOCIATED GETS
+\%\f3glGetTexLevelParameter\fP with argument \%\f3GL_TEXTURE_WIDTH\fP
+.br
+\%\f3glGetTexLevelParameter\fP with argument \%\f3GL_TEXTURE_HEIGHT\fP
+.br
+\%\f3glGetTexLevelParameter\fP with argument \%\f3GL_TEXTURE_BORDER\fP
+.br
+\%\f3glGetTexLevelParameter\fP with argument \%\f3GL_TEXTURE_INTERNALFORMAT\fP
+.br
+\%\f3glGet\fP with arguments \%\f3GL_PACK_ALIGNMENT\fP and others
+.SH SEE ALSO
+\%\f3glActiveTextureARB\fP,
+\%\f3glDrawPixels\fP,
+\%\f3glReadPixels\fP,
+\%\f3glTexEnv\fP,
+\%\f3glTexGen\fP,
+\%\f3glTexImage1D\fP,
+\%\f3glTexImage2D\fP,
+\%\f3glTexImage3D\fP,
+\%\f3glTexSubImage1D\fP,
+\%\f3glTexSubImage2D\fP,
+\%\f3glTexSubImage3D\fP,
+\%\f3glTexParameter\fP

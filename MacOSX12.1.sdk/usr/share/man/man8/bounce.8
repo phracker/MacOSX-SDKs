@@ -1,0 +1,166 @@
+.TH BOUNCE 8 
+.ad
+.fi
+.SH NAME
+bounce
+\-
+Postfix delivery status reports
+.SH "SYNOPSIS"
+.na
+.nf
+\fBbounce\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBbounce\fR(8) daemon maintains per\-message log files with
+delivery status information. Each log file is named after the
+queue file that it corresponds to, and is kept in a queue subdirectory
+named after the service name in the \fBmaster.cf\fR file (either
+\fBbounce\fR, \fBdefer\fR or \fBtrace\fR).
+This program expects to be run from the \fBmaster\fR(8) process
+manager.
+
+The \fBbounce\fR(8) daemon processes two types of service requests:
+.IP \(bu
+Append a recipient (non\-)delivery status record to a per\-message
+log file.
+.IP \(bu
+Enqueue a delivery status notification message, with a copy
+of a per\-message log file and of the corresponding message.
+When the delivery status notification message is
+enqueued successfully, the per\-message log file is deleted.
+.PP
+The software does a best notification effort. A non\-delivery
+notification is sent even when the log file or the original
+message cannot be read.
+
+Optionally, a bounce (defer, trace) client can request that the
+per\-message log file be deleted when the requested operation fails.
+This is used by clients that cannot retry transactions by
+themselves, and that depend on retry logic in their own client.
+.SH "STANDARDS"
+.na
+.nf
+RFC 822 (ARPA Internet Text Messages)
+RFC 2045 (Format of Internet Message Bodies)
+RFC 2822 (Internet Message Format)
+RFC 3462 (Delivery Status Notifications)
+RFC 3464 (Delivery Status Notifications)
+RFC 3834 (Auto\-Submitted: message header)
+RFC 5322 (Internet Message Format)
+RFC 6531 (Internationalized SMTP)
+RFC 6532 (Internationalized Message Format)
+RFC 6533 (Internationalized Delivery Status Notifications)
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are picked up automatically, as \fBbounce\fR(8)
+processes run for only a limited amount of time. Use the command
+"\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP "\fB2bounce_notice_recipient (postmaster)\fR"
+The recipient of undeliverable mail that cannot be returned to
+the sender.
+.IP "\fBbackwards_bounce_logfile_compatibility (yes)\fR"
+Produce additional \fBbounce\fR(8) logfile records that can be read by
+Postfix versions before 2.0.
+.IP "\fBbounce_notice_recipient (postmaster)\fR"
+The recipient of postmaster notifications with the message headers
+of mail that Postfix did not deliver and of SMTP conversation
+transcripts of mail that Postfix did not receive.
+.IP "\fBbounce_size_limit (50000)\fR"
+The maximal amount of original message text that is sent in a
+non\-delivery notification.
+.IP "\fBbounce_template_file (empty)\fR"
+Pathname of a configuration file with bounce message templates.
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBdelay_notice_recipient (postmaster)\fR"
+The recipient of postmaster notifications with the message headers
+of mail that cannot be delivered within $delay_warning_time time
+units.
+.IP "\fBdeliver_lock_attempts (20)\fR"
+The maximal number of attempts to acquire an exclusive lock on a
+mailbox file or \fBbounce\fR(8) logfile.
+.IP "\fBdeliver_lock_delay (1s)\fR"
+The time between attempts to acquire an exclusive lock on a mailbox
+file or \fBbounce\fR(8) logfile.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBinternal_mail_filter_classes (empty)\fR"
+What categories of Postfix\-generated mail are subject to
+before\-queue content inspection by non_smtpd_milters, header_checks
+and body_checks.
+.IP "\fBmail_name (Postfix)\fR"
+The mail system name that is displayed in Received: headers, in
+the SMTP greeting banner, and in bounced mail.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBnotify_classes (resource, software)\fR"
+The list of error classes that are reported to the postmaster.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.PP
+Available in Postfix 3.0 and later:
+.IP "\fBsmtputf8_autodetect_classes (sendmail, verify)\fR"
+Detect that a message requires SMTPUTF8 support for the specified
+mail origin classes.
+.SH "FILES"
+.na
+.nf
+/var/spool/postfix/bounce/* non\-delivery records
+/var/spool/postfix/defer/* non\-delivery records
+/var/spool/postfix/trace/* delivery status records
+.SH "SEE ALSO"
+.na
+.nf
+bounce(5), bounce message template format
+qmgr(8), queue manager
+postconf(5), configuration parameters
+master(5), generic daemon options
+master(8), process manager
+syslogd(8), system logging
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

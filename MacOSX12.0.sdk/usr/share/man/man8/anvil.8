@@ -1,0 +1,297 @@
+.TH ANVIL 8 
+.ad
+.fi
+.SH NAME
+anvil
+\-
+Postfix session count and request rate control
+.SH "SYNOPSIS"
+.na
+.nf
+\fBanvil\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix \fBanvil\fR(8) server maintains statistics about
+client connection counts or client request rates. This
+information can be used to defend against clients that
+hammer a server with either too many simultaneous sessions,
+or with too many successive requests within a configurable
+time interval.  This server is designed to run under control
+by the Postfix \fBmaster\fR(8) server.
+
+In the following text, \fBident\fR specifies a (service,
+client) combination. The exact syntax of that information
+is application\-dependent; the \fBanvil\fR(8) server does
+not care.
+.SH "CONNECTION COUNT/RATE CONTROL"
+.na
+.nf
+.ad
+.fi
+To register a new connection send the following request to
+the \fBanvil\fR(8) server:
+
+.nf
+    \fBrequest=connect\fR
+    \fBident=\fIstring\fR
+.fi
+
+The \fBanvil\fR(8) server answers with the number of
+simultaneous connections and the number of connections per
+unit time for the (service, client) combination specified
+with \fBident\fR:
+
+.nf
+    \fBstatus=0\fR
+    \fBcount=\fInumber\fR
+    \fBrate=\fInumber\fR
+.fi
+
+To register a disconnect event send the following request
+to the \fBanvil\fR(8) server:
+
+.nf
+    \fBrequest=disconnect\fR
+    \fBident=\fIstring\fR
+.fi
+
+The \fBanvil\fR(8) server replies with:
+
+.nf
+    \fBstatus=0\fR
+.fi
+.SH "MESSAGE RATE CONTROL"
+.na
+.nf
+.ad
+.fi
+To register a message delivery request send the following
+request to the \fBanvil\fR(8) server:
+
+.nf
+    \fBrequest=message\fR
+    \fBident=\fIstring\fR
+.fi
+
+The \fBanvil\fR(8) server answers with the number of message
+delivery requests per unit time for the (service, client)
+combination specified with \fBident\fR:
+
+.nf
+    \fBstatus=0\fR
+    \fBrate=\fInumber\fR
+.fi
+.SH "RECIPIENT RATE CONTROL"
+.na
+.nf
+.ad
+.fi
+To register a recipient request send the following request
+to the \fBanvil\fR(8) server:
+
+.nf
+    \fBrequest=recipient\fR
+    \fBident=\fIstring\fR
+.fi
+
+The \fBanvil\fR(8) server answers with the number of recipient
+addresses per unit time for the (service, client) combination
+specified with \fBident\fR:
+
+.nf
+    \fBstatus=0\fR
+    \fBrate=\fInumber\fR
+.fi
+.SH "TLS SESSION NEGOTIATION RATE CONTROL"
+.na
+.nf
+.ad
+.fi
+The features described in this section are available with
+Postfix 2.3 and later.
+
+To register a request for a new (i.e. not cached) TLS session
+send the following request to the \fBanvil\fR(8) server:
+
+.nf
+    \fBrequest=newtls\fR
+    \fBident=\fIstring\fR
+.fi
+
+The \fBanvil\fR(8) server answers with the number of new
+TLS session requests per unit time for the (service, client)
+combination specified with \fBident\fR:
+
+.nf
+    \fBstatus=0\fR
+    \fBrate=\fInumber\fR
+.fi
+
+To retrieve new TLS session request rate information without
+updating the counter information, send:
+
+.nf
+    \fBrequest=newtls_report\fR
+    \fBident=\fIstring\fR
+.fi
+
+The \fBanvil\fR(8) server answers with the number of new
+TLS session requests per unit time for the (service, client)
+combination specified with \fBident\fR:
+
+.nf
+    \fBstatus=0\fR
+    \fBrate=\fInumber\fR
+.fi
+.SH "AUTH RATE CONTROL"
+.na
+.nf
+.ad
+.fi
+To register an AUTH request send the following request
+to the \fBanvil\fR(8) server:
+
+.nf
+    \fBrequest=auth\fR
+    \fBident=\fIstring\fR
+.fi
+
+The \fBanvil\fR(8) server answers with the number of auth
+requests per unit time for the (service, client) combination
+specified with \fBident\fR:
+
+.nf
+    \fBstatus=0\fR
+    \fBrate=\fInumber\fR
+.fi
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBanvil\fR(8) server does not talk to the network or to local
+users, and can run chrooted at fixed low privilege.
+
+The \fBanvil\fR(8) server maintains an in\-memory table with
+information about recent clients requests.  No persistent
+state is kept because standard system library routines are
+not sufficiently robust for update\-intensive applications.
+
+Although the in\-memory state is kept only temporarily, this
+may require a lot of memory on systems that handle connections
+from many remote clients.  To reduce memory usage, reduce
+the time unit over which state is kept.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+
+Upon exit, and every \fBanvil_status_update_time\fR
+seconds, the server logs the maximal count and rate values measured,
+together with (service, client) information and the time of day
+associated with those events.
+In order to avoid unnecessary overhead, no measurements
+are done for activity that isn't concurrency limited or
+rate limited.
+.SH BUGS
+.ad
+.fi
+Systems behind network address translating routers or proxies
+appear to have the same client address and can run into connection
+count and/or rate limits falsely.
+
+In this preliminary implementation, a count (or rate) limited server
+process can have only one remote client at a time. If a
+server process reports
+multiple simultaneous clients, state is kept only for the last
+reported client.
+
+The \fBanvil\fR(8) server automatically discards client
+request information after it expires.  To prevent the
+\fBanvil\fR(8) server from discarding client request rate
+information too early or too late, a rate limited service
+should always register connect/disconnect events even when
+it does not explicitly limit them.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+On low\-traffic mail systems, changes to \fBmain.cf\fR are
+picked up automatically as \fBanvil\fR(8) processes run for
+only a limited amount of time. On other mail systems, use
+the command "\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP "\fBanvil_rate_time_unit (60s)\fR"
+The time unit over which client connection rates and other rates
+are calculated.
+.IP "\fBanvil_status_update_time (600s)\fR"
+How frequently the \fBanvil\fR(8) connection and rate limiting server
+logs peak usage information.
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "SEE ALSO"
+.na
+.nf
+smtpd(8), Postfix SMTP server
+postconf(5), configuration parameters
+master(5), generic daemon options
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+TUNING_README, performance tuning
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+.ad
+.fi
+The anvil service is available in Postfix 2.2 and later.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

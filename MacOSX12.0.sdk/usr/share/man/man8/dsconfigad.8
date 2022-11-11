@@ -1,0 +1,178 @@
+.Dd August 28 2010
+.Dt dsconfigad 8
+.Os Darwin
+.Sh NAME
+.Nm dsconfigad
+.Nd retrieves/changes configuration for Active Directory.
+.Sh SYNOPSIS
+.Nm
+.Fl help
+.Nm
+.Fl show
+.Op Fl xml
+.Nm
+.Fl add Ar fqdn
+.Fl username Ar username
+.Op Fl password Ar password
+.Op Fl computer Ar computerid
+.Op Fl ou Ar dn
+.Op Fl preferred Ar server
+.Op Fl force
+.Op Fl localuser Ar username
+.Op Fl localpassword Ar password
+.Op Fl packetencrypt Ar allow | Ar disable | Ar require | Ar ssl
+.Nm
+.Fl leave
+.Op Fl localuser Ar username
+.Op Fl localpassword Ar password
+.Nm
+.Fl remove
+.Fl username Ar username
+.Op Fl password Ar password
+.Op Fl localuser Ar username
+.Op Fl localpassword Ar password
+.Nm
+.Op Fl localuser Ar username
+.Op Fl localpassword Ar password
+.Op Fl alldomains Ar enable | Ar disable
+.Op Fl localhome Ar enable | Ar disable
+.Op Fl gid Ar attribute | Fl nogid
+.Op Fl ggid Ar attribute | Fl noggid
+.Op Fl groups Qo Ar group1,group2,... Qc | Fl nogroups
+.Op Fl mobile Ar enable | Ar disable
+.Op Fl mobileconfirm Ar enable | Ar disable
+.Op Fl namespace Ar forest | Ar domain
+.Op Fl packetencrypt Ar allow | Ar disable | Ar require | Ar ssl
+.Op Fl packetsign Ar allow | Ar disable | Ar require
+.Op Fl passinterval Ar value
+.Op Fl preferred Ar server | Fl nopreferred
+.Op Fl protocol Ar afp | Ar smb | Ar nfs
+.Op Fl restrictDDNS Ar interface,interface,...
+.Op Fl sharepoint Ar enable | Ar disable
+.Op Fl shell Ar value
+.Op Fl uid Ar attribute | Fl nouid
+.Op Fl useuncpath Ar enable | Ar disable
+.Pp
+.Sh DESCRIPTION
+This tool allows command-line configuration of the Active Directory.  
+.Nm
+has the same functionality for configuring the Active Directory as the Directory Utility application.  It requires "admin" privileges to the local workstation and to the Directory to make changes.
+.Pp
+A list of flags and their descriptions:
+.Bl -tag -width -indent
+.It Fl add Ar fqdn
+The fully-qualified DNS name of the Domain to be used when adding the computer to the Directory (e.g., domain.ads.example.com).
+.It Fl alldomains Ar enable | Ar disable
+This flag determines whether the plugin allows authentication from any domain in the forest.  When this is enabled, individual domains will not be visible, only "All Domains". If it is disabled, you will have the ability to select the specific domains that can authenticate to this computer. Enabled by default.
+.It Fl computer Ar computerid
+The "computerid" to add the specified Domain
+.It Fl force
+Force the process (i.e., join the existing account or remove the binding)
+.It Fl ggid Ar attribute
+This specifies the attribute to be used for the GID of the group.  By default, a group GID is generated from the Active Directory GUID of the group.
+.It Fl gid Ar attribute
+This specifies the attribute to be used for the GID of the user.  By default, a GID is derived from the primaryGroupID of the user (typically Domain Users).
+.It Fl groups Ar "group1,group2,..."
+Use the listed groups to determine who has local administrative privileges on this computer.  Groups can be specified by domain to ensure security is not compromised, e.g., 
+.Qo
+domain admins@domain.ads.demo.com
+.Qc
+.
+.It Fl help
+Lists the options for calling 
+.Nm
+.It Fl leave
+Leaves the current domain (preserving the computer record in the directory).
+.It Fl localhome Ar enable | disable
+This flag determines whether the plugin forces all home directories to be local to the computer (i.e., /Users/username) (enabled by default).
+.It Fl localpassword Ar password
+Password to use in conjunction with the specified local username.  If this is not specified, you will be prompted for entry.  Note that using this option has a security risk due to a small window where the password could be captured from running process list.  Consider using the prompting mechanism to ensure passwords are not exposed unexpectedly.
+.It Fl localuser Ar username
+Username of a local account that has administrative privileges to this computer
+.It Fl mobile Ar enable | disable
+This flag determines whether the plugin will enable mobile account support for offline logon (disabled by default).  This flag is a hint.  If the appopriate Workgroup Management settings exist for a user, this will not override, as directory settings for the user take precendence.
+.It Fl mobileconfirm Ar enable | disable
+This flag determines whether the plugin will warn the user when a mobile account is going to be created.  This flag is a hint as discussed in 
+.Fl mobile
+.
+.It Fl namespace Ar forest | Ar domain
+Sets the primary account username naming convention.  By default it is set to "domain" naming which assumes no conflicting user accounts across all domains.  If your Active Directory forest has conflicts setting this to "forest" will prefix all usernames with "DOMAIN\\" to ensure unique naming between domains (e.g., "ADDOMAIN\\user1").  Warning:  this will change the primary name of the user for all logins.  Changing this setting on an existing system will cause any existing homes to be unused on the local machine.
+.It Fl noggid
+Turn off any previously mapped attribute and generate the group GID from the Active Directory GUID.
+.It Fl nogid
+Turn off any previously mapped attribute and use the GID from the directory.
+.It Fl nogroups
+Disable use of the current groups for determining administrative privileges on this computer.
+.It Fl nopreferred
+Turn off any previously specified server and default to dynamic server discovery.
+.It Fl nouid
+Turn off any previously mapped attribute and generate the UID from the Active Directory GUID.
+.It Fl ou Ar dn
+The LDAP DN of the container to use for adding the computer.  If this is not specified, it will default to the container
+.Qo
+CN=Computers
+.Qc
+within the domain that was specified (e.g.,
+.Qo
+CN=Computers,DC=domain,DC=ads,DC=demo,DC=com
+.Qc
+.
+.It Fl packetencrypt Ar allow | Ar disable | Ar require | Ar ssl
+By default packet encryption is allowed but not required, but can be required or disabled (for example if debugging a problem).  This ensures that the data to/from the server is encrypted and signed guaranteeing the content was not tampered with and cannot be seen by other computers on the network.
+.It Fl packetsign Ar allow | Ar disable | Ar require
+By default packet signing is allowed but not required, but can be required or disabled (for example if debugging a problem).  This ensures that the data to/from the server is not tampered with by another computer before received it is received.
+.It Fl passinterval Ar value
+Set how often the computer trust account password should be changed (default 14).
+.It Fl password Ar password
+Password to use in conjunction with the specified username.  If this is not specified, you will be prompted for entry.  Note that using this option has a security risk due to a small window where the password could be captured from running process list.  Consider using the prompting mechanism to ensure passwords are not exposed unexpectedly.
+.It Fl preferred Ar server
+Use the specified server for all Directory lookups and authentications.  If the server is no longer available, it will fail-over to other servers.
+.It Fl protocol Ar afp | smb | nfs
+This flag determines how a home directory is mounted on the desktop.  By default SMB is used, but AFP can be used for use with Mac OS X Server or 3rd Party AFP solutions on Windows Servers (previously known as mountstyle)
+.It Fl restrictDDNS
+Restricts Dynamic DNS updates to specific interfaces (e.g., en0, en1, en2, etc.).  To disable restrictions pass "" as the list.
+.It Fl remove
+Remove this computer from the current Domain
+.It Fl sharepoint Ar enable | Ar disable
+Enable or disable mounting of the network home as a sharepoint.
+.It Fl shell Ar value
+Use the specified shell (e.g., "/bin/bash") if a shell attribute does not exist in the directory for the user logging into this computer.  Use a shell value of "none" to disable use of a default shell, preserving values that are only specified in the directory.
+.It Fl show
+Shows the current configuration of the Active Directory
+.It Fl uid Ar attribute
+This specifies the attribute to be used for the UID of the user.  By default, a UID is generated from the Active Directory GUID.
+.It Fl username Ar username
+Username of a Network account that has administrative privileges to add/remove this computer to/from the specified Domain
+.It Fl useuncpath Ar enable | disable
+This flag determines whether the plugin uses the UNC specified in the Active Directory when mounting the network home.  If this is disabled, the plugin will look for Apple schema extensions to mount the home directory.
+.It Fl xml
+Output in XML rather than plain text.  Valid only with -show.
+.El
+.Pp
+.Sh EXAMPLES
+.Pp
+Adding a computer to a Directory:
+.Pp
+.Nm
+-add domain.ads.example.com
+-computer ThisComputer -username 
+.Qo
+administrator
+.Qc -ou 
+.Qo
+CN=Computers,OU=Engineering,DC=ads,DC=example,DC=com
+.Qc
+.Pp
+Giving a set of groups administrative access to the local computer:
+.Pp
+.Nm
+-groups
+.Qo
+DOMAIN\\domain admins,FOREST\\enterprise admins,DOMAIN\\desktop techs
+.Qc
+.Pp
+.Sh SEE ALSO
+.Pp
+.Xr opendirectoryd 8 ,
+.Xr odutil 1
+.Pp

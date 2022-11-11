@@ -1,0 +1,228 @@
+.TH "MPSCNNGradientKernel" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNGradientKernel
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNKernel\&.h>\fP
+.PP
+Inherits \fBMPSCNNBinaryKernel\fP\&.
+.PP
+Inherited by \fBMPSCNNArithmeticGradient\fP, \fBMPSCNNBatchNormalizationGradient\fP, \fBMPSCNNBatchNormalizationStatisticsGradient\fP, \fBMPSCNNConvolutionGradient\fP, \fBMPSCNNCrossChannelNormalizationGradient\fP, \fBMPSCNNDropoutGradient\fP, \fBMPSCNNInstanceNormalizationGradient\fP, \fBMPSCNNLocalContrastNormalizationGradient\fP, \fBMPSCNNLogSoftMaxGradient\fP, \fBMPSCNNNeuronGradient\fP, \fBMPSCNNPoolingGradient\fP, \fBMPSCNNSoftMaxGradient\fP, \fBMPSCNNSpatialNormalizationGradient\fP, and \fBMPSCNNUpsamplingGradient\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBencodeToCommandBuffer:sourceGradient:sourceImage:gradientState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceGradient:sourceImage:gradientState:destinationGradient:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageBatch\fP *__nonnull) \- \fBencodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSInteger \fBkernelOffsetX\fP"
+.br
+.ti -1c
+.RI "NSInteger \fBkernelOffsetY\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+Gradient kernels are the backwards pass of a \fBMPSCNNKernel\fP used during training to calculate gradient back propagation\&. These take as arguments the gradient result from the next filter and the source image for the forward version of the filter\&. There is also a \fBMPSNNGradientState\fP passed from \fBMPSCNNKernel\fP to \fBMPSCNNGradientKernel\fP that contains information about the \fBMPSCNNKernel\fP parameters at the time it encoded and possibly also additional MTLResources to enable it to do its job\&.
+.PP
+.PP
+.nf
+Training graph (partial):
+
+    ---> input image ---------> MPSCNNKernel ------>  resultImage ------>-->-->-->\&.
+                   \                  |                                           |
+                    '------\&.    MPSNNGradientState                         loss estimation
+                            \         |                                           |
+                             V        V                                           V
+    <--- result gradient <- MPSCNNGradientKernel <---  input gradient <--<--<--<---'
+
+    In general operation, starting with the input image, the sequence of events is:
+    1a)  Invoke padding policy to find result size for MPSCNNKernel\&.  This
+         also configures some MPSCNNKernel parameters such as offset\&.
+    1b)  Use the MPSImageDescriptor from 1a to make resultImage\&.
+    1c)  Call MPSCNNKernel -encode\&.\&.\&.
+    2) stages 1a-c are repeated for other forward passes in the inference portion of the graph
+    3) We estimate the loss resulting from the whole inference computation so far (see MPSCNNLoss\&.h>
+    4) stages 5a-c are repeated for corresponding backward gradient passes in the graph
+    5a) Invoke padding policy on the MPSCNNGradientKernel shown above\&. This sets the
+        MPSCNNGradientKernel parameters to correspond with those in the forward pass
+    5b) The result gradient for the MPSCNNGradientKernel is created from the MPSImageDescriptor from 5a
+    5c) Call MPSCNNGradientKernel -encode with the input image, input gradient, result gradient and MPSNNGradientState
+    6) pass the result gradient on to leftward gradient passes\&.
+.fi
+.PP
+ 
+.PP
+.nf
+          For MPSCNNKernels that are trained, there may be other accompanying training kernels that
+          need to be called in addition to the gradient kernel to update convolution weights or batch
+          normalization parameters, for example. Steps 1a-c and 5a-c can be combined in a single -encode
+          call. These return the result image or gradient out the left hand side.
+
+          For purposes of inheritance the gradient image is the MPSCNNBinaryKernel primary image
+          and the source image is the MPSCNNBinaryKernel secondary image. Various secondary properties
+          such as kernel size are copies of the forward inference pass parameters of similar name
+          are set automatically when -[MPSCNNGradientKernel destinationImageDescriptorForSourceImages:sourceStates:]
+          is called.
+.fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (\fBMPSImageBatch\fP*__nonnull) encodeBatchToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) sourceGradients(\fBMPSImageBatch\fP *__nonnull) sourceImages(\fBMPSStateBatch\fP *__nonnull) gradientStates"
+Encode a gradient filter and return a gradient  During training, gradient filters are used to calculate the gradient associated with the loss for each feature channel in the forward pass source image\&. For those nodes that are trainable, these are then used to refine the value used in the trainable parameter\&. They consume a source gradient image which contains the gradients corresponding with the forward pass destination image, and calculate the gradients corresponding to the forward pass source image\&.
+.PP
+\fBA\fP gradient filter consumes a \fBMPSNNGradientState\fP object which captured various forward pass properties such as offset and edgeMode at the time the forward pass was encoded\&. These are transferred to the \fBMPSCNNBinaryKernel\fP secondary image properties automatically when this method creates its destination image\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The MTLCommandBuffer on which to encode 
+.br
+\fIsourceGradients\fP The gradient images from the 'next' filter in the graph 
+.br
+\fIsourceImages\fP The images used as source image from the forward pass 
+.br
+\fIgradientStates\fP The \fBMPSNNGradientState\fP or \fBMPSNNBinaryGradientState\fP subclass produced by the forward pass 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNBatchNormalizationStatisticsGradient\fP\&.
+.SS "\- (void) encodeBatchToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) sourceGradients(\fBMPSImageBatch\fP *__nonnull) sourceImages(\fBMPSStateBatch\fP *__nonnull) gradientStates(\fBMPSImageBatch\fP *__nonnull) destinationGradients"
+Encode a gradient filter and return a gradient  During training, gradient filters are used to calculate the gradient associated with the loss for each feature channel in the forward pass source image\&. For those nodes that are trainable, these are then used to refine the value used in the trainable parameter\&. They consume a source gradient image which contains the gradients corresponding with the forward pass destination image, and calculate the gradients corresponding to the forward pass source image\&.
+.PP
+\fBA\fP gradient filter consumes a \fBMPSNNGradientState\fP object which captured various forward pass properties such as offset and edgeMode at the time the forward pass was encoded\&. These are transferred to the \fBMPSCNNBinaryKernel\fP secondary image properties automatically when you use -[\fBMPSCNNGradientKernel\fP destinationImageDescriptorForSourceImages:sourceStates:]\&. If you do not call this method, then you are responsible for configuring all of the primary and secondary image properties in \fBMPSCNNBinaryKernel\fP\&. Please see class description for expected ordering of operations\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The MTLCommandBuffer on which to encode 
+.br
+\fIsourceGradients\fP The gradient images from the 'next' filter in the graph 
+.br
+\fIsourceImages\fP The image used as source images from the forward pass 
+.br
+\fIgradientStates\fP An array of the \fBMPSNNGradientState\fP or \fBMPSNNBinaryGradientState\fP subclass produced by the forward pass 
+.br
+\fIdestinationGradients\fP The MPSImages into which to write the filter result 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNBatchNormalizationStatisticsGradient\fP\&.
+.SS "\- (\fBMPSImage\fP*__nonnull) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceGradient(\fBMPSImage\fP *__nonnull) sourceImage(\fBMPSState\fP *__nonnull) gradientState"
+Encode a gradient filter and return a gradient  During training, gradient filters are used to calculate the gradient associated with the loss for each feature channel in the forward pass source image\&. For those nodes that are trainable, these are then used to refine the value used in the trainable parameter\&. They consume a source gradient image which contains the gradients corresponding with the forward pass destination image, and calculate the gradients corresponding to the forward pass source image\&.
+.PP
+\fBA\fP gradient filter consumes a \fBMPSNNGradientState\fP object which captured various forward pass properties such as offset and edgeMode at the time the forward pass was encoded\&. These are transferred to the \fBMPSCNNBinaryKernel\fP secondary image properties automatically when this method creates its destination image\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The MTLCommandBuffer on which to encode 
+.br
+\fIsourceGradient\fP The gradient image from the 'next' filter in the graph (in the inference direction) 
+.br
+\fIsourceImage\fP The image used as source image by the forward inference pass 
+.br
+\fIgradientState\fP The \fBMPSNNGradientState\fP or \fBMPSNNBinaryGradientState\fP subclass produced by the forward inference pass 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The result gradient from the gradient filter 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNBatchNormalizationStatisticsGradient\fP\&.
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceGradient(\fBMPSImage\fP *__nonnull) sourceImage(\fBMPSState\fP *__nonnull) gradientState(\fBMPSImage\fP *__nonnull) destinationGradient"
+Encode a gradient filter and return a gradient  During training, gradient filters are used to calculate the gradient associated with the loss for each feature channel in the forward pass source image\&. For those nodes that are trainable, these are then used to refine the value used in the trainable parameter\&. They consume a source gradient image which contains the gradients corresponding with the forward pass destination image, and calculate the gradients corresponding to the forward pass source image\&.
+.PP
+\fBA\fP gradient filter consumes a \fBMPSNNGradientState\fP object which captured various forward pass properties such as offset and edgeMode at the time the forward pass was encoded\&. These are transferred to the \fBMPSCNNBinaryKernel\fP secondary image properties automatically when you use -[\fBMPSCNNGradientKernel\fP destinationImageDescriptorForSourceImages:sourceStates:]\&. If you do not call this method, then you are responsible for configuring all of the primary and secondary image properties in \fBMPSCNNBinaryKernel\fP\&. Please see class description for expected ordering of operations\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The MTLCommandBuffer on which to encode 
+.br
+\fIsourceGradient\fP The gradient image from the 'next' filter in the graph 
+.br
+\fIsourceImage\fP The image used as source image from the forward pass 
+.br
+\fIgradientState\fP The \fBMPSNNGradientState\fP and \fBMPSNNBinaryGradientState\fP subclass produced by the forward pass 
+.br
+\fIdestinationGradient\fP The \fBMPSImage\fP into which to write the filter result 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNBatchNormalizationStatisticsGradient\fP\&.
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use initWithCoder:device instead\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSKernel\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryKernel\fP\&.
+.PP
+Reimplemented in \fBMPSCNNConvolutionGradient\fP, \fBMPSCNNFullyConnectedGradient\fP, \fBMPSCNNPoolingAverageGradient\fP, \fBMPSCNNPoolingMaxGradient\fP, \fBMPSCNNPoolingL2NormGradient\fP, \fBMPSCNNDilatedPoolingMaxGradient\fP, \fBMPSCNNSoftMaxGradient\fP, \fBMPSCNNLogSoftMaxGradient\fP, \fBMPSCNNCrossChannelNormalizationGradient\fP, \fBMPSCNNPoolingGradient\fP, \fBMPSCNNLocalContrastNormalizationGradient\fP, \fBMPSCNNBatchNormalizationGradient\fP, \fBMPSCNNBatchNormalizationStatisticsGradient\fP, \fBMPSCNNNeuronGradient\fP, \fBMPSCNNDropoutGradient\fP, and \fBMPSCNNSpatialNormalizationGradient\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryKernel\fP\&.
+.PP
+Reimplemented in \fBMPSCNNConvolutionGradient\fP, \fBMPSCNNFullyConnectedGradient\fP, \fBMPSCNNSoftMaxGradient\fP, \fBMPSCNNLogSoftMaxGradient\fP, \fBMPSCNNPoolingGradient\fP, \fBMPSCNNArithmeticGradient\fP, \fBMPSCNNNeuronGradient\fP, \fBMPSCNNUpsamplingGradient\fP, and \fBMPSCNNDropoutGradient\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "\- kernelOffsetX\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Offset in the kernel reference frame to position the kernel in the X dimension  In some cases, the input gradient must be upsampled with zero insertion to account for things like strides in the forward \fBMPSCNNKernel\fP pass\&. As such, the offset, which describes a X,Y offset in the source coordinate space is insufficient to fully describe the offset applied to a kernel\&. The kernel offset is the offset after upsampling\&. Both the source offset and kernel offset are additive: effective offset = source offset * stride + kernel offset\&. The offset is applied to the (upsampled) source gradient 
+.SS "\- kernelOffsetY\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Offset in the kernel reference frame to position the kernel in the Y dimension  In some cases, the input gradient must be upsampled with zero insertion to account for things like strides in the forward \fBMPSCNNKernel\fP pass\&. As such, the offset, which describes a X,Y offset in the source coordinate space is insufficient to fully describe the offset applied to a kernel\&. The kernel offset is the offset after upsampling\&. Both the source offset and kernel offset are additive: effective offset = source offset * stride + kernel offset\&. The offset is applied to the (upsampled) source gradient 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

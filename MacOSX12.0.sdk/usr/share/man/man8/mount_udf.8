@@ -1,0 +1,111 @@
+.\" Copyright (c) 1993, 1994
+.\"     The Regents of the University of California.  All rights reserved.
+.\" All rights reserved.
+.\"
+.\" This code is derived from software donated to Berkeley by
+.\" Christopher G. Demetriou.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"     @(#)mount_udf
+.Dd December 6, 2006
+.Dt MOUNT_UDF 8
+.Os BSD 4
+.Sh NAME
+.Nm mount_udf
+.Nd mount a UDF filesystem
+.Sh SYNOPSIS
+.Nm mount_udf
+.Op Fl o Ar options
+.Op Fl s Ar sessionStart
+.Op Fl n Ar lastRecordedLBA
+.Op Fl b Ar blockSize
+.Op Fl p Ar packetSizeInBlocks
+.Op Fl v Ar verificationPolicy
+.Op Fl w
+.Ar devicePath mountPath
+.Sh DESCRIPTION
+The
+.Nm mount_udf
+command attaches the UDF filesystem residing on the device
+.Pa devicePath
+to the global filesystem namespace at the location indicated by
+.Pa mountPath .
+This command is normally executed by
+.Xr mount 8
+at boot time.
+.Pp
+The options are as follows:
+.Bl -tag -width indent
+.It Fl o Ar options
+Options are specified with a
+.Fl o
+flag followed by a comma separated string of options.
+See the
+.Xr mount 8
+man page for possible options and their meanings.
+.It Fl v Ar verificationPolicy
+This is an advanced option not useful for regular use.  It controlls the verification policy when writing to RW type optical media.  Its value can be "meta", "all", or "none".  Policy "meta" means only the metadata are verified after they are written.  This is the default policy.  Policy "all" means to verify data written, which could be several times slower than policy "meta".  Policy "none" does not verify any data.  It is only slightly faster than "meta" in normal cases, but may result a corrupted UDF disc if the write of metadata fails.
+.It Fl s Ar sessionStart
+This is an advanced option not useful for regular use.  When manually mounting a UDF volume with Virtual Partition, it specifies the start Logical Block Address of the last session where UDF data structures (VRS and AVDP) resides.  This value overrides the value obtained from the device.
+.It Fl n Ar lastRecordedLBA
+This is an advanced option not useful for regular use.  When manually mounting a UDF volume with Virtual Partition, it specifies the last recorded Logical Block Address where the UDF VAT ICB will be searched.  This value overrides the value obtained from the device.
+.It Fl b Ar blockSize
+This is an advanced option not useful for regular use.  It specifies the block size in bytes used when mounting the UDF volume.  This value overrides the value obtained from the device.
+.It Fl p Ar packetSizeInBlocks
+This is an advanced option not useful for regular use.  It specifies the packet size in blocks when manually mounting the UDF volume.  This value overrides the value obtained from the device.
+.It Fl w
+This is an advanced option not useful for regular use.  It forces to enable the experimental packet writing function on optical media that has not been fully supported, such as CD-R, CD-RW, DVD-R, DVD+R, HD DVD-R, and BD-R.  Writing to these media does not work on some drives and may cause data corruption or data loss on some other drives.  Therefore, this flag should be used only by file system developers when debugging the experimental write functions.
+.El
+.Pp
+The 
+.Fl s ,
+.Fl n ,
+.Fl b ,
+and
+.Fl p
+flags are not useful in normal use.  They are mainly used for debugging and data recovery.  Since the
+.Fl s ,
+.Fl n ,
+and
+.Fl p
+flags are all specified in units of block size, when any of these flags are specified, it is strongly recommended that the
+.Fl b
+flag is also specified.
+.Sh SEE ALSO
+.Xr mount 2 ,
+.Xr unmount 2 ,
+.Xr fstab 5 ,
+.Xr mount 8
+.Sh BUGS
+Reading of all UDF revisions (1.02 - 2.60) on both block device (e.g., hard drives and USB drives) and most optical media is supported.  Writing to block devices, DVD-RW and DVD+RW is supported with the following exceptions: (1) Cannot write Finder Info, Resource Fork, or other extended attributes in UDF volumes of revision 1.02 and 1.50; (2) Cannot write to mirrored metadata partition.
+.Sh HISTORY
+The
+.Nm mount_udf
+utility first appeared in Mac OS X.

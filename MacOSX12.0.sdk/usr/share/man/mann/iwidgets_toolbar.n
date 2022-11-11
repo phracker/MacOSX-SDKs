@@ -1,0 +1,490 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" toolbar.n 
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::toolbar iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+\fBiwidgets::toolbar\fR \- Create and manipulate a tool bar
+.SH SYNOPSIS
+\fBiwidgets::toolbar\fR \fIpathName\fR ?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Toolbar
+.SH STANDARD OPTIONS
+.LP
+.nf
+.ta 4c 8c 12c
+\fB
+activeBackground     activeForeground    background  borderWidth
+cursor               disabledForeground  font        foreground
+highlightBackground  highlightColor      highlightThickness
+insertBackground     insertForeground    orient      selectBackground
+selectBorderWidth    selectForeground    state       troughColor\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options. For widgets
+added to the toolbar, these options will be propogated if the widget supports
+the option. For example, all widgets that support a font option will be changed
+if the the toolbar's font option is configured. 
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBballoonBackground\fR
+Class:	\fBBalloonBackground\fR
+Command-Line Switch:	\fB-ballooonbackground\fR
+.fi
+.IP
+Specifies the background color of the balloon help displayed at the bottom 
+center of a widget on the toolbar that has a non empty string for its 
+balloonStr option. The default color is yellow.
+.LP
+.nf
+Name:	\fBballoonDelay1\fR
+Class:	\fBBalloonDelay1\fR
+Command-Line Switch:	\fB-balloondelay1\fR
+.fi
+.IP
+Specifies the length of time (in milliseconds) to wait before initially 
+posting a balloon help hint window. This delay is in effect whenever 1) 
+the mouse leaves the toolbar, or 2) a toolbar item is selected with the 
+mouse button.
+.LP
+.nf
+Name:	\fBballoonDelay2\fR
+Class:	\fBBalloonDelay2\fR
+Command-Line Switch:	\fB-balloondelay2\fR
+.fi
+.IP
+Specifies the length of time (in milliseconds) to wait before continuing to 
+post balloon help hint windows. This delay is in effect after the first 
+time a balloon hint window is activated. It remains in effect until 1) the 
+mouse leaves the toolbar, or 2) a toolbar item is selected with the mouse 
+button.
+.LP
+.nf
+Name:	\fBballoonFont\fR
+Class:	\fBBalloonFont\fR
+Command-Line Switch:	\fB-balloonfont\fR
+.fi
+.IP
+Specifies the font of the balloon help text displayed at the bottom center 
+of a widget on the toolbar that has a non empty string for its 
+balloonStr option. The default font is 6x10.
+.LP
+.nf
+Name:	\fBballoonForeground\fR
+Class:	\fBBalloonForeground\fR
+Command-Line Switch:	\fB-ballooonforeground\fR
+.fi
+.IP
+Specifies the foreground color of the balloon help displayed at the 
+bottom center of a widget on the toolbar that has a non empty string for 
+its balloonStr option. The default color is black.
+.LP
+.nf
+Name:	\fBhelpVariable\fR
+Class:	\fBHelpVariable\fR
+Command-Line Switch:	\fB-helpvariable\fR
+.fi
+.IP
+Specifies the global variable to update whenever the mouse is in motion 
+over a toolbar widget. This global variable is updated with the current 
+value of the active widget's helpStr. Other widgets can "watch" this 
+variable with the trace command, or as is the case with entry or label 
+widgets, they can set their textVariable to the same global variable. This 
+allows for a simple implementation of a help status bar. Whenever the 
+mouse leaves a menu entry, the helpVariable is set to the empty string {}.
+.LP
+.nf
+Name:	\fBorient\fR
+Class:	\fBOrient\fR
+Command-Line Switch:	\fB-orient\fR
+.fi
+.IP
+Specifies the orientation of the toolbar. Must be either horizontal or
+vertical. 
+.BE 
+.SH DESCRIPTION
+The \fBiwidgets::toolbar\fR command creates a new window (given by the pathName 
+argument) and makes it into a \fBtoolbar\fR widget. Additional options, 
+described above may be specified on the command line or in the option 
+database to configure aspects of the toolbar such as its colors, font, 
+and orientation. The \fBiwidgets::toolbar\fR command returns its pathName argument. At 
+the time this command is invoked, there must not exist a window named 
+pathName, but pathName's parent must exist. 
+.PP
+A \fBtoolbar\fR is a widget that displays a collection of widgets arranged 
+either in a row or a column (depending on the value of the -orient option). 
+This collection of widgets is usually for user convenience to give access 
+to a set of commands or settings. Any widget may be placed on a toolbar. 
+However, command or value-oriented widgets (such as button, radiobutton, 
+etc.) are usually the most useful kind of widgets to appear on a toolbar.  
+.PP
+In addition, the toolbar adds two new options to all widgets that are added to
+it. These are the \fBhelpStr\fR and \fBballoonStr\fR options. See the 
+discussion for the widget command add below.
+
+.SH "WIDGET-SPECIFIC METHODS"
+.PP
+The iwidgets::toolbar command creates a new Tcl command whose name is pathName. This
+command may be used to invoke various operations on the widget. It has the
+following general form:
+.DS C
+\fIpathName\fR \fIoption\fR \fI?arg arg ...?\fR
+.DE
+Option and args determine the exact behavior of the command. 
+.PP
+Many of the widget commands for a toolbar take as one argument an indicator of
+which widget item of the toolbar to operate on. The indicator is called 
+an \fBindex\fR and may be specified in any of the following forms:
+.TP
+\fInumber\fR
+Specifies the widget numerically, where 0 corresponds to the first
+widget in the notebook, 1 to the second, and so on. (For horizontal, 0 is the
+leftmost; for vertical, 0 is the topmost). 
+.TP
+\fBend\fR
+Specifes the last widget in the toolbar's index. If the toolbar is
+empty this will return -1. 
+.TP
+\fBlast\fR
+Same as end.
+.TP
+\fIpattern\fR
+If the index doesn't satisfy any of the above forms, then this form is
+used. Pattern is pattern-matched against the widgetName of each widget in the
+toolbar, in order from the first to the last widget, until a matching entry is
+found. An exact match must occur. 
+.PP
+The following commands are possible for toolbar widgets:
+.TP
+\fIpathName\fR \fBadd\fR \fIwidgetCommand\fR \fIwidgetName\fR \fI?option value?\fR
+Adds a widget with the command widgetCommand whose name is widgetName to the
+toolbar. If widgetCommand is radiobutton or checkbutton, its packing is
+slightly padded to match the geometry of button widgets. In addition, the
+indicatorOn option is false by default and the selectColor is that of the
+toolbar background by default. This allows Radiobutton and Checkbutton widgets
+to be added as icons by simply setting their bitmap or image options. If 
+additional arguments are present, they are the set of available options
+that the widget type of \fIwidgetCommand\fR supports. In addition they may
+also be one of the following options:
+.RS
+.TP
+\fB-helpstr\fR \fIvalue\fR
+Specifes the help string to associate with the widget. When the mouse moves
+over the widget, the variable denoted by \fBhelpVariable\fR is set 
+to \fBhelpStr\fR. Another widget can bind to the helpVariable and thus 
+track status help. 
+.TP
+\fB-balloonstr\fR \fIvalue\fR
+Specifes the string to display in a balloon window for this widget. A 
+balloon window is a small popup window centered at the bottom of the 
+widget. Usually the \fBballoonStr\fR value is the name of the item on the 
+toolbar. It is sometimes known as a hint window.
+.IP
+When the mouse moves into an item on the toolbar, a timer is set based on 
+the value of \fBballoonDelay1\fR. If the mouse stays inside the item 
+for \fBballoonDelay1\fR, the balloon window will pop up displaying 
+the \fBballoonStr\fR value. Once the balloon window is posted, a new 
+timer based on \fBballoonDelay2\fR is set. This is typically a shorter 
+timer. If the mouse is moved to another item, the window is unposted and 
+a new window will be posted over the item if the shorter delay time is 
+satisfied. 
+.IP
+While the balloon window is posted, it can also be unposted if the item 
+is selected. In this case the timer is reset to \fBballoonDelay1\fR. 
+Whenever the mouse leaves the toolbar, the timer is also reset 
+to \fBballoonDelay1\fR.
+.IP
+This window posting/unposting model is the same model used in the 
+Windows95 environment.
+.RE
+.TP
+\fIpathName\fR \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given by \fIoption\fR.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR \fIvalue\fR?
+Query or modify the configuration options of the widget. If no \fIoption\fR is
+specified, returns a list describing all of the available options for pathName
+(see Tk_ConfigureInfo for information on the format of this list). If 
+\fIoption\fR is specified with no value, then the command returns a 
+list describing the one
+named option (this list will be identical to the corresponding sublist of the
+value returned if no option is specified). If one or more option-value pairs
+are specified, then the command modifies the given widget option(s) to have the
+given value(s); in this case the command returns an empty string. 
+.TP
+\fIpathName\fR \fBdelete\fR \fIindex\fR ?\fIindex2\fR?
+This command deletes all items between \fIindex\fR and \fIindex2\fR 
+inclusive. If \fIindex2\fR is omitted then it defaults to \fIindex\fR. 
+Returns an empty string. 
+.TP
+\fIpathName\fR \fBindex\fR \fIindex\fR
+Returns the widget's numerical index for the entry corresponding 
+to \fIindex\fR. If \fIindex\fR is not found, -1 is returned. 
+.TP
+\fIpathName\fR \fBinsert\fR \fIbeforeIndex\fR \fIwidgetCommand\fR \fIwidgetName\fR \fI?option value?\fR
+.TP
+Insert a new item named \fIwidgetName\fR with the 
+command \fIwidgetCommand\fR before the item specified by \fIbeforeIndex\fR. 
+If \fIwidgetCommand\fR is \fBradiobutton\fR or \fBcheckbutton\fR, its 
+packing is slightly padded to match the geometry of button widgets. In 
+addition, the \fBindicatorOn\fR option is \fBfalse\fR by default and the
+\fBselectColor\fR is that of the toolbar background by default. This allows
+\fBRadiobutton\fR and \fBCheckbutton\fR widgets to be added as icons by 
+simply setting their \fBbitmap\fR or \fBimage\fR options. The set of 
+available options is the same as specified in the \fBad\fR command.
+.TP
+\fIpathName\fR \fBitemcget\fR \fIindex\fR \fIoption\fR
+Returns the current value of the configuration option given by \fIoption\fR for
+index. The item type of \fIindex\fR determines the valid available options. 
+.TP
+\fIpathName\fR \fBitemconfigure\fR \fIindex\fR \fI?option value?\fR
+Query or modify the configuration options of the widget of the toolbar
+specified by \fIindex\fR. If no option is specified, 
+returns a list describing all of
+the available options for \fIindex\fR 
+(see \fBTk_ConfigureInfo\fR for information on the
+format of this list). If \fIoption\fR is specified with no value, 
+then the command
+returns a list describing the one named option (this list will be identical to
+the corresponding sublist of the value returned if no option is specified). If
+one or more option-value pairs are specified, then the command modifies the
+given widget option(s) to have the given value(s); in this case the command
+returns an empty string. The item type of \fIindex\fR determines the valid
+available options. The set of available options is the same as specified 
+in the \fBad\fR command.
+.SH EXAMPLE
+.DS
+ package require Iwidgets 4.0
+ iwidgets::toolbar .tb -helpvariable statusVar
+
+ .tb add button item1 \\
+    -helpstr "Save It" -bitmap @./icons/Tool_32_box.xbm \\
+    -balloonstr "Save" -command {puts 1}
+ .tb add button item2 \\
+    -helpstr "Save It" -bitmap @./icons/Tool_32_brush.xbm \\
+    -balloonstr "Save" -command {puts 1}
+ .tb add button item3 \\
+    -helpstr "Save It" -bitmap @./icons/Tool_32_cut.xbm \\
+    -balloonstr "Save" -command {puts 1}
+ .tb add button item4 \\
+    -helpstr "Save It" -bitmap @./icons/Tool_32_draw.xbm \\
+    -balloonstr "Save" -command {puts 1}
+ .tb add button item5 \\
+    -bitmap @./icons/Tool_32_erase.xbm -helpstr "Play It" \\
+    -command {puts 2}
+ .tb add frame filler \\
+    -borderwidth 1 -width 10 -height 10
+ .tb add radiobutton item6 \\
+    -bitmap @./icons/Tool_32_oval.xbm -command {puts 4} \\
+    -variable result -value OPEN -helpstr "Radio Button # 1" \\
+    -balloonstr "Radio"
+ .tb add radiobutton item7 \\
+    -bitmap @./icons/Tool_32_line.xbm -command {puts 5} \\
+    -variable result -value CLOSED
+ .tb add checkbutton item8 \\
+    -bitmap @./icons/Tool_32_text.xbm -command {puts 6} \\
+    -variable checkit -onvalue yes -offvalue no    
+ .tb add checkbutton check2 \\
+    -bitmap @./icons/Tool_32_points.xbm -command {puts 7} \\
+     -variable checkit2 -onvalue yes -offvalue no    
+
+ pack .tb -side top -anchor nw
+.DE
+.SH AUTHOR
+Bill Scott
+.SH KEYWORDS
+toolbar, button, radiobutton, checkbutton, iwidgets, widget
+

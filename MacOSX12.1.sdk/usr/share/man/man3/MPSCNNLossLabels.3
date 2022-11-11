@@ -1,0 +1,134 @@
+.TH "MPSCNNLossLabels" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNLossLabels
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNLoss\&.h>\fP
+.PP
+Inherits \fBMPSState\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinit\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:labelsDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:lossImageSize:labelsDescriptor:weightsDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull \fBMPSImage\fP *) \- \fBlossImage\fP"
+.br
+.ti -1c
+.RI "(nonnull \fBMPSImage\fP *) \- \fBlabelsImage\fP"
+.br
+.ti -1c
+.RI "(nonnull \fBMPSImage\fP *) \- \fBweightsImage\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework\&.  The \fBMPSCNNLossLabels\fP is used to hold the per-element weights buffer used by both \fBMPSCNNLoss\fP forward filter and MPSCNNLossGradient backward filter\&. The \fBMPSCNNLoss\fP forward filter populates the \fBMPSCNNLossLabels\fP object and the MPSCNNLossGradient backward filter consumes the state object\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) init "
+Use one of the interfaces below instead\&. 
+.PP
+Reimplemented from \fBMPSState\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device(\fBMPSCNNLossDataDescriptor\fP *_Nonnull) labelsDescriptor"
+Set labels (aka targets, ground truth) for the \fBMPSCNNLossLabels\fP object\&.  The labels and weights data are copied into internal storage\&. The computed loss can either be a scalar value (in batch mode, a single value per image in a batch) or it can be one value per feature channel\&. Thus, the size of the loss image must either match the size of the input source image or be {1, 1, 1}, which results in a scalar value\&. In this convinience initializer, the assumed size of the loss image is {1, 1, 1}\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP Device the state resources will be created on\&. 
+.br
+\fIlabelsDescriptor\fP Describes the labels data\&. This includes:
+.IP "\(bu" 2
+The per-element labels data\&. The data must be in floating point format\&.
+.IP "\(bu" 2
+Data layout of labels data\&. See MPSImage\&.h for more information\&.
+.IP "\(bu" 2
+Size of labels data: (width, height, feature channels}\&.
+.IP "\(bu" 2
+Optionally, row bytes of labels data\&.
+.IP "\(bu" 2
+Optionally, slice bytes of labels data\&. 
+.PP
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device(MTLSize) lossImageSize(\fBMPSCNNLossDataDescriptor\fP *_Nonnull) labelsDescriptor(\fBMPSCNNLossDataDescriptor\fP *_Nullable) weightsDescriptor"
+Set labels (aka targets, ground truth) and weights for the \fBMPSCNNLossLabels\fP object\&. Weights are optional\&.  The labels and weights data are copied into internal storage\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP Device the state resources will be created on\&. 
+.br
+\fIlossImageSize\fP The size of the resulting loss image: { width, height, featureChannels }\&. The computed loss can either be a scalar value (in batch mode, a single value per image in a batch) or it can be one value per feature channel\&. Thus, the size of the loss image must either match the size of the input source image or be {1, 1, 1}, which results in a scalar value\&. 
+.br
+\fIlabelsDescriptor\fP Describes the labels data\&. This includes:
+.IP "\(bu" 2
+The per-element labels data\&. The data must be in floating point format\&.
+.IP "\(bu" 2
+Data layout of labels data\&. See MPSImage\&.h for more information\&.
+.IP "\(bu" 2
+Size of labels data: (width, height, feature channels}\&.
+.IP "\(bu" 2
+Optionally, row bytes of labels data\&.
+.IP "\(bu" 2
+Optionally, slice bytes of labels data\&. 
+.PP
+.br
+\fIweightsDescriptor\fP Describes the weights data\&. This includes:
+.IP "\(bu" 2
+The per-element weights data\&. The data must be in floating point format\&.
+.IP "\(bu" 2
+Data layout of weights data\&. See MPSImage\&.h for more information\&.
+.IP "\(bu" 2
+Size of weights data: (width, height, feature channels}\&.
+.IP "\(bu" 2
+Optionally, row bytes of weights data\&.
+.IP "\(bu" 2
+Optionally, slice bytes of weights data\&. This parameter is optional\&. If you are using a single weight, please use the weight property of the \fBMPSCNNLossDescriptor\fP object\&. 
+.PP
+.RE
+.PP
+
+.SS "\- (nonnull \fBMPSImage\fP*) labelsImage "
+Labels image accessor method\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+An autoreleased \fBMPSImage\fP object, containing the labels data\&. The labels data is populated in the -initWithDevice call\&.
+.RE
+.PP
+In order to gaurantee that the image is correctly synchronized for CPU side access, it is the application's responsibility to call the [gradientState synchronizeOnCommandBuffer:] method before accessing the data in the image\&. 
+.SS "\- (nonnull \fBMPSImage\fP*) lossImage "
+Loss image accessor method\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+An autoreleased \fBMPSImage\fP object, containing the loss data\&. The loss data is populated in the -encode call, thus the contents are undefined until you -encode the filter\&.
+.RE
+.PP
+In order to gaurantee that the image is correctly synchronized for CPU side access, it is the application's responsibility to call the [gradientState synchronizeOnCommandBuffer:] method before accessing the data in the image\&. 
+.SS "\- (nonnull \fBMPSImage\fP*) weightsImage "
+Weights image accessor method\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+An autoreleased \fBMPSImage\fP object, containing the weights data\&. The weights data is populated in the -initWithDevice call\&.
+.RE
+.PP
+In order to gaurantee that the image is correctly synchronized for CPU side access, it is the application's responsibility to call the [gradientState synchronizeOnCommandBuffer:] method before accessing the data in the image\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.
