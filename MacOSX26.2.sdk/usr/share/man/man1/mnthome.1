@@ -1,0 +1,201 @@
+.\" 
+.\" Copyright (c) 2003 Apple Computer, Inc. All rights reserved.
+.\" 
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" The contents of this file constitute Original Code as defined in and
+.\" are subject to the Apple Public Source License Version 1.1 (the
+.\" "License").  You may not use this file except in compliance with the
+.\" License.  Please obtain a copy of the License at
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\" 
+.\" This Original Code and all software distributed under the License are
+.\" distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+.\" License for the specific language governing rights and limitations
+.\" under the License.
+.\"
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.\" ****************************************
+.\" *
+.\" *  mnthome [-d] [-m mntpath] [-n] [-p password] [-s]
+.\" *
+.\" *  Created by suinn on Wed April 9 2003.
+.\" *
+.\" ****************************************
+.\"
+.\" ****************************************
+.\" *  Required macros
+.\" ****************************************
+.Dd August 4, 2004
+.Dt mnthome 1
+.Os Mac\ OS\ X
+.\"
+.\" ****************************************
+.\" *  NAME section
+.\" ****************************************
+.Sh NAME
+.Nm mnthome
+.Nd mount an AFP (AppleShare) home directory with the correct privileges
+.\"
+.\" ****************************************
+.\" *  SYNOPSIS section
+.\" ****************************************
+.Sh SYNOPSIS
+.Nm
+.Op Fl v
+.Op Fl d
+.Op Fl m Ar mntpath
+.Op Fl n
+.Op Fl b
+.Op Fl p Ar password
+.Op Fl i
+.Op Fl x Ar mount point
+.Op Fl u
+.Op Fl s
+.\"
+.\" ****************************************
+.\" *  DESCRIPTION section
+.\" ****************************************
+.Sh DESCRIPTION
+The
+.Nm
+command unmounts the AFP (AppleShare) home directory that was automounted 
+as guest, and remounts it with the correct privileges by logging into the 
+AFP server using the current username and password.  This command also 
+allows you to have guest access turned off on your AFP server too and 
+still have AFP home directories work with "su".
+.Pp
+When you ssh into another computer using an account that has an AFP home 
+directory or you "su <netuser>" where <netuser> is an AFP home directory 
+user, then the resulting home directory will not have the correct access 
+privileges.
+.Pp
+This is because automount is assuming NFS behavior which assumes that all 
+computers share the same user/group privileges and mounts volumes using 
+"no security" and lets the client enforce privileges based on the current 
+user.
+.Pp
+AFP is different since the privileges are based on the user that logged 
+into the server.  Since automount does not put up an authentication dialog
+asking for an user name and password, automount mounts the fileserver using 
+guest login.  Thus you end up with getting the world access privileges and 
+the privileges are shown via "mapping".  You also would have to allow guest
+access to the server to that sharepoint.
+.Pp
+Mapping makes all the files/folders appear like they are owned by the current 
+user.  Even those items not really owned by the current user show up as being 
+owned by the current user.  The server provides user access rights (UARights) 
+which is a summary of what the access rights are regardless of the category 
+(owner, group, world) from which they were obtained.  When doing "mapping", 
+the AppleShare client will take these UARights and show them as the owner 
+rights.  So, everything looks like it is owned by the current user and the 
+owner rights are set to the UARights.  Thus if you had access to that 
+file/folder before, then you still do.
+.Pp
+The options are:
+.Bl -tag -width indent
+.It Fl v
+Display version number.
+.It Fl d
+Print debugging information.
+.It Fl m
+Alternative mount point is specified with the 
+.Fl m
+option followed by a path to an existing directory.  Normally, the volume
+is mounted in /Network/Servers/ or /var/automount/Network/Servers/.
+.It Fl n
+Do not force the unmount of the previous mount point.
+.It Fl b
+Exec the user's shell after mount of home.
+.It Fl p
+A password may be specified with the 
+.Fl p
+option followed by a password.  If this option is not used, then the user
+will be prompted to enter in a password.
+.It Fl i
+Display information about the AFP home mount point.
+.It Fl u
+Attempt to unmount the current home directory mount.
+.It Fl x
+This option must be followed by a path to an existing AFP mount point.  Display information about the mount point.
+.It Fl s
+Skip preflight check to see if the currently mounted home directory is 
+already correctly mounted for the user.
+.El                      \" Ends the list
+.\"
+.\" ****************************************
+.\" *  EXAMPLES section
+.\" ****************************************
+.Sh EXAMPLES
+The following example illustrates how to mount an AFP home directory:
+.Bd -literal -offset indent
+mnthome
+.Ed
+.Pp
+This example shows how to print the debugging information and provide a 
+password:
+.Bd -literal -offset indent
+mnthome -d -p foobar
+
+.Ed
+.\"
+.\" ****************************************
+.\" *  SEE ALSO section
+.\" ****************************************
+.Sh SEE ALSO
+.Xr mount 2 ,
+.Xr unmount 2 ,
+.Xr mount 8
+.Xr mount_afp 8
+.\"
+.\" ****************************************
+.\" *  BUGS section
+.\" ****************************************
+.Sh BUGS
+I get the mounting url from the "home_loc" attribute and the mountpath from the 
+"home" attribute (with the path from home_loc subtracted out).  If your AFP home 
+directory automounts in a different location, then you need to use the -m option 
+to specify an alternative mount point.
+.Pp
+I cant figure out how to cd out of the current home dir so I can do the unmount 
+and then restore the user back into the new home dir.  If you are in the AFP home 
+directory when you use mnthome, you automatically get put back into that same 
+directory when mnthome leaves.  If mnthome works, then your current directory 
+is a dead directory and you need to "cd ~" to get to your new home directory.
+.Pp
+If the server with the home directory was already mounted by another user, you
+will not be able to replace it with a mount made by your user id.  The original 
+mount must be first unmounted by the mounting user or root.
+.\"
+.\" ****************************************
+.\" *  HISTORY section
+.\" ****************************************
+.Sh HISTORY
+The
+.Nm
+command first appeared Mac OS X version 10.3.
+.\"
+.\" ****************************************
+.\" * RETURN VALUES section
+.\" * (errors that mnthome could return)
+.\" ****************************************
+.Sh RETURN VALUES
+.Bl -tag -width Er
+.It 0
+.Nm
+successfully remounted the AFP home directory. 
+.It Bq Er EINVAL
+Invalid arguements were passed in.
+.It Bq Er EPERM
+The current AFP home directory could not be unmounted by
+.Nm
+because the current user does not have the correct access.  The current AFP
+home directory was probably mounted by another user first.  
+.It Bq Er EAUTH
+Incorrect password.
+.El
+.\"

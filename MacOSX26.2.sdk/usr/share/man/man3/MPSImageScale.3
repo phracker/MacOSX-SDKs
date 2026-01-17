@@ -1,0 +1,126 @@
+.TH "MPSImageScale" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSImageScale
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSImageResampling\&.h>\fP
+.PP
+Inherits \fBMPSUnaryImageKernel\fP\&.
+.PP
+Inherited by \fBMPSImageBilinearScale\fP, and \fBMPSImageLanczosScale\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "const \fBMPSScaleTransform\fP * \fBscaleTransform\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+\fBMPSImageResampling\&.h\fP  MetalPerformanceShaders
+.PP
+\fBCopyright:\fP
+.RS 4
+Copyright (c) 2015 Apple Inc\&. All rights reserved\&.  Resampling filters for MetalPerformanceShaders
+.RE
+.PP
+Resize an image and / or change its aspect ratio  The \fBMPSImageScale\fP filter can be used to resample an existing image using a different sampling frequency in each dimension\&. This can be used to enlarge or reduce the size of an image, or change the aspect ratio of an image\&. 
+.br
+ The resample methods supported are: Bilinear Bicubcic Lanczos 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use initWithCoder:device instead\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSKernel\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSUnaryImageKernel\fP\&.
+.PP
+Reimplemented in \fBMPSImageLanczosScale\fP, and \fBMPSImageBilinearScale\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSUnaryImageKernel\fP\&.
+.PP
+Reimplemented in \fBMPSImageLanczosScale\fP, and \fBMPSImageBilinearScale\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "\- scaleTransform\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+An optional transform that describes how to scale and translate the source image  If the scaleTransform is NULL, then the \fBMPSImageLanczosScale\fP filter will rescale the image so that the source image fits exactly into the destination texture\&. If the transform is not NULL, then the transform is used for determining how to map the source image to the destination\&. Default: NULL
+.PP
+When the scaleTransform is set to non-NULL, the values pointed to by the new scaleTransform are copied to object storage, and the pointer is updated to point to internal storage\&. Do not attempt to free it\&. You may free your copy of the \fBMPSScaleTransform\fP as soon as the property set operation is complete\&.
+.PP
+When calculating a scaleTransform, use the limits of the bounding box for the intended source region of interest and the destination clipRect\&. Adjustments for pixel center coordinates are handled internally to the function\&. For example, the scale transform to convert the entire source image to the entire destination image size (clipRect = MPSRectNoClip) would be:
+.PP
+.PP
+.nf
+scaleTransform\&.scaleX = (double) dest\&.width / source\&.width;
+scaleTransform\&.scaleY = (double) dest\&.height / source\&.height;
+scaleTransform\&.translateX = scaleTransform\&.translateY = 0\&.0;
+.fi
+.PP
+.PP
+The translation parameters allow you to adjust the region of the source image used to create the destination image\&. They are in destination coordinates\&. To place the top left corner of the destination clipRect to represent the position {x,y} in source coordinates, we solve for the translation based on the standard scale matrix operation for each axis:
+.PP
+.PP
+.nf
+dest_position = source_position * scale + translation;
+translation = dest_position - source_position * scale;
+.fi
+.PP
+.PP
+For the top left corner of the clipRect, the dest_position is considered to be {0,0}\&. This gives us a translation of:
+.PP
+.PP
+.nf
+scaleTransform\&.translateX = -source_origin\&.x * scaleTransform\&.scaleX;
+scaleTransform\&.translateY = -source_origin\&.y * scaleTransform\&.scaleY;
+.fi
+.PP
+.PP
+One would typically use non-zero translations to do tiling, or provide a resized view into a internal segment of an image\&.
+.PP
+Changing the Lanczos scale factor may trigger recalculation of signficant state internal to the object when the filter is encoded to the command buffer\&. The scale factor is scaleTransform->scaleX,Y, or the ratio of source and destination image sizes if scaleTransform is NULL\&. Reuse a \fBMPSImageLanczosScale\fP object for frequently used scalings to avoid redundantly recreating expensive resampling state\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

@@ -1,0 +1,81 @@
+.Dd June 29, 2020
+.Dt CRYPTEXCTL-GENERATE-TRUST-CACHE 1
+.Os Darwin
+.Sh NAME
+.Nm cryptexctl
+generate-trust-cache
+.Nd Generate a trust cache from a directory of Mach-O files
+.Sh SYNOPSIS
+.Nm
+generate-trust-cache
+.Oo
+.Fl o | Fl -output-file
+.Ar OUTPUT-FILE
+.Oc
+.Oo
+.Fl t | -type
+.Aq Ar static|loadable|development
+.Oc
+.Oo
+.Fl b | Fl -base-trust-cache
+.Ar TRUST-CACHE-PATH
+.Oc
+.Ar DIRECTORY-PATH
+.Sh DESCRIPTION
+Generate a trust cache from the mach object files
+.Pq see Xr Mach-O 5
+in the directory hierarchy given by
+.Ar DIRECTORY-PATH .
+Each mach object, regardles of whether it is an executable,
+bundle, dylib, or dylib shared cache, is inspected for a valid code directory.
+If found, the code directory is hashed, and the resulting hash is
+added to the trust cache.
+If the mach object has no code signature, it is impossible to add
+it to the trust cache, and it is ignored.
+.Pp
+If a fat mach file is encountered, each slice is examined with the
+above logic.
+.Pp
+The implementation expects well-formed mach objects, whose load command
+counts are accurate, and will not attempt to work around poorly-formed
+inputs just for the sake of a single user's tooling.
+.\" Who would do such a thing? Despicable...
+.Sh OPTIONS
+A list of flags and their descriptions:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl o | -output-file Ar OUTPUT-FILE
+The file to which the trust cache should be written, will be replaced
+if it already exists
+.Bo
+default: a file named
+.Pa trustcache
+in the current working direcory.
+.Bc
+.It Fl t | -type Aq Ar static|loadable|development
+The type of trust cache to produce. Valid types are:
+.Bl -inset
+.It Em static
+- a static trust cache, of which there may only be one on a given device.
+This option is generally not useful, but is included for completeness.
+.It Em loadable
+- a trust cache which may be loaded at runtime and persisted on the device
+.It Em development
+- a trust cache which may only be loaded on devices with development fusing
+while running a DEVELOPMENT iBoot
+.El
+.Pp
+.Bq default: Ar loadable
+.It Fl b | -base-trust-cache Ar TRUST-CACHE-PATH
+The path to an existing trust cache of any type whose cdhashes should be
+incorporated into the one being generated. This flag may be specified multiple
+times.
+.El
+.Sh SEE ALSO
+.Xr codesign 1
+.Xr cryptexctl 1
+.Xr cryptexctl-create 1
+.Xr cryptexctl-dump-trust-cache 1
+.Xr trustcachectl 1
+.Xr Mach-O 5
+.Sh HISTORY
+Introduced in macOS 11.0

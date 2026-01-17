@@ -1,0 +1,62 @@
+.\" Copyright (c) 2012, Apple Inc.  All rights reserved.
+.\"
+.Dd July 24, 2012
+.Dt LSMP 1
+.Os "macOS"
+.Sh NAME
+.Nm lsmp
+.Nd Display mach port information for processes on the system
+.Sh SYNOPSIS
+.Nm lsmp
+.Fl h
+.Pp
+.Nm lsmp
+.Ar -p <pid>
+Show mach port usage for <pid>. Run with root privileges to see detailed info about port destinations etc.
+.Pp
+.Nm lsmp
+.Ar -v
+Show information in detail for Kernel object based ports.
+Including thread ports and special ports attached to it.
+.Pp
+.Nm lsmp
+.Ar -a
+Show mach port usage for all tasks in the system
+.Pp
+.Nm lsmp
+.Ar -j <path>
+Save output as JSON to <path>.
+.Sh DESCRIPTION
+The
+.Nm lsmp
+command prints information about every active right in a task's port space, giving a view into the inter-process communication behavior of that task.
+.Pp
+.nf
+Following is an explanation of each symbol and values from the output.
+name        : Task unique name for a port. A "-" signifies that this is a member of a port-set
+ipc-object  : A unique identifier for a kernel object. A "+" sign implies that this entry is expanded from above ipc-object.
+rights      : Rights corresponding to this name. Possible values are recv, send, send-once and port-set.
+flags       : Flags indicating port status.
+                T : Port has tempowner set
+                G : Port is guarded
+                S : Port has strict guarding restrictions
+                I : Port has importance donation flag set
+                R : Port is marked reviving
+                P : Port has task pointer set
+boost       : Importance boost count
+reqs        : Notifications armed on this port.
+                D : Dead name notification
+                N : No sender notification
+                P : Port Destroy requests
+recv        : Number of recv rights for this name.
+send        : Number of send rights stored at this name. This does NOT reflect the total number of send rights for this recv right.
+sonce       : Number of outstanding send-once rights for this receive right.
+oref        : Do send rights exist somewhere for this receive right?
+qlimit      : Queue limit for this port. If orefs column shows -> then it indicates the queue limit on the destination port. And a <- indicates this port right is destined to receive messages from process referred in identifier column.
+msgcount    : Number of messages enqueued on this port. See qlimit for -> and <- explanations.
+context     : Mach port context value.
+identifier  : A unique identifier for a kernel object or task's name for this right. This field is described by the type column.
+.fi
+.Sh SEE ALSO
+.Xr ddt 1 ,
+.Xr top 1

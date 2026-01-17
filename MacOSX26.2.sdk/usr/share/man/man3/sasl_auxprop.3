@@ -1,0 +1,213 @@
+.\" -*- nroff -*-
+.\" 
+.\" Copyright (c) 2001 Carnegie Mellon University.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer. 
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in
+.\"    the documentation and/or other materials provided with the
+.\"    distribution.
+.\"
+.\" 3. The name "Carnegie Mellon University" must not be used to
+.\"    endorse or promote products derived from this software without
+.\"    prior written permission. For permission or any other legal
+.\"    details, please contact  
+.\"      Office of Technology Transfer
+.\"      Carnegie Mellon University
+.\"      5000 Forbes Avenue
+.\"      Pittsburgh, PA  15213-3890
+.\"      (412) 268-4387, fax: (412) 268-7395
+.\"      tech-transfer@andrew.cmu.edu
+.\"
+.\" 4. Redistributions of any form whatsoever must retain the following
+.\"    acknowledgment:
+.\"    "This product includes software developed by Computing Services
+.\"     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+.\"
+.\" CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+.\" THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+.\" AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+.\" FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+.\" AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+.\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\" 
+.TH sasl_auxprop 3 "10 July 2001" SASL "SASL man pages"
+.SH NAME
+sasl_auxprop \- How to work with SASL auxiliary properties
+
+.SH SYNOPSIS
+.nf
+.B #include <sasl/prop.h>
+
+.BI "struct propctx *prop_new(unsigned " estimate ") "
+
+.BI "int prop_dup(struct propctx " *src_ctx ", "
+.BI "             struct propctx " *dst_ctx ")"
+
+.BI "int prop_request(struct propctx " *ctx ", "
+.BI "                 const char " **names ")"
+
+.BI "const struct propval *prop_get(struct propctx " *ctx ")"
+
+.BI "int prop_getnames(struct propctx " *ctx ", const char " **names ","
+.BI "                  struct porpval " *vals ")"
+
+.BI "void prop_clear(struct propctx " *ctx ", int " requests ")"
+
+.BI "void prop_erase(struct propctx " *ctx ", const char " *name ")"
+
+.BI "void prop_dispose(struct propctx " **ctx ")"
+
+.BI "int prop_format(struct propctx " *ctx ", const char " *sep ", int " seplen ", "
+.BI "                char " *outbuf ", unsigned " outmax ", unsigned " *outlen ")"
+
+.BI "int prop_set(struct propctx " *ctx ", const char " *name ","
+.BI "             const char " *value ", int " vallen ")"
+
+.BI "int prop_setvals(struct propctx " *ctx ", const char " *name ","
+.BI "                 const char " **values ")"
+.SH DESCRIPTION
+
+.B SASL auxiliary properties
+are used to obtain properties from external sources during the authentication
+process.  For example, a mechanism might need to query an LDAP server to
+obtain the authentication secret.  The application probably needs other
+information from there as well, such as home directory or UID.  The
+auxiliary property interface allows the two to cooperate, and only results
+in a single query against the LDAP server (or other property sources).
+
+Property lookups take place directly after user canonicalization occurs.
+Therefore, all requests should be registered with he context before that
+time.  Note that requests can also be registered using the
+sasl_auxprop_request(3) function.  Most of the functions listed below, 
+however, require a property context which can be obtained by calling
+sasl_auxprop_getctx(3).
+
+.SH API Description
+.TP 0.8i
+struct propctx *prop_new(unsigned estimate)
+Create a new property context.  Probably unnecessary for application
+developers to call this at any point.
+
+.I estimate
+is the estimate of storage needed total for requests & responses.
+A value of 0 will imply the library default.
+
+.TP 0.8i
+int prop_dup(struct propctx *src_ctx, struct propctx *dst_ctx)
+
+Duplicate a given property context.
+
+.TP 0.8i
+int prop_request(struct propctx *ctx, const char **names)
+
+Add properties to the request list of a given context.
+
+.I names
+is the NULL-terminated array of property names, and must persist until
+the requests are cleared or the context is disposed of with a call
+to prop_dispose.
+
+.TP 0.8i
+const struct propval *prop_get(struct propctx *ctx)
+
+Returns a NULL-terminated array of struct propval from the given context.
+
+.TP 0.8i
+int prop_getnames(struct propctx *ctx, const char **names,
+                  struct porpval *vals)
+
+Fill in a (provided) array of struct propval based on a list of property
+names.  This implies that the vals array is at least as long as the
+names array. The values that are filled in by this call
+persist until next call to prop_request, prop_clear,
+or prop_dispose on context.  If a name specified here was never requested,
+that its associated values entry will be set to NULL.
+
+Returns number of matching properties that were found, or a SASL error code.
+
+.TP 0.8i
+void prop_clear(struct propctx *ctx, int requests)
+
+Clear values and optionally requests from a property context.
+
+.I requests
+is 1 if the requests should be cleared, 0 otherwise.
+
+.TP 0.8i
+void prop_erase(struct propctx *ctx, const char *name)
+
+Securely erase the value of a property.
+
+.I name
+is the name of the property to erase.
+
+.TP 0.8i
+void prop_dispose(struct propctx **ctx)
+
+Disposes of a property context and NULLifys the pointer.
+
+.TP 0.8i
+int prop_format(struct propctx *ctx, const char *sep, int seplen,
+                char *outbuf, unsigned outmax, unsigned *outlen)
+
+Format the requested property names into a string.  This not intended
+for use by the application (only by auxprop plugins).
+
+.I sep
+Is the separator to use for the string
+
+.I outbuf
+Is the caller-allocated buffer of length
+.I outmax
+that the resulting string will be placed in (including NUL terminator).
+
+.I outlen
+if non-NULL, will contain the length of the resulting string (excluding NUL terminator).
+
+.TP 0.8i
+int prop_set(struct propctx *ctx, const char *name, const char *value,
+             int vallen)
+
+Adds a property value to the context.  This is intended for use by auxprop
+plugins only.
+
+.I name
+is the name of the property to receive the new value, or NULL, which
+implies that the value will be added to the same property as the last
+call to either prop_set or prop_setvals.
+
+.I value
+is a value for the property of length
+.I vallen
+
+.TP 0.8i
+int prop_setvals(struct propctx *ctx, const char *name, const char **values)
+
+Adds multiple values to a single property.  This is intended for use by
+auxprop plugins only.
+
+.I name
+has the same meaning as in 
+.B prop_set
+
+.I values
+are a NULL-terminated array of values to be added the property.
+
+.SH "RETURN VALUE"
+The property functions that return an int return SASL error codes.
+See sasl_errors(3).  Those that return pointers will return a valid pointer
+on success, or NULL on any error.
+
+.SH "CONFORMING TO"
+RFC 4422
+
+.SH "SEE ALSO"
+sasl(3), sasl_errors(3), sasl_auxprop_request(3), sasl_auxprop_getctx(3)

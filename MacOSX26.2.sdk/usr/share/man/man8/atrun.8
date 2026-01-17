@@ -1,0 +1,73 @@
+.\" $FreeBSD$
+.Dd June 22, 2015
+.Dt ATRUN 8
+.Os
+.Sh NAME
+.Nm atrun
+.Nd run jobs queued for later execution
+.Sh SYNOPSIS
+.Nm atrun
+.Op Fl l Ar load_avg
+.Op Fl d
+.Sh DESCRIPTION
+The
+.Nm atrun
+utility runs commands queued by
+.Xr at 1 .
+It is invoked periodically by
+.Xr launchd 8
+as specified in the
+.Pa com.apple.atrun.plist
+property list.
+By default the property list contains the
+.Em Disabled
+key set to true, so
+.Nm atrun
+is never invoked.
+.Pp
+Execute the following command as root to enable
+.Nm atrun :
+.Dl "launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist"
+.Pp
+At every invocation,
+.Nm
+starts all the jobs in the lowercase queues whose start
+time has elapsed.
+In addition, if the load average over the last minute was less than
+the specified limit, then a maximum of one batch job (denoted by the
+uppercase queues) is started.
+.Pp
+Before starting a job,
+.Nm
+checks the status of its owner's account with
+.Xr pam 3
+and refuses to run the job if the account is unavailable,
+e.g., locked out or expired.
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl l Ar load_avg
+Specify a limiting load factor, over which batch jobs should
+not be run, instead of the default of 1.5 * number of active CPUs.
+.It Fl d
+Debug; print error messages to standard error instead of using
+.Xr syslog 3 .
+.El
+.Sh FILES
+.Bl -tag -width /usr/lib/cron/spool -compact
+.It Pa /etc/pam.d/atrun
+.Xr pam.conf 5
+configuration file for
+.Nm
+.It Pa /usr/lib/cron/jobs
+Directory containing job files
+.It Pa /usr/lib/cron/spool
+Directory containing output spool files
+.El
+.Sh SEE ALSO
+.Xr at 1 ,
+.Xr pam 3 ,
+.Xr syslog 3 ,
+.Xr pam.conf 5 ,
+.Xr launchd 8
+.Sh AUTHORS
+.An Thomas Koenig Aq ig25@rz.uni-karlsruhe.de

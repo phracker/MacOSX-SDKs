@@ -1,0 +1,77 @@
+.Dd February 7th, 2023
+.Dt SYSPOLICY_CHECK 1
+.Os
+.Sh NAME
+.Nm syspolicy_check
+.Nd Check if macOS app is ready for notarization or distribution
+.Sh SYNOPSIS
+.Nm
+.Ar notary-submission
+.Ar path
+.Op Fl -verbose
+.Op --json
+.Nm
+.Ar distribution
+.Ar path
+.Op Fl -verbose
+.Op --json
+.Nm
+.Ar [notary-submission | distribution]
+.Ar --help
+      
+.Sh DESCRIPTION
+.Nm
+is used to check whether macOS application bundles are ready for upload
+to the Apple notary service, or ready for distribution to users outside
+of the Mac App Store.
+.Pp
+.Nm
+combines checks from multiple parts of macOS, including the frameworks and
+subsystems exposed by the existing
+.Nm codesign,
+.Nm spctl,
+and
+.Nm stapler
+commands.
+
+.Pp
+.Nm
+requires exactly one
+.Ar subcommand
+option to determine what action is to be performed. You can also pass -v or --verbose up to 3 times to get
+increasingly verbose output. --json outputs any errors to stdout in json format.
+
+.Sh SUBCOMMANDS
+The subcommands are as follows:
+.Bl -tag -width indent
+.It Sy notary-submission
+Runs the same checks on an app as the Apple notary service, to make sure the
+app is ready for uploading to the service.
+.Pp
+Notarization gives users more confidence that the Developer ID-signed software
+you distribute has been checked by Apple for malicious components. Notarization
+is not App Review. The Apple notary service is an automated system that scans
+your software for malicious content, checks for code-signing issues, and returns
+the results to you quickly. If there are no issues, the notary service generates
+a ticket for you to staple to your software; the notary service also publishes
+that ticket online where Gatekeeper can find it.
+.Pp
+For more information on Notarization, please see:
+https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution
+.Pp
+For more information on triaging common Notarization failures, please see:
+https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/resolving_common_notarization_issues
+
+.It Sy distribution
+Runs the same checks on your app as macOS does when determining if your app can
+be executed. This includes Gatekeeper checks, XProtect checks, provisioning
+profile checks, and more.
+.Pp
+For more information on how macOS determines if an
+app can run, along with tips for debugging any launch time issues, please see:
+https://developer.apple.com/forums/thread/706442.
+
+.Sh SEE ALSO
+.Xr codesign 1 ,
+.Xr spctl 8 ,
+.Xr stapler 1

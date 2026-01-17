@@ -1,0 +1,87 @@
+.Dd December 3, 2003       \" DATE 
+.Dt db_checkpoint 1       \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm db_checkpoint
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl 1Vv
+.Op Fl h Ar home
+.Op Fl k Ar kbytes
+.Op Fl L Ar file
+.Op Fl P Ar password
+.Op Fl p Ar min
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+The
+.Nm
+utility is a daemon process that monitors the database log, and periodically calls DB_ENV->txn_checkpoint to checkpoint it.
+.Pp
+The options are as follows:
+.Bl -tag -width
+.It Fl 1
+Checkpoint the log once, regardless of whether or not there has been activity since the last checkpoint and then exit.
+.It Fl h
+Specify a home directory for the database environment; by default, the current working directory is used.
+.It Fl k
+Checkpoint the database at least as often as every kbytes of log file are written.
+.It Fl L
+Log the execution of the db_checkpoint utility to the specified file in the following format, where ### is the process ID, and the date is the time the utility was started.
+.Pp
+.D1 db_checkpoint: ### Wed Jun 15 01:23:45 EDT 1995
+.Pp
+This file will be removed if the db_checkpoint utility exits gracefully.
+.It Fl P
+Specify an environment password. Although Berkeley DB utilities overwrite password strings as soon as possible, be aware there may be a window of vulnerability on systems where unprivileged users can see command-line arguments or where utilities are not able to overwrite the memory containing the command-line arguments.
+.It Fl p
+Checkpoint the database at least every min minutes if there has been any activity since the last checkpoint.
+.It Fl V
+Write the library version number to the standard output, and exit.
+.It Fl v
+Write the time of each checkpoint attempt to the standard output.
+.El
+.Pp
+At least one of the -1, -k, and -p options must be specified.
+.Pp
+The db_checkpoint utility uses a Berkeley DB environment (as described for the -h option, the environment variable DB_HOME, or because the utility was run in a directory containing a Berkeley DB environment). In order to avoid environment corruption when using a Berkeley DB environment, db_checkpoint should always be given the chance to detach from the environment and exit gracefully. To cause db_checkpoint to release all environment resources and exit cleanly, send it an interrupt signal (SIGINT).
+.Pp
+The db_checkpoint utility does not attempt to create the Berkeley DB shared memory regions if they do not already exist. The application that creates the region should be started first, and once the region is created, the db_checkpoint utility should be started.
+.Pp
+The DB_ENV->txn_checkpoint method is the underlying method used by the db_checkpoint utility. See the db_checkpoint utility source code for an example of using DB_ENV->txn_checkpoint in a IEEE/ANSI Std 1003.1 (POSIX) environment.
+.Pp
+The 
+.Nm
+utility exits 0 on success, and >0 if an error occurs.
+.Pp
+.Sh ENVIRONMENT      \" May not be needed
+.Bl -tag -width "DB_HOME" \" ENV_VAR_1 is width of the string ENV_VAR_1
+.It Ev DB_HOME
+If the -h option is not specified and the environment variable DB_HOME is set, it is used as the path of the database home, as described in DB_ENV->open.
+.El                      
+.\" .Sh FILES                \" File used or created by the topic of the man page
+.\" .Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.\" .It Pa /usr/share/file_name
+.\" FILE_1description
+.\" .It Pa /Users/joeuser/Library/really_long_file_name
+.\" FILE_2 description
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.Xr db_archive 1 ,
+.Xr db_deadlock 1 ,
+.Xr db_dump 1 ,
+.Xr db_load 1 ,
+.Xr db_printlog 1 ,
+.Xr db_recover 1 ,
+.Xr db_stat 1 ,
+.Xr db_upgrade 1 ,
+.Xr db_verify 1
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

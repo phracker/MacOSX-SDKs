@@ -1,0 +1,134 @@
+.\" Copyright (c) 2011 Apple Inc. All rights reserved.
+.Dd 31 March, 2014
+.Dt launch 3
+.Os Darwin
+.Sh NAME
+.Nm launchd APIs
+.Nd interfaces for interacting with a launchd job.
+.Sh SYNOPSIS
+.Fd #include <launch.h>
+.Fd #include <servers/bootstrap.h>
+.Ft kern_return_t
+.Fo bootstrap_check_in
+.Fa "mach_port_t bp"
+.Fa "const name_t service_name"
+.Fa "mach_port_t *sp"
+.Fc
+.Ft int
+.Fo launch_activate_socket
+.Fa "const char *name"
+.Fa "int **fds"
+.Fa "size_t *cnt"
+.Fc
+.Sh DESCRIPTION
+A
+.Xr launchd 8
+job may have resources that are held on behalf of it while it is not running to
+facilitate launch-on-demand. These interfaces allow for the job to retrieve
+these resources as part of its initialization.
+.Pp
+Currently supported resource types are XPC listener connections, Mach ports, and
+sockets. Use of XPC with
+.Xr launchd 8
+is documented in the
+.Xr xpc 3
+family of manual pages.
+.Sh MACH PORTS
+The
+.Fn bootstrap_check_in
+routine allows for a
+.Xr launchd 8
+job to retrieve the receive right to a Mach port that
+.Xr launchd 8
+has created on behalf of the job.
+.Xr launchd 8
+creates this port and advertises it in the appropriate Mach bootstrap namespace
+by parsing the MachServices entry of the job's
+.Xr launchd.plist 5 .
+The first argument to
+.Fn bootstrap_check_in
+should always be the
+.Fn bootstrap_port
+global. The second argument should be the name of the service whose port you
+wish to retrieve, as specified as an entry in the job's MachServices dictionary.
+The final argument, upon successful return, will be the name of the receive
+right corresponding to the port that
+.Xr launchd 8
+had advertised in the bootstrap namespace.
+.Pp
+If the job closes the receive right to the port with
+.Fn mach_port_mod_refs
+or exits, the receive right obtained by this routine will be send back to
+.Xr launchd 8
+rather than being closed. This allows launchd to resume advertising the same
+port in the Mach bootstrap namespace and frees clients from the need to re-query
+for the send right to that port when the job dies.
+.Sh SOCKETS
+The
+.Fn launch_activate_socket
+routine allows a
+.Xr launchd 8
+job to retrieve a set of file descriptors corresponding to a socket service that
+.Xr launchd 8
+has created and advertised on behalf of the job by parsing the Sockets entry in
+the job's
+.Xr launchd.plist 5 .
+The first argument should be the name of the socket entry as specified in the
+.Xr launchd.plist 5 .
+The second argument, upon output, will point to an array of integers whose count
+is filled into the third argument upon success. This array represents all the
+sockets that
+.Xr launchd 8
+created corresponding to the entry in the job's Sockets dictionary. Depending on
+the properties specified, a single Sockets entry may have multiple descriptors
+created for it (one for IPv4 and one for IPv6, for example). This array is
+allocated on the heap, and it is the caller's responsibility to call
+.Xr free 3
+to dispose of the memory when it is no longer needed.
+.Sh RETURN VALUES
+If
+.Fn launch_activate_socket
+succeeds, zero is returned. In the event of failure, a non-zero POSIX-compatible
+error code indicating the nature of the error is returned. This error may be
+decoded with
+.Xr strerror 3 .
+.Pp
+If
+.Fn bootstrap_check_in
+succeeds, KERN_SUCCESS is returned. In the event of failure, a non-zero error
+code that may be decoded with
+.Fn bootstrap_strerror .
+.Sh ERRORS
+.Fn bootstrap_check_in
+will fail if:
+.Bl -tag -width Er
+.\" ==========
+.It Bq Er BOOTSTRAP_UNKNOWN_SERVICE
+The Mach service name specified does not exist in the caller's
+.Xr launchd.plist 5 .
+.\" ==========
+.It Bq Er BOOTSTRAP_SERVICE_ACTIVE
+The specified Mach service has already been checked in by the job.
+.El
+.Pp
+.Fn launch_activate_socket
+will fail if:
+.Bl -tag -width Er
+.\" ==========
+.It Bq Er ENOENT
+The socket name specified does not exist in the caller's
+.Xr launchd.plist 5 .
+.\" ==========
+.It Bq Er ESRCH
+The calling process is not managed by
+.Xr launchd 8 .
+.\" ==========
+.It Bq Er EALREADY
+The specified socket has already been activated.
+.El
+.Sh SEE ALSO
+.Xr xpc 3 ,
+.Xr xpc_connection_create 3 ,
+.Xr socket 2 ,
+.Xr launchd 8 ,
+.Xr launchd.plist 5 .

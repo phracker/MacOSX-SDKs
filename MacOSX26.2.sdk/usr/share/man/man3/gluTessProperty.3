@@ -1,0 +1,95 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 6 March 1997
+.ds Re Release 1.2.0
+.ds Dp May 22 14:54
+.ds Dm 9 May 22 14:
+.ds Xs 36693     6
+.TH GLUTESSPROPERTY 3G
+.SH NAME
+.B "gluTessProperty
+\- set a tessellation object property
+
+.SH C SPECIFICATION
+void \f3gluTessProperty\fP(
+GLUtesselator* \fItess\fP,
+.nf
+.ta \w'\f3void \fPgluTessProperty( 'u
+	GLenum \fIwhich\fP,
+	GLdouble \fIdata\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fIwhich\fP\ \ 'u 
+\f2tess\fP
+Specifies the tessellation object (created with \%\f3gluNewTess\fP).
+.TP
+\f2which\fP
+Specifies the property to be set. Valid values are
+\%\f3GLU_TESS_WINDING_RULE\fP,
+\%\f3GLU_TESS_BOUNDARY_ONLY\fP, 
+\%\f3GLU_TESS_TOLERANCE\fP.
+.TP
+\f2data\fP
+Specifies the value of the indicated property.
+.SH DESCRIPTION
+\%\f3gluTessProperty\fP is used to control properties stored in a tessellation object. These
+properties affect the way that the polygons are interpreted and rendered. 
+The legal values for \f2which\fP are as follows:
+.TP 15
+\%\f3GLU_TESS_WINDING_RULE\fP 
+Determines which parts of the polygon are on the "interior". 
+\f2data\fP may be set to one of \%\f3GLU_TESS_WINDING_ODD\fP,
+\%\f3GLU_TESS_WINDING_NONZERO\fP, \%\f3GLU_TESS_WINDING_POSITIVE\fP, or
+\%\f3GLU_TESS_WINDING_NEGATIVE\fP, or \%\f3GLU_TESS_WINDING_ABS_GEQ_TWO\fP.
+.IP
+To understand how the winding rule works, consider that the input 
+contours partition the plane into regions. The winding rule determines which
+of these regions are inside the polygon.
+.IP
+For a single contour C, the winding number of a point x is simply the signed
+number of revolutions we make around x as we travel once around C
+(where CCW is positive). When there are several contours, the individual
+winding numbers are summed. This procedure associates a signed integer 
+value with each point x in the plane. Note that the winding number is the
+same for all points in a single region.
+.bp
+.IP
+The winding rule classifies a region as "inside" if its winding number 
+belongs to the chosen category (odd, nonzero, positive, negative, or
+absolute value of at least two). The previous GLU tessellator (prior to
+GLU 1.2) used the "odd" rule. The "nonzero" rule is another common way to
+define the interior. The other three rules are useful for polygon CSG
+operations.
+.TP
+\%\f3GLU_TESS_BOUNDARY_ONLY\fP 
+Is a boolean value ("value" should be set
+to GL_TRUE or GL_FALSE). When set to GL_TRUE, a set of closed contours
+separating the polygon interior and exterior are returned instead of a 
+tessellation. Exterior contours are oriented CCW with respect to the
+normal; interior contours are oriented CW. The \%\f3GLU_TESS_BEGIN\fP
+and \%\f3GLU_TESS_BEGIN_DATA\fP callbacks use the type GL_LINE_LOOP for
+each contour.
+.TP
+\%\f3GLU_TESS_TOLERANCE\fP
+Specifies a tolerance for merging features to reduce the size of the output.
+For example, two vertices that are very close to each other might be
+replaced by a single vertex. The tolerance is multiplied by the largest
+coordinate magnitude of any input vertex; this specifies the maximum
+distance that any feature can move as the result of a single merge
+operation. If a single feature takes part in several merge operations, the
+total distance moved could be larger.
+.IP
+Feature merging is completely optional; the tolerance is only a hint.
+The implementation is free to merge in some cases and not in others, or to
+never merge features at all. The initial tolerance is 0.
+.IP
+The current implementation merges vertices only if they are exactly 
+coincident, regardless of the current tolerance. A vertex is spliced into
+an edge only if the implementation is unable to distinguish which side of
+the edge the vertex lies on. Two edges are merged only when both endpoints
+are identical.
+.SH SEE ALSO
+\%\f3gluGetTessProperty\fP,
+\%\f3gluNewTess\fP

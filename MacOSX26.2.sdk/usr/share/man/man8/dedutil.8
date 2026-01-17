@@ -1,0 +1,101 @@
+.Dd January 9, 2023
+.Dt dedutil 8
+.Os "macOS"
+.Sh NAME
+.Nm dedutil
+.Nd Command line interface for DiagnosticExtensionsDaemon.framework.
+.Sh DESCRIPTION
+.Nm
+communicates with diagnosticextensionsd using DiagnosticExtensionsDaemon.framework APIs. This tool is also the recommended way to test DiagnosticExtensions
+.Sh OPTIONS
+
+    --help: Prints this help article.
+    --exit: Exits dedutil.
+    --pause=<seconds>: Pause the execution for the specified number of seconds
+    --no-wait: dedutil will not wait for collect/finish operations to complete.
+    --wait: dedutil will wait for collect/finish operations to complete (default).
+    --blocking: dedutil will block on each of the collect calls.
+    --no-blocking: dedutil will not block on each of the collect/finish calls (default).
+    --interactive: Enter dedutil interactive mode
+    --print-state: Prints out the current state of dedutil.
+    --reset: Reset DED state.
+    --connections: List diagnosticextensionsd XPC connections.
+
+Ping
+    --ping: Ping the daemon.
+    --ping-session=[session ID]: Ping the specified or current session.
+
+Device Discovery/Targeting
+    --transport=<IDS|Sharing>: Sets the transport for remote devices. Defaults to IDS.
+    --discover=[seconds]: Discover devices over Sharing and IDS for the specified number of seconds. Defaults to 5 seconds.
+    --devices: List discovered devices.
+    --stop-discover: Stop device discovery.
+    --pair=[device identifier]: Pair with a device using Sharing.
+    --device=<device identifier>: Set the target device for subsequent sessions.
+    --local-device: Set target device to local device.
+
+Session Creation
+    --session=[session ID]: Create or reconnect to a session and set the current session for the current device.
+    --set-session=<session ID>: Set current session to an existing session (as returned in show-sessions.
+    --show-sessions: Show all sessions known to this invocation of dedutil.
+    --session-exists=<session ID>: Check if a session exists in the daemon.
+    --localization=<localization>: Set the localization value to be used with 'extension-text' command
+
+Capabilities
+    --device-capabilities=[device identifier]: Show device's capabilities.
+    --session-capabilities=[session ID]: Show capabilities of current/specified session.
+    --set-configuration=<{fba|unset|default}>: Set the configuration for subsequently created sessions.
+    --set-capabilities=<{default|all|all-v1}>: Set the capabilities for subsequently created sessions.
+    --show-capabilities: Show the capabilities that will be used for subsequently created sessions.
+
+Session Status
+    --status=[session ID]: Get session status
+    --session-state: Gets pre and post-commit state of given Bug Session
+
+Collect/Load/Run DE
+    --parameters=<JSON file or JSON string>: Set parameters for the NEXT collect call ONLY.
+    --set-timeout=<timeout in seconds>: Override the collect timeout.
+    --collect=<DE bundle ID>: Run diagnostic extension and collect files.
+    --collect-all: Run all diagnostic extensions on system and collect files.
+    --defer-delay=[delay in seconds]: Get/set the deferred execution delay
+    --collect-deferred=<DE bundle ID>: Collect DE using deferred execution.
+    --show-extensions: Lists all available DiagnosticExtensions for the current session.
+    --extension-text=<extension identifier>: Load Diagnostic Extension text data
+
+Cancel Collection
+    --cancel=<DEDExtensionIdentifier string>: Cancel specified collection in the current session, using the DEDExtensionIdentifier string.
+    --cancel-all=<DE bundle ID>: Cancel all collections matching this bundle identifier.
+
+Finish Session
+    --finish=[session ID]: Finish and copy the diagnostics.
+
+Notify Session
+    --force-cancel-notify: Use the backup API for clearing notifications on Bug Sessions that can't be started
+    --notify=[session ID]: Notify the current/specified session.
+    --cancel-notify=[session ID]: Cancel the notification for the current/specified session.
+
+Cancel Session
+    --cancel-session=[session ID]: Cancel and cleanup the current/specified session.
+
+Other Commands
+    --send-data: Send and write a data blob to the target device
+
+.Sh EXAMPLES
+
+Run a DiagnosticExtension:
+    dedutil --collect=com.apple.DiagnosticExtensions.sysdiagnose
+
+Run a DiagnosticExtension with parameters:
+    dedutil --parameters="{\"forceDiagnostic\": true, \"shouldCreateTarBall\": false }" --collect=com.apple.DiagnosticExtensions.sysdiagnose
+
+Run a DiagnosticExtension with parameters from JSON file:
+    dedutil --parameters=sysdiagnose.json --collect=com.apple.DiagnosticExtensions.sysdiagnose
+
+Run a DiagnosticExtension on a remote device:
+    dedutil --device=1234567890987654321abcdef --collect=com.apple.DiagnosticExtensions.sysdiagnose
+
+Run multiple DiagnosticExtensions:
+    dedutil --device=1234567890987654321abcdef --collect=com.apple.DiagnosticExtensions.sysdiagnose --collect=com.apple.DiagnosticExtensions.sysdiagnose --collect=com.apple.DiagnosticExtensions.CrashLogs
+
+Change the capabilities set:
+    dedutil --set-capabilities=default --collect=com.apple.DiagnosticExtensions.sysdiagnose

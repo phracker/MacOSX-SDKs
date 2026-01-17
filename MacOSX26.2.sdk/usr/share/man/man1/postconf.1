@@ -1,0 +1,595 @@
+.TH POSTCONF 1 
+.ad
+.fi
+.SH NAME
+postconf
+\-
+Postfix configuration utility
+.SH "SYNOPSIS"
+.na
+.nf
+.fi
+.ti -4
+\fBManaging main.cf:\fR
+
+\fBpostconf\fR [\fB\-dfhHnopvx\fR] [\fB\-c \fIconfig_dir\fR]
+[\fB\-C \fIclass,...\fR] [\fIparameter ...\fR]
+
+\fBpostconf\fR [\fB\-epv\fR] [\fB\-c \fIconfig_dir\fR]
+\fIparameter\fB=\fIvalue ...\fR
+
+\fBpostconf\fR \fB\-#\fR [\fB\-pv\fR] [\fB\-c \fIconfig_dir\fR]
+\fIparameter ...\fR
+
+\fBpostconf\fR \fB\-X\fR [\fB\-pv\fR] [\fB\-c \fIconfig_dir\fR]
+\fIparameter ...\fR
+
+.ti -4
+\fBManaging master.cf service entries:\fR
+
+\fBpostconf\fR \fB\-M\fR [\fB\-fovx\fR] [\fB\-c \fIconfig_dir\fR]
+[\fIservice\fR[\fB/\fItype\fR]\fI ...\fR]
+
+\fBpostconf\fR \fB\-M\fR [\fB\-ev\fR] [\fB\-c \fIconfig_dir\fR]
+\fIservice\fB/\fItype\fB=\fIvalue ...\fR
+
+\fBpostconf\fR \fB\-M#\fR [\fB\-v\fR] [\fB\-c \fIconfig_dir\fR]
+\fIservice\fB/\fItype ...\fR
+
+\fBpostconf\fR \fB\-MX\fR [\fB\-v\fR] [\fB\-c \fIconfig_dir\fR]
+\fIservice\fB/\fItype ...\fR
+
+.ti -4
+\fBManaging master.cf service fields:\fR
+
+\fBpostconf\fR \fB\-F\fR [\fB\-fhHovx\fR] [\fB\-c \fIconfig_dir\fR]
+[\fIservice\fR[\fB/\fItype\fR[\fB/\fIfield\fR]]\fI ...\fR]
+
+\fBpostconf\fR \fB\-F\fR [\fB\-ev\fR] [\fB\-c \fIconfig_dir\fR]
+\fIservice\fB/\fItype\fB/\fIfield\fB=\fIvalue ...\fR
+
+.ti -4
+\fBManaging master.cf service parameters:\fR
+
+\fBpostconf\fR \fB\-P\fR [\fB\-fhHovx\fR] [\fB\-c \fIconfig_dir\fR]
+[\fIservice\fR[\fB/\fItype\fR[\fB/\fIparameter\fR]]\fI ...\fR]
+
+\fBpostconf\fR \fB\-P\fR [\fB\-ev\fR] [\fB\-c \fIconfig_dir\fR]
+\fIservice\fB/\fItype\fB/\fIparameter\fB=\fIvalue ...\fR
+
+\fBpostconf\fR \fB\-PX\fR [\fB\-v\fR] [\fB\-c \fIconfig_dir\fR]
+\fIservice\fB/\fItype\fB/\fIparameter ...\fR
+
+.ti -4
+\fBManaging bounce message templates:\fR
+
+\fBpostconf\fR \fB\-b\fR [\fB\-v\fR] [\fB\-c \fIconfig_dir\fR]
+[\fItemplate_file\fR]
+
+\fBpostconf\fR \fB\-t\fR [\fB\-v\fR] [\fB\-c \fIconfig_dir\fR]
+[\fItemplate_file\fR]
+
+.ti -4
+\fBManaging TLS features:\fR
+
+\fBpostconf\fR \fB\-T \fImode\fR [\fB\-v\fR] [\fB\-c \fIconfig_dir\fR]
+
+.ti -4
+\fBManaging other configuration:\fR
+
+\fBpostconf\fR \fB\-a\fR|\fB\-A\fR|\fB\-l\fR|\fB\-m\fR [\fB\-v\fR]
+[\fB\-c \fIconfig_dir\fR]
+.SH DESCRIPTION
+.ad
+.fi
+By default, the \fBpostconf\fR(1) command displays the
+values of \fBmain.cf\fR configuration parameters, and warns
+about possible mis\-typed parameter names (Postfix 2.9 and later).
+The command can also change \fBmain.cf\fR configuration
+parameter values, or display other configuration information
+about the Postfix mail system.
+
+Options:
+.IP \fB\-a\fR
+List the available SASL plug\-in types for the Postfix SMTP
+server. The plug\-in type is selected with the \fBsmtpd_sasl_type\fR
+configuration parameter by specifying one of the names
+listed below.
+.RS
+.IP \fBcyrus\fR
+This server plug\-in is available when Postfix is built with
+Cyrus SASL support.
+.IP \fBdovecot\fR
+This server plug\-in uses the Dovecot authentication server,
+and is available when Postfix is built with any form of SASL
+support.
+.RE
+.IP
+This feature is available with Postfix 2.3 and later.
+.IP \fB\-A\fR
+List the available SASL plug\-in types for the Postfix SMTP
+client.  The plug\-in type is selected with the \fBsmtp_sasl_type\fR
+or \fBlmtp_sasl_type\fR configuration parameters by specifying
+one of the names listed below.
+.RS
+.IP \fBcyrus\fR
+This client plug\-in is available when Postfix is built with
+Cyrus SASL support.
+.RE
+.IP
+This feature is available with Postfix 2.3 and later.
+.IP "\fB\-b\fR [\fItemplate_file\fR]"
+Display the message text that appears at the beginning of
+delivery status notification (DSN) messages, expanding
+$\fBname\fR expressions with actual values as described in
+\fBbounce\fR(5).
+
+To override the \fBbounce_template_file\fR parameter setting,
+specify a template file name at the end of the "\fBpostconf
+\-b\fR" command line. Specify an empty file name to display
+built\-in templates (in shell language: "").
+
+This feature is available with Postfix 2.3 and later.
+.IP "\fB\-c \fIconfig_dir\fR"
+The \fBmain.cf\fR configuration file is in the named directory
+instead of the default configuration directory.
+.IP "\fB\-C \fIclass,...\fR"
+When displaying \fBmain.cf\fR parameters, select only
+parameters from the specified class(es):
+.RS
+.IP \fBbuiltin\fR
+Parameters with built\-in names.
+.IP \fBservice\fR
+Parameters with service\-defined names (the first field of
+a \fBmaster.cf\fR entry plus a Postfix\-defined suffix).
+.IP \fBuser\fR
+Parameters with user\-defined names.
+.IP \fBall\fR
+All the above classes.
+.RE
+.IP
+The default is as if "\fB\-C all\fR" is
+specified.
+
+This feature is available with Postfix 2.9 and later.
+.IP \fB\-d\fR
+Print \fBmain.cf\fR default parameter settings instead of
+actual settings.
+Specify \fB\-df\fR to fold long lines for human readability
+(Postfix 2.9 and later).
+.IP \fB\-e\fR
+Edit the \fBmain.cf\fR configuration file, and update
+parameter settings with the "\fIname=value\fR" pairs on the
+\fBpostconf\fR(1) command line.
+
+With \fB\-M\fR, edit the \fBmaster.cf\fR configuration file,
+and replace one or more service entries with new values as
+specified with "\fIservice/type=value\fR" on the \fBpostconf\fR(1)
+command line.
+
+With \fB\-F\fR, edit the \fBmaster.cf\fR configuration file,
+and replace one or more service fields with new values as
+specified with "\fIservice/type/field=value\fR" on the
+\fBpostconf\fR(1) command line. Currently, the "command"
+field contains the command name and command arguments.  this
+may change in the near future, so that the "command" field
+contains only the command name, and a new "arguments"
+pseudofield contains the command arguments.
+
+With \fB\-P\fR, edit the \fBmaster.cf\fR configuration file,
+and add or update one or more service parameter settings
+(\-o parameter=value settings) with new values as specified
+with "\fIservice/type/parameter=value\fR" on the \fBpostconf\fR(1)
+command line.
+
+In all cases the file is copied to a temporary file then
+renamed into place.  Specify quotes to protect special
+characters and whitespace on the \fBpostconf\fR(1) command
+line.
+
+The \fB\-e\fR option is no longer needed with Postfix version
+2.8 and later.
+.IP \fB\-f\fR
+Fold long lines when printing \fBmain.cf\fR or \fBmaster.cf\fR
+configuration file entries, for human readability.
+
+This feature is available with Postfix 2.9 and later.
+.IP \fB\-F\fR
+Show \fBmaster.cf\fR per\-entry field settings (by default
+all services and all fields), formatted as
+"\fIservice/type/field=value\fR", one per line. Specify
+\fB\-Ff\fR to fold long lines.
+
+Specify one or more "\fIservice/type/field\fR" instances
+on the \fBpostconf\fR(1) command line to limit the output
+to fields of interest.  Trailing parameter name or service
+type fields that are omitted will be handled as "*" wildcard
+fields.
+
+This feature is available with Postfix 2.11 and later.
+.IP \fB\-h\fR
+Show parameter or attribute values without the "\fIname\fR
+= " label that normally precedes the value.
+.IP \fB\-H\fR
+Show parameter or attribute names without the " = \fIvalue\fR"
+that normally follows the name.
+
+This feature is available with Postfix 3.1 and later.
+.IP \fB\-l\fR
+List the names of all supported mailbox locking methods.
+Postfix supports the following methods:
+.RS
+.IP \fBflock\fR
+A kernel\-based advisory locking method for local files only.
+This locking method is available on systems with a BSD
+compatible library.
+.IP \fBfcntl\fR
+A kernel\-based advisory locking method for local and remote
+files.
+.IP \fBdotlock\fR
+An application\-level locking method. An application locks
+a file named \fIfilename\fR by creating a file named
+\fIfilename\fB.lock\fR.  The application is expected to
+remove its own lock file, as well as stale lock files that
+were left behind after abnormal program termination.
+.RE
+.IP \fB\-m\fR
+List the names of all supported lookup table types. In
+Postfix configuration files, lookup tables are specified
+as \fItype\fB:\fIname\fR, where \fItype\fR is one of the
+types listed below. The table \fIname\fR syntax depends on
+the lookup table type as described in the DATABASE_README
+document.
+.RS
+.IP \fBbtree\fR
+A sorted, balanced tree structure.  Available on systems
+with support for Berkeley DB databases.
+.IP \fBcdb\fR
+A read\-optimized structure with no support for incremental
+updates.  Available on systems with support for CDB databases.
+
+This feature is available with Postfix 2.2 and later.
+.IP \fBcidr\fR
+A table that associates values with Classless Inter\-Domain
+Routing (CIDR) patterns. This is described in \fBcidr_table\fR(5).
+
+This feature is available with Postfix 2.2 and later.
+.IP \fBdbm\fR
+An indexed file type based on hashing.  Available on systems
+with support for DBM databases.
+.IP \fBenviron\fR
+The UNIX process environment array. The lookup key is the
+environment variable name; the table name is ignored.  Originally
+implemented for testing, someone may find this useful someday.
+.IP \fBfail\fR
+A table that reliably fails all requests. The lookup table
+name is used for logging. This table exists to simplify
+Postfix error tests.
+
+This feature is available with Postfix 2.9 and later.
+.IP \fBhash\fR
+An indexed file type based on hashing.  Available on systems
+with support for Berkeley DB databases.
+.IP "\fBinline\fR (read\-only)"
+A non\-shared, in\-memory lookup table. Example: "\fBinline:{
+\fIkey\fB=\fIvalue\fB, { \fIkey\fB = \fItext with whitespace
+or comma\fB }}\fR". Key\-value pairs are separated by
+whitespace or comma; whitespace after "\fB{\fR" and before "\fB}\fR"
+is ignored. Inline tables eliminate the need to create a
+database file for just a few fixed elements.  See also the
+\fIstatic:\fR map type.
+
+This feature is available with Postfix 3.0 and later.
+.IP \fBinternal\fR
+A non\-shared, in\-memory hash table. Its content are lost
+when a process terminates.
+.IP "\fBlmdb\fR"
+OpenLDAP LMDB database (a memory\-mapped, persistent file).
+Available on systems with support for LMDB databases.  This
+is described in \fBlmdb_table\fR(5).
+
+This feature is available with Postfix 2.11 and later.
+.IP "\fBldap\fR (read\-only)"
+LDAP database client. This is described in \fBldap_table\fR(5).
+.IP "\fBmemcache\fR"
+Memcache database client. This is described in
+\fBmemcache_table\fR(5).
+
+This feature is available with Postfix 2.9 and later.
+.IP "\fBmysql\fR (read\-only)"
+MySQL database client.  Available on systems with support
+for MySQL databases.  This is described in \fBmysql_table\fR(5).
+.IP "\fBpcre\fR (read\-only)"
+A lookup table based on Perl Compatible Regular Expressions.
+The file format is described in \fBpcre_table\fR(5).
+.IP "\fBpgsql\fR (read\-only)"
+PostgreSQL database client. This is described in
+\fBpgsql_table\fR(5).
+
+This feature is available with Postfix 2.1 and later.
+.IP "\fBpipemap\fR (read\-only)"
+A lookup table that constructs a pipeline of tables.  Example:
+"\fBpipemap:{\fItype_1:name_1,  ..., type_n:name_n\fB}\fR".
+Each "pipemap:" query is given to the first table.  Each
+lookup result becomes the query for the next table in the
+pipeline, and the last table produces the final result.
+When any table lookup produces no result, the pipeline
+produces no result. The first and last characters of the
+"pipemap:" table name must be "\fB{\fR" and "\fB}\fR".
+Within these, individual maps are separated with comma or
+whitespace.
+
+This feature is available with Postfix 3.0 and later.
+.IP "\fBproxy\fR"
+Postfix \fBproxymap\fR(8) client for shared access to Postfix
+databases. The table name syntax is \fItype\fB:\fIname\fR.
+
+This feature is available with Postfix 2.0 and later.
+.IP "\fBrandmap\fR (read\-only)"
+An in\-memory table that performs random selection. Example:
+"\fBrandmap:{\fIresult_1, ..., result_n\fB}\fR". Each table query
+returns a random choice from the specified results. The first
+and last characters of the "randmap:" table name must be
+"\fB{\fR" and "\fB}\fR".  Within these, individual results
+are separated with comma or whitespace. To give a specific
+result more weight, specify it multiple times.
+
+This feature is available with Postfix 3.0 and later.
+.IP "\fBregexp\fR (read\-only)"
+A lookup table based on regular expressions. The file format
+is described in \fBregexp_table\fR(5).
+.IP \fBsdbm\fR
+An indexed file type based on hashing.  Available on systems
+with support for SDBM databases.
+
+This feature is available with Postfix 2.2 and later.
+.IP "\fBsocketmap\fR (read\-only)"
+Sendmail\-style socketmap client. The table name is
+\fBinet\fR:\fIhost\fR:\fIport\fR:\fIname\fR for a TCP/IP
+server, or \fBunix\fR:\fIpathname\fR:\fIname\fR for a
+UNIX\-domain server. This is described in \fBsocketmap_table\fR(5).
+
+This feature is available with Postfix 2.10 and later.
+.IP "\fBsqlite\fR (read\-only)"
+SQLite database. This is described in \fBsqlite_table\fR(5).
+
+This feature is available with Postfix 2.8 and later.
+.IP "\fBstatic\fR (read\-only)"
+A table that always returns its name as lookup result. For
+example, \fBstatic:foobar\fR always returns the string
+\fBfoobar\fR as lookup result. Specify "\fBstatic:{ \fItext
+with whitespace\fB }\fR" when the result contains whitespace;
+this form ignores whitespace after "\fB{\fR" and before
+"\fB}\fR". See also the \fIinline:\fR map.
+
+The form "\fBstatic:{\fItext\fB}\fR is available with Postfix
+3.0 and later.
+.IP "\fBtcp\fR (read\-only)"
+TCP/IP client. The protocol is described in \fBtcp_table\fR(5).
+.IP "\fBtexthash\fR (read\-only)"
+Produces similar results as hash: files, except that you
+don't need to run the \fBpostmap\fR(1) command before you
+can use the file, and that it does not detect changes after
+the file is read.
+
+This feature is available with Postfix 2.8 and later.
+.IP "\fBunionmap\fR (read\-only)"
+A table that sends each query to multiple lookup tables and
+that concatenates all found results, separated by comma.
+The table name syntax is the same as for \fBpipemap\fR.
+
+This feature is available with Postfix 3.0 and later.
+.IP "\fBunix\fR (read\-only)"
+A limited view of the UNIX authentication database. The
+following tables are implemented:
+.RS
+. IP \fBunix:passwd.byname\fR
+The table is the UNIX password database. The key is a login
+name.  The result is a password file entry in \fBpasswd\fR(5)
+format.
+.IP \fBunix:group.byname\fR
+The table is the UNIX group database. The key is a group
+name.  The result is a group file entry in \fBgroup\fR(5)
+format.
+.RE
+.RE
+.IP
+Other table types may exist depending on how Postfix was
+built.
+.IP \fB\-M\fR
+Show \fBmaster.cf\fR file contents instead of \fBmain.cf\fR
+file contents.  Specify \fB\-Mf\fR to fold long lines for
+human readability.
+
+Specify zero or more arguments, each with a \fIservice\-name\fR
+or \fIservice\-name/service\-type\fR pair, where \fIservice\-name\fR
+is the first field of a master.cf entry and \fIservice\-type\fR
+is one of (\fBinet\fR, \fBunix\fR, \fBfifo\fR, or \fBpass\fR).
+
+If \fIservice\-name\fR or \fIservice\-name/service\-type\fR
+is specified, only the matching master.cf entries will be
+output. For example, "\fBpostconf \-Mf smtp\fR" will output
+all services named "smtp", and "\fBpostconf \-Mf smtp/inet\fR"
+will output only the smtp service that listens on the
+network.  Trailing service type fields that are omitted
+will be handled as "*" wildcard fields.
+
+This feature is available with Postfix 2.9 and later. The
+syntax was changed from "\fIname.type\fR" to "\fIname/type\fR",
+and "*" wildcard support was added with Postfix 2.11.
+.IP \fB\-n\fR
+Show only configuration parameters that have explicit
+\fIname=value\fR settings in \fBmain.cf\fR.  Specify \fB\-nf\fR
+to fold long lines for human readability (Postfix 2.9 and
+later).
+.IP "\fB\-o \fIname=value\fR"
+Override \fBmain.cf\fR parameter settings.
+
+This feature is available with Postfix 2.10 and later.
+.IP \fB\-p\fR
+Show \fBmain.cf\fR parameter settings. This is the default.
+
+This feature is available with Postfix 2.11 and later.
+.IP \fB\-P\fR
+Show \fBmaster.cf\fR service parameter settings (by default
+all services and all parameters), formatted as
+"\fIservice/type/parameter=value\fR", one per line.  Specify
+\fB\-Pf\fR to fold long lines.
+
+Specify one or more "\fIservice/type/parameter\fR" instances
+on the \fBpostconf\fR(1) command line to limit the output
+to parameters of interest.  Trailing parameter name or
+service type fields that are omitted will be handled as "*"
+wildcard fields.
+
+This feature is available with Postfix 2.11 and later.
+.IP "\fB\-t\fR [\fItemplate_file\fR]"
+Display the templates for text that appears at the beginning
+of delivery status notification (DSN) messages, without
+expanding $\fBname\fR expressions.
+
+To override the \fBbounce_template_file\fR parameter setting,
+specify a template file name at the end of the "\fBpostconf
+\-t\fR" command line. Specify an empty file name to display
+built\-in templates (in shell language: "").
+
+This feature is available with Postfix 2.3 and later.
+.IP "\fB\-T \fImode\fR"
+If Postfix is compiled without TLS support, the \fB\-T\fR option
+produces no output.  Otherwise, if an invalid \fImode\fR is specified,
+the \fB\-T\fR option reports an error and exits with a non\-zero status
+code. The valid modes are:
+.RS
+.IP \fBcompile\-version\fR
+Output the OpenSSL version that Postfix was compiled with
+(i.e. the OpenSSL version in a header file). The output
+format is the same as with the command "\fBopenssl version\fR".
+.IP \fBrun\-version\fR
+Output the OpenSSL version that Postfix is linked with at
+runtime (i.e. the OpenSSL version in a shared library).
+.IP \fBpublic\-key\-algorithms\fR
+Output the lower\-case names of the supported public\-key
+algorithms, one per\-line.
+.RE
+.IP
+This feature is available with Postfix 3.1 and later.
+.IP \fB\-v\fR
+Enable verbose logging for debugging purposes. Multiple
+\fB\-v\fR options make the software increasingly verbose.
+.IP \fB\-x\fR
+Expand \fI$name\fR in \fBmain.cf\fR or \fBmaster.cf\fR
+parameter values. The expansion is recursive.
+
+This feature is available with Postfix 2.10 and later.
+.IP \fB\-X\fR
+Edit the \fBmain.cf\fR configuration file, and remove the
+parameters named on the \fBpostconf\fR(1) command line.
+Specify a list of parameter names, not "\fIname=value\fR"
+pairs.
+
+With \fB\-M\fR, edit the \fBmaster.cf\fR configuration file,
+and remove one or more service entries as specified with
+"\fIservice/type\fR" on the \fBpostconf\fR(1) command line.
+
+With \fB\-P\fR, edit the \fBmaster.cf\fR configuration file,
+and remove one or more service parameter settings (\-o
+parameter=value settings) as specified with
+"\fIservice/type/parameter\fR" on the \fBpostconf\fR(1)
+command line.
+
+In all cases the file is copied to a temporary file then
+renamed into place.  Specify quotes to protect special
+characters on the \fBpostconf\fR(1) command line.
+
+There is no \fBpostconf\fR(1) command to perform the reverse
+operation.
+
+This feature is available with Postfix 2.10 and later.
+Support for \-M and \-P was added with Postfix 2.11.
+.IP \fB\-#\fR
+Edit the \fBmain.cf\fR configuration file, and comment out
+the parameters named on the \fBpostconf\fR(1) command line,
+so that those parameters revert to their default values.
+Specify a list of parameter names, not "\fIname=value\fR"
+pairs.
+
+With \fB\-M\fR, edit the \fBmaster.cf\fR configuration file,
+and comment out one or more service entries as specified
+with "\fIservice/type\fR" on the \fBpostconf\fR(1) command
+line.
+
+In all cases the file is copied to a temporary file then
+renamed into place.  Specify quotes to protect special
+characters on the \fBpostconf\fR(1) command line.
+
+There is no \fBpostconf\fR(1) command to perform the reverse
+operation.
+
+This feature is available with Postfix 2.6 and later. Support
+for \-M was added with Postfix 2.11.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems are reported to the standard error stream.
+.SH "ENVIRONMENT"
+.na
+.nf
+.ad
+.fi
+.IP \fBMAIL_CONFIG\fR
+Directory with Postfix configuration files.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+The following \fBmain.cf\fR parameters are especially
+relevant to this program.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBbounce_template_file (empty)\fR"
+Pathname of a configuration file with bounce message templates.
+.SH "FILES"
+.na
+.nf
+/etc/postfix/main.cf, Postfix configuration parameters
+/etc/postfix/master.cf, Postfix master daemon configuration
+.SH "SEE ALSO"
+.na
+.nf
+bounce(5), bounce template file format
+master(5), master.cf configuration file syntax
+postconf(5), main.cf configuration file syntax
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or "\fBpostconf
+html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this
+software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

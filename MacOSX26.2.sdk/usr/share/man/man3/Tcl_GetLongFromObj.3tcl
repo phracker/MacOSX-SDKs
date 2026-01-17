@@ -1,0 +1,430 @@
+'\"
+'\" Copyright (c) 1996-1997 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: IntObj.3,v 1.14.2.2 2009/11/27 14:53:54 dkf Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tcl_IntObj 3 8.5 Tcl "Tcl Library Procedures"
+.BS
+.SH NAME
+Tcl_NewIntObj, Tcl_NewLongObj, Tcl_NewWideIntObj, Tcl_SetIntObj, Tcl_SetLongObj, Tcl_SetWideIntObj, Tcl_GetIntFromObj, Tcl_GetLongFromObj, Tcl_GetWideIntFromObj, Tcl_NewBignumObj, Tcl_SetBignumObj, Tcl_GetBignumFromObj, Tcl_TakeBignumFromObj \- manipulate Tcl objects as integer values
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+Tcl_Obj *
+\fBTcl_NewIntObj\fR(\fIintValue\fR)
+.sp
+Tcl_Obj *
+\fBTcl_NewLongObj\fR(\fIlongValue\fR)
+.sp
+Tcl_Obj *
+\fBTcl_NewWideIntObj\fR(\fIwideValue\fR)
+.sp
+\fBTcl_SetIntObj\fR(\fIobjPtr, intValue\fR)
+.sp
+\fBTcl_SetLongObj\fR(\fIobjPtr, longValue\fR)
+.sp
+\fBTcl_SetWideIntObj\fR(\fIobjPtr, wideValue\fR)
+.sp
+int
+\fBTcl_GetIntFromObj\fR(\fIinterp, objPtr, intPtr\fR)
+.sp
+int
+\fBTcl_GetLongFromObj\fR(\fIinterp, objPtr, longPtr\fR)
+.sp
+int
+\fBTcl_GetWideIntFromObj\fR(\fIinterp, objPtr, widePtr\fR)
+.sp
+.sp
+.VS 8.5
+\fB#include <tclTomMath.h>\fR
+.sp
+Tcl_Obj *
+\fBTcl_NewBignumObj\fR(\fIbigValue\fR)
+.sp
+\fBTcl_SetBignumObj\fR(\fIobjPtr, bigValue\fR)
+.sp
+int
+\fBTcl_GetBignumFromObj\fR(\fIinterp, objPtr, bigValue\fR)
+.sp
+int
+\fBTcl_TakeBignumFromObj\fR(\fIinterp, objPtr, bigValue\fR)
+.sp
+int
+\fBTcl_InitBignumFromDouble\fR(\fIinterp, doubleValue, bigValue\fR)
+.VE 8.5
+.SH ARGUMENTS
+.AS Tcl_WideInt doubleValue in/out
+.AP int intValue in
+Integer value used to initialize or set a Tcl object.
+.AP long longValue in
+Long integer value used to initialize or set a Tcl object.
+.AP Tcl_WideInt wideValue in
+Wide integer value used to initialize or set a Tcl object.
+.AP Tcl_Obj *objPtr in/out
+For \fBTcl_SetIntObj\fR, \fBTcl_SetLongObj\fR, \fBTcl_SetWideIntObj\fR,
+and \fBTcl_SetBignumObj\fR, this points to the object in which to store an
+integral value.  For \fBTcl_GetIntFromObj\fR, \fBTcl_GetLongFromObj\fR,
+\fBTcl_GetWideIntFromObj\fR, \fBTcl_GetBignumFromObj\fR, and
+\fBTcl_TakeBignumFromObj\fR, this refers to the object from which
+to retrieve an integral value.
+.AP Tcl_Interp *interp in/out
+When non-NULL, an error message is left here when integral value
+retrieval fails.
+.AP int *intPtr out
+Points to place to store the integer value retrieved from \fIobjPtr\fR.
+.AP long *longPtr out
+Points to place to store the long integer value retrieved from \fIobjPtr\fR.
+.AP Tcl_WideInt *widePtr out
+Points to place to store the wide integer value retrieved from \fIobjPtr\fR.
+.AP mp_int *bigValue in/out
+.VS 8.5
+Points to a multi-precision integer structure declared by the LibTomMath
+library.
+.VE 8.5
+.AP double doubleValue in
+.VS 8.5
+Double value from which the integer part is determined and
+used to initialize a multi-precision integer value.
+.VE 8.5
+.BE
+
+.SH DESCRIPTION
+.PP
+.VS 8.5
+These procedures are used to create, modify, and read Tcl objects
+that hold integral values.  
+.PP
+The different routines exist to accommodate different integral types in C
+with which values might be exchanged.  The C integral types for which Tcl
+provides value exchange routines are \fBint\fR, \fBlong int\fR,
+\fBTcl_WideInt\fR, and \fBmp_int\fR.  The \fBint\fR and \fBlong int\fR types
+are provided by the C language standard.  The \fBTcl_WideInt\fR type is a
+typedef defined to be whatever signed integral type covers at least the
+64-bit integer range (-9223372036854775808 to 9223372036854775807).  Depending
+on the platform and the C compiler, the actual type might be
+\fBlong int\fR, \fBlong long int\fR, \fBint64\fR, or something else.
+The \fBmp_int\fR type is a multiple-precision integer type defined
+by the LibTomMath multiple-precision integer library.  
+.PP
+The \fBTcl_NewIntObj\fR, \fBTcl_NewLongObj\fR, \fBTcl_NewWideIntObj\fR,
+and \fBTcl_NewBignumObj\fR routines each create and return a new
+Tcl object initialized to the integral value of the argument.  The
+returned Tcl object is unshared.
+.PP
+The \fBTcl_SetIntObj\fR, \fBTcl_SetLongObj\fR, \fBTcl_SetWideIntObj\fR,
+and \fBTcl_SetBignumObj\fR routines each set the value of an existing
+Tcl object pointed to by \fIobjPtr\fR to the integral value provided
+by the other argument.  The \fIobjPtr\fR argument must point to an
+unshared Tcl object.  Any attempt to set the value of a shared Tcl object
+violates Tcl's copy-on-write policy.  Any existing string representation
+or internal representation in the unshared Tcl object will be freed
+as a consequence of setting the new value.
+.PP
+The \fBTcl_GetIntFromObj\fR, \fBTcl_GetLongFromObj\fR,
+\fBTcl_GetWideIntFromObj\fR, \fBTcl_GetBignumFromObj\fR, and
+\fBTcl_TakeBignumFromObj\fR routines attempt to retrieve an integral
+value of the appropriate type from the Tcl object \fIobjPtr\fR.  If the
+attempt succeeds, then \fBTCL_OK\fR is returned, and the value is
+written to the storage provided by the caller.  The attempt might
+fail if \fIobjPtr\fR does not hold an integral value, or if the
+value exceeds the range of the target type.  If the attempt fails,
+then \fBTCL_ERROR\fR is returned, and if \fIinterp\fR is non-NULL,
+an error message is left in \fIinterp\fR.  The \fBTcl_ObjType\fR
+of \fIobjPtr\fR may be changed to make subsequent calls to the
+same routine more efficient. Unlike the other functions,
+\fBTcl_TakeBignumFromObj\fR may set the content of the Tcl object
+\fIobjPtr\fR to an empty string in the process of retrieving the
+multiple-precision integer value.
+.PP
+The choice between \fBTcl_GetBignumFromObj\fR and
+\fBTcl_TakeBignumFromObj\fR is governed by how the caller will
+continue to use \fIobjPtr\fR.  If after the \fBmp_int\fR value
+is retrieved from \fIobjPtr\fR, the caller will make no more
+use of \fIobjPtr\fR, then using \fBTcl_TakeBignumFromObj\fR
+permits Tcl to detect when an unshared \fIobjPtr\fR permits the
+value to be moved instead of copied, which should be more efficient.
+If anything later in the caller requires
+\fIobjPtr\fR to continue to hold the same value, then
+\fBTcl_GetBignumFromObj\fR must be chosen.
+.PP
+The \fBTcl_InitBignumFromDouble\fR routine is a utility procedure
+that extracts the integer part of \fIdoubleValue\fR and stores that
+integer value in the \fBmp_int\fR value \fIbigValue\fR.
+.VE 8.5
+.SH "SEE ALSO"
+Tcl_NewObj, Tcl_DecrRefCount, Tcl_IncrRefCount, Tcl_GetObjResult
+.SH KEYWORDS
+integer, integer object, integer type, internal representation, object, object type, string representation

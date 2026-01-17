@@ -1,0 +1,38 @@
+.\" Copyright (c) 2009 Apple Inc. All rights reserved.
+.Dd May 7, 2009
+.Dt libcache 3
+.Os Darwin
+.Sh NAME
+.Nm libcache
+.Nd the caching framework
+.Sh SYNOPSIS
+.Fd #include <cache.h>
+.Sh DESCRIPTION
+The libcache framework provides a facility for creating in memory data caches.
+Each cache is a mutable dictionary that associates values with their keys.  A 
+cache limits the number of values it keeps according to available system
+memory and selects values to evict when the limit is exceeded.  Recently
+and frequently used values are less likely to be selected for eviction.
+.Pp
+Cache keys and values should be cast as pointers.  The framework provides a callback
+interface for supporting arbitrary types of keys and values and implements
+callback functions for common types.  See
+.Xr cache_callbacks 3
+for more information.
+.Pp
+Clients retrieve a value previously added to a cache using the value's key.  
+When the client gets a value, the cache increments a reference count on
+the value.  When the client finishes with a value retrieved from a cache 
+they must release the value back to the cache.  Referenced values are 
+considered in use and will not be evicted.  The cache may evict unreferenced
+values (e.g. to make room for other values or reduce its size).
+.Pp
+The number of values allowed in a cache at one time is managed by the cache
+framework.  Cache size will grow when the system has available memory and 
+shrink under memory pressure.
+.Pp
+Libcache is thread-safe.  It is not safe to call back into the 
+cache API from cache callback functions.
+.Sh SEE ALSO
+.Xr cache_create 3 ,
+.Xr cache_set_and_retain 3

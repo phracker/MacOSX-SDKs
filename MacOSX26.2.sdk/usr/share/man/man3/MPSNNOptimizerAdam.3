@@ -1,0 +1,271 @@
+.TH "MPSNNOptimizerAdam" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSNNOptimizerAdam
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSNNOptimizers\&.h>\fP
+.PP
+Inherits \fBMPSNNOptimizer\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:learningRate:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:beta1:beta2:epsilon:timeStep:optimizerDescriptor:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:inputGradientVector:inputValuesVector:inputMomentumVector:inputVelocityVector:resultValuesVector:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputMomentumVectors:inputVelocityVectors:resultState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:batchNormalizationState:inputMomentumVectors:inputVelocityVectors:resultState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputMomentumVectors:inputVelocityVectors:resultState:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "double \fBbeta1\fP"
+.br
+.ti -1c
+.RI "double \fBbeta2\fP"
+.br
+.ti -1c
+.RI "float \fBepsilon\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBtimeStep\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+The \fBMPSNNOptimizerAdam\fP performs an Adam Update 
+.PP
+.nf
+        Initialization time
+        m[0] = 0 (Initialize initial 1st moment vector aka momentum, user is responsible for this)
+        v[0] = 0 (Initialize initial 2nd moment vector aka velocity, user is responsible for this)
+        t    = 0 (Initialize timestep)
+
+        https://arxiv.org/abs/1412.6980
+
+        At update time:
+        t = t + 1
+        lr[t] = learningRate * sqrt(1 - beta2^t) / (1 - beta1^t)
+
+        m[t]     = beta1 * m[t-1] + (1 - beta1) * g
+        v[t]     = beta2 * v[t-1] + (1 - beta2) * (g ^ 2)
+        variable = variable - lr[t] * m[t] / (sqrt(v[t]) + epsilon)
+
+        where,
+          g    is gradient of error wrt variable
+          v[t] is velocity
+          m[t] is momentum
+.fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationGradientState(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationSourceState(nullable NSArray< \fBMPSVector\fP * > *) inputMomentumVectors(nullable NSArray< \fBMPSVector\fP * > *) inputVelocityVectors(nonnull \fBMPSCNNNormalizationGammaAndBetaState\fP *) resultState"
+Encode an \fBMPSNNOptimizerAdam\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIbatchNormalizationGradientState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with gradients for this update\&. 
+.br
+\fIbatchNormalizationSourceState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with original gamma/beta for this update\&. 
+.br
+\fIinputMomentumVectors\fP An array \fBMPSVector\fP object which specifies the gradient momentum vectors which will be updated and overwritten\&. The index 0 corresponds to gamma, index 1 corresponds to beta, array can be of size 1 in which case beta won't be updated 
+.br
+\fIinputVelocityVectors\fP An array \fBMPSVector\fP object which specifies the gradient velocity vectors which will be updated and overwritten\&. The index 0 corresponds to gamma, index 1 corresponds to beta, array can be of size 1 in which case beta won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNNormalizationGammaAndBetaState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied 
+.PP
+.nf
+        t = t + 1
+        lr[t] = learningRate * sqrt(1 - beta2^t) / (1 - beta1^t)
+
+        m[t]     = beta1 * m[t-1] + (1 - beta1) * g
+        v[t]     = beta2 * v[t-1] + (1 - beta2) * (g ^ 2)
+        variable = variable - lr[t] * m[t] / (sqrt(v[t]) + epsilon)
+.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState(nullable NSArray< \fBMPSVector\fP * > *) inputMomentumVectors(nullable NSArray< \fBMPSVector\fP * > *) inputVelocityVectors(nonnull \fBMPSCNNNormalizationGammaAndBetaState\fP *) resultState"
+Encode an \fBMPSNNOptimizerAdam\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIbatchNormalizationState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which specifies the input state with gradients and original gamma/beta for this update\&. 
+.br
+\fIinputMomentumVectors\fP An array \fBMPSVector\fP object which specifies the gradient momentum vectors which will be updated and overwritten\&. The index 0 corresponds to gamma, index 1 corresponds to beta, array can be of size 1 in which case beta won't be updated 
+.br
+\fIinputVelocityVectors\fP An array \fBMPSVector\fP object which specifies the gradient velocity vectors which will be updated and overwritten\&. The index 0 corresponds to gamma, index 1 corresponds to beta, array can be of size 1 in which case beta won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNNormalizationGammaAndBetaState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied 
+.PP
+.nf
+        t = t + 1
+        lr[t] = learningRate * sqrt(1 - beta2^t) / (1 - beta1^t)
+
+        m[t]     = beta1 * m[t-1] + (1 - beta1) * g
+        v[t]     = beta2 * v[t-1] + (1 - beta2) * (g ^ 2)
+        variable = variable - lr[t] * m[t] / (sqrt(v[t]) + epsilon)
+.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNConvolutionGradientState\fP *__nonnull) convolutionGradientState(\fBMPSCNNConvolutionWeightsAndBiasesState\fP *__nonnull) convolutionSourceState(nullable NSArray< \fBMPSVector\fP * > *) inputMomentumVectors(nullable NSArray< \fBMPSVector\fP * > *) inputVelocityVectors(nonnull \fBMPSCNNConvolutionWeightsAndBiasesState\fP *) resultState"
+Encode an \fBMPSNNOptimizerAdam\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIconvolutionGradientState\fP \fBA\fP valid \fBMPSCNNConvolutionGradientState\fP object which specifies the input state with gradients for this update\&. 
+.br
+\fIconvolutionSourceState\fP \fBA\fP valid \fBMPSCNNConvolutionWeightsAndBiasesState\fP object which specifies the input state with values to be updated\&. 
+.br
+\fIinputMomentumVectors\fP An array \fBMPSVector\fP object which specifies the gradient momentum vectors which will be updated and overwritten\&. The index 0 corresponds to weights, index 1 corresponds to biases, array can be of size 1 in which case biases won't be updated 
+.br
+\fIinputVelocityVectors\fP An array \fBMPSVector\fP object which specifies the gradient velocity vectors which will be updated and overwritten\&. The index 0 corresponds to weights, index 1 corresponds to biases, array can be of size 1 in which case biases won't be updated 
+.br
+\fIresultState\fP \fBA\fP valid \fBMPSCNNConvolutionWeightsAndBiasesState\fP object which specifies the resultValues state which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied 
+.PP
+.nf
+        t = t + 1
+        lr[t] = learningRate * sqrt(1 - beta2^t) / (1 - beta1^t)
+
+        m[t]     = beta1 * m[t-1] + (1 - beta1) * g
+        v[t]     = beta2 * v[t-1] + (1 - beta2) * (g ^ 2)
+        variable = variable - lr[t] * m[t] / (sqrt(v[t]) + epsilon)
+.fi
+.PP
+ 
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(nonnull \fBMPSVector\fP *) inputGradientVector(nonnull \fBMPSVector\fP *) inputValuesVector(nonnull \fBMPSVector\fP *) inputMomentumVector(nonnull \fBMPSVector\fP *) inputVelocityVector(nonnull \fBMPSVector\fP *) resultValuesVector"
+Encode an \fBMPSNNOptimizerAdam\fP object to a command buffer to perform out of place update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&. 
+.br
+\fIinputGradientVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the input vector of gradients for this update\&. 
+.br
+\fIinputValuesVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the input vector of values to be updated\&. 
+.br
+\fIinputMomentumVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the gradient momentum vector which will be updated and overwritten\&. 
+.br
+\fIinputVelocityVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the gradient velocity vector which will be updated and overwritten\&. 
+.br
+\fIresultValuesVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the resultValues vector which will be updated and overwritten\&.
+.RE
+.PP
+The following operations would be applied 
+.PP
+.nf
+        t = t + 1
+        lr[t] = learningRate * sqrt(1 - beta2^t) / (1 - beta1^t)
+
+        m[t]     = beta1 * m[t-1] + (1 - beta1) * g
+        v[t]     = beta2 * v[t-1] + (1 - beta2) * (g ^ 2)
+        variable = variable - lr[t] * m[t] / (sqrt(v[t]) + epsilon)
+.fi
+.PP
+ 
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSNNOptimizer\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(double) beta1(double) beta2(float) epsilon(NSUInteger) timeStep(nonnull \fBMPSNNOptimizerDescriptor\fP *) optimizerDescriptor"
+Full initialization for the adam update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&. 
+.br
+\fIbeta1\fP The beta1 to update values 
+.br
+\fIbeta2\fP The beta2 to update values 
+.br
+\fIepsilon\fP The epsilon at which we update values 
+.br
+\fItimeStep\fP The timeStep at which values will start updating 
+.br
+\fIoptimizerDescriptor\fP The optimizerDescriptor which will have a bunch of properties to be applied
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSNNOptimizerAdam\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(float) learningRate"
+Convenience initialization for the adam update
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device on which the kernel will execute\&. 
+.br
+\fIlearningRate\fP The learningRate at which we will update values
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSNNOptimizerAdam\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- beta1\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The beta1 at which we update values  Default value is 0\&.9 
+.SS "\- beta2\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The beta2 at which we update values  Default value is 0\&.999 
+.SS "\- epsilon\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The epsilon at which we update values  This value is usually used to ensure to avoid divide by 0, default value is 1e-8 
+.SS "\- timeStep\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Current timeStep for the update, number of times update has occurred 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

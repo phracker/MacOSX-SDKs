@@ -1,0 +1,121 @@
+.\"
+.\" cups-lpd man page for CUPS.
+.\"
+.\" Copyright © 2007-2019 by Apple Inc.
+.\" Copyright © 1997-2006 by Easy Software Products.
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH cups-lpd 8 "CUPS" "26 April 2019" "Apple Inc."
+.SH NAME
+cups-lpd \- receive print jobs and report printer status to lpd clients (deprecated)
+.SH SYNOPSIS
+.B cups-lpd
+[
+\fB\-h \fIhostname\fR[\fB:\fIport\fR]
+] [
+.B -n
+] [
+.B -o
+.I option=value
+]
+.SH DESCRIPTION
+.B cups-lpd
+is the CUPS Line Printer Daemon ("LPD") mini-server that supports legacy client systems that use the LPD protocol.
+.B cups-lpd
+does not act as a standalone network daemon but instead operates using any of the Internet "super-servers" such as
+.BR inetd (8),
+.BR launchd (8),
+and
+.BR systemd (8).
+.SH OPTIONS
+.TP 5
+\fB-h \fIhostname\fR[\fB:\fIport\fR]
+Sets the CUPS server (and port) to use.
+.TP 5
+.B -n
+Disables reverse address lookups; normally
+.B cups-lpd
+will try to discover the hostname of the client via a reverse DNS lookup.
+.TP 5
+\fB-o \fIname=value\fR
+Inserts options for all print queues. Most often this is used to disable the "l" filter so that remote print jobs are filtered as needed for printing; the
+.BR inetd (8)
+example below sets the "document-format" option to "application/octet-stream" which forces autodetection of the print file format.
+.SH CONFORMING TO
+.B cups-lpd
+does not enforce the restricted source port number specified in RFC 1179, as using restricted ports does not prevent users from submitting print jobs.
+While this behavior is different than standard Berkeley LPD implementations, it should not affect normal client operations.
+.LP
+The output of the status requests follows RFC 2569, Mapping between LPD and IPP Protocols. Since many LPD implementations stray from this definition, remote status reporting to LPD clients may be unreliable.
+.SH ERRORS
+Errors are sent to the system log.
+.SH FILES
+.nf
+.I /etc/inetd.conf
+.I /etc/xinetd.d/cups-lpd
+.I /System/Library/LaunchDaemons/org.cups.cups-lpd.plist
+.fi
+.SH NOTES
+The
+.B cups-lpd
+program is deprecated and will no longer be supported in a future feature release of CUPS.
+.SS PERFORMANCE
+.B cups-lpd
+performs well with small numbers of clients and printers.
+However, since a new process is created for each connection and since each process must query the printing system before each job submission, it does not scale to larger configurations.
+We highly recommend that large configurations use the native IPP support provided by CUPS instead.
+.SS SECURITY
+.B cups-lpd
+currently does not perform any access control based on the settings in \fIcupsd.conf(5)\fR or in the \fIhosts.allow(5)\fR or \fIhosts.deny(5)\fR files used by TCP wrappers.
+Therefore, running
+.B cups-lpd
+on your server will allow any computer on your network (and perhaps the entire
+Internet) to print to your server.
+.LP
+While
+.BR xinetd (8)
+has built-in access control support, you should use the TCP wrappers package with
+.BR inetd (8)
+to limit access to only those computers that should be able to print through your server.
+.LP
+.B cups-lpd
+is not enabled by the standard CUPS distribution.
+Please consult with your operating system vendor to determine whether it is enabled by default on your system.
+.SH EXAMPLE
+If you are using
+.BR inetd (8),
+add the following line to the \fIinetd.conf\fR file to enable the
+.B cups-lpd
+mini-server:
+.nf
+
+    printer stream tcp nowait lp /usr/lib/cups/daemon/cups\-lpd cups\-lpd \\
+        \-o document\-format=application/octet\-stream
+
+.fi
+.LP
+\fINote:\fR If you are using Solaris 10 or higher, you must run the
+.BR inetdconv (1m)
+program to register the changes to the \fIinetd.conf\fR file.
+.LP
+CUPS includes configuration files for
+.BR launchd (8),
+.BR systemd (8),
+and
+.BR xinetd (8).
+Simply enable the
+.B cups-lpd
+service using the corresponding control program.
+.SH SEE ALSO
+.BR cups (1),
+.BR cupsd (8),
+.BR inetconv (1m),
+.BR inetd (8),
+.BR launchd (8),
+.BR xinetd (8),
+CUPS Online Help (http://localhost:631/help),
+RFC 2569
+.SH COPYRIGHT
+Copyright \[co] 2007-2019 by Apple Inc.

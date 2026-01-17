@@ -1,0 +1,314 @@
+module os_availability [system] {
+  // General purpose API.
+  header "_modules/_os_availability.h"
+  export *
+
+  // Alternative API where os/availability.h can't
+  // be used, such as in POSIX headers.
+  explicit module Availability {
+    header "_modules/_Availability.h"
+    export *
+  }
+}
+
+module sys_appleapiopts [system] {
+  header "_modules/_sys_appleapiopts.h"
+  export *
+}
+
+module sys_cdefs [system] {
+  header "_modules/_sys_cdefs.h"
+  export *
+}
+
+module sys_qos [system] {
+  header "_modules/_sys_qos.h"
+  export *
+}
+
+module TargetConditionals [system] {
+  header "_modules/_TargetConditionals.h"
+  export *
+}
+
+
+// Implementation detail modules. The names and contents of these modules
+// are not stable, and they should never be directly imported. The modules
+// above should be used instead.
+module _DarwinFoundation1 [system] {
+  // These must all be set in the GCC_PREPROCESSOR_DEFINITIONS Xcode build
+  // setting, or passed on the command line with -D in order to have an
+  // effect. #define won't do anything for any of these.
+//  config_macros
+//    // <sys/cdefs.h> and many others
+//    _ANSI_SOURCE,
+//    _DARWIN_C_SOURCE,
+//    _POSIX_C_SOURCE,
+//    _POSIX_SOURCE,
+//    _XOPEN_SOURCE,
+//
+//    // <sys/appleapiopts.h>
+//    __APPLE_API_STRICT_CONFORMANCE,
+//
+//    // <math.h>
+//    _REENTRANT,
+
+  // Basic macros.
+  explicit module appleapiopts {
+    header "sys/appleapiopts.h"
+    export *
+  }
+
+  explicit module availability {
+    // General purpose API.
+    header "os/availability.h"
+    export *
+
+    // Alternative API where os/availability.h can't
+    // be used, such as in POSIX headers.
+    explicit module Availability {
+      header "Availability.h"
+      export *
+    }
+
+    // Deprecated, use <os/availability.h> or <Availability.h> instead.
+    explicit module AvailabilityMacros {
+      header "AvailabilityMacros.h"
+      export *
+    }
+  }
+
+  explicit module bounds {
+    header "_bounds.h"
+    export *
+  }
+
+  explicit module cdefs {
+    header "sys/cdefs.h"
+    textual header "sys/_posix_availability.h"
+    textual header "sys/_symbol_aliasing.h"
+
+    export *
+  }
+
+  explicit module TargetConditionals {
+    header "TargetConditionals.h"
+    export *
+  }
+
+  // Basic quality of service interfaces.
+  explicit module qos {
+    header "sys/qos.h"
+    export *
+  }
+
+  // Implementation for host/network byte swapping, use <arpa/inet.h> instead.
+  explicit module endian {
+    header "machine/_endian.h"
+    export *
+
+    module i386 {
+      header "i386/_endian.h"
+      export *
+    }
+
+    module arm {
+      header "arm/_endian.h"
+      export *
+    }
+
+    module sys__endian {
+      header "sys/__endian.h"
+      export *
+    }
+  }
+
+  // Common implementation for xlocale functions, use <xlocale.h> with headers
+  // like <string.h> instead.
+  explicit module xlocale {
+    header "__xlocale.h"
+    export *
+  }
+
+  // Implementation for some <locale.h> types, use that header instead. (These
+  // are used by <__xlocale.h>.)
+  explicit module locale {
+    explicit module locale_t {
+      header "_types/_locale_t.h"
+      export *
+    }
+  }
+
+  // Implementation for some <stdlib.h> types, use that header instead. (MB_CUR_MAX
+  // is included for compatibility in <xlocale.h> which is a sibling to <stdlib.h>.)
+  explicit module stdlib {
+    explicit module _mb_cur_max {
+      header "_mb_cur_max.h"
+      export *
+    }
+  }
+
+  // Custom unsigned types used by other low level interfaces, use basic C
+  // or <stdint.h> types instead.
+  explicit module unsigned_types {
+    explicit module u_char {
+      header "sys/_types/_u_char.h"
+      export *
+    }
+
+    explicit module u_short {
+      header "sys/_types/_u_short.h"
+      export *
+    }
+
+    explicit module u_int {
+      header "sys/_types/_u_int.h"
+      export *
+    }
+
+    explicit module u_int8_t {
+      header "sys/_types/_u_int8_t.h"
+      export *
+    }
+
+    explicit module u_int16_t {
+      header "sys/_types/_u_int16_t.h"
+      export *
+    }
+
+    explicit module u_int32_t {
+      header "sys/_types/_u_int32_t.h"
+      export *
+    }
+
+    explicit module u_int64_t {
+      header "sys/_types/_u_int64_t.h"
+      export *
+    }
+  }
+
+  // C Standard Library implementation. Most of these headers are augmented
+  // by the compiler or C++ library. These submodules should never be directly
+  // imported, the top level modules named after each C Standard Library header,
+  // e.g. assert_h, should be used instead.
+  explicit module _assert {
+    textual header "assert.h"
+
+    explicit module _assert {
+      header "_assert.h"
+      export *
+    }
+
+    module _static_assert {
+      header "_static_assert.h"
+      export *
+    }
+  }
+
+  // This header is replaced by the C++ library, and so must not build as part
+  // of this module in C++ mode.
+  explicit module _complex {
+    requires !cplusplus
+    header "complex.h"
+    export *
+  }
+
+  explicit module _errno {
+    header "errno.h"
+    export *
+
+    module sys_errno {
+      header "sys/errno.h"
+      export *
+    }
+
+    module errno_t {
+      header "sys/_types/_errno_t.h"
+      export *
+    }
+  }
+
+  explicit module _fenv {
+    header "fenv.h"
+    export *
+  }
+
+  explicit module _limits {
+    header "limits.h"
+    export *
+
+    module machine_limits {
+      header "machine/limits.h"
+      export *
+
+      module i386 {
+        header "i386/limits.h"
+        export *
+      }
+
+      module arm {
+        header "arm/limits.h"
+        export *
+      }
+    }
+
+    module machine__limits {
+      header "machine/_limits.h"
+      export *
+
+      module i386 {
+        header "i386/_limits.h"
+        export *
+      }
+
+      module arm {
+        header "arm/_limits.h"
+        export *
+      }
+    }
+
+    module syslimits {
+      header "sys/syslimits.h"
+      export *
+    }
+  }
+
+  explicit module _math {
+    header "math.h"
+    export *
+  }
+
+  explicit module _setjmp {
+    header "setjmp.h"
+    export *
+  }
+}
+
+// Availability implementation, use <os/availability.h> or <Availability.h> instead.
+module _AvailabilityInternal [system] {
+  header "AvailabilityInternal.h"
+  export *
+
+  explicit module AvailabilityInternalLegacy {
+    header "AvailabilityInternalLegacy.h"
+    export *
+  }
+
+  explicit module AvailabilityVersions {
+    header "AvailabilityVersions.h"
+    export *
+  }
+}
+
+// Obsolete C Standard Library headers replaced by the compiler. This module
+// is here to generate early errors if client search paths are set up
+// incorrectly.
+module _c_standard_library_obsolete [system] {
+  requires found_incompatible_headers__check_search_paths
+
+  header "float.h"
+  header "iso646.h"
+  header "stddef.h"
+
+  export *
+}

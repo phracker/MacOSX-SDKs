@@ -1,0 +1,98 @@
+.Dd Jan 14, 2007
+.Dt dscacheutil 1
+.Os Darwin
+.Sh NAME
+.Nm dscacheutil
+.Nd gather information, statistics and initiate queries to the Directory Service cache.
+.Sh SYNOPSIS
+.Nm
+.Fl h
+.Nm
+.Fl q Ar category Op Fl a Ar key Ar value
+.Nm
+.Fl cachedump Op Fl buckets
+.Op Fl entries Op Ar category
+.Nm
+.Fl configuration
+.Nm
+.Fl flushcache
+.Nm
+.Fl statistics
+.Pp
+.Sh DESCRIPTION
+.Nm
+does various operations against the Directory Service cache including gathering statistics, initiating lookups, inspection, cache flush, etc.  This tool replaces most of the functionality of the lookupd tool previously available in the OS.  
+.Pp
+.Sh FLAGS
+A list of flags and their descriptions:
+.Bl -tag -width -ident
+.It Fl h
+Lists the options for calling
+.Nm
+.It Fl q Ar category
+Initiate a query using standard calls.  These calls will either return results from the cache or go fetch live data and place them in the cache.  By default if no specific query is requested via
+.Fl a
+then all results within that category will be returned.
+.It Fl a Ar key Ar value
+Optional flag to 
+.Fl q
+for a specific key with a value.
+.It Fl cachedump
+Dumps an overview of the cache by default.  Additional flags will provide more detailed information.
+.It Fl buckets
+Used in conjunction with
+.Fl cachedump
+to also print hash bucket usage of the current cache.
+.It Fl entries Op Ar category
+Used in conjunction with
+.Fl cachedump
+to dump detailed information about cache entries.  An optional category can be supplied to only see types of interest.  Dumping 'host' entries can only be done by administrative users.
+.It Fl configuration
+Prints current configuration information, such as the search policy from Directory Service and cache parameters.
+.It Fl flushcache
+Flushes the entire cache.  This should only be used in extreme cases.  Validation information is used within the cache along with other techniques to ensure the OS has valid information available to it.
+.It Fl statistics
+Prints statistics from the cache including an overview and detailed call statistics.  Some calls are not cached but are derived from other calls internally.  Cache hits and cache misses may not always be equal to external calls.  For example getaddrinfo is actually a combination of gethostbyname with other calls internally to the cache to maximize cache hit rate.
+.El
+.Pp
+Available categories and associated keys:
+.Bl -tag -width "xxxxxxxxxx"
+.It Ar group
+name or gid
+.It Ar host
+name or ip_address (used for both IPv6 and IPv4)
+.It Ar mount
+name
+.It Ar protocol
+name or number
+.It Ar rpc
+name or number
+.It Ar service
+name or port
+.It Ar user
+name or uid
+.El
+.Pp
+.Sh EXAMPLES
+.Pp
+.Bl -tag -width -indent
+.It Lookup a user:
+.Dl % dscacheutil -q user -a name jdoe
+.Dl name: jdoe
+.Dl password: ********
+.Dl uid: 501
+.Dl gid: 501
+.Dl dir: /Users/jdoe
+.Dl shell: /bin/csh
+.Dl gecos: John Doe
+.It Lookup all users:
+.Dl % dscacheutil -q user
+.It Dump cache overview:
+.Dl % dscacheutil -cachedump
+.It Dump cache details with user entries:
+.Dl % dscacheutil -cachedump -entries user
+.El
+.Pp
+.Sh SEE ALSO
+.Xr DirectoryService 8 ,
+.Xr dsmemberutil 1

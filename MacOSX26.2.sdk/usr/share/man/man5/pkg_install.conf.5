@@ -1,0 +1,389 @@
+.\"	$NetBSD: pkg_install.conf.5.in,v 1.25 2024/02/04 14:43:12 riastradh Exp $
+.\"
+.\" Copyright (c) 2008, 2009, 2012 The NetBSD Foundation, Inc.
+.\" All rights reserved.
+.\"
+.\" This code is derived from software contributed to The NetBSD Foundation
+.\" by Thomas Klausner.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+.\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+.\" TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+.\" BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd October 28, 2014
+.Dt PKG_INSTALL.CONF 5
+.Os
+.Sh NAME
+.Nm pkg_install.conf
+.Nd configuration file for package installation tools
+.Sh DESCRIPTION
+The file
+.Nm
+contains system defaults for the package installation tools
+as a list of variable-value pairs.
+Each line has the format
+.Ev VARIABLE=VALUE .
+If the value consists of more than one line, each line is prefixed with
+.Ev VARIABLE= .
+.Pp
+The current value of a variable can be checked by running
+.Dl Ic pkg_admin config-var VARIABLE
+.Pp
+Some variables are overriden by environmental variables of the same name.
+Those are marked by (*).
+.Pp
+The following variables are supported:
+.Bl -tag -width 6n
+.It Dv ACCEPTABLE_LICENSES No (list of license names)
+Default: empty
+.Pp
+Space-separated list of licenses considered acceptable when
+.Dv CHECK_LICENSE
+is
+.Ql yes
+or
+.Ql always ,
+in addition to those listed in
+.Dv DEFAULT_ACCEPTABLE_LICENSES .
+License names are case-sensitive.
+.It Dv ACTIVE_FTP No (empty or non-empty)
+Default: empty
+.Pp
+If non-empty, force the use of active FTP.
+Otherwise, try passive FTP first, and fall back to active FTP if the
+server reports a syntax error.
+.It Dv CACHE_INDEX No ( So Li yes Sc or So Li no Sc )
+Default:
+.Li yes
+.Pp
+If
+.Ql yes ,
+cache directory listings in memory.
+This avoids retransfers of the large directory index for HTTP.
+.It Dv CERTIFICATE_ANCHOR_PKGS No (empty or path)
+Default: empty
+.Pp
+Path to the file containing the certificates used for validating binary
+packages.
+A package is trusted when a certificate chain ends in one of the
+certificates contained in this file.
+The certificates must be PEM-encoded.
+.Pp
+Required when
+.Dv VERIFIED_INSTALLATION
+is anything other than
+.Ql never .
+.It Dv CERTIFICATE_ANCHOR_PKGVULN No (empty or path)
+Default: empty
+.Pp
+If non-empty, path to the file containing the certificates used for
+validating
+.Pa pkg-vulnerabilities .
+The
+.Pa pkg-vulnerabilities
+is trusted when a certificate chain ends in one of the certificates
+contained in this file.
+The certificates must be PEM-encoded.
+.It Dv CERTIFICATE_CHAIN No (empty or path)
+Default: empty
+.Pp
+If non-empty, path to a file containing additional certificates that
+can be used for completing certificate chains when validating binary
+packages or pkg-vulnerabilities files.
+.It Dv CHECK_LICENSE No ( So Li yes Sc , So Li no Sc , or So Li always Sc )
+Default:
+.Li no
+.Pp
+When installing a package, check whether its license, as specified in
+the
+.Dv LICENSE
+build info tag, is acceptable,
+i.e., listed in
+.Dv ACCEPTABLE_LICENSES
+or
+.Dv DEFAULT_ACCEPTABLE_LICENSES .
+.Pp
+Supported values are:
+.Bl -tag -width ".Dv always"
+.It Dv no
+Install package no matter what license it has.
+.It Dv yes
+If package has
+.Dv LICENSE
+set, require the license to be acceptable before installing.
+If package is missing
+.Dv LICENSE ,
+install it anyway.
+.It Dv always
+Require
+.Dv LICENSE
+to be set, and require the license to be acceptable, before
+installing.
+.El
+.It Dv CHECK_END_OF_LIFE No ( So Li yes Sc or So Li no Sc )
+Default:
+.Ql yes
+.Pp
+During vulnerability checks, consider packages that have reached end-of-life
+as vulnerable.
+.It Dv CHECK_OS_VERSION No ( So Li yes Sc or So Li no Sc )
+Default:
+.Ql yes
+.Pp
+If
+.Ql yes ,
+pkg_add will warn if the host OS version mismatches the OS version the
+package was built on.
+.Pp
+For example, you can set this to
+.Ql no
+in order to install packages built for
+.Nx 9.0
+on
+.Nx 10.0 ,
+where they will still generally work.
+Packages for which this may not work have a more stringent version
+check through the
+.Li osabi
+package; see
+.Dv CHECK_OSABI .
+.It Dv CHECK_OSABI No ( So Li yes Sc or So Li no Sc )
+Default:
+.Ql yes
+.Pp
+If
+.Ql yes ,
+the
+.Li osabi
+package checks that it matches the OS version.
+.Pp
+Packages that are tightly bound to a specific version of an operating
+system, such as kernel modules or
+.Dv sysutils/lsof ,
+depend on the
+.Li osabi
+package to reflect this, so that even if
+.Dv CHECK_OS_VERSION
+is
+.Ql no ,
+such packages will refuse to install unless
+.Dv CHECK_OSABI
+is also
+.Ql no .
+.It Dv CHECK_VULNERABILITIES No ( So Li never Sc , So Li always Sc , or So Li interactive Sc )
+Default:
+.Ql never
+.Pp
+Check for vulnerabilities when installing a package.
+Supported values are:
+.Bl -tag -width ".Dv interactive"
+.It Dv never
+Install package even if it is known to be vulnerable.
+.It Dv always
+Install package only if it is not known to be vulnerable.
+.Pp
+If the
+.Pa pkg-vulnerabilities
+file is missing, assume package is vulnerable and refuse to install
+it.
+.It Dv interactive
+Install package without user interaction if it is not known to be
+vulnerable.
+Otherwise, prompt user to confirm installation.
+.Pp
+If the
+.Pa pkg-vulnerabilities
+file is missing, ignore it and install package anyway.
+.El
+.\" These appear to have been added by mistake in pkg_install-20100122;
+.\" nothing uses them that I can find.  --riastradh, 2024-02-03
+.\" .It Dv CONFIG_CACHE_CONNECTIONS
+.\" Limit the global connection cache to this value.
+.\" For FTP, this is the number of sessions without active command.
+.\" For HTTP, this is the number of connections open with keep-alive.
+.\" .It Dv CONFIG_CACHE_CONNECTIONS_HOST
+.\" Like
+.\" .Dv CONFIG_CACHE_CONNECTIONS ,
+.\" but limit the number of connections to the host as well.
+.\" See
+.\" .Xr fetch 3
+.\" for further details
+.It Dv DEFAULT_ACCEPTABLE_LICENSES
+Space separated list of licenses considered acceptable when
+.Dv CHECK_LICENSE
+is
+.Ql yes
+or
+.Ql always ,
+in addition to those listed in
+.Dv ACCEPTABLE_LICENSES .
+License names are case-sensitive.
+.Pp
+The default value of
+.Dv DEFAULT_ACCEPTABLE_LICENSES No (list of license names)
+lists all licenses recorded in pkgsrc which have been either:
+.Bl -dash
+.It
+approved as open source by the
+.Lk "https://opensource.org/" "Open Source Initiative" ,
+.It
+approved as free software by the
+.Lk "https://www.fsf.org/" "Free Software Foundation" ,
+or
+.It
+considered free software under the Debian Free Software Guidelines by
+the
+.Lk "https://www.debian.org/" "Debian Project" ,
+.El
+and are not
+.Sq network copyleft
+licenses such as the GNU Affero GPLv3.
+.It Dv GPG No (empty or path)
+Default: empty
+.Pp
+Path to
+.Xr gpg 1 ,
+required for
+.Ic pkg_admin gpg-sign-package .
+(All other GPG/OpenPGP operations are done internally with
+.Xr libnetpgpverify 3 . )
+.It Dv GPG_KEYRING_PKGVULN No (empty or path)
+Default: empty
+.Pp
+If non-empty, keyring to use for verifying OpenPGP signatures on
+.Pa pkg-vulnerabilities ,
+overriding the default keyring.
+.It Dv GPG_KEYRING_SIGN No (empty or path)
+Default: empty
+.Pp
+If non-empty, keyring to use for signing packages with
+.Ic pkg_admin gpg-sign-package ,
+overriding the default keyring.
+.It Dv GPG_KEYRING_VERIFY No (empty or path)
+Default: empty
+.Pp
+If non-empty, keyring to use for verifying package signatures on
+installation, overriding the default keyring.
+.It Dv GPG_SIGN_AS No (empty or OpenPGP user-id)
+Default: empty
+.Pp
+If non-empty, OpenPGP user-id to use for signing packages with
+.Ic pkg_admin gpg-sign-package ,
+passed as the argument of
+.Ql --local-user
+.Pq Fl u
+to
+.Xr gpg 1 .
+.It Dv IGNORE_PROXY No (empty or non-empty)
+Default: empty
+.Pp
+If non-empty, use direct connections and ignore
+.Ev FTP_PROXY
+and
+.Ev HTTP_PROXY .
+.It Dv IGNORE_URL No (URL, may be specified multiple times)
+Default: none
+.Pp
+URL of a security advisory from the
+.Pa pkg-vulnerabilities
+that should be ignored when running:
+.Dl Ic pkg_admin audit
+May be specified multiple times to ignore multiple advisories.
+.It Dv PKG_DBDIR No (*) (path)
+Default:
+.Pa @PKG_DBDIR@
+.Pp
+Location of the packages database.
+This option is overriden by the argument of the
+.Fl K
+option.
+.It Dv PKG_PATH No (*) (semicolon-separated list of paths or URLs)
+Default: empty
+.Pp
+Search path for packages.
+The entries are separated by semicolon.
+Each entry specifies a directory or URL to search for packages.
+.It Dv PKG_REFCOUNT_DBDIR No (*) (path)
+Default:
+.No "${" Ns Dv PKG_DBDIR Ns "}" Ns Pa .refcount
+.Pp
+Location of the package reference counts database directory.
+.It Dv PKGVULNDIR No (path)
+Default:
+.No "${" Ns Dv PKG_DBDIR Ns "}"
+.Pp
+Directory name in which the
+.Pa pkg-vulnerabilities
+file resides.
+.It Dv PKGVULNURL No (URL)
+Default:
+.Lk http://cdn.NetBSD.org/pub/NetBSD/packages/vulns/pkg-vulnerablities.gz
+.Pp
+URL which is used for updating the local
+.Pa pkg-vulnerabilities
+file when running:
+.Dl Ic pkg_admin fetch-pkg-vulnerabilities
+.Pp
+.Em Note :
+Usually, only the compression type should be changed.
+Currently supported are uncompressed files and files compressed by
+.Xr bzip2 1
+.Pq Pa .bz2
+or
+.Xr gzip 1
+.Pq Pa .gz .
+.It Dv VERBOSE_NETIO No (empty or non-empty)
+Default: empty
+.Pp
+If non-empty, log details of network IO to stderr.
+.It Dv VERIFIED_INSTALLATION No ( So Li never Sc , So Li always Sc , So Li trusted Sc , or So Li interactive Sc )
+Default:
+.Ql never
+.Pp
+Verification requirement for installing a package.
+Supported values are:
+.Bl -tag -width ".Dv interactive"
+.It Dv never
+Install package unconditionally.
+.It Dv always
+Install package only if it has a valid X.509 or OpenPGP signature.
+.It Dv trusted
+Install package without user interaction if it has a valid X.509 or
+OpenPGP signature.
+Otherwise, prompt user to confirm installation.
+.It Dv interactive
+Always prompt the user to confirm installation when installing a
+package.
+.Sy WARNING :
+This does not tell the user whether the package had a valid signature
+or not.
+.El
+.El
+.Sh FILES
+.Bl -tag -width ".Pa @SYSCONFDIR@/pkg_install.conf"
+.It Pa @SYSCONFDIR@/pkg_install.conf
+Default location for the file described in this manual page.
+.El
+.Sh SEE ALSO
+.Xr pkg_add 1 ,
+.Xr pkg_admin 1 ,
+.Xr pkg_create 1 ,
+.Xr pkg_delete 1 ,
+.Xr pkg_info 1

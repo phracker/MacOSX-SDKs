@@ -1,0 +1,191 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.3.3.2 clang-1700.6.3.2)
+// swift-module-flags: -target x86_64-apple-macos26.2 -target-variant x86_64-apple-ios26.2-macabi -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -library-level api -enable-upcoming-feature StrictConcurrency -enable-upcoming-feature MemberImportVisibility -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -user-module-version 426.1.3 -module-name ShazamKit
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
+import Combine
+import Foundation
+import MusicKit
+import Observation
+@_exported import ShazamKit
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+import os
+@_hasMissingDesignatedInitializers @available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+final public class SHManagedSession : Swift.Sendable {
+  @_Concurrency.MainActor final public var state: ShazamKit.SHManagedSession.State {
+    get
+  }
+  public init()
+  public init(catalog: ShazamKit.SHCatalog)
+  final public func prepare() async
+  final public func cancel()
+  final public func result() async -> ShazamKit.SHSession.Result
+  final public var results: ShazamKit.SHSession.Results {
+    get
+  }
+  @objc deinit
+}
+@available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+extension ShazamKit.SHManagedSession {
+  @frozen public enum State : Swift.Sendable {
+    case idle
+    case prerecording
+    case matching
+    public static func == (a: ShazamKit.SHManagedSession.State, b: ShazamKit.SHManagedSession.State) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+}
+@available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+extension ShazamKit.SHManagedSession : nonisolated Observation.Observable {
+}
+@available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
+extension ShazamKit.SHMediaItemProperty {
+  public static let timeRanges: ShazamKit.SHMediaItemProperty
+  public static let frequencySkewRanges: ShazamKit.SHMediaItemProperty
+}
+@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+extension ShazamKit.SHMediaItem {
+  public var songs: [MusicKit.Song] {
+    get
+  }
+  @_alwaysEmitIntoClient convenience public init(properties: [ShazamKit.SHMediaItemProperty : Any]) {
+        
+        if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
+            
+            var updatedProperties = properties
+            
+            let rangeMappingsToUpdate: [SHMediaItemProperty : SHMediaItemProperty] = [.timeRanges: .__timeRanges, .frequencySkewRanges : .__frequencySkewRanges]
+            
+            for (key, targetKey) in rangeMappingsToUpdate {
+                
+                if let ranges = updatedProperties[key] {
+                    
+                    if let ranges = ranges as? [Range<TimeInterval>] {
+                        
+                        updatedProperties[targetKey] = ranges.map { __SHRange(lowerBound: $0.lowerBound, upperBound: $0.upperBound) }
+                        
+                    } else if let ranges = ranges as? [Range<Float>] {
+                        
+                        updatedProperties[targetKey] = ranges.map { __SHRange(lowerBound: Double($0.lowerBound), upperBound: Double($0.upperBound)) }
+                        
+                    } else {
+                        
+                        updatedProperties[targetKey] = ranges
+                    }
+                    
+                    updatedProperties.removeValue(forKey: key)
+                }
+            }
+            
+            self.init(__properties: updatedProperties)
+        } else {
+            
+            self.init(__properties: properties)
+        }
+    }
+}
+@available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
+extension ShazamKit.SHMediaItem {
+  public var frequencySkewRanges: [Swift.Range<Swift.Float>] {
+    get
+  }
+  public var timeRanges: [Swift.Range<Foundation.TimeInterval>] {
+    get
+  }
+}
+@available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+extension ShazamKit.SHMediaItem : Swift.Identifiable {
+  public var id: Foundation.UUID {
+    get
+  }
+  @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
+  public typealias ID = Foundation.UUID
+}
+@available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
+extension UniformTypeIdentifiers.UTType {
+  public static var shazamSignature: UniformTypeIdentifiers.UTType {
+    get
+  }
+  public static var shazamCustomCatalog: UniformTypeIdentifiers.UTType {
+    get
+  }
+}
+@available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
+extension ShazamKit.SHSession {
+  @frozen public enum Result : Swift.Sendable {
+    case match(ShazamKit.SHMatch)
+    case noMatch(ShazamKit.SHSignature)
+    case error(any Swift.Error, ShazamKit.SHSignature)
+  }
+  public struct Results : _Concurrency.AsyncSequence, Swift.Sendable {
+    public typealias Element = ShazamKit.SHSession.Result
+    public func makeAsyncIterator() -> ShazamKit.SHSession.Results.Iterator
+    public struct Iterator : _Concurrency.AsyncIteratorProtocol {
+      #if compiler(>=5.3) && $NonescapableTypes
+      public mutating func next() async -> ShazamKit.SHSession.Results.Element?
+      #endif
+      @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+      public typealias Element = ShazamKit.SHSession.Results.Element
+      @available(iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, macOS 15.0, *)
+      @_implements(_Concurrency.AsyncIteratorProtocol, Failure) public typealias __AsyncIteratorProtocol_Failure = Swift.Never
+    }
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    public typealias AsyncIterator = ShazamKit.SHSession.Results.Iterator
+    @available(iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, macOS 15.0, *)
+    @_implements(_Concurrency.AsyncSequence, Failure) public typealias __AsyncSequence_Failure = Swift.Never
+  }
+}
+@available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
+extension ShazamKit.SHSession {
+  public var results: ShazamKit.SHSession.Results {
+    get
+  }
+  public func result(from signature: ShazamKit.SHSignature) async -> ShazamKit.SHSession.Result
+}
+@_hasMissingDesignatedInitializers @available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+final public class SHLibrary : @unchecked Swift.Sendable {
+  public static let `default`: ShazamKit.SHLibrary
+  @_Concurrency.MainActor final public var items: [ShazamKit.SHMediaItem] {
+    get
+  }
+  @objc deinit
+  final public func addItems(_ items: [ShazamKit.SHMediaItem]) async throws
+  final public func removeItems(_ items: [ShazamKit.SHMediaItem]) async throws
+}
+@available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+extension ShazamKit.SHLibrary : nonisolated Observation.Observable {
+}
+@available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+extension ShazamKit.SHSignature {
+  public struct Slices : _Concurrency.AsyncSequence, Swift.Sendable {
+    public typealias Element = ShazamKit.SHSignature
+    public func makeAsyncIterator() -> ShazamKit.SHSignature.Slices.Iterator
+    public struct Iterator : _Concurrency.AsyncIteratorProtocol {
+      #if compiler(>=5.3) && $NonescapableTypes
+      public mutating func next() async throws -> ShazamKit.SHSignature.Slices.Element?
+      #endif
+      @available(iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, macOS 15.0, *)
+      public typealias Element = ShazamKit.SHSignature.Slices.Element
+      @available(iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, macOS 15.0, *)
+      @_implements(_Concurrency.AsyncIteratorProtocol, Failure) public typealias __AsyncIteratorProtocol_Failure = any Swift.Error
+    }
+    @available(iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, macOS 15.0, *)
+    public typealias AsyncIterator = ShazamKit.SHSignature.Slices.Iterator
+    @available(iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, macOS 15.0, *)
+    @_implements(_Concurrency.AsyncSequence, Failure) public typealias __AsyncSequence_Failure = any Swift.Error
+  }
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func slices(from start: Foundation.TimeInterval, duration: Foundation.TimeInterval, stride: Foundation.TimeInterval? = nil) throws -> ShazamKit.SHSignature.Slices
+  #endif
+}
+@available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+extension ShazamKit.SHManagedSession.State : Swift.Equatable {}
+@available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+extension ShazamKit.SHManagedSession.State : Swift.Hashable {}
+@available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
+extension ShazamKit.SHManagedSession.State : Swift.BitwiseCopyable {}

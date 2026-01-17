@@ -1,0 +1,130 @@
+.TH ERROR 8 
+.ad
+.fi
+.SH NAME
+error
+\-
+Postfix error/retry mail delivery agent
+.SH "SYNOPSIS"
+.na
+.nf
+\fBerror\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix \fBerror\fR(8) delivery agent processes delivery
+requests from
+the queue manager. Each request specifies a queue file, a sender
+address, the reason for non\-delivery (specified as the
+next\-hop destination), and recipient information.
+The reason may be prefixed with an RFC 3463\-compatible detail code;
+if none is specified a default 4.0.0 or 5.0.0 code is used instead.
+This program expects to be run from the \fBmaster\fR(8) process
+manager.
+
+Depending on the service name in master.cf, \fBerror\fR
+or \fBretry\fR, the server bounces or defers all recipients
+in the delivery request using the "next\-hop" information
+as the reason for non\-delivery. The \fBretry\fR service name is
+supported as of Postfix 2.4.
+
+Delivery status reports are sent to the \fBbounce\fR(8),
+\fBdefer\fR(8) or \fBtrace\fR(8) daemon as appropriate.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBerror\fR(8) mailer is not security\-sensitive. It does not talk
+to the network, and can be run chrooted at fixed low privilege.
+.SH "STANDARDS"
+.na
+.nf
+RFC 3463 (Enhanced Status Codes)
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+
+Depending on the setting of the \fBnotify_classes\fR parameter,
+the postmaster is notified of bounces and of other trouble.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are picked up automatically as \fBerror\fR(8)
+processes run for only a limited amount of time. Use the command
+"\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP "\fB2bounce_notice_recipient (postmaster)\fR"
+The recipient of undeliverable mail that cannot be returned to
+the sender.
+.IP "\fBbounce_notice_recipient (postmaster)\fR"
+The recipient of postmaster notifications with the message headers
+of mail that Postfix did not deliver and of SMTP conversation
+transcripts of mail that Postfix did not receive.
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBdelay_logging_resolution_limit (2)\fR"
+The maximal number of digits after the decimal point when logging
+sub\-second delay values.
+.IP "\fBdouble_bounce_sender (double\-bounce)\fR"
+The sender address of postmaster notifications that are generated
+by the mail system.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBnotify_classes (resource, software)\fR"
+The list of error classes that are reported to the postmaster.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "SEE ALSO"
+.na
+.nf
+qmgr(8), queue manager
+bounce(8), delivery status reports
+discard(8), Postfix discard delivery agent
+postconf(5), configuration parameters
+master(5), generic daemon options
+master(8), process manager
+syslogd(8), system logging
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

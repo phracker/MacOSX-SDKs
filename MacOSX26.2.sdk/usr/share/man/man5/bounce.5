@@ -1,0 +1,235 @@
+.TH BOUNCE 5 
+.ad
+.fi
+.SH NAME
+bounce
+\-
+Postfix bounce message template format
+.SH "SYNOPSIS"
+.na
+.nf
+\fBbounce_template_file = /etc/postfix/bounce.cf\fR
+
+\fBpostconf \-b\fR [\fItemplate_file\fR]
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix \fBbounce\fR(8) server produces delivery status
+notification (DSN) messages for undeliverable mail, delayed
+mail, successful delivery or address verification requests.
+
+By default, these notifications are generated from built\-in
+templates with message headers and message text. Sites can
+override the built\-in information by specifying a bounce
+template file with the \fBbounce_template_file\fR configuration
+parameter.
+
+This document describes the general procedure to create a
+bounce template file, followed by the specific details of
+bounce template formats.
+.SH "GENERAL PROCEDURE"
+.na
+.nf
+.ad
+.fi
+To create a customized bounce template file, create a
+temporary
+copy of the file \fB/etc/postfix/bounce.cf.default\fR and
+edit the temporary file.
+
+To preview the results of $\fIname\fR expansions in the
+template text, use the command
+
+.nf
+    \fBpostconf \-b\fR \fItemporary_file\fR
+.fi
+
+Errors in the template will be reported to the standard
+error stream and to the syslog daemon.
+
+While previewing the text, be sure to pay particular attention
+to the expansion of time value parameters that appear in
+the delayed mail notification text.
+
+Once the result is satisfactory, copy the template to the
+Postfix configuration directory and specify in main.cf
+something like:
+
+.nf
+/etc/postfix/main.cf:
+    bounce_template_file = /etc/postfix/bounce.cf
+.fi
+.SH "TEMPLATE FILE FORMAT"
+.na
+.nf
+.ad
+.fi
+The template file can specify templates for failed mail,
+delayed mail, successful delivery or for address verification.
+These templates are named \fBfailure_template\fR,
+\fBdelay_template\fR, \fBsuccess_template\fR and
+\fBverify_template\fR, respectively.  You can but do not
+have to specify all four templates in a bounce template
+file.
+
+Each template starts with "\fItemplate_name\fB = <<EOF\fR"
+and ends with a line that contains the word "\fBEOF\fR"
+only. You can change the word EOF, but you can't enclose
+it in quotes as with the shell or with Perl (\fItemplate_name\fB
+= <<'EOF'\fR). Here is an example:
+
+.nf
+    # The failure template is used for undeliverable mail.
+
+    failure_template = <<EOF
+    Charset: us\-ascii
+    From: MAILER\-DAEMON (Mail Delivery System)
+    Subject: Undelivered Mail Returned to Sender
+    Postmaster\-Subject: Postmaster Copy: Undelivered Mail
+
+    This is the mail system at host $myhostname.
+
+    I'm sorry to have to inform you that your message could not
+    be delivered to one or more recipients. It's attached below.
+
+    For further assistance, please send mail to postmaster.
+
+    If you do so, please include this problem report. You can
+    delete your own text from the attached returned message.
+
+                       The mail system
+    EOF
+.fi
+.PP
+The usage and specification of bounce templates is
+subject to the following restrictions:
+.IP \(bu
+No special meaning is given to the backslash character or
+to leading whitespace; these are always taken literally.
+.IP \(bu
+Inside the << context, the "$" character is special. To
+produce a "$" character as output, specify "$$".
+.IP \(bu
+Outside the << context, lines beginning with "#" are ignored,
+as are empty lines, and lines consisting of whitespace only.
+.PP
+Examples of all templates can be found in the file
+\fBbounce.cf.default\fR in the Postfix configuration
+directory.
+.SH "TEMPLATE HEADER FORMAT"
+.na
+.nf
+.ad
+.fi
+The first portion of a bounce template consists of optional
+template headers.  Some become message headers in the
+delivery status notification; some control the formatting
+of that notification. Headers not specified in a template
+will be left at their default value.
+
+The following headers are supported:
+.IP \fBCharset:\fR
+The MIME character set of the template message text.  See
+the "TEMPLATE MESSAGE TEXT FORMAT" description below.
+.IP \fBFrom:\fR
+The sender address in the message header of the delivery
+status notification.
+.IP \fBSubject:\fR
+The subject in the message header of the delivery status
+notification that is returned to the sender.
+.IP \fBPostmaster\-Subject:\fR
+The subject that will be used in Postmaster copies of
+undeliverable or delayed mail notifications. These copies
+are sent under control of the notify_classes configuration
+parameter.
+.PP
+The usage and specification of template message headers is
+subject to the following restrictions:
+.IP \(bu
+Template message header names can be specified in upper
+case, lower case or mixed case. Postfix always produces
+bounce message header labels of the form "\fBFrom:\fR" and
+"\fBSubject:\fR".
+.IP \(bu
+Template message headers must not span multiple lines.
+.IP \(bu
+Template message headers do not support $parameter expansions.
+.IP \(bu
+Template message headers must contain ASCII characters only,
+and must not contain ASCII null characters.
+.SH "TEMPLATE MESSAGE TEXT FORMAT"
+.na
+.nf
+.ad
+.fi
+The second portion of a bounce template consists of message
+text. As the above example shows, template message text may
+contain main.cf $parameters. Besides the parameters that are
+defined in main.cf, the following parameters are treated
+specially depending on the suffix that is appended to their
+name.
+.IP \fBdelay_warning_time_\fIsuffix\fR
+Expands into the value of the \fBdelay_warning_time\fR
+parameter, expressed in the time unit specified by
+\fIsuffix\fR, which is one of \fBseconds\fR, \fBminutes\fR,
+\fBhours\fB, \fBdays\fR, or \fBweeks\fR.
+.IP \fBmaximal_queue_lifetime_\fIsuffix\fR
+Expands into the value of the \fBmaximal_queue_lifetime\fR
+parameter, expressed in the time unit specified by
+\fIsuffix\fR.  See above under \fBdelay_warning_time\fR for
+possible \fIsuffix\fR values.
+.IP \fBmydomain\fR
+Expands into the value of the \fBmydomain\fR parameter.
+With "smtputf8_enable = yes", this replaces ACE labels
+(xn\-\-mumble) with their UTF\-8 equivalent.
+.sp
+This feature is available in Postfix 3.0.
+.IP \fBmyhostname\fR
+Expands into the value of the \fBmyhostname\fR parameter.
+With "smtputf8_enable = yes", this replaces ACE labels
+(xn\-\-mumble) with their UTF\-8 equivalent.
+.sp
+This feature is available in Postfix 3.0.
+.PP
+The usage and specification of template message text is
+subject to the following restrictions:
+.IP \(bu
+The template message text is not sent in Postmaster copies
+of delivery status notifications.
+.IP \(bu
+If the template message text contains non\-ASCII characters,
+Postfix requires that the \fBCharset:\fR template header
+is updated.  Specify an appropriate superset of US\-ASCII.
+A superset is needed because Postfix appends ASCII text
+after the message template when it sends a delivery status
+notification.
+.SH "SEE ALSO"
+.na
+.nf
+bounce(8), Postfix delivery status notifications
+postconf(5), configuration parameters
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+.ad
+.fi
+The Postfix bounce template format was originally developed by
+Nicolas Riendeau.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

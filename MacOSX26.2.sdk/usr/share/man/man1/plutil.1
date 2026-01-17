@@ -1,0 +1,228 @@
+.\""Copyright (c) 2002-2021, Apple Inc. All Rights Reserved.
+.Dd March 29, 2021
+.Dt PLUTIL 1
+.Os "macOS"
+.Sh NAME
+.Nm plutil
+.Nd property list utility
+.Sh SYNOPSIS
+.Nm
+.Op command_option
+.Op other_options
+.Ar file
+ ...
+.Sh DESCRIPTION
+.Nm
+can be used to check the syntax of property list files, or convert a plist file from one format to another.  Specifying - as an input file reads from stdin.
+.Pp
+The first argument indicates the operation to perform, one of:
+.Bl -tag -width "-convert fmt"
+.It Fl help
+Show the usage information for the command and exit.
+.It Fl p
+Print the property list in a human-readable fashion. The output format is not stable and not designed for machine parsing. The purpose of this command is to be able to easily read the contents of a plist file, no matter what format it is in.
+.It Fl lint
+Check the named property list files for syntax errors.
+This is the default command option if none is specified.
+.It Fl convert Ar fmt
+Convert the named 
+.Ar file
+to the indicated format and write back to the file system.  If the file can't be loaded due to invalid syntax, the operation fails. This is the only option to support 
+.Sy objc
+.Sy swift 
+formats.
+.It Fl convert Ar objc Fl header
+Converts the named file to Obj-C literal syntax and creates a 
+.Ar .h
+file. Useful for first time conversions to literal syntax and only supported with the 
+.Sy objc
+format.
+.It Fl insert Ar keypath Fl Ar type Oo Ar value Oc Op Fl append
+Insert a value into the property list before writing it out.
+.Ar value
+is required unless
+.Ar type
+is
+.Sy dictionary
+or
+.Sy array .
+If
+.Fl append
+is specified,
+.Ar keypath
+is expected to reference an array and the value will be appended to the end of the array.
+.It Fl replace Ar keypath Fl Ar type Ar value
+Overwrite an existing value in the property list before writing it out.
+.It Fl remove Ar keypath
+Removes the value at
+.Ar keypath
+from the property list before writing it out.
+.It Fl extract Ar keypath Ar fmt Op Fl expect Ar expect_type
+Outputs the value at
+.Ar keypath
+in the property list as a new plist of type
+.Ar fmt .
+Optionally fails if
+.Fl expect Ar expect_type
+is used and the value at
+.Ar keypath
+does not match that type.
+.It Fl type Ar keypath Op Fl expect Ar expect_type
+Outputs the type of the value at
+.Ar keypath
+in the property list. Optionally fails if
+.Fl expect Ar expect_type
+is used and the value at
+.Ar keypath
+does not match that type.
+.It Fl create Ar fmt
+Creates an empty plist of the specified
+.Ar fmt .
+.El
+.Pp
+There are a few additional options:
+.Bl -tag -width "-e extension"
+.It Fl -
+Specifies that all further arguments are file names
+.It Fl n
+When used with
+.Fl extract
+using the
+.Sy raw
+format, will not print a terminating newline character. This aids use in shell interpolation.
+.It Fl s
+Don't print anything on success.
+.It Fl r
+For JSON, add whitespace and indentation to make the output more human-readable and sort the keys like
+.Sy -p ,
+does.
+.It Fl o Ar path
+Specify an alternate path name for the result of the
+.Ar -convert
+operation; this option is only useful with a single file to be converted.  Specifying - as the path outputs to stdout.
+.It Fl e Ar extension
+Specify an alternate extension for converted files, and the output file names are otherwise the same.
+.El
+.Sh ARGUMENTS
+.Ar fmt
+is one of:
+.Bl -tag -width "binary1" -compact -offset indent
+.It Sy xml1
+for version 1 of the XML plist format
+.It Sy binary1
+for version 1 of the binary plist format
+.It Sy json
+for the JSON format
+.It Sy swift
+to convert from plist to swift literal syntax
+.It Sy objc
+to convert from plist to Obj-C literal syntax
+.It Sy raw
+when used with
+.Fl extract ,
+will print the unencapsulated value at the keypath. See
+.Sy RAW VALUES AND EXPECTED TYPES
+below. The result will be output to stdout unless
+.Fl o
+is specified.
+.El
+.Pp
+.Ar keypath
+is a key-value coding key path, with one extension:
+a numerical path component applied to an array will act on the object at that index in the array or insert it into the array if the numerical path component is the last one in the key path.
+.Pp
+.Ar type
+is one of:
+.Bl -tag -width "dictionary " -compact -offset -indent
+.It Fl bool
+YES if passed "YES" or "true", otherwise NO
+.It Fl integer
+any valid 64 bit integer
+.It Fl float
+any valid 64 bit float
+.It Fl string
+UTF8 encoded string
+.It Fl date
+date in XML property list format, not supported if outputting JSON
+.It Fl data
+a base-64 encoded string
+.It Fl xml
+an XML property list, useful for inserting compound values
+.It Fl json
+JSON fragment, useful for inserting compound values
+.It Fl array
+An empty array, when used with
+.Fl insert .
+Does not accept a
+.Ar value .
+.It Fl dictionary
+An empty dictionary, when used with
+.Fl insert
+Does not accept a
+.Ar value .
+.El
+.Pp
+.Ar value
+will be assigned to the
+.Ar keypath
+specified with the
+.Fl insert
+or
+.Fl replace
+flags.
+.Sh RAW VALUES AND EXPECTED TYPES
+With
+.Fl extract Ar keypath Sy raw
+the value printed depends on its type.
+.Pp
+Following are the possible
+.Ar expect_type
+values and how they will be printed when encountered with
+.Fl extract Ar keypath Sy raw
+.Bl -tag -width "dictionary " -compact -offset -indent
+.It Sy bool
+the string "true" or "false"
+.It Sy integer
+the numeric value
+.It Sy float
+the floating point value with no specific precision
+.It Sy string
+the raw unescaped string, UTF8-encoded
+.It Sy date
+the RFC3339-encoded string representation in UTC time zone
+.It Sy data
+a base64-encoded string representation of the data
+.It Sy array
+a number indicating the count of elements in the array
+.It Sy dictionary
+each key in the dictionary will be printed on a new line in alpha-sorted order
+.El
+The above
+.Ar expect_type
+string is itself printed when
+.Fl type Ar keypath
+is used.
+.Sh DIAGNOSTICS
+The
+.Nm
+command exits 0 on success, and 1 on failure.
+.Sh SEE ALSO 
+.Xr plist 5
+.Sh STANDARDS
+The 
+.Nm
+command obeys no one's rules but its own.
+.Sh HISTORY
+The
+.Nm
+command first appeared in macOS 10.2.
+.Pp
+The
+.Sy raw
+format type,
+.Fl type
+command,
+.Fl expect
+option, and
+.Fl append
+option first appeared in macOS 12.

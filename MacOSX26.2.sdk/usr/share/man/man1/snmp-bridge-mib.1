@@ -1,0 +1,208 @@
+'\" t
+.\"     Title: snmp-bridge-mib
+.\"    Author: Jens Osterkamp <jens@linux.vnet.ibm.com>
+.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
+.\"      Date: 03/26/2010
+.\"    Manual: Net-SNMP
+.\"    Source: http://www.ibm.com/ v6
+.\"  Language: English
+.\"
+.TH "SNMP\-BRIDGE\-MIB" 1 "26 Mar 2010" "http://www\&.ibm\&.com/ v6" "Net\-SNMP"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+snmp-bridge-mib \- provide Linux bridge information via SNMP
+.SH "SYNOPSIS"
+.HP \w'\fBsnmp\-bridge\-mib\fR\ 'u
+\fBsnmp\-bridge\-mib\fR {bridge}
+.SH "ARGUMENTS"
+.PP
+The following arguments are required:
+.PP
+\fBbridge\fR
+.RS 4
+The name of the Linux bridge for which you want to provide information via SNMP, e\&.g\&. br0\&.
+.RE
+.SH "DESCRIPTION"
+.PP
+The snmp\-bridge\-mib is an extension to net\-snmp\&. It collects information about a bridge in a Linux system and exports them for query from other (remote) systems for management purposes\&.
+.SH "CONFIGURATION:"
+.PP
+The preferred method of snmp\-bridge\-mib to attach to net\-snmp is agentx\&. For this to work, you will have to add the following line to /etc/snmp/snmpd\&.conf,
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    master agentx
+    
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+restart snmpd and start snmp\-bridge\-mib\&. snmp\-bridge\-mib will then connect to the running snmpd daemon\&.
+.PP
+Another way of attaching snmp\-bridge\-mib to is to run it as an embedded perl module\&. You have to add
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    perl do "path to location of snmp\-bridge\-mib"
+    
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+and restart snmpd\&.
+.SH "EXAMPLE:"
+.PP
+Follow the instructions in this manpage and type
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    perl /usr/bin/snmp\-bridge\-mib br0
+    
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+You\'ll get the following output:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+     registering at \&.1\&.3\&.6\&.1\&.2\&.1\&.17
+     running as a subagent\&.
+     dot1qbridge agent started\&.
+     NET\-SNMP version 5\&.4\&.2\&.1 AgentX subagent connected
+     
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Now it\'s time for a first test:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    $ export MIBS=+BRIDGE\-MIB
+    $ snmpwalk localhost \&.1\&.3\&.6\&.1\&.2\&.1\&.17
+    
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The output produced should look like
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    BRIDGE\-MIB::dot1dStpBridgeHelloTime = INTEGER: 199 centi\-seconds
+    BRIDGE\-MIB::dot1dStpBridgeForwardDelay = INTEGER: 1499 centi\-seconds
+    BRIDGE\-MIB::dot1dStpPort\&.1 = INTEGER: 1
+    BRIDGE\-MIB::dot1dStpPort\&.3 = INTEGER: 3
+    BRIDGE\-MIB::dot1dStpPortPriority\&.1 = INTEGER: 32
+    BRIDGE\-MIB::dot1dStpPortPriority\&.3 = INTEGER: 32
+    BRIDGE\-MIB::dot1dStpPortState\&.1 = INTEGER: disabled(1)
+    BRIDGE\-MIB::dot1dStpPortState\&.3 = INTEGER: disabled(1)
+    BRIDGE\-MIB::dot1dStpPortEnable\&.1 = INTEGER: disabled(2)
+    BRIDGE\-MIB::dot1dStpPortEnable\&.3 = INTEGER: disabled(2)
+    BRIDGE\-MIB::dot1dStpPortPathCost\&.1 = INTEGER: 2
+    BRIDGE\-MIB::dot1dStpPortPathCost\&.3 = INTEGER: 4
+    BRIDGE\-MIB::dot1dStpPortDesignatedRoot\&.1 = STRING: "8000\&.001018382c78"
+    BRIDGE\-MIB::dot1dStpPortDesignatedRoot\&.3 = STRING: "8000\&.001018382c78"
+    BRIDGE\-MIB::dot1dStpPortDesignatedCost\&.1 = INTEGER: 0
+    BRIDGE\-MIB::dot1dStpPortDesignatedCost\&.3 = INTEGER: 0
+    BRIDGE\-MIB::dot1dStpPortDesignatedBridge\&.1 = STRING: "8000\&.001018382c78"
+    BRIDGE\-MIB::dot1dStpPortDesignatedBridge\&.3 = STRING: "8000\&.001018382c78"
+    BRIDGE\-MIB::dot1dStpPortDesignatedPort\&.1 = STRING: "32769"
+    BRIDGE\-MIB::dot1dStpPortDesignatedPort\&.3 = STRING: "32770"
+    BRIDGE\-MIB::dot1dStpPortPathCost32\&.1 = INTEGER: 2
+    BRIDGE\-MIB::dot1dStpPortPathCost32\&.3 = INTEGER: 4
+    BRIDGE\-MIB::dot1dTpLearnedEntryDiscards = Counter32: 0
+    BRIDGE\-MIB::dot1dTpAgingTime = INTEGER: 300 seconds
+    BRIDGE\-MIB::dot1dTpFdbAddress\&.\'\&.\&.\&.8,x\' = STRING: 0:10:18:38:2c:78
+    BRIDGE\-MIB::dot1dTpFdbAddress\&.\'\&.!^/B|\' = STRING: 0:21:5e:2f:42:7c
+    BRIDGE\-MIB::dot1dTpFdbPort\&.\'\&.\&.\&.8,x\' = INTEGER: 1
+    BRIDGE\-MIB::dot1dTpFdbPort\&.\'\&.!^/B|\' = INTEGER: 3
+    BRIDGE\-MIB::dot1dTpFdbStatus\&.\'\&.\&.\&.8,x\' = INTEGER: learned(3)
+    BRIDGE\-MIB::dot1dTpFdbStatus\&.\'\&.!^/B|\' = INTEGER: learned(3)
+    BRIDGE\-MIB::dot1dTpPort\&.1 = INTEGER: 1
+    BRIDGE\-MIB::dot1dTpPort\&.3 = INTEGER: 3
+    BRIDGE\-MIB::dot1dTpPortMaxInfo\&.1 = INTEGER: 1500 bytes
+    BRIDGE\-MIB::dot1dTpPortMaxInfo\&.3 = INTEGER: 1500 bytes
+    BRIDGE\-MIB::dot1dTpPortInFrames\&.1 = Counter32: 18082 frames
+    BRIDGE\-MIB::dot1dTpPortInFrames\&.3 = Counter32: 1546072 frames
+    BRIDGE\-MIB::dot1dTpPortOutFrames\&.1 = Counter32: 11601 frames
+    BRIDGE\-MIB::dot1dTpPortOutFrames\&.3 = Counter32: 10988 frames
+    BRIDGE\-MIB::dot1dTpPortInDiscards\&.1 = Counter32: 0 frames
+    BRIDGE\-MIB::dot1dTpPortInDiscards\&.3 = Counter32: 0 frames
+    
+.fi
+.if n \{\
+.RE
+.\}
+.SH "BUGS"
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  1." 4.2
+.\}
+snmp\-bridge\-mib currently only supports one bridge which has to be specified on the commandline\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  2." 4.2
+.\}
+Not all elements of RFC 4188 because they are either not available in sysfs or difficult to extract from the existing data\&.
+.RE
+.PP
+.SH "SEE ALSO"
+.PP
+\fBsnmpd.conf\fR(5),
+\fBNet::SNMP\fR(3)
+.SH "AUTHOR"
+.PP
+\fBJens Osterkamp\fR <\&jens@linux\&.vnet\&.ibm\&.com\&>
+.RS 4
+Developer
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2009, 2010 IBM Corp., All Rights Reserved
+.br
+.PP
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+.PP
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software\&.
+.PP
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\&. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE\&.
+.sp

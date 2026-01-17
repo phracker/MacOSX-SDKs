@@ -1,0 +1,464 @@
+'\"
+'\" Copyright (c) 1990-1994 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH pack-old n 4.0 Tk "Tk Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+pack-old \- Obsolete syntax for packer geometry manager
+.SH SYNOPSIS
+\fBpack after \fIsibling \fIwindow options\fR ?\fIwindow options \fR...?
+.sp
+\fBpack append \fIparent \fIwindow options\fR ?\fIwindow options \fR...?
+.sp
+\fBpack before \fIsibling \fIwindow options\fR ?\fIwindow options \fR...?
+.sp
+\fBpack unpack \fIwindow\fR
+.BE
+
+.SH DESCRIPTION
+.PP
+\fINote: this manual entry describes the syntax for the \fBpack\fI
+command as it existed before Tk version 3.3.
+Although this syntax continues to be supported for backward
+compatibility, it is obsolete and should not be used anymore.
+At some point in the future it may cease to be supported.\fR
+.PP
+The packer is a geometry manager that arranges the
+children of a parent by packing them in order around the edges of
+the parent.  The first child is placed against one side of
+the window, occupying the entire span of the window along that
+side.  This reduces the space remaining for other children as
+if the side had been moved in by the size of the first child.
+Then the next child is placed against one side of the remaining
+cavity, and so on until all children have been placed or there
+is no space left in the cavity.
+.PP
+The \fBbefore\fR, \fBafter\fR, and \fBappend\fR forms of the \fBpack\fR
+command are used to insert one or more children into the packing order
+for their parent.  The \fBbefore\fR form inserts the children before
+window \fIsibling\fR in the order;  all of the other windows must be
+siblings of \fIsibling\fR.  The \fBafter\fR form inserts the windows
+after \fIsibling\fR, and the \fBappend\fR form appends one or more
+windows to the end of the packing order for \fIparent\fR.  If a
+\fIwindow\fR named in any of these commands is already packed in
+its parent, it is removed from its current position in the packing
+order and repositioned as indicated by the command.  All of these
+commands return an empty string as result.
+.PP
+The \fBunpack\fR form of the \fBpack\fR command removes \fIwindow\fR
+from the packing order of its parent and unmaps it.  After the
+execution of this command the packer will no longer manage
+\fIwindow\fR's geometry.
+.PP
+The placement of each child is actually a four-step process;
+the \fIoptions\fR argument following each \fIwindow\fR consists of
+a list of one or more fields that govern the placement of that
+window.  In the discussion below, the term \fIcavity\fR refers
+to the space left in a parent when a particular child is placed
+(i.e. all the space that was not claimed by earlier children in
+the packing order).  The term \fIparcel\fR refers to the space
+allocated to a particular child;  this is not necessarily the
+same as the child window's final geometry.
+.PP
+The first step in placing a child is to determine which side of
+the cavity it will lie against.  Any one of the following options
+may be used to specify a side:
+.TP
+\fBtop\fR
+Position the child's parcel against the top of the cavity,
+occupying the full width of the cavity.
+.TP
+\fBbottom\fR
+Position the child's parcel against the bottom of the cavity,
+occupying the full width of the cavity.
+.TP
+\fBleft\fR
+Position the child's parcel against the left side of the cavity,
+occupying the full height of the cavity.
+.TP
+\fBright\fR
+Position the child's parcel against the right side of the cavity,
+occupying the full height of the cavity.
+.LP
+At most one of these options should be specified for any given window.
+If no side is specified, then the default is \fBtop\fR.
+.PP
+The second step is to decide on a parcel for the child.  For \fBtop\fR
+and \fBbottom\fR windows, the desired parcel width is normally the cavity
+width and the desired parcel height is the window's requested height,
+as passed to \fBTk_GeometryRequest\fR. For \fBleft\fR and \fBright\fR
+windows, the desired parcel height is normally the cavity height and the
+desired width is the window's requested width.  However, extra
+space may be requested for the window using any of the following
+options:
+.TP 12
+\fBpadx \fInum\fR
+Add \fInum\fR pixels to the window's requested width before computing
+the parcel size as described above.
+.TP 12
+\fBpady \fInum\fR
+Add \fInum\fR pixels to the window's requested height before computing
+the parcel size as described above.
+.TP 12
+\fBexpand\fR
+This option requests that the window's parcel absorb any extra space left over
+in the parent's cavity after packing all the children.
+The amount of space left over depends on the sizes requested by the
+other children, and may be zero.  If several windows have all specified
+\fBexpand\fR then the extra width will be divided equally among all the
+\fBleft\fR and \fBright\fR windows that specified \fBexpand\fR and
+the extra height will be divided equally among all the \fBtop\fR and
+\fBbottom\fR windows that specified \fBexpand\fR.
+.LP
+If the desired width or height for a parcel is larger than the corresponding
+dimension of the cavity, then the cavity's dimension is used instead.
+.PP
+The third step in placing the window is to decide on the window's
+width and height.  The default is for the window to receive either
+its requested width and height or the those of the parcel, whichever
+is smaller.  If the parcel is larger than the window's requested
+size, then the following options may be used to expand the
+window to partially or completely fill the parcel:
+.TP
+\fBfill\fR
+Set the window's size to equal the parcel size.
+.TP
+\fBfillx\fR
+Increase the window's width to equal the parcel's width, but retain
+the window's requested height.
+.TP
+\fBfilly\fR
+Increase the window's height to equal the parcel's height, but retain
+the window's requested width.
+.PP
+The last step is to decide the window's location within its parcel.
+If the window's size equals the parcel's size, then the window simply
+fills the entire parcel.  If the parcel is larger than the window,
+then one of
+the following options may be used to specify where the window should
+be positioned within its parcel:
+.TP 15
+\fBframe center\fR
+Center the window in its parcel.  This is the default if no framing
+option is specified.
+.TP 15
+\fBframe n\fR
+Position the window with its top edge centered on the top edge of
+the parcel.
+.TP 15
+\fBframe ne\fR
+Position the window with its upper-right corner at the upper-right corner
+of the parcel.
+.TP 15
+\fBframe e\fR
+Position the window with its right edge centered on the right edge of
+the parcel.
+.TP 15
+\fBframe se\fR
+Position the window with its lower-right corner at the lower-right corner
+of the parcel.
+.TP 15
+\fBframe s\fR
+Position the window with its bottom edge centered on the bottom edge of
+the parcel.
+.TP 15
+\fBframe sw\fR
+Position the window with its lower-left corner at the lower-left corner
+of the parcel.
+.TP 15
+\fBframe w\fR
+Position the window with its left edge centered on the left edge of
+the parcel.
+.TP 15
+\fBframe nw\fR
+Position the window with its upper-left corner at the upper-left corner
+of the parcel.
+.PP
+The packer manages the mapped/unmapped state of all the packed
+children windows.  It automatically maps the windows when it packs
+them, and it unmaps any windows for which there was no space left
+in the cavity.
+.PP
+The packer makes geometry requests on behalf of the parent windows
+it manages.  For each parent window it requests a size large enough
+to accommodate all the options specified by all the packed children,
+such that zero space would be leftover for \fBexpand\fR options.
+
+.SH KEYWORDS
+geometry manager, location, packer, parcel, size

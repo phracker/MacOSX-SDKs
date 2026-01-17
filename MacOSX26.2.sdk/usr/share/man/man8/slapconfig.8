@@ -1,0 +1,153 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd Thu Feb 20 2003               \" DATE 
+.Dt slapconfig 8      \" Program name and manual section number 
+.Os MacOSX
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm slapconfig
+-- tool to configure slapd and related daemons
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\".Nm Other_name_for_same_program(),
+.\".Nm Yet another name for the same program.
+.\" Use .Nm macro to designate other names for the documented program.
+.\".Nd This line parsed for whatis database.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+command
+.Op command-options
+.Op Fl q
+.Pp
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is a utility for configuring slapd. It must be run by root.
+.Sh USAGE
+.Bl -tag -width stringtosetspacing12
+.It Fl q
+suppress prompts.
+.El
+.Ss Queries
+.Bl -tag -width stringtosetspacing12
+.It Fl defaultsuffix
+Returns the default suffix which is based on the machine's DNS name, or hostname if DNS is not available.
+.It Fl getclientconfig
+Returns whether this machine is an LDAP client, not a client, or advanced.
+.It Fl getldapconfig
+Returns the LDAP server settings.
+.It Fl getmacosxodpolicy
+Returns a property list containing the directory binding settings.
+.It Fl getmasterconfig
+Returns the list of replicas and replication interval.
+.It Fl getpasswordserveraddress
+Returns the IP address of the default password server.
+.It Fl getreplicaconfig
+Returns the master address and last update date.
+.It Fl getstyle
+Returns whether configuration is master, replica, client, or standalone.
+.It Fl help
+Print usage information.
+.It Fl ver
+Displays version information.
+.El
+.Ss Setup
+.Bl -ohang 
+.It Fl addreplica Oo --serverID num Oc Oo --guid D1C9C376-D940-404D-9941-7AD24E6A37DA Oc Ao replica-address Ac
+Adds a replication link with the specified server.  The serverID and GUID of the remote machine you'd like to replicate with.  The serverID and GUID can be viewed in the target machine's computer record.  Replication links are unidirectional, the corresponding command should be run on the target server as well to get full replication working.  Caution should be exercised with this command, it is best to avoid replication loops.
+.It Fl changeip Ao old-ip Ac Ao new-ip Ac Op Ao old-host Ac Ao new-host Ac
+Updates configuration records and files to contain the new host information.
+It does not change the IP address in Network preferences.
+.It Fl createldapmasterandadmin Oo --allow_local_realm Oc Oo --certAuthName Ao Cert Auth Name Ac Oc Oo --certAdminEmail Ao Cert Admin Email Ac Oc Oo --certOrgName Ao Cert Org Name Ac Oc Ao new-admin Ac Ao new-fullname Ac Ao new-uid Ac Op Ao search base suffix Ac Op Ao realm Ac
+Creates a new master LDAP server. Copies the root account to the new master domain. Creates
+a new directory node administrator.
+.It Fl createreplica Oo --certAdminEmail Ao Cert Admin Email Ac Oc Ao master IP or name Ac Ao admin user Ac
+Create a new replica from an existing LDAP master.
+.It Fl createrootcertauthority Ao Certificate Authority Name Ac Ao Certificate Authority Admin Email Ac Ao Certificate Authority Organization Name Ac
+Create a CA on the OD master. 
+.It Fl destroyldapserver Oo diradmin Oc
+Turns off the LDAP server and deletes its database.  The optional argument of the diradmin account name will then prompt for the diradmin password and will inform all replication peers of the server's destruction.
+.It Fl promotereplica Ao admin-user Ac Ao archive-path Ac
+Converts an existing replica into a master using the current database. Path to an archive from the master can given in order to add the root CA's keys to the promoted master.
+.It Fl removereplica Oo --guid D1C9C376-D940-404D-9941-7AD24E6A37DA Oc Fl Aq replica-address
+Removes a replication link with the specified server.  The GUID of the remote server being removed should be passed in with the --guid option.  Replication links are unidirectional, so the corresponding command should be run on the target server to remove the other half of an existing replication link.
+.It Fl setclient
+Configures the machine to bind using DHCP if it is not already a client.
+.It Fl setldapconfig Oo
+.Fl maxresults Ao Ar maximum search results Ac Oc Oo
+.Fl searchtimeout Ar timeout Oc Oo
+.Fl ssl Ar on|off Oc Oo
+.Fl sslidentity Ao Ar identity name Ac Oc Oo
+.Fl sslserialnumber Ao Ar certificate serial number Ac Oc Oo
+.Fl sslsha1fingerprint Ao Ar certificate sha1 fingerprint as a hex encoded colon separated string Ac Oc
+Applies the specified settings and restarts slapd. Settings not specified are unchanged.
+.It Fl setstandalone
+Configures the machine to only use the local directory.
+.It Fl setmacosxodpolicy Oo Fl binding Op disabled|enabled|required Oc Oo
+.Fl cleartext Op blocked|allowed Oc Oo
+.Fl encrypt Op yes|no Oc Oo
+.Fl sign Op yes|no Oc Oo
+.Fl clientcaching Op yes|no Oc Oo
+.Fl man-in-middle Op blocked|allowed 
+.Oc
+Sets directory binding options.
+.El
+.Bl -tag -width stringtosetspacing12
+.It Fl startldapserver
+Configures launchd to run slapd.
+.It Fl stopldapserver
+Configures launchd not to run slapd.
+.It Fl updateaddresses
+Merges new interfaces into the list of LDAP replicas.
+.El
+.Ss Password Server
+.Bl -tag -width stringtosetspacing12
+.It Fl startpasswordserver
+Sets up a launchd plist file and starts the password server.
+.It Fl stoppasswordserver
+Sets the launchd plist file to be disabled and stops the password server.
+.El
+.Ss Runtime
+.Bl -tag -width stringtosetspacing12
+.It Fl enableslapdlog
+Turns on the LDAP server logging to /var/log/slapd.log.
+.It Fl setfullsyncmode Oo Ar yes | Ar no Oc
+The LDAP server defaults to running in a "full sync mode" to ensure database transactions are fully flushed to disk.
+This improves data integrity in the event of a power loss, but can result in slower performance when importing large datasets.
+Setting this option to
+.Ar no
+disables this functionality temporarily in order to speed up large imports.
+After the import has been completed, this option should be set back to
+.Ar yes
+for normal operation.
+.El
+.Ss Backup and Restore
+.Bl -ohang
+.It Fl backupdb Ao Ar archive-path Ac
+Creates an archive containing the LDAP, Password Server and Kerberos databases. It also contains Certificate Authority related data.
+.It Fl restoredb Ao Ar archive-path Ac
+Restores a directory to the backed-up state.
+.El
+.Sh ENVIRONMENT
+The environment variable SSOUtilDebugLevel can be set to change the verbosity of the log.
+Valid values are [0-9]. The default value is 1.
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "/usr/sbin/slapconfig" -compact
+.It Pa /usr/sbin/slapconfig
+.\"slapconfig description
+.El
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr DirectoryService 1 ,
+.Xr slapd 8 
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner

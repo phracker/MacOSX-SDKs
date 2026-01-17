@@ -1,0 +1,905 @@
+.\"
+.\" cupsd.conf man page for CUPS.
+.\"
+.\" Copyright © 2007-2019 by Apple Inc.
+.\" Copyright © 1997-2006 by Easy Software Products.
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH cupsd.conf 5 "CUPS" "16 July 2019" "Apple Inc."
+.SH NAME
+cupsd.conf \- server configuration file for cups
+.SH DESCRIPTION
+The
+.I cupsd.conf
+file configures the CUPS scheduler,
+.BR cupsd (8).
+It is normally located in the
+.I /etc/cups
+directory.
+Each line in the file can be a configuration directive, a blank line, or a comment.
+Configuration directives typically consist of a name and zero or more values separated by whitespace.
+The configuration directive name and values are case-insensitive.
+Comment lines start with the # character.
+.SS TOP-LEVEL DIRECTIVES
+The following top-level directives are understood by
+.BR cupsd (8):
+.\"#AccessLogLevel
+.TP 5
+\fBAccessLogLevel config\fR
+.TP 5
+\fBAccessLogLevel actions\fR
+.TP 5
+\fBAccessLogLevel all\fR
+Specifies the logging level for the AccessLog file.
+The "config" level logs when printers and classes are added, deleted, or modified and when configuration files are accessed or updated.
+The "actions" level logs when print jobs are submitted, held, released, modified, or canceled, and any of the conditions for "config".
+The "all" level logs all requests.
+The default access log level is "actions".
+.\"#AutoPurgeJobs
+.TP 5
+\fBAutoPurgeJobs Yes\fR
+.TP 5
+\fBAutoPurgeJobs No\fR
+.br
+Specifies whether to purge job history data automatically when it is no longer required for quotas.
+The default is "No".
+.\"#BrowseDNSSDSubTypes
+.TP 5
+.BI BrowseDNSSDSubTypes _subtype[,...]
+Specifies a list of Bonjour sub-types to advertise for each shared printer.
+For example, "BrowseDNSSDSubTypes _cups,_print" will tell network clients that both CUPS sharing and IPP Everywhere are supported.
+The default is "_cups" which is necessary for printer sharing to work between systems using CUPS.
+.\"#BrowseLocalProtocols
+.TP 5
+\fBBrowseLocalProtocols all\fR
+.TP 5
+\fBBrowseLocalProtocols dnssd\fR
+.TP 5
+\fBBrowseLocalProtocols none\fR
+Specifies which protocols to use for local printer sharing.
+The default is "dnssd" on systems that support Bonjour and "none" otherwise.
+.\"#BrowseWebIF
+.TP 5
+\fBBrowseWebIF Yes\fR
+.TP 5
+\fBBrowseWebIF No\fR
+.br
+Specifies whether the CUPS web interface is advertised.
+The default is "No".
+.\"#Browsing
+.TP 5
+\fBBrowsing Yes\fR
+.TP 5
+\fBBrowsing No\fR
+.br
+Specifies whether shared printers are advertised.
+The default is "No".
+.\"#DefaultAuthType
+.TP 5
+\fBDefaultAuthType Basic\fR
+.TP 5
+\fBDefaultAuthType Negotiate\fR
+.br
+Specifies the default type of authentication to use.
+The default is "Basic".
+.\"#DefaultEncryption
+.TP 5
+\fBDefaultEncryption Never\fR
+.TP 5
+\fBDefaultEncryption IfRequested\fR
+.TP 5
+\fBDefaultEncryption Required\fR
+Specifies whether encryption will be used for authenticated requests.
+The default is "Required".
+.\"#DefaultLanguage
+.TP 5
+\fBDefaultLanguage \fIlocale\fR
+Specifies the default language to use for text and web content.
+The default is "en".
+.\"#DefaultPaperSize
+.TP 5
+\fBDefaultPaperSize Auto\fR
+.TP 5
+\fBDefaultPaperSize None\fR
+.TP 5
+\fBDefaultPaperSize \fIsizename\fR
+Specifies the default paper size for new print queues. "Auto" uses a locale-specific default, while "None" specifies there is no default paper size.
+Specific size names are typically "Letter" or "A4".
+The default is "Auto".
+.\"#DefaultPolicy
+.TP 5
+\fBDefaultPolicy \fIpolicy-name\fR
+Specifies the default access policy to use.
+The default access policy is "default".
+.\"#DefaultShared
+.TP 5
+\fBDefaultShared Yes\fR
+.TP 5
+\fBDefaultShared No\fR
+Specifies whether local printers are shared by default.
+The default is "Yes".
+.\"#DirtyCleanInterval
+.TP 5
+\fBDirtyCleanInterval \fIseconds\fR
+Specifies the delay for updating of configuration and state files.
+A value of 0 causes the update to happen as soon as possible, typically within a few milliseconds.
+The default value is "30".
+.\"#DNSSDHostName
+.TP 5
+.BI DNSSDHostName hostname.example.com
+Specifies the fully-qualified domain name for the server that is used for Bonjour sharing.
+The default is typically the server's ".local" hostname.
+.\"#ErrorPolicy
+.TP 5
+\fBErrorPolicy abort-job\fR
+Specifies that a failed print job should be aborted (discarded) unless otherwise specified for the printer.
+.TP 5
+\fBErrorPolicy retry-current-job\fR
+Specifies that a failed print job should be retried immediately unless otherwise specified for the printer.
+.TP 5
+\fBErrorPolicy retry-job\fR
+Specifies that a failed print job should be retried at a later time unless otherwise specified for the printer.
+.TP 5
+\fBErrorPolicy stop-printer\fR
+Specifies that a failed print job should stop the printer unless otherwise specified for the printer. The 'stop-printer' error policy is the default.
+.\"#FilterLimit
+.TP 5
+\fBFilterLimit \fIlimit\fR
+Specifies the maximum cost of filters that are run concurrently, which can be used to minimize disk, memory, and CPU resource problems.
+A limit of 0 disables filter limiting.
+An average print to a non-PostScript printer needs a filter limit of about 200.
+A PostScript printer needs about half that (100).
+Setting the limit below these thresholds will effectively limit the scheduler to printing a single job at any time.
+The default limit is "0".
+.\"#FilterNice
+.TP 5
+\fBFilterNice \fInice-value\fR
+Specifies the scheduling priority (
+.BR nice (8)
+value) of filters that are run to print a job.
+The nice value ranges from 0, the highest priority, to 19, the lowest priority.
+The default is 0.
+.\"#GSSServiceName
+.TP 5
+\fBGSSServiceName \fIname\fR
+Specifies the service name when using Kerberos authentication.
+The default service name is "http."
+.TP 5
+.\"#HostNameLookups
+\fBHostNameLookups On\fR
+.TP 5
+\fBHostNameLookups Off\fR
+.TP 5
+\fBHostNameLookups Double\fR
+Specifies whether to do reverse lookups on connecting clients.
+The "Double" setting causes
+.BR cupsd (8)
+to verify that the hostname resolved from the address matches one of the addresses returned for that hostname.
+Double lookups also prevent clients with unregistered addresses from connecting to your server.
+The default is "Off" to avoid the potential server performance problems with hostname lookups.
+Only set this option to "On" or "Double" if absolutely required.
+.\"#IdleExitTimeout
+.TP 5
+\fBIdleExitTimeout \fIseconds\fR
+Specifies the length of time to wait before shutting down due to inactivity.
+The default is "60" seconds.
+Note: Only applicable when
+.BR cupsd (8)
+is run on-demand (e.g., with \fB-l\fR).
+.\"#JobKillDelay
+.TP 5
+\fBJobKillDelay \fIseconds\fR
+Specifies the number of seconds to wait before killing the filters and backend associated with a canceled or held job.
+The default is "30".
+.\"#JobRetryInterval
+.TP 5
+\fBJobRetryInterval \fIseconds\fR
+Specifies the interval between retries of jobs in seconds.
+This is typically used for fax queues but can also be used with normal print queues whose error policy is "retry-job" or "retry-current-job".
+The default is "30".
+.\"#JobRetryLimit
+.TP 5
+\fBJobRetryLimit \fIcount\fR
+Specifies the number of retries that are done for jobs.
+This is typically used for fax queues but can also be used with normal print queues whose error policy is "retry-job" or "retry-current-job".
+The default is "5".
+.\"#KeepAlive
+.TP 5
+\fBKeepAlive Yes\fR
+.TP 5
+\fBKeepAlive No\fR
+Specifies whether to support HTTP keep-alive connections.
+The default is "Yes".
+.\"#KeepAliveTimeout
+.TP 5
+\fBKeepAliveTimeout \fIseconds\fR
+Specifies how long an idle client connection remains open.
+The default is "30".
+.\"#LimitIPP
+.TP 5
+\fB<Limit \fIoperation \fR...\fB> \fR... \fB</Limit>\fR
+Specifies the IPP operations that are being limited inside a Policy section. IPP operation names are listed below in the section "IPP OPERATION NAMES".
+.\"#Limit
+.TP 5
+\fB<Limit \fImethod \fR...\fB> \fR... \fB</Limit>\fR
+.\"#LimitExcept
+.TP 5
+\fB<LimitExcept \fImethod \fR...\fB> \fR... \fB</LimitExcept>\fR
+Specifies the HTTP methods that are being limited inside a Location section. HTTP method names are listed below in the section "HTTP METHOD NAMES".
+.\"#LimitRequestBody
+.TP 5
+\fBLimitRequestBody \fIsize\fR
+Specifies the maximum size of print files, IPP requests, and HTML form data.
+The default is "0" which disables the limit check.
+.\"#Listen
+.TP 5
+\fBListen \fIipv4-address\fB:\fIport\fR
+.TP 5
+\fBListen [\fIipv6-address\fB]:\fIport\fR
+.TP 5
+\fBListen *:\fIport\fR
+.TP 5
+\fBListen \fI/path/to/domain/socket\fR
+Listens to the specified address and port or domain socket path for connections.
+Multiple Listen directives can be provided to listen on multiple addresses.
+The Listen directive is similar to the Port directive but allows you to restrict access to specific interfaces or networks.
+.\"#ListenBackLog
+.TP 5
+\fBListenBackLog \fInumber\fR
+Specifies the number of pending connections that will be allowed.
+This normally only affects very busy servers that have reached the MaxClients limit, but can also be triggered by large numbers of simultaneous connections.
+When the limit is reached, the operating system will refuse additional connections until the scheduler can accept the pending ones.
+The default is the OS-defined default limit, typically either "5" for older operating systems or "128" for newer operating systems.
+.\"#Location
+.TP 5
+\fB<Location \fI/path\fB> \fR... \fB</Location>\fR
+Specifies access control for the named location.
+Paths are documented below in the section "LOCATION PATHS".
+.\"#LogDebugHistory
+.TP 5
+\fBLogDebugHistory \fInumber\fR
+Specifies the number of debugging messages that are retained for logging if an error occurs in a print job. Debug messages are logged regardless of the LogLevel setting.
+.\"#LogLevel
+.TP 5
+\fBLogLevel \fRnone
+.TP 5
+\fBLogLevel \fRemerg
+.TP 5
+\fBLogLevel \fRalert
+.TP 5
+\fBLogLevel \fRcrit
+.TP 5
+\fBLogLevel \fRerror
+.TP 5
+\fBLogLevel \fRwarn
+.TP 5
+\fBLogLevel \fRnotice
+.TP 5
+\fBLogLevel \fRinfo
+.TP 5
+\fBLogLevel \fRdebug
+.TP 5
+\fBLogLevel \fRdebug2
+Specifies the level of logging for the ErrorLog file.
+The value "none" stops all logging while "debug2" logs everything.
+The default is "warn".
+.\"#LogTimeFormat
+.TP 5
+\fBLogTimeFormat \fRstandard
+.TP 5
+\fBLogTimeFormat \fRusecs
+Specifies the format of the date and time in the log files.
+The value "standard" is the default and logs whole seconds while "usecs" logs microseconds.
+.\"#MaxClients
+.TP 5
+\fBMaxClients \fInumber\fR
+Specifies the maximum number of simultaneous clients that are allowed by the scheduler.
+The default is "100".
+.\"#MaxClientPerHost
+.TP 5
+\fBMaxClientsPerHost \fInumber\fR
+Specifies the maximum number of simultaneous clients that are allowed from a
+single address.
+The default is the MaxClients value.
+.\"#MaxCopies
+.TP 5
+\fBMaxCopies \fInumber\fR
+Specifies the maximum number of copies that a user can print of each job.
+The default is "9999".
+.\"#MaxHoldTime
+.TP 5
+\fBMaxHoldTime \fIseconds\fR
+Specifies the maximum time a job may remain in the "indefinite" hold state before it is canceled.
+The default is "0" which disables cancellation of held jobs.
+.\"#MaxJobs
+.TP 5
+\fBMaxJobs \fInumber\fR
+Specifies the maximum number of simultaneous jobs that are allowed.
+Set to "0" to allow an unlimited number of jobs.
+The default is "500".
+.\"#MaxJobsPerPrinter
+.TP 5
+\fBMaxJobsPerPrinter \fInumber\fR
+Specifies the maximum number of simultaneous jobs that are allowed per printer.
+The default is "0" which allows up to MaxJobs jobs per printer.
+.\"#MaxJobsPerUser
+.TP 5
+\fBMaxJobsPerUser \fInumber\fR
+Specifies the maximum number of simultaneous jobs that are allowed per user.
+The default is "0" which allows up to MaxJobs jobs per user.
+.\"#MaxJobTime
+.TP 5
+\fBMaxJobTime \fIseconds\fR
+Specifies the maximum time a job may take to print before it is canceled.
+Set to "0" to disable cancellation of "stuck" jobs.
+The default is "10800" (3 hours).
+.\"#MaxLogSize
+.TP 5
+\fBMaxLogSize \fIsize\fR
+Specifies the maximum size of the log files before they are rotated.
+The value "0" disables log rotation.
+The default is "1048576" (1MB).
+.\"#MultipleOperationTimeout
+.TP 5
+\fBMultipleOperationTimeout \fIseconds\fR
+Specifies the maximum amount of time to allow between files in a multiple file print job.
+The default is "900" (15 minutes).
+.\"#Policy
+.TP 5
+\fB<Policy \fIname\fB> \fR... \fB</Policy>\fR
+Specifies access control for the named policy.
+.\"#Port
+.TP 5
+\fBPort \fInumber\fR
+Listens to the specified port number for connections.
+.\"#PreserveJobFiles
+.TP 5
+\fBPreserveJobFiles Yes\fR
+.TP 5
+\fBPreserveJobFiles No\fR
+.TP 5
+\fBPreserveJobFiles \fIseconds\fR
+Specifies whether job files (documents) are preserved after a job is printed.
+If a numeric value is specified, job files are preserved for the indicated number of seconds after printing.
+The default is "86400" (preserve 1 day).
+.\"#PreserveJobHistory
+.TP 5
+\fBPreserveJobHistory Yes\fR
+.TP 5
+\fBPreserveJobHistory No\fR
+.TP 5
+\fBPreserveJobHistory \fIseconds\fR
+Specifies whether the job history is preserved after a job is printed.
+If a numeric value is specified, the job history is preserved for the indicated number of seconds after printing.
+If "Yes", the job history is preserved until the MaxJobs limit is reached.
+The default is "Yes".
+.\"#ReloadTimeout
+.TP 5
+\fBReloadTimeout \fIseconds\fR
+Specifies the amount of time to wait for job completion before restarting the scheduler.
+The default is "30".
+.\"#ServerAdmin
+.TP 5
+\fBServerAdmin \fIemail-address\fR
+Specifies the email address of the server administrator.
+The default value is "root@ServerName".
+.\"#ServerAlias
+.TP 5
+\fBServerAlias \fIhostname \fR[ ... \fIhostname \fR]
+.TP 5
+\fBServerAlias *\fR
+The ServerAlias directive is used for HTTP Host header validation when clients connect to the scheduler from external interfaces.
+Using the special name "*" can expose your system to known browser-based DNS rebinding attacks, even when accessing sites through a firewall.
+If the auto-discovery of alternate names does not work, we recommend listing each alternate name with a ServerAlias directive instead of using "*".
+.\"#ServerName
+.TP 5
+\fBServerName \fIhostname\fR
+Specifies the fully-qualified hostname of the server.
+The default is the value reported by the
+.BR hostname (1)
+command.
+.\"#ServerTokens
+.TP 5
+\fBServerTokens None\fR
+.TP 5
+\fBServerTokens ProductOnly\fR
+.TP 5
+\fBServerTokens Major\fR
+.TP 5
+\fBServerTokens Minor\fR
+.TP 5
+\fBServerTokens Minimal\fR
+.TP 5
+\fBServerTokens OS\fR
+.TP 5
+\fBServerTokens Full\fR
+Specifies what information is included in the Server header of HTTP responses.
+"None" disables the Server header.
+"ProductOnly" reports "CUPS".
+"Major" reports "CUPS/major IPP/2".
+"Minor" reports "CUPS/major.minor IPP/2.1".
+"Minimal" reports "CUPS/major.minor.patch IPP/2.1".
+"OS" reports "CUPS/major.minor.path (osname osversion) IPP/2.1".
+"Full" reports "CUPS/major.minor.path (osname osversion; architecture) IPP/2.1".
+The default is "Minimal".
+.\"#SSLListen
+.TP 5
+\fBSSLListen \fIipv4-address\fB:\fIport\fR
+.TP 5
+\fBSSLListen [\fIipv6-address\fB]:\fIport\fR
+.TP 5
+\fBSSLListen *:\fIport\fR
+Listens on the specified address and port for encrypted connections.
+.\"#SSLOptions
+.TP 5
+.TP 5
+\fBSSLOptions \fR[\fIAllowDH\fR] [\fIAllowRC4\fR] [\fIAllowSSL3\fR] [\fIDenyCBC\fR] [\fIDenyTLS1.0\fR] [\fIMaxTLS1.0\fR] [\fIMaxTLS1.1\fR] [\fIMaxTLS1.2\fR] [\fIMaxTLS1.3\fR] [\fIMinTLS1.0\fR] [\fIMinTLS1.1\fR] [\fIMinTLS1.2\fR] [\fIMinTLS1.3\fR]
+.TP 5
+\fBSSLOptions None\fR
+Sets encryption options (only in /etc/cups/client.conf).
+By default, CUPS only supports encryption using TLS v1.0 or higher using known secure cipher suites.
+Security is reduced when \fIAllow\fR options are used.
+Security is enhanced when \fIDeny\fR options are used.
+The \fIAllowDH\fR option enables cipher suites using plain Diffie-Hellman key negotiation (not supported on systems using GNU TLS).
+The \fIAllowRC4\fR option enables the 128-bit RC4 cipher suites, which are required for some older clients.
+The \fIAllowSSL3\fR option enables SSL v3.0, which is required for some older clients that do not support TLS v1.0.
+The \fIDenyCBC\fR option disables all CBC cipher suites.
+The \fIDenyTLS1.0\fR option disables TLS v1.0 support - this sets the minimum protocol version to TLS v1.1.
+The \fIMinTLS\fR options set the minimum TLS version to support.
+The \fIMaxTLS\fR options set the maximum TLS version to support.
+Not all operating systems support TLS 1.3 at this time.
+.\"#SSLPort
+.TP 5
+\fBSSLPort \fIport\fR
+Listens on the specified port for encrypted connections.
+.\"#StrictConformance
+.TP 5
+\fBStrictConformance Yes\fR
+.TP 5
+\fBStrictConformance No\fR
+Specifies whether the scheduler requires clients to strictly adhere to the IPP specifications.
+The default is "No".
+.\"#Timeout
+.TP 5
+\fBTimeout \fIseconds\fR
+Specifies the HTTP request timeout.
+The default is "900" (15 minutes).
+.\"#WebInterface
+.TP 5
+\fBWebInterface yes\fR
+.TP 5
+\fBWebInterface no\fR
+Specifies whether the web interface is enabled.
+The default is "No".
+.SS HTTP METHOD NAMES
+The following HTTP methods are supported by
+.BR cupsd (8):
+.TP 5
+GET
+Used by a client to download icons and other printer resources and to access the CUPS web interface.
+.TP 5
+HEAD
+Used by a client to get the type, size, and modification date of resources.
+.TP 5
+OPTIONS
+Used by a client to establish a secure (SSL/TLS) connection.
+.TP 5
+POST
+Used by a client to submit IPP requests and HTML forms from the CUPS web interface.
+.TP 5
+PUT
+Used by a client to upload configuration files.
+.SS IPP OPERATION NAMES
+The following IPP operations are supported by
+.BR cupsd (8):
+.TP 5
+CUPS\-Accept\-Jobs
+Allows a printer to accept new jobs.
+.TP 5
+CUPS\-Add\-Modify\-Class
+Adds or modifies a printer class.
+.TP 5
+CUPS\-Add\-Modify\-Printer
+Adds or modifies a printer.
+.TP 5
+CUPS\-Authenticate\-Job
+Releases a job that is held for authentication.
+.TP 5
+CUPS\-Delete\-Class
+Deletes a printer class.
+.TP 5
+CUPS\-Delete\-Printer
+Deletes a printer.
+.TP 5
+CUPS\-Get\-Classes
+Gets a list of printer classes.
+.TP 5
+CUPS\-Get\-Default
+Gets the server default printer or printer class.
+.TP 5
+CUPS\-Get\-Devices
+Gets a list of devices that are currently available.
+.TP 5
+CUPS\-Get\-Document
+Gets a document file for a job.
+.TP 5
+CUPS\-Get\-PPD
+Gets a PPD file.
+.TP 5
+CUPS\-Get\-PPDs
+Gets a list of installed PPD files.
+.TP 5
+CUPS\-Get\-Printers
+Gets a list of printers.
+.TP 5
+CUPS\-Move\-Job
+Moves a job.
+.TP 5
+CUPS\-Reject\-Jobs
+Prevents a printer from accepting new jobs.
+.TP 5
+CUPS\-Set\-Default
+Sets the server default printer or printer class.
+.TP 5
+Cancel\-Job
+Cancels a job.
+.TP 5
+Cancel\-Jobs
+Cancels one or more jobs.
+.TP 5
+Cancel\-My\-Jobs
+Cancels one or more jobs creates by a user.
+.TP 5
+Cancel\-Subscription
+Cancels a subscription.
+.TP 5
+Close\-Job
+Closes a job that is waiting for more documents.
+.TP 5
+Create\-Job
+Creates a new job with no documents.
+.TP 5
+Create\-Job\-Subscriptions
+Creates a subscription for job events.
+.TP 5
+Create\-Printer\-Subscriptions
+Creates a subscription for printer events.
+.TP 5
+Get\-Job\-Attributes
+Gets information about a job.
+.TP 5
+Get\-Jobs
+Gets a list of jobs.
+.TP 5
+Get\-Notifications
+Gets a list of event notifications for a subscription.
+.TP 5
+Get\-Printer\-Attributes
+Gets information about a printer or printer class.
+.TP 5
+Get\-Subscription\-Attributes
+Gets information about a subscription.
+.TP 5
+Get\-Subscriptions
+Gets a list of subscriptions.
+.TP 5
+Hold\-Job
+Holds a job from printing.
+.TP 5
+Hold\-New\-Jobs
+Holds all new jobs from printing.
+.TP 5
+Pause\-Printer
+Stops processing of jobs by a printer or printer class.
+.TP 5
+Pause\-Printer\-After\-Current\-Job
+Stops processing of jobs by a printer or printer class after the current job is finished.
+.TP 5
+Print\-Job
+Creates a new job with a single document.
+.TP 5
+Purge\-Jobs
+Cancels one or more jobs and deletes the job history.
+.TP 5
+Release\-Held\-New\-Jobs
+Allows previously held jobs to print.
+.TP 5
+Release\-Job
+Allows a job to print.
+.TP 5
+Renew\-Subscription
+Renews a subscription.
+.TP 5
+Restart\-Job
+Reprints a job, if possible.
+.TP 5
+Send\-Document
+Adds a document to a job.
+.TP 5
+Set\-Job\-Attributes
+Changes job information.
+.TP 5
+Set\-Printer\-Attributes
+Changes printer or printer class information.
+.TP 5
+Validate\-Job
+Validates options for a new job.
+.SS LOCATION PATHS
+The following paths are commonly used when configuring
+.BR cupsd (8):
+.TP 5
+/
+The path for all get operations (get-printers, get-jobs, etc.)
+.TP 5
+/admin
+The path for all administration operations (add-printer, delete-printer, start-printer, etc.)
+.TP 5
+/admin/conf
+The path for access to the CUPS configuration files (cupsd.conf, client.conf, etc.)
+.TP 5
+/admin/log
+The path for access to the CUPS log files (access_log, error_log, page_log)
+.TP 5
+/classes
+The path for all printer classes
+.TP 5
+/classes/name
+The resource for the named printer class
+.TP 5
+/jobs
+The path for all jobs (hold-job, release-job, etc.)
+.TP 5
+/jobs/id
+The path for the specified job
+.TP 5
+/printers
+The path for all printers
+.TP 5
+/printers/name
+The path for the named printer
+.TP 5
+/printers/name.png
+The icon file path for the named printer
+.TP 5
+/printers/name.ppd
+The PPD file path for the named printer
+.SS DIRECTIVES VALID WITHIN LOCATION AND LIMIT SECTIONS
+The following directives may be placed inside Location and Limit sections in the \fBcupsd.conf\fR file:
+.TP 5
+\fBAllow all\fR
+.TP 5
+\fBAllow none\fR
+.TP 5
+\fBAllow \fIhost.domain.com\fR
+.TP 5
+\fBAllow *.\fIdomain.com\fR
+.TP 5
+\fBAllow \fIipv4-address\fR
+.TP 5
+\fBAllow \fIipv4-address\fB/\fInetmask\fR
+.TP 5
+\fBAllow \fIipv4-address\fB/\fImm\fR
+.TP 5
+\fBAllow [\fIipv6-address\fB]\fR
+.TP 5
+\fBAllow [\fIipv6-address\fB]/\fImm\fR
+.TP 5
+\fBAllow @IF(\fIname\fB)\fR
+.TP 5
+\fBAllow @LOCAL\fR
+Allows access from the named hosts, domains, addresses, or interfaces.
+The @IF(name) form uses the current subnets configured for the named interface.
+The @LOCAL form uses the current subnets configured for all interfaces that are not point-to-point, for example Ethernet and Wi-Fi interfaces are used but DSL and VPN interfaces are not.
+The Order directive controls whether Allow lines are evaluated before or after Deny lines.
+.TP 5
+\fBAuthType None\fR
+.TP 5
+\fBAuthType Basic\fR
+.TP 5
+\fBAuthType Default\fR
+.TP 5
+\fBAuthType Negotiate\fR
+Specifies the type of authentication required.
+The value "Default" corresponds to the DefaultAuthType value.
+.TP 5
+\fBDeny all\fR
+.TP 5
+\fBDeny none\fR
+.TP 5
+\fBDeny \fIhost.domain.com\fR
+.TP 5
+\fBDeny *.\fIdomain.com\fR
+.TP 5
+\fBDeny \fIipv4-address\fR
+.TP 5
+\fBDeny \fIipv4-address\fB/\fInetmask\fR
+.TP 5
+\fBDeny \fIipv4-address\fB/\fImm\fR
+.TP 5
+\fBDeny [\fIipv6-address\fB]\fR
+.TP 5
+\fBDeny [\fIipv6-address\fB]/\fImm\fR
+.TP 5
+\fBDeny @IF(\fIname\fB)\fR
+.TP 5
+\fBDeny @LOCAL\fR
+Denies access from the named hosts, domains, addresses, or interfaces.
+The @IF(name) form uses the current subnets configured for the named interface.
+The @LOCAL form uses the current subnets configured for all interfaces that are not point-to-point, for example Ethernet and Wi-Fi interfaces are used but DSL and VPN interfaces are not.
+The Order directive controls whether Deny lines are evaluated before or after Allow lines.
+.TP 5
+\fBEncryption IfRequested\fR
+.TP 5
+\fBEncryption Never\fR
+.TP 5
+\fBEncryption Required\fR
+Specifies the level of encryption that is required for a particular location.
+The default value is "IfRequested".
+.TP 5
+\fBOrder allow,deny\fR
+Specifies that access is denied by default. Allow lines are then processed followed by Deny lines to determine whether a client may access a particular resource.
+.TP 5
+\fBOrder deny,allow\fR
+Specifies that access is allowed by default. Deny lines are then processed followed by Allow lines to determine whether a client may access a particular resource.
+.TP 5
+\fBRequire group \fIgroup-name \fR[ \fIgroup-name \fR... ]
+Specifies that an authenticated user must be a member of one of the named groups.
+.TP 5
+\fBRequire user {\fIuser-name\fR|\fB@\fIgroup-name\fR} ...
+Specifies that an authenticated user must match one of the named users or be a member of one of the named groups.
+The group name "@SYSTEM" corresponds to the list of groups defined by the SystemGroup directive in the
+.BR cups-files.conf (5)
+file.
+The group name "@OWNER" corresponds to the owner of the resource, for example the person that submitted a print job.
+Note: The 'root' user is not special and must be granted privileges like any other user account.
+.TP 5
+\fBRequire valid-user\fR
+Specifies that any authenticated user is acceptable.
+.TP 5
+\fBSatisfy all\fR
+Specifies that all Allow, AuthType, Deny, Order, and Require conditions must be satisfied to allow access.
+.TP 5
+\fBSatisfy any\fR
+Specifies that any a client may access a resource if either the authentication (AuthType/Require) or address (Allow/Deny/Order) conditions are satisfied.
+For example, this can be used to require authentication only for remote accesses.
+.SS DIRECTIVES VALID WITHIN POLICY SECTIONS
+The following directives may be placed inside Policy sections in the \fBcupsd.conf\fR file:
+.TP 5
+\fBJobPrivateAccess all\fR
+.TP 5
+\fBJobPrivateAccess default\fR
+.TP 5
+\fBJobPrivateAccess \fR{\fIuser\fR|\fB@\fIgroup\fR|\fB@ACL\fR|\fB@OWNER\fR|\fB@SYSTEM\fR} ...
+Specifies an access list for a job's private values.
+The "default" access list is "@OWNER @SYSTEM".
+"@ACL" maps to the printer's requesting-user-name-allowed or requesting-user-name-denied values.
+"@OWNER" maps to the job's owner.
+"@SYSTEM" maps to the groups listed for the SystemGroup directive in the
+.BR cups-files.conf (5)
+file.
+.TP 5
+\fBJobPrivateValues all\fR
+.TP 5
+\fBJobPrivateValues default\fR
+.TP 5
+\fBJobPrivateValues none\fR
+.TP 5
+\fBJobPrivateValues \fIattribute-name \fR[ ... \fIattribute-name \fR]
+Specifies the list of job values to make private.
+The "default" values are "job-name", "job-originating-host-name", "job-originating-user-name", and "phone".
+.TP 5
+\fBSubscriptionPrivateAccess all\fR
+.TP 5
+\fBSubscriptionPrivateAccess default\fR
+.TP 5
+\fBSubscriptionPrivateAccess \fR{\fIuser\fR|\fB@\fIgroup\fR|\fB@ACL\fR|\fB@OWNER\fR|\fB@SYSTEM\fR} ...
+Specifies an access list for a subscription's private values.
+The "default" access list is "@OWNER @SYSTEM".
+"@ACL" maps to the printer's requesting-user-name-allowed or requesting-user-name-denied values.
+"@OWNER" maps to the job's owner.
+"@SYSTEM" maps to the groups listed for the SystemGroup directive in the
+.BR cups-files.conf (5)
+file.
+.TP 5
+\fBSubscriptionPrivateValues all\fR
+.TP 5
+\fBSubscriptionPrivateValues default\fR
+.TP 5
+\fBSubscriptionPrivateValues none\fR
+.TP 5
+\fBSubscriptionPrivateValues \fIattribute-name \fR[ ... \fIattribute-name \fR]
+Specifies the list of subscription values to make private.
+The "default" values are "notify-events", "notify-pull-method", "notify-recipient-uri", "notify-subscriber-user-name", and "notify-user-data".
+.SS DEPRECATED DIRECTIVES
+The following directives are deprecated and will be removed in a future release of CUPS:
+.\"#Classification
+.TP 5
+\fBClassification \fIbanner\fR
+.br
+Specifies the security classification of the server.
+Any valid banner name can be used, including "classified", "confidential", "secret", "topsecret", and "unclassified", or the banner can be omitted to disable secure printing functions.
+The default is no classification banner.
+.\"#ClassifyOverride
+.TP 5
+\fBClassifyOverride Yes\fR
+.TP 5
+\fBClassifyOverride No\fR
+.br
+Specifies whether users may override the classification (cover page) of individual print jobs using the "job-sheets" option.
+The default is "No".
+.\"#PageLogFormat
+.TP 5
+\fBPageLogFormat \fIformat-string\fR
+Specifies the format of PageLog lines.
+Sequences beginning with percent (%) characters are replaced with the corresponding information, while all other characters are copied literally.
+The following percent sequences are recognized:
+.nf
+
+    "%%" inserts a single percent character.
+    "%{name}" inserts the value of the specified IPP attribute.
+    "%C" inserts the number of copies for the current page.
+    "%P" inserts the current page number.
+    "%T" inserts the current date and time in common log format.
+    "%j" inserts the job ID.
+    "%p" inserts the printer name.
+    "%u" inserts the username.
+
+.fi
+The default is the empty string, which disables page logging.
+The string "%p %u %j %T %P %C %{job-billing} %{job-originating-host-name} %{job-name} %{media} %{sides}" creates a page log with the standard items.
+Use "%{job-impressions-completed}" to insert the number of pages (sides) that were printed, or "%{job-media-sheets-completed}" to insert the number of sheets that were printed.
+.\"#RIPCache
+.TP 5
+\fBRIPCache \fIsize\fR
+Specifies the maximum amount of memory to use when converting documents into bitmaps for a printer.
+The default is "128m".
+.SH NOTES
+File, directory, and user configuration directives that used to be allowed in the \fBcupsd.conf\fR file are now stored in the
+.BR cups-files.conf (5)
+file instead in order to prevent certain types of privilege escalation attacks.
+.PP
+The scheduler MUST be restarted manually after making changes to the \fBcupsd.conf\fR file.
+On Linux this is typically done using the
+.BR systemctl (8)
+command, while on macOS the
+.BR launchctl (8)
+command is used instead.
+.PP
+The @LOCAL macro name can be confusing since the system running
+.B cupsd
+often belongs to a different set of subnets from its clients.
+.SH CONFORMING TO
+The \fBcupsd.conf\fR file format is based on the Apache HTTP Server configuration file format.
+.SH EXAMPLES
+Log everything with a maximum log file size of 32 megabytes:
+.nf
+
+    AccessLogLevel all
+    LogLevel debug2
+    MaxLogSize 32m
+
+.fi
+Require authentication for accesses from outside the 10. network:
+.nf
+
+    <Location />
+    Order allow,deny
+    Allow from 10./8
+    AuthType Basic
+    Require valid-user
+    Satisfy any
+    </Location>
+.fi
+.SH SEE ALSO
+.BR classes.conf (5),
+.BR cups-files.conf (5),
+.BR cupsd (8),
+.BR mime.convs (5),
+.BR mime.types (5),
+.BR printers.conf (5),
+.BR subscriptions.conf (5),
+CUPS Online Help (http://localhost:631/help)
+.SH COPYRIGHT
+Copyright \[co] 2007-2019 by Apple Inc.

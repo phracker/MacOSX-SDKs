@@ -1,0 +1,178 @@
+'\" t
+.\"     Title: glBindAttribLocation
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 03/08/2011
+.\"    Manual: OpenGL 3.3
+.\"    Source: OpenGL 3.3
+.\"  Language: English
+.\"
+.TH "GLBINDATTRIBLOCATION" "3G" "03/08/2011" "OpenGL 3.3" "OpenGL 3\&.3"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+glBindAttribLocation \- Associates a generic vertex attribute index with a named attribute variable
+.SH "C SPECIFICATION"
+.HP \w'void\ glBindAttribLocation('u
+.BI "void glBindAttribLocation(GLuint\ " "program" ", GLuint\ " "index" ", const\ GLchar\ *" "name" ");"
+.SH "PARAMETERS"
+.PP
+\fIprogram\fR
+.RS 4
+Specifies the handle of the program object in which the association is to be made\&.
+.RE
+.PP
+\fIindex\fR
+.RS 4
+Specifies the index of the generic vertex attribute to be bound\&.
+.RE
+.PP
+\fIname\fR
+.RS 4
+Specifies a null terminated string containing the name of the vertex shader attribute variable to which
+\fIindex\fR
+is to be bound\&.
+.RE
+.SH "DESCRIPTION"
+.PP
+\fBglBindAttribLocation\fR
+is used to associate a user\-defined attribute variable in the program object specified by
+\fIprogram\fR
+with a generic vertex attribute index\&. The name of the user\-defined attribute variable is passed as a null terminated string in
+\fIname\fR\&. The generic vertex attribute index to be bound to this variable is specified by
+\fIindex\fR\&. When
+\fIprogram\fR
+is made part of current state, values provided via the generic vertex attribute
+\fIindex\fR
+will modify the value of the user\-defined attribute variable specified by
+\fIname\fR\&.
+.PP
+If
+\fIname\fR
+refers to a matrix attribute variable,
+\fIindex\fR
+refers to the first column of the matrix\&. Other matrix columns are then automatically bound to locations
+\fIindex+1\fR
+for a matrix of type
+\fBmat2\fR;
+\fIindex+1\fR
+and
+\fIindex+2\fR
+for a matrix of type
+\fBmat3\fR; and
+\fIindex+1\fR,
+\fIindex+2\fR, and
+\fIindex+3\fR
+for a matrix of type
+\fBmat4\fR\&.
+.PP
+This command makes it possible for vertex shaders to use descriptive names for attribute variables rather than generic variables that are numbered from 0 to
+\fBGL_MAX_VERTEX_ATTRIBS\fR
+\-1\&. The values sent to each generic attribute index are part of current state\&. If a different program object is made current by calling
+\fBglUseProgram\fR(), the generic vertex attributes are tracked in such a way that the same values will be observed by attributes in the new program object that are also bound to
+\fIindex\fR\&.
+.PP
+Attribute variable name\-to\-generic attribute index bindings for a program object can be explicitly assigned at any time by calling
+\fBglBindAttribLocation\fR\&. Attribute bindings do not go into effect until
+\fBglLinkProgram\fR()
+is called\&. After a program object has been linked successfully, the index values for generic attributes remain fixed (and their values can be queried) until the next link command occurs\&.
+.PP
+Any attribute binding that occurs after the program object has been linked will not take effect until the next time the program object is linked\&.
+.SH "NOTES"
+.PP
+\fBglBindAttribLocation\fR
+can be called before any vertex shader objects are bound to the specified program object\&. It is also permissible to bind a generic attribute index to an attribute variable name that is never used in a vertex shader\&.
+.PP
+If
+\fIname\fR
+was bound previously, that information is lost\&. Thus you cannot bind one user\-defined attribute variable to multiple indices, but you can bind multiple user\-defined attribute variables to the same index\&.
+.PP
+Applications are allowed to bind more than one user\-defined attribute variable to the same generic vertex attribute index\&. This is called
+\fIaliasing\fR, and it is allowed only if just one of the aliased attributes is active in the executable program, or if no path through the shader consumes more than one attribute of a set of attributes aliased to the same location\&. The compiler and linker are allowed to assume that no aliasing is done and are free to employ optimizations that work only in the absence of aliasing\&. OpenGL implementations are not required to do error checking to detect aliasing\&.
+.PP
+Active attributes that are not explicitly bound will be bound by the linker when
+\fBglLinkProgram\fR()
+is called\&. The locations assigned can be queried by calling
+\fBglGetAttribLocation\fR()\&.
+.PP
+OpenGL copies the
+\fIname\fR
+string when
+\fBglBindAttribLocation\fR
+is called, so an application may free its copy of the
+\fIname\fR
+string immediately after the function returns\&.
+.PP
+Generic attribute locations may be specified in the shader source text using a
+\fBlocation\fR
+layout qualifier\&. In this case, the location of the attribute specified in the shader\*(Aqs source takes precedence and may be queried by calling
+\fBglGetAttribLocation\fR()\&.
+.SH "ERRORS"
+.PP
+\fBGL_INVALID_VALUE\fR
+is generated if
+\fIindex\fR
+is greater than or equal to
+\fBGL_MAX_VERTEX_ATTRIBS\fR\&.
+.PP
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fIname\fR
+starts with the reserved prefix "gl_"\&.
+.PP
+\fBGL_INVALID_VALUE\fR
+is generated if
+\fIprogram\fR
+is not a value generated by OpenGL\&.
+.PP
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fIprogram\fR
+is not a program object\&.
+.SH "ASSOCIATED GETS"
+.PP
+\fBglGet\fR()
+with argument
+\fBGL_MAX_VERTEX_ATTRIBS\fR
+.PP
+\fBglGetActiveAttrib\fR()
+with argument
+\fIprogram\fR
+.PP
+\fBglGetAttribLocation\fR()
+with arguments
+\fIprogram\fR
+and
+\fIname\fR
+.PP
+\fBglIsProgram\fR()
+.SH "SEE ALSO"
+.PP
+\fBglDisableVertexAttribArray\fR(),
+\fBglEnableVertexAttribArray\fR(),
+\fBglUseProgram\fR(),
+\fBglVertexAttrib\fR(),
+\fBglVertexAttribPointer\fR()
+.SH "COPYRIGHT"
+.PP
+Copyright
+\(co
+2003\-2005 3Dlabs Inc\&. Ltd\&. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1\&.0, 8 June 1999\&.
+\m[blue]\fBhttp://opencontent\&.org/openpub/\fR\m[]\&.

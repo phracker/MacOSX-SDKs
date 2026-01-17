@@ -1,0 +1,133 @@
+.\" Copyright (c) 2022 Apple Inc. All rights reserved.
+.Dd 22 February, 2022
+.Dt eslogger 1
+.Os Darwin
+.Sh NAME
+.Nm eslogger
+.Nd log Endpoint Security events
+.Sh SYNOPSIS
+.Nm
+.Op \--oslog
+.Op \--format \fIformat\fR
+.Op \--oslog-subsystem \fIsubsystem\fR
+.Op \--oslog-category \fIcategory\fR
+\fIevent\fR [...]
+.Nm
+\--list-events
+.Sh DESCRIPTION
+.Nm
+interfaces with \fBEndpoint Security\fR to log events to standard output or to the unified logging system.
+.Pp
+Like all \fBEndpoint Security\fR clients,
+.Nm
+must be run as super-user and requires the responsible process to have TCC Full Disk Access authorization.
+See \fBTCC AUTHORIZATION\fR below.
+To avoid feedback loops when filtering output using shell pipelines,
+.Nm
+automatically suppresses events for all processes that are part of its process group.
+.Pp
+.Nm
+is not intended to be used by applications.
+It is not meant provide the same functionality, performance and schema stability as natively interfacing with the \fBEndpoint Security\fR API does.
+It cannot provide the integrity protection granted to System Extensions.
+Applications should continue to interface with
+.Xr EndpointSecurity 7
+natively.
+.Pp
+.Em IMPORTANT :
+.Nm
+is
+.Em NOT
+API in any sense.  Do
+.Em NOT
+rely on the structure or information emitted for
+.Em ANY
+reason.  It may change from release to release without warning.
+.Sh OPTIONS
+.Bl -tag -width "--oslog-subsystem subsystem" -indent
+.It \fB\--format\fR \fIformat\fR
+Log format to use.  Default, and the only format currently supported, is \fBjson\fR.  See \fBFORMATS\fR below.
+.It \fB\--list-events\fR
+List supported events on standard output and exit.
+.It \fB\--oslog\fR
+Emit event data to the unified logging system instead of to standard output.
+See
+.Xr log 1
+on configuring and using the unified logging system.
+The default subsystem and category are configured for oversize messages, resulting in a message size limit of 32k.
+Larger messages will be truncated.
+.It \fB\--oslog-subsystem\fR \fIsubsystem\fR
+Log subsystem to use with \fB--oslog\fR.  Default is \fBcom.apple.eslogger\fR.
+Changing the subsystem will make the default log profile ineffective, resulting in a message size limit of 1k.
+Configuring \fBsubsystem\fR for oversize messages is recommended when using \fB--oslog-subsystem\fR.
+.It \fB\--oslog-category\fR \fIcategory\fR
+Log category to use with \fB--oslog\fR.  Default is \fBevents\fR.
+Changing the subsystem will make the default log profile ineffective, resulting in a message size limit of 1k.
+Configuring \fBcategory\fR for oversize messages is recommended when using \fB--oslog-category\fR.
+.Nm
+uses the \fBmain\fR category for operational logging, such as fatal errors.
+.Sh EVENTS
+Events are specified by their short name, such as \fBexec\fR or \fBexit\fR.
+Use \fB--list-events\fR to list the currently supported events by their short name.
+.Nm
+supports all notify events that \fBEndpointSecurity\fR supports.
+By design,
+.Nm
+does not support any auth events.
+.Pp
+Some fields available in native \fBEndpoint Security\fR API clients are not available in
+.Nm .
+Currently, the only such field is \fBes_token_t state\fR part of \fBes_thread_state_t\fR, which is used only in \fBremote_thread_create\fR events.
+.Sh FORMATS
+The only supported format for event data is \fBjson\fR, which is either JSON Lines, when writing to standard output, or JSON, when writing to the unified logging system.
+While no formal schema is provided, the data is modelled after \fBes_message_t\fR as provided by
+.Xr EndpointSecurity 7 .
+Semantics, field names and optionality corresponds to the C counterparts as documented in the
+.Xr libEndpointSecurity 3
+header documentation in the SDK.
+A \fBschema_version\fR is provided with every event.
+No schema stability guarantees are being made across \fBschema_version\fR changes.
+New events may be added without bumping \fBschema_version\fR.
+\fBschema_version\fR is specific to the JSON representation of events.
+\fBschema_version\fR is distinct from the \fBversion\fR field, which denotes the message version as emitted by
+.Xr EndpointSecurity 7 .
+.Sh EXAMPLES
+Subscribe to process lifecycle events and append event data to a file:
+.Pp
+.Dl % sudo eslogger exec fork exit >>/tmp/proc.log
+.Pp
+Subscribe to screensharing events and write event data to the unified logging system with the default subsystem and category:
+.Pp
+.Dl % sudo eslogger --oslog screensharing_attach screensharing_detach
+.Pp
+List available events:
+.Pp
+.Dl % eslogger --list-events
+.Pp
+Postprocess the output in a shell pipeline with jq:
+.Pp
+.Dl % sudo eslogger exec | jq -r 'select(.process.executable.path == \E"/bin/zsh")|\E"\\\(.process.audit_token.pid): \\\(.process.executable.path) -> \\\(.event.exec.target.executable.path)"'
+.Pp
+.Sh TCC AUTHORIZATION
+.Nm
+requires the responsible process to have been authorized for Full Disk Access.
+For running
+.Nm
+in an SSH session, enable "Allow full disk access for remote users" in System Preferences > Sharing > Remote Login.
+Running
+.Nm
+from an app, including \fBTerminal.app\fR or a third-party terminal emulator, requires the respective app to be authorized for Full Disk Access in
+System Preferences > Security & Privacy > Privacy > Full Disk Access.
+Running
+.Nm
+as a launch daemon requires
+.Nm
+itself to be authorized for Full Disk Access in
+System Preferences > Security & Privacy > Privacy > Full Disk Access.
+MDM servers can grant Full Disk Access authorization using the Privacy Preferences Policy Control payload, identified by
+payload type \fBcom.apple.TCC.configuration-profile-policy\fR, and its service dictionary key \fBSystemPolicyAllFiles\fR.
+.Sh SEE ALSO
+.Xr log 1 ,
+.Xr mdmclient 1 ,
+.Xr libEndpointSecurity 3 ,
+.Xr EndpointSecurity 7 .

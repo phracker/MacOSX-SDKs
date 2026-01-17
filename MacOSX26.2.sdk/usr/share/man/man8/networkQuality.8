@@ -1,0 +1,199 @@
+.\" Copyright (c) 2020-2025 Apple Computer, Inc.  All rights reserved.
+.Dd 9/22/20
+.Dt networkQuality 8
+.Os Darwin
+.Sh NAME
+.Nm networkQuality
+.Nd Network quality testing tool
+.Sh SYNOPSIS
+.Nm
+.Op Fl bdhksuv          \" [-bdhksuv]
+.Op Fl B Ar Bonjour name \" [-C Bonjour name]
+.Op Fl C Ar configuration URL \" [-C configuration URL]
+.Op Fl c Ar filename \" [-c filename]
+.Op Fl f Ar protocol selection \" [-f h1,h2,h3]
+.Op Fl I Ar interface \" [-I interface]
+.Op Fl M Ar max run time \" [-M max run time]
+.Op Fl r Ar host \" [-r host]
+.Op Fl S Ar port \" [-S port]
+.Sh DESCRIPTION
+.Nm
+allows for measuring the different aspects of Network Quality, including:
+.Pp
+Maximal capacity (often described as speed)
+.Pp
+The responsiveness of the connection. Responsiveness measures the quality of your network by the number of roundtrips completed per minute (RPM) under working conditions. See
+.Ar https://support.apple.com/kb/HT212313
+.Pp
+Other aspects of the connection that affect the quality of experience.
+.Pp
+\fBNOTE\fR: This tool will connect to the Internet to perform its tests. This will use data on your Internet service plan.
+.Pp
+For more details about the RPM score and the methodology around the testing, see
+.Ar https://datatracker.ietf.org/doc/draft-cpaasch-ippm-responsiveness/
+.Pp
+The following options are available:
+.Bl -tag -width -indent
+.It Fl b
+Show Bonjour advertised networkQuality servers
+.It Fl B Ar Bonjour name
+Run against specified Bonjour instance
+.It Fl C Ar configuration URL/path
+Use custom configuration URL or path (with scheme file://). See
+.Ar https://github.com/network-quality/server
+for server implementation details.
+.It Fl f Ar <option[,<option>,...]>
+Force usage of a specific protocol selection:
+.br
+   h1: To enforce HTTP/1.1
+.br
+   h2: To enforce HTTP/2
+.br
+   h3: To enforce HTTP/3 (QUIC)
+.br
+   L4S: To force-enable L4S
+.br
+   noL4S: To force-disable L4S
+.It Fl I Ar interface
+Bind test to interface (e.g., en0, pdp_ip0,...)
+.Pp
+If not specified, the default interface will be used.
+.It Fl M Ar max run time
+Maximum runtime in seconds
+.It Fl r Ar host
+Connect to host or IP, overriding DNS for initial config request
+.It Fl S Ar port
+Create a networkQuality server-instance running locally on the specified port.
+It will display the URL of the config-file that can be passed on to a client-instance
+with option -C. Note that the certificate is self-signed and thus option -k needs
+to be used on the client-instance.
+.It Fl c Ar [\fIfilename\fP ]
+Produce computer-readable output (JSON). \fIfilename\fP is optional, will default to STDOUT.
+.It Fl d
+Do not run a download test (implies -s)
+.It Fl h
+Show help
+.It Fl k
+Disable verification of the server identity via TLS.
+.It Fl p
+Use iCloud Private Relay.
+.It Fl s
+Run tests sequentially instead of parallel upload/download.
+.It Fl u
+Do not run an upload test (implies -s)
+.It Fl v
+Verbose output.
+.El                      \" Ends the list
+.Pp
+.\" .El
+.Sh COMPUTER OUTPUT FIELD DESCRIPTION
+The -c option will produce JSON output with the following fields,
+depending on the options used and the result of the run.
+.Bl -tag -width lud_foreign_dl_h2_req_resp
+.It Ft base_rtt
+The calculated idle latency of the test run (in milliseconds).
+.It Ft dl_flows
+Number of download flows initiated.
+.It Ft dl_responsiveness
+The downlink responsiveness score (in RPM)
+.Pp
+(only available when -s is specified).
+.It Ft dl_throughput
+The measured downlink throughput (in bits per second).
+.It Ft end_date
+Time when test run was completed (in local time).
+.It Ft il_h2_req_resp
+The idle-latency Request/Response times for HTTP/2 (in milliseconds).
+.It Ft il_tcp_handshake_443
+The idle-latency TCP-handshake times (in milliseconds).
+.It Ft il_tls_handshake
+The idle-latency TLS-handshake times (in milliseconds).
+.It Ft interface_name
+Interface name in which the test ran against.
+.It Ft lud_foreign_dl_h2_req_resp
+Download latency-under-load request/response times for HTTP/2 (in milliseconds).
+.Pp
+(only available when -s is specified).
+.It Ft lud_foreign_dl_tcp_handshake_443
+Download latency-under-load for for TCP-handshake times (in milliseconds).
+.Pp
+(only available when -s is specified).
+.It Ft lud_foreign_dl_tls_handshake
+Download latency-under-load for for TLS-handshake times (in milliseconds).
+.Pp
+(only available when -s is specified).
+.It Ft lud_foreign_h2_req_resp
+Combined upload/download latency-under-load request/response times for HTTP/2 (in milliseconds).
+.Pp
+(only available when -s is not specified).
+.It Ft lud_foreign_tcp_handshake_443
+Combined upload/download latency-under-load for for TCP-handshake times (in milliseconds).
+.Pp
+(only available when -s is not specified).
+.It Ft lud_foreign_tls_handshake
+Combined foreign upload/download latency-under-load for for TLS-handshake times (in milliseconds).
+.Pp
+(only available when -s is not specified).
+.It Ft lud_foreign_ul_h2_req_resp
+Foreign upload latency-under-load request/response times for HTTP/2 (in milliseconds).
+.Pp
+(only available when -s is specified).
+.It Ft lud_foreign_ul_tcp_handshake_443
+Foreign upload latency-under-load for for TCP-handshake times (in milliseconds).
+.Pp
+(only available when -s is specified).
+.It Ft lud_foreign_ul_tls_handshake
+Upload latency-under-load for for TLS-handshake times (in milliseconds).
+.Pp
+(only available when -s is specified).
+.It Ft lud_self_dl_h2_req_resp
+Self download latency-under-load request/response times for HTTP/2 (in milliseconds).
+.Pp
+(only available when -s is specified).
+.It Ft lud_self_h2_req_resp
+Combined self upload/download latency-under-load request/response times for HTTP/2 (in milliseconds).
+.Pp
+(only available when -s is not specified).
+.It Ft lud_self_ul_h2_req_resp
+Self upload latency-under-load request/response times for HTTP/2 (in milliseconds).
+.Pp
+(only available when -s is specified).
+.It Ft os_version
+The version of the OS the test was run on.
+.It Ft responsiveness
+The responsiveness score (in RPM)
+.Pp
+(the combined value if -c is not specified).
+.It Ft start_date
+Time when test run was started (in local time).
+.It Ft ul_flows
+Number of upload flows created.
+.It Ft ul_responsiveness
+The uplink responsiveness score (in RPM)
+.Pp
+(only available when -s is specified).
+.It Ft ul_throughput
+The measured uplink throughput (in bits per second).
+.It Ft error_code
+Error domain specific error code
+.Pp
+(only displayed if
+.nM
+could not complete its test).
+.It Ft error_domain
+Error domain in which an error occurred in
+.Pp
+(only displayed if
+.Nm
+could not complete its test).
+.El
+.Pp
+\fBNOTE\fR: This is not meant to be a comprehensive list of fields.
+
+.Sh SEE ALSO
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr ping 8 ,
+.Xr traceroute 8
+.\" .Sh BUGS              \" Document known, unremedied bugs
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner

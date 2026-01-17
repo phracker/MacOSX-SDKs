@@ -1,0 +1,53 @@
+.\" Copyright (c) 2018 Apple Inc. All rights reserved.
+.Dd August 30, 2018
+.Dt logd 8
+.Os Darwin
+.Sh NAME
+.Nm logd
+.Nd unified logging system daemon
+.Sh DESCRIPTION
+.Nm
+is the part of the unified logging system
+that is responsible for handling and managing historical data
+and related metadata.
+For example, it handles entries generated via the
+.Xr os_log 3
+family of facilities.
+.Bd -literal -offset indent
+{ process }
+     `--- os_log ---> [ page ]
+                      [ page ]
+                      [ page ]
+                          `---> { logd }
+                                   | `---> [ buffer ]
+                                   |
+                                   `---> [ data store ]
+.Ed
+.Pp
+All processes that use
+.Xr os_log 3
+share pages of memory with
+.Nm
+and append entries to them.
+.Nm
+reads pages and combines and compresses this data.
+Depending on configured policies,
+it keeps them in a local ring buffer or writes them out to persistent storage.
+.Bd -literal -offset indent
+{ logd }
+   | `---> [ buffer ] ----.
+   |                      ,`---> { log show }
+   `---> [ data store ] -'
+.Ed
+.Pp
+The
+.Xr log 1
+utility can view these data by requesting
+.Nm
+for access to both the ring buffer and the persistent storage.
+.Sh SEE ALSO
+.Xr log 1 ,
+.Xr os_log 3 ,
+.Xr diagnosticd 8
+.Pp
+.Lk https://developer.apple.com/documentation/os/logging "Logging | Apple Developer Documentation"

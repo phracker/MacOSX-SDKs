@@ -1,0 +1,67 @@
+.\" Copyright (c) 2021-2024 Apple Inc. All rights reserved.
+.Dd 8 October, 2024
+.Dt apple_ssh_and_fips 7
+.Os Darwin
+.
+.Sh NAME
+.Nm apple_ssh_and_fips
+.Nd Configuring SSH for FIPS algorithms
+.Sh DESCRIPTION
+The macOS version of OpenSSH uses Apple’s FIPS Cryptographic Modules for
+FIPS 140-2 validated algorithms, automatically without the need for
+installation, administration, or configuration.  To restrict the SSH
+client and server to use
+.Em only
+FIPS algorithms, customize the configuration as directed below.
+.Pp
+The configuration files for
+.Xr ssh 1
+and
+.Xr sshd 8
+read the algorithm configuration directives from
+.Pa /etc/ssh/crypto.conf ,
+which should be a symbolic link to either the macOS
+default algorithm configuration file
+.Pa /etc/ssh/crypto/apple.conf ,
+or to the FIPS-only configuration file
+.Pa /etc/ssh/crypto/fips.conf .
+To choose FIPS algorithms
+.Em only ,
+update the symbolic
+link as follows.
+.Bd -literal -offset indent
+sudo ln -fs crypto/fips.conf /etc/ssh/crypto.conf
+.Ed
+.Pp
+To return to the default set of algorithms which largely prefer FIPS
+algorithms but allow others as well:
+.Bd -literal -offset indent
+sudo ln -fs crypto/apple.conf /etc/ssh/crypto.conf
+.Ed
+.Pp
+.Sh HISTORY
+.Pa /etc/ssh/crypto.conf ,
+.Pa /etc/ssh/crypto/apple.conf ,
+and
+.Pa /etc/ssh/crypto/fips.conf
+appeared in macOS 15 Sequoia.
+.Sh CAVEATS
+When upgrading from a previous version of macOS,
+the OpenSSH configuration directory
+.Pa /etc/ssh
+is preserved.
+Thus, when upgrading from versions prior to macOS 15 Sequoia,
+the files mentioned in this manual page may not be present.
+To reset the OpenSSH configuration to macOS defaults,
+run the following command:
+.Bd -literal -offset indent
+sudo /usr/libexec/reset-ssh-configuration
+.Ed
+.Pp
+.Sy WARNING :
+The above command will discard the existing configuration
+with the exception of host keys.
+.Pp
+.Sh SEE ALSO
+.Xr ssh 1 ,
+.Xr sshd 8

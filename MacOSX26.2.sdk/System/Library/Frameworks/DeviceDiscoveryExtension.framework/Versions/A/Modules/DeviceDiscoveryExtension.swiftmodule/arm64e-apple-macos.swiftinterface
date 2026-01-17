@@ -1,0 +1,48 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.3.3.2 clang-1700.6.3.2)
+// swift-module-flags: -target arm64e-apple-macos26.2 -target-variant arm64e-apple-ios26.2-macabi -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -library-level spi -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -user-module-version 322.8 -module-name DeviceDiscoveryExtension
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -project-name DeviceAccess -interface-compiler-version 6.2
+@_exported import DeviceDiscoveryExtension
+import ExtensionFoundation
+import Foundation
+@_spi(CTypeConversion) import Network
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+import os
+extension DeviceDiscoveryExtension.DDDevice {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var networkEndpoint: Network.NWEndpoint? {
+    get
+    set
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var txtRecord: Network.NWTXTRecord? {
+    get
+    set
+  }
+  #endif
+}
+@available(iOS 16.0, *)
+public protocol DDDiscoveryExtensionConfigurationProtocol : ExtensionFoundation.AppExtensionConfiguration {
+}
+@available(iOS 16.0, *)
+public protocol DDDiscoveryExtension : ExtensionFoundation.AppExtension {
+  func startDiscovery(session: DeviceDiscoveryExtension.DDDiscoverySession)
+  func stopDiscovery(session: DeviceDiscoveryExtension.DDDiscoverySession)
+  @available(iOS 17.0, *)
+  func didReceiveEvent(_ event: DeviceDiscoveryExtension.DDDeviceEvent)
+}
+extension DeviceDiscoveryExtension.DDDiscoveryExtension {
+  public var configuration: some DeviceDiscoveryExtension.DDDiscoveryExtensionConfigurationProtocol {
+    get
+  }
+  public func didReceiveEvent(_ event: DeviceDiscoveryExtension.DDDeviceEvent)
+}
+@_Concurrency.MainActor @preconcurrency public class DDDiscoveryExtensionConfiguration<T> : DeviceDiscoveryExtension.DDDiscoveryExtensionConfigurationProtocol where T : DeviceDiscoveryExtension.DDDiscoveryExtension {
+  @_Concurrency.MainActor @preconcurrency public init(discoveryExtension: T)
+  nonisolated public func accept(connection inCnx: Foundation.NSXPCConnection) -> Swift.Bool
+  @objc deinit
+}

@@ -1,0 +1,188 @@
+.TH "MPSCNNConvolutionGradient" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNConvolutionGradient
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNConvolution\&.h>\fP
+.PP
+Inherits \fBMPSCNNGradientKernel\fP\&.
+.PP
+Inherited by \fBMPSCNNFullyConnectedGradient\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:weights:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreloadWeightsAndBiasesFromDataSource\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreloadWeightsAndBiasesWithCommandBuffer:state:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBsourceGradientFeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBsourceImageFeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBgroups\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBchannelMultiplier\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNConvolutionDataSource\fP > \fBdataSource\fP"
+.br
+.ti -1c
+.RI "\fBMPSCNNConvolutionGradientOption\fP \fBgradientOption\fP"
+.br
+.ti -1c
+.RI "BOOL \fBserializeWeightsAndBiases\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  The \fBMPSCNNConvolutionGradient\fP implementents backward propagation of gradient i\&.e\&. it computes the gradient of loss function with respect input data of corresonding forward convolution and gradient of loss function with respect to weights and bias of corresponding convolution in forward pass\&.
+.PP
+.SH "Gradient with respect to data "
+.PP
+.PP
+Gradient with respect to input data of corresponding forward convolution will be written in destination image passed to encode call of \fBMPSCNNConvolutionGradient\fP\&. This step is similar to convolution transpose in that the strided convolution in forward pass become zero filled convolution in backward propagation of gradients\&. The difference between \fBMPSCNNConvolutionTranspose\fP and gradient wrt data is how the weights, that are provided by data source, are interpreted\&. \fBMPSCNNConvolution\fP and \fBMPSCNNConvolutionTranspose\fP interpret weights provided by data source as weights[outputFeatureChannels][kernelWidth][kernelHeight][inputFeatureChannels] whereas convoution gradient with respect to data interpret the weights as weights[inputFeatureChannels][kernelWidth][kernelHeight][outputFeatureChannels] i\&.e\&. weights are transposed in inputFeatureChannels/outputFeatureChannels dimension and also rotated 180 degress in spatial dimension
+.PP
+User should use the same data source provider to initialize \fBMPSCNNConvolutionGradient\fP as is used to initialize corresponding forward \fBMPSCNNConvolution\fP\&. Implementation will do the transposition/shuffling needed\&. Thus, while the forward \fBMPSCNNConvolution\fP takes sourceImage of inputFeatureChannels and convolves it with Wt[outputFeatureChannels][kernelHeight][kernelWidth][inputFeatureChannels] to produce destinationImage of outputFeatureChannels, MPSConvolutionGradient takes sourceGradient of outputFeatureChannels which is out of previous layer (nomally neuron backward layer), convolves it with transposed and rotated weights and produces destinationGradient of inputFeatureChannels\&. If the user decide to double buffer data source provider i\&.e\&. different data source providers are passed to forward \fBMPSCNNConvolution\fP object and corresponding \fBMPSCNNConvolutionGradient\fP object, it is user responsibility to make sure both data source providers provide same weights/bias data and have same properties in convolution descriptor else behavior is undefined\&.
+.PP
+.SH "Gradient with respect to weights and bias "
+.PP
+.PP
+Gradient with respect to weights and bias are returned in \fBMPSCNNConvolutionGradientState\fP object to be used in weights update functions\&. If I denotes the input image to corresponding \fBMPSCNNConvolution\fP in forward pass and E denoates the loss gradient from previous layer (normally neuron backward layer) in backward pass, gradient of E with respect to weights is
+.PP
+delta_E/delta_Wkpqc = sum_i sum_j [ E(i - primaryOffset\&.x,j - primaryOffset\&.y, k) * I( secondaryStrideInPixelX*i + secondaryOffset\&.x - secondaryDilationRateX*secondaryKernelWidth/2 + secondaryDilationRateX*p, secondaryStrideinPixelY*i + secondaryOffset\&.y - secondaryDilationRateY*secondaryKernelHeight/2 + secondaryDilationRateY*q, c) ]
+.PP
+where i goes over 0\&.\&.W-1 and j goes over 0\&.\&.H-1, (W,H) being width and height of E\&. p in [0, secondaryKernelWidth-1] q in [0, secondaryKernelHeight-1] c in [0, inputeFeatureChannels/groups - 1] k in [0, outputFeatureChannels]
+.PP
+and gradient with respect to bias
+.PP
+delta_E/delta_bk = sum_i sum_j [ E(i - primaryOffset\&.x,j - primaryOffset\&.y, k) ]
+.PP
+These gradients with respect to weights and bias are returned as buffers in \fBMPSCNNConvolutionGradientState\fP object passed in the encode call\&. These are consumed by \fBMPSCNNConvolution\fP object's -updateWeightsAndBias:MPSCNNConvolutionGradientState* method for CPU side update and encodeWeightsAndBiasUpdate:commandBuffer:MPSCNNConvolutionGradientState* method of \fBMPSCNNConvolution\fP object for GPU side update\&. UPdated weights and biases are computed as 
+.PP
+.nf
+       Wkpqc_new = Wkpqc_old + delta_E/delta_Wkpqc
+       bk_new = bk_old + delta_E/delta_bk
+
+.fi
+.PP
+.PP
+Note that \fBMPSCNNConvolutionGradientState\fP objects's buffers that contain gradients, for CPU side update, will only contain valid data after command buffer is complete so its only makes sense to call -updateWeightsAndBias method on \fBMPSCNNConvolution\fP objects after command bufer is complete\&. One can achieve this by enqueueing a command buffer completion handler block that make this call\&. Since \fBMPSCNNConvolutionGradientState\fP is used across command buffers i\&.e\&. its created in forward pass, consumed by \fBMPSCNNConvolutionGradient\fP in backward pass in same command buffer and passed onto \fBMPSCNNConvolution\fP updateWeightsAndBias method after completion of command buffer, it cannot be a temporary state\&.
+.PP
+In order to gaurantee consistency between forward pass (\fBMPSCNNConvolution\fP) and weights gradient computation in this filter, certain requirements must be met\&. 1) Dimensions of loss gradient E from previous layer in backward pass must be equal to clipRect\&.size of corresponding \fBMPSCNNConvolution\fP in forward pass\&. This is to gaurantee that only those pixels for which weights/bias contributed in destination of forward pass end up contributing to weights/bias gradient update\&. If the dimension of loss gradient E from previous layer is not equal to clipRect\&.size of corresponding forward \fBMPSCNNConvolution\fP, i) one can insert a slice operation to extract out the region of size clipRect\&.size from appropriate offset in E and set primaryOffset = 0 Or ii) set primatryOffset to offset in E at which valid data starts and make sure data outside is zeroed\&. 2) secondaryOffset should be set to what offset property of \fBMPSCNNConvolution\fP was set to in forward pass\&.
+.PP
+Currently back propagation for gradients is only supported for regualar convolution and depthwise convolution\&. Back propagation sub-pixel convolution are not supported\&. So channelMultiplier and subPixelScaleFactor must be one\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use initWithCoder:device instead\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSKernel\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNGradientKernel\fP\&.
+.PP
+Reimplemented in \fBMPSCNNFullyConnectedGradient\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNGradientKernel\fP\&.
+.PP
+Reimplemented in \fBMPSCNNFullyConnectedGradient\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(nonnull id< \fBMPSCNNConvolutionDataSource\fP >) weights"
+Initializes a convolution gradient (with respect to weights and bias) object\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this \fBMPSCNNConvolutionGradient\fP filter will be used 
+.br
+\fIweights\fP \fBA\fP pointer to a object that conforms to the \fBMPSCNNConvolutionDataSource\fP protocol\&. Note that same data source as provided to forward convolution should be used\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSCNNConvolutionGradient\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNFullyConnectedGradient\fP\&.
+.SS "\- (void) reloadWeightsAndBiasesFromDataSource "
+CPU side reload\&. Reload the updated weights and biases from data provider into internal weights and bias buffers\&. Weights and biases gradients needed for update are obtained from \fBMPSCNNConvolutionGradientState\fP object\&. Data provider passed in init call is used for this purpose\&. 
+.SS "\- (void) reloadWeightsAndBiasesWithCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNConvolutionWeightsAndBiasesState\fP *__nonnull) state"
+GPU side reload\&. Reload the updated weights and biases from update buffer produced by application enqueued metal kernel into internal weights and biases buffer\&. Weights and biases gradients needed for update are obtained from \fBMPSCNNConvolutionGradientState\fP object's gradientForWeights and gradientForBiases metal buffer\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP Metal command buffer on which application update kernel was enqueued consuming \fBMPSCNNConvolutionGradientState\fP's gradientForWeights and gradientForBiases buffer and producing updateBuffer metal buffer\&. 
+.br
+\fIstate\fP \fBMPSCNNConvolutionWeightsAndBiasesState\fP containing weights and biases buffers which have updated weights produced by application's update kernel\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- (NSUInteger) channelMultiplier\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Channel multiplier\&.  For convolution created with \fBMPSCNNDepthWiseConvolutionDescriptor\fP, it is the number of output feature channels for each input channel\&. See \fBMPSCNNDepthWiseConvolutionDescriptor\fP for more details\&. Default is 0 which means regular CNN convolution\&. Currently only channelMultiplier of 1 is supported i\&.e\&. inputChannels == outputChannels 
+.SS "\- dataSource\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+dataSource with which gradient object was created 
+.SS "\- gradientOption\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Option to control which gradient to compute\&. Default is MPSCNNConvolutionGradientOptionAll which means both gradient with respect to data and gradient with respect to weight and bias are computed\&. 
+.SS "\- groups\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Number of groups input and output channels are divided into\&. 
+.SS "\- (BOOL) serializeWeightsAndBiases\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Property to control serialization of weights and bias\&.  During serialization of convolution object in -encodeWithCoder call, weights and biases are saved so that convolution object can be properly unserialized/restored in -initWithCoder call\&. If data source provied is \fBNSSecureCoding\fP compliant, data source is serialized else weights and biases are serialized\&. As weights/biases data may be several MB and these are same for both gradient and forward convolution object, application may already have weights/biases on disk through convolution, it can save disk space by setting this property false so convolution gradient object does not end up storing another copy of weights/biases\&. Default is NO\&. When application decides to set it to NO, it MUST call -(void) reloadWeightsAndBiasesFromDataSource after initWithCoder has initialized convolution object\&. 
+.SS "\- sourceGradientFeatureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels per pixel in the gradient image (primarySource) of encode call\&. This is same is outputFeatureChannels or the feature channels of destination image in forward convolution i\&.e\&. dataSource\&.descriptor\&.outputFeatureChannels 
+.SS "\- sourceImageFeatureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels per pixel in the input image to forward convolution which is used here as secondarySource\&. This is same as dataSource\&.descriptor\&.inputFeatureChannels\&. This is also the number of feature channels in destinatin image here i\&.e\&. gradient with respect to data\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

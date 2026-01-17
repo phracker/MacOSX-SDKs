@@ -1,0 +1,67 @@
+.\" see 'man mdoc' for syntax examples
+.Dd April 14, 2017
+.Dt mcxquery 1
+.Os MacOSX
+.Sh NAME
+.Nm mcxquery
+.Nd Managed Client (MCX) compositor query tool
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op options
+.Op Fl user Ar recordName
+.Op Fl group Ar recordName
+.Op Fl computer Ar spec 
+.Pp
+options:
+.Bl -tag -width "-format space | tab | xml"
+.It Fl o Ar path
+Writes output to a file at the specified path.
+.It Fl format Ar space | tab | xml
+Specifies the format of the output.
+.It Fl computerOnly
+Ignore values for -user and -group.
+.It Fl useCache
+Return the cached computer settings in the local node if they are available.
+.It Fl raw
+Dumps Directory Service data for records contributing to managed preferences.
+.It Fl forApple
+Convenience for specifying options when sending bug reports to Apple. Currently enables "-raw" and "-format xml". See usage example below.
+.It Fl version
+Displays the current version of ManagedClient.
+.El
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is a utility to determine the effective managed preferences for a user logging in to a workgroup from a specific computer.
+.Pp                      \" Inserts a space
+.Bl -tag -width "-computer"
+.It Fl user
+Specify the short name of the user record to read managed preferences from. If this parameter is omitted, or a value of "=" specified, the short name of the currently logged in console user will be used.
+.It Fl group
+Specify the short name of the group record to read managed preferences from. A value of "=" may be specified to mean the name of the workgroup (if any) chosen for the current login session.
+.It Fl computer
+Specify the computer record to read managed preferences from. The computer can be specified using either an Ethernet MAC address (e.g. "11:22:33:44:55:66"), a Hardware UUID (e.g. "00112233-4455-6677-8899-AABBCCDDEEFF") or the short name of the computer record itself (e.g. "lab1_12"). If this parameter is omitted, or a value of "=" specified, the record for the current computer will be used.
+.El                      \" Ends the list
+.Pp
+.Sh EXAMPLES
+.Pp
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It "mcxquery -user jane -group science -computer lab1_12"
+Displays the managed preferences that would be in effect if user "jane" logged in using workgroup "science" from the computer specified in the "lab1_12" computer record.
+.It "mcxquery -user jane -group science -computer 11:22:33:44:55:66"
+Displays the managed preferences that would be in effect if user "jane" logged in using workgroup "science" from a computer with an Ethernet MAC address of 11:22:33:44:55:66.
+.It "mcxquery -user = -group = -computer guest"
+Displays the managed preferences that would be in effect if the current user logged in using the current workgroup into a computer not specified by any computer record (i.e. a "guest" computer).
+.It "mcxquery -user jane -group math"
+Displays the managed preferences that would be in effect if the user "jane" logged into the "math" workgroup on the current computer.
+.It "mcxquery -o /tmp/report.txt -format xml -user jane"
+Writes the managed preferences that would be in effect if user "jane" logged into the current computer without a workgroup.  The report is written in XML format to /tmp/report.txt.
+.It "mcxquery -computerOnly -computer lab1_12"
+Displays the managed preferences for the computer specified in the "lab1_12" computer record only. Useful for determining managed settings when computer is at login window.
+.It "mcxquery -computerOnly -computer 00112233-4455-6677-8899-AABBCCDDEEFF"
+Displays the managed preferences for the computer with the Hardware UUID "00112233-4455-6677-8899-AABBCCDDEEFF". Supported on Mac OS X 10.6 and later.
+.It "mcxquery -forApple -o results.plist"
+Creates a plist, suitable for submitting along with bug reports to Apple, containing the managed preferences for the current user on the current computer. Also includes relevant records from Directory Services. Supported on Mac OS X 10.7 and later.
+.El                      \" Ends the list
+.Pp
+.Sh SEE ALSO
+.Xr dscl 1

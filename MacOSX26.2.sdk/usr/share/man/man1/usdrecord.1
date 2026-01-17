@@ -1,0 +1,114 @@
+.\" Copyright 2024 Apple
+.\"
+.\" Licensed under the terms set forth in the LICENSE.txt file available at
+.\" https://openusd.org/license.
+.\"
+
+.ft 1
+..
+
+.TH usdrecord
+.SH NAME
+usdrecord - Utility for generating images from a USD file.
+.SH SYNOPSIS
+usdrecord [inputFile] [outputImage]
+.SH DESCRIPTION
+\f[B]usdrecord\f[R] is a command-line utility for generating images (or sequences of images) of a USD stage.
+
+
+.TP
+\f[V]-h\f[R], \f[V]--help\f[R]
+Prints out a help message and exits.
+
+.TP
+\f[V]--mask\f[R] [PRIMPATH]
+Limit stage population to these prims, their
+descendants and ancestors. To specify multiple paths,
+either use commas with no spaces or quote the argument
+and separate paths by commas and/or spaces.
+
+.TP
+\f[V]--purposes\f[R] [PURPOSE]
+Specify which UsdGeomImageable purposes should be included in the renders.
+The "default" purpose is automatically included, so you need specify only the *additional* purposes.
+If you want more than one extra purpose, either use commas with no spaces or quote the argument and separate purposes by commas and/or spaces.
+
+.TP
+\f[V]--sessionLayer\f[R] [SESSION_LAYER]
+If specified, the stage will be opened with the 'sessionLayer' in place of the default anonymous layer.
+
+.TP
+\f[V]--disableGpu\f[R]
+Indicates if the GPU should not be used for rendering. 
+If set this not only restricts renderers to those which only run on the CPU, but 
+additionally it will prevent any tasks that require the GPU from being invoked
+
+.TP
+\f[V]--disableCameraLight\f[R]
+Indicates if the default camera lights should not be used for rendering.
+
+.TP
+\f[V]--cam\f[R], \f[V]--camera\f[R] [Camera Path]
+Which camera to use - may be given as either just the camera's prim name (i.e. just the last element in the prim path), or as a full prim path.
+Note that if only the prim name is used and more than one camera exists with that name, which one is used will effectively be random.
+
+.TP
+\f[V]-d\f[R], \f[V]--defaultTime\f[R]
+Explicitly operate at the Default time code (the default behavior is to operate at the Earliest time code).
+Cannot be used with --frames
+
+.TP
+\f[V]-f\f[R], \f[V]--frames\f[R] [FRAMES]
+Specify FrameSpec(s) of the time codes to operate on.
+A FrameSpec consists of up to three floating point values for the start time code, end time code, 
+and stride of a time code range. 
+A single time code can be specified, or a start and end time code can be specified separated by a colon (:).
+When a start and end time code are specified, the stride may optionally be specified as well, separating it
+from the start and end time codes with (x). Multiple FrameSpecs can be combined as a comma-separated list. 
+The following are examples of valid FrameSpecs: 123 - 101:105 - 105:101 - 101:109x2 - 101:110x2 - 101:104x0.5
+
+.TP
+\f[V]-c\f[R], \f[V]--complexity\f[R] [low|medium|high|veryhigh]
+The level of refinement to use. Low is the default.
+
+.TP
+\f[V]-r\f[R], \f[V]--renderer\f[R] [RENDERER]
+Hydra renderer plugin to use when generating images. The default is Storm using Metal.
+
+.TP
+\f[V]-w\f[R], \f[V]--imageWidth\f[R] [WIDTH]
+The width of the output image. The height will be computed from this value and the camera's aspect ratio.
+Defaults to 960 pixels wide.
+
+.TP
+\f[V]--enableDomeLightVisibility\f[R], \f[V]--domeLightCameraVisibility\f[R]
+Show the dome light background in the rendered output.  
+If this option is not included and there is a dome light in 
+the stage, the IBL from it will be used but the background 
+will be transparent.
+
+.TP
+\f[V]--rp\f[R], \f[V]--renderPassPrimPath\f[R] [PATH]
+Specify the Render Pass Prim to use to render the given usdFile. 
+Note that if a renderSettingsPrimPath has been specified in the stage metadata, 
+using this argument will override that opinion. Furthermore any properties 
+authored on the RenderSettings will override other arguments 
+(imageWidth, camera, outputImagePath)
+
+.TP
+\f[V]--rs\f[R], \f[V]--renderSettingsPrimPath\f[R] [PATH]
+Specifies the Render Settings Prim to use to render the given usdFile. 
+Note that if a renderSettingsPrimPath has been specified in the stage metadata, 
+using this argument will override that opinion. Furthermore any properties authored on the 
+RenderSettings will override other arguments (imageWidth, camera, outputImagePath)
+
+.TP
+\f[V]--version\f[R]
+Display program version information and exits.
+
+
+.SH EXAMPLES
+
+.TP
+\f[V]usdrecord input.usdz output.png\f[R]
+Renders the input usdz file to an output png.

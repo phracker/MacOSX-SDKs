@@ -1,0 +1,79 @@
+.TH "MPSNNDefaultPadding" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSNNDefaultPadding
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSNeuralNetworkTypes\&.h>\fP
+.PP
+Inherits NSObject, and \fB<MPSNNPadding>\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(NSString *__nonnull) \- \fBlabel\fP"
+.br
+.in -1c
+.SS "Class Methods"
+
+.in +1c
+.ti -1c
+.RI "(instancetype __nonnull) + \fBpaddingWithMethod:\fP"
+.br
+.ti -1c
+.RI "(instancetype __nonnull) + \fBpaddingForTensorflowAveragePooling\fP"
+.br
+.ti -1c
+.RI "(instancetype __nonnull) + \fBpaddingForTensorflowAveragePoolingValidOnly\fP"
+.br
+.in -1c
+.SH "Method Documentation"
+.PP 
+.SS "\- (NSString * __nonnull) label "
+Human readable description of what the padding policy does 
+.SS "+ (instancetype __nonnull) paddingForTensorflowAveragePooling "
+\fBA\fP padding policy that attempts to reproduce TensorFlow behavior for average pooling  Most TensorFlow padding is covered by the standard MPSNNPaddingMethod encodings\&. You can use +paddingWithMethod to get quick access to \fBMPSNNPadding\fP objects, when default filter behavior isn't enough\&. (It often is\&.) However, the edging for max pooling in TensorFlow is a bit unusual\&.
+.PP
+This padding method attempts to reproduce TensorFlow padding for average pooling\&. In addition to setting MPSNNPaddingMethodSizeSame | MPSNNPaddingMethodAlignCentered | MPSNNPaddingMethodAddRemainderToBottomRight, it also configures the filter to run with MPSImageEdgeModeClamp, which (as a special case for average pooling only), normalizes the sum of contributing samples to the area of valid contributing pixels only\&.
+.PP
+.PP
+.nf
+// Sample implementation for the tensorflowPoolingPaddingPolicy returned
+ -(MPSNNPaddingMethod) paddingMethod{ return MPSNNPaddingMethodCustom | MPSNNPaddingMethodSizeSame; }
+
+ -(MPSImageDescriptor * __nonnull) destinationImageDescriptorForSourceImages: (NSArray <MPSImage *> *__nonnull) sourceImages
+                                                                sourceStates: (NSArray <MPSState *> * __nullable) sourceStates
+                                                                   forKernel: (MPSKernel * __nonnull) kernel
+                                                         suggestedDescriptor: (MPSImageDescriptor * __nonnull) inDescriptor
+ {
+
+    ((MPSCNNKernel *)kernel)\&.edgeMode = MPSImageEdgeModeClamp;
+
+    return inDescriptor;
+ }
+.fi
+.PP
+ 
+.SS "+ (instancetype __nonnull) paddingForTensorflowAveragePoolingValidOnly "
+Typical pooling padding policy for valid only mode 
+.SS "+ (instancetype __nonnull) paddingWithMethod: (\fBMPSNNPaddingMethod\fP) method"
+Fetch a well known object that implements a non-custom padding method  For custom padding methods, you will need to implement an object that conforms to the full \fBMPSNNPadding\fP protocol, including \fBNSSecureCoding\fP\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fImethod\fP \fBA\fP MPSNNPaddingMethod 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+An object that implements <MPSNNPadding> for use with MPSNNGraphNodes\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

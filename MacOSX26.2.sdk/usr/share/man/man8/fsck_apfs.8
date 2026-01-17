@@ -1,0 +1,132 @@
+.\"
+.\" Copyright (c) 2015-2023 Apple Inc.
+.\" Licensed under the MIT License.
+.\"
+.Dd May 6, 2023
+.Dt FSCK_APFS 8
+.Os "Mac OS X"
+.Sh NAME
+.Nm fsck_apfs
+.Nd APFS consistency check
+.Sh SYNOPSIS
+.Nm fsck_apfs
+.Op Fl n | y
+.Op Fl q
+.Op Fl l
+.Op Fl s
+.Op Fl S
+.Op Fl o
+.Op Fl b Ar num
+.Op Fl c
+.Op Fl C
+.Op Fl d
+.Op Fl E Ar path
+.Op Fl F | M
+.Op Fl g | x
+.Op Fl W
+.Op Fl T
+.Op Fl D
+.Ar device
+.Sh DESCRIPTION
+The
+.Nm
+utility verifies and repairs APFS containers and volumes.
+.Pp
+.Nm
+checks the specified APFS containers and volumes and tries to repair
+all detected inconsistencies.
+.Pp
+Because of inconsistencies between the block device and the buffer
+cache, the raw device should always be used.
+.Pp
+In its current state, fsck_apfs checks the integrity of various container
+data structures.
+.Pp
+The options are as follows:
+.Bl -hang -width filexxxx
+.It Fl q
+Causes
+.Nm
+to quickly check whether the device is `clean'. If
+.Ar device
+is an APFS volume,
+.Nm
+will quickly check the APFS container and the specified APFS volume.
+If
+.Ar device
+is an APFS container,
+.Nm
+will quickly check the APFS container and all the APFS volumes in it.
+By default, no repairs are attempted during a quick check.
+.It Fl n
+Never attempt to repair any damage that is found.
+.It Fl y
+Always attempt to repair any damage that is found.
+.It Fl l
+Enable live verification mode.
+This makes it possible to check an APFS
+container which is currently mounted read-write, although no
+repairs can be made. Note that live verification mode may cause your system to stop responding until
+.Nm
+completes.
+.It Fl s
+Print space verification summary.
+.It Fl S
+Skip iteration of snapshots (top-level snapshot structures will still be checked), although no
+repairs can be made.
+.It Fl o
+Repair overallocations; please do not run an older fsck_apfs on newer systems with this option.
+.It Fl b Ar <num>
+Set the default cache block size to
+.Ar num
+KB.
+.It Fl c
+Enable the gathering and printing of cache statistics.
+.It Fl C
+Force a sync of the container prior to freezing it in live verification mode.
+.It Fl d
+Print extra debugging information.
+.It Fl E Ar <path>
+Write warning and error summary information to
+.Ar path
+in addition to the standard location (/var/log/fsck_apfs_error.log).  Pass
+.Ar -
+to write it to stdout.
+.It Fl F
+Force checking of encrypted volumes, requiring the volumes to be unlocked.
+.It Fl M
+Skip checks requiring decryption of volume data. Unencrypted volume metadata is
+still checked.
+.It Fl g
+Use "GUI" mode for the output.  Output is in a form suitable for parsing by
+other programs.
+.It Fl x
+Output will be in XML.
+.It Fl W
+Treat warnings as fatal.  By default,
+.Nm
+will exit with a return code of 0 if there are warnings but no errors.  This
+option will cause it to exit with an appropriate error code in that situation.
+.It Fl T
+Enable B-Tree node repairs.  Only used when repairing so either
+.Fl y
+must be present, or both
+.Fl n
+and
+.Fl q
+must be absent.
+.It Fl D
+When doing B-Tree node repairs, allow searching free blocks for candidate nodes.
+This requires the
+.Fl T
+option as well.
+.El
+.Sh EXIT STATUS
+.Nm
+exits with 0 on success, and >0 if error occurs.
+.Sh SEE ALSO
+.Xr fsck 8
+.\".Sh BUGS
+.\" .Nm
+.\" is not able to fix some inconsistencies that it detects.
+.\".Sh HISTORY

@@ -1,0 +1,261 @@
+.TH MASTER 5 
+.ad
+.fi
+.SH NAME
+master
+\-
+Postfix master process configuration file format
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix mail system is implemented by small number of
+(mostly) client commands that are invoked by users, and by
+a larger number of services that run in the background.
+
+Postfix services are implemented by daemon processes. These
+run in the background under control of the \fBmaster\fR(8)
+process.  The master.cf configuration file defines how a
+client program connects to a service, and what daemon
+program runs when a service is requested.  Most daemon
+processes are short\-lived and terminate voluntarily after
+serving \fBmax_use\fR clients, or after inactivity for
+\fBmax_idle\fR or more units of time.
+
+All daemons specified here must speak a Postfix\-internal
+protocol. In order to execute non\-Postfix software use the
+\fBlocal\fR(8), \fBpipe\fR(8) or \fBspawn\fR(8) services, or
+run the server under control by \fBinetd\fR(8) or equivalent.
+.PP
+After changing master.cf you must execute "\fBpostfix reload\fR"
+to reload the configuration.
+.SH "SYNTAX"
+.na
+.nf
+.ad
+.fi
+The general format of the master.cf file is as follows:
+.IP \(bu
+Empty lines and whitespace\-only lines are ignored, as are
+lines whose first non\-whitespace character is a `#'.
+.IP \(bu
+A logical line starts with non\-whitespace text. A line that
+starts with whitespace continues a logical line.
+.IP \(bu
+Each logical line defines a single Postfix service.
+Each service is identified by its name and type as described
+below.  When multiple lines specify the same service name
+and type, only the last one is remembered.  Otherwise, the
+order of master.cf service definitions does not matter.
+.PP
+Each logical line consists of eight fields separated by
+whitespace.  These are described below in the order as they
+appear in the master.cf file.
+
+Where applicable a field of "\-" requests that the built\-in
+default value be used. For boolean fields specify "y" or
+"n" to override the default value.
+.IP "\fBService name\fR"
+The service name syntax depends on the service type as
+described next.
+.IP "\fBService type\fR"
+Specify one of the following service types:
+.RS
+.IP \fBinet\fR
+The service listens on a TCP/IP socket and is accessible
+via the network.
+
+The service name is specified as \fIhost:port\fR, denoting
+the host and port on which new connections should be
+accepted. The host part (and colon) may be omitted.  Either
+host or port may be given in symbolic form (see \fBhosts\fR(5) or
+\fBservices\fR(5)) or in numeric form (IP address or port number).
+Host information may be enclosed inside "[]"; this form
+is necessary only with IPv6 addresses.
+.sp
+Examples: a service named \fB127.0.0.1:smtp\fR or \fB::1:smtp\fR
+receives
+mail via the loopback interface only; and a service named
+\fB10025\fR accepts connections on TCP port 10025 via
+all interfaces configured with the \fBinet_interfaces\fR
+parameter.
+
+.sp
+Note: with Postfix version 2.2 and later specify
+"\fBinet_interfaces = loopback\-only\fR" in main.cf, instead
+of hard\-coding loopback IP address information in master.cf
+or in main.cf.
+.IP \fBunix\fR
+The service listens on a UNIX\-domain socket and is accessible
+for local clients only.
+
+The service name is a pathname relative to the Postfix
+queue directory (pathname controlled with the \fBqueue_directory\fR
+configuration parameter in main.cf).
+.sp
+On Solaris 8 and earlier systems the \fBunix\fR type is
+implemented with streams sockets.
+.IP \fBfifo\fR
+The service listens on a FIFO (named pipe) and is accessible
+for local clients only.
+
+The service name is a pathname relative to the Postfix
+queue directory (pathname controlled with the \fBqueue_directory\fR
+configuration parameter in main.cf).
+.IP \fBpass\fR
+The service listens on a UNIX\-domain socket, and is accessible
+to local clients only. It receives one open connection (file
+descriptor passing) per connection request.
+
+The service name is a pathname relative to the Postfix
+queue directory (pathname controlled with the \fBqueue_directory\fR
+configuration parameter in main.cf).
+.sp
+On Solaris 8 and earlier systems the \fBpass\fR type is
+implemented with streams sockets.
+
+This feature is available as of Postfix version 2.5.
+.RE
+.IP "\fBPrivate (default: y)\fR"
+Whether or not access is restricted to the mail system.
+Internet (type \fBinet\fR) services can't be private.
+.IP "\fBUnprivileged (default: y)\fR"
+Whether the service runs with root privileges or as the
+owner of the Postfix system (the owner name is controlled
+by the \fBmail_owner\fR configuration variable in the
+main.cf file).
+.sp
+The \fBlocal\fR(8), \fBpipe\fR(8), \fBspawn\fR(8), and
+\fBvirtual\fR(8) daemons require privileges.
+.IP "\fBChroot (default: Postfix >= 3.0: n, Postfix <3.0: y)\fR"
+Whether or not the service runs chrooted to the mail queue
+directory (pathname is controlled by the \fBqueue_directory\fR
+configuration variable in the main.cf file).
+.sp
+Chroot should not be used with the \fBlocal\fR(8),
+\fBpipe\fR(8), \fBspawn\fR(8), and \fBvirtual\fR(8) daemons.
+Although the
+\fBproxymap\fR(8) server can run chrooted, doing so defeats
+most of the purpose of having that service in the first
+place.
+.sp
+The files in the examples/chroot\-setup subdirectory of the
+Postfix source archive show set up a Postfix chroot environment
+on a variety of systems. See also BASIC_CONFIGURATION_README
+for issues related to running daemons chrooted.
+.IP "\fBWake up time (default: 0)\fR"
+Automatically wake up the named service after the specified
+number of seconds. The wake up is implemented by connecting
+to the service and sending a wake up request.  A ? at the
+end of the wake\-up time field requests that no wake up
+events be sent before the first time a service is used.
+Specify 0 for no automatic wake up.
+.sp
+The \fBpickup\fR(8), \fBqmgr\fR(8) and \fBflush\fR(8)
+daemons require a wake up timer.
+.IP "\fBProcess limit (default: $default_process_limit)\fR"
+The maximum number of processes that may execute this
+service simultaneously. Specify 0 for no process count limit.
+.sp
+NOTE: Some Postfix services must be configured as a
+single\-process service (for example, \fBqmgr\fR(8)) and
+some services must be configured with no process limit (for
+example, \fBcleanup\fR(8)).  These limits must not be
+changed.
+.IP "\fBCommand name + arguments\fR"
+The command to be executed.  Characters that are special
+to the shell such as ">" or "|" have no special meaning
+here, and quotes cannot be used to protect arguments
+containing whitespace. To protect whitespace, use "{"
+and "}" as described below.
+.sp
+The command name is relative to the Postfix daemon directory
+(pathname is controlled by the \fBdaemon_directory\fR
+configuration variable).
+.sp
+The command argument syntax for specific commands is
+specified in the respective daemon manual page.
+.sp
+The following command\-line options have the same effect for
+all daemon programs:
+.RS
+.IP \fB\-D\fR
+Run the daemon under control by the command specified with
+the \fBdebugger_command\fR variable in the main.cf
+configuration file.  See DEBUG_README for hints and tips.
+.IP "\fB\-o { \fIname\fR = \fIvalue\fB }\fR (long form, Postfix >= 3.0)"
+.IP "\fB\-o \fIname\fR=\fIvalue\fR (short form)"
+Override the named main.cf configuration parameter. The
+parameter value can refer to other parameters as \fI$name\fR
+etc., just like in main.cf.  See \fBpostconf\fR(5) for
+syntax.
+.sp
+NOTE 1: With the "long form" shown above, whitespace
+after "{", around "=", and before "}" is ignored, and
+whitespace within the parameter value is preserved.
+.sp
+NOTE 2: with the "short form" shown above, do not specify
+whitespace around the "=" or in
+parameter values. To specify a parameter value that contains
+whitespace, use the long form described above, or use commas
+instead of spaces, or specify the value in main.cf. Example:
+.sp
+.nf
+/etc/postfix/master.cf:
+    submission inet .... smtpd
+        \-o smtpd_xxx_yyy=$submission_xxx_yyy
+.sp
+/etc/postfix/main.cf
+    submission_xxx_yyy = text with whitespace...
+.fi
+.sp
+NOTE 3: Over\-zealous use of parameter overrides makes the
+Postfix configuration hard to understand and maintain.  At
+a certain point, it might be easier to configure multiple
+instances of Postfix, instead of configuring multiple
+personalities via master.cf.
+.IP \fB\-v\fR
+Increase the verbose logging level. Specify multiple \fB\-v\fR
+options to make a Postfix daemon process increasingly verbose.
+.IP "Other command\-line arguments"
+Specify "{" and "}" around command arguments that contain
+whitespace (Postfix 3.0 and later). Whitespace
+after "{" and before "}" is ignored.
+.SH "SEE ALSO"
+.na
+.nf
+master(8), process manager
+postconf(5), configuration parameters
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+BASIC_CONFIGURATION_README, basic configuration
+DEBUG_README, Postfix debugging
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Initial version by
+Magnus Baeck
+Lund Institute of Technology
+Sweden
+
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

@@ -1,0 +1,90 @@
+.\" Copyright (c) 2010 Kungliga Tekniska Högskolan
+.\" (Royal Institute of Technology, Stockholm, Sweden).
+.\" All rights reserved.
+.\"
+.\" Portions Copyright (c) 2010 Apple Inc. All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" 3. Neither the name of the Institute nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $Id$
+.\"
+.Dd Sep  30, 2011
+.Dt heimdal_debug 5
+.Os HEIMDAL
+.Sh NAME
+.Nm heimdal_debug
+.Nd how to turn on/off debugging for Kerberos tools
+.Sh DESCRIPTION
+The
+.Nm
+kerberos frameworks have several knobs for controlling logging.
+The different framework knobs are:
+.Bl -tag -width "XXX"
+.It libkrb
+The Kerberos library, some gss-api Kerberos output ends up here too
+.It kcm
+the kcm library (credentials cache, ntlm client)
+.It kdc
+the kerberos KDC output
+.It digest-service
+the digest service (ntlm server)
+.El
+.Sh CONFIGURATION FILE
+.Bd -literal -offset ident
+[logging]
+	<subsystem> = 0-/SYSLOG:
+.Ed
+and watch syslog for logging information.
+.Sh APPLE MAC OS X
+First turn up syslog debugging
+.Dl sudo syslog -c 0 -d
+then you can see the syslog output in Console.app or by running
+.Dl syslog -w -k org.h5l.asl
+To enable more extensive debugging logging for each subsystem, use the following commands:
+.Bl -tag -width "XXX" -offset indent
+.It Kerberos Library
+sudo defaults write /Library/Preferences/com.apple.Kerberos logging -dict-add krb5 '0-/OSLOG:normal:'
+.It digest-server
+sudo defaults write /Library/Preferences/com.apple.Kerberos logging -dict-add digest-service '0-/OSLOG:normal:'
+.It kcm
+sudo defaults write /Library/Preferences/com.apple.Kerberos logging -dict-add kcm '0-/OSLOG:normal:'
+.It kdc
+sudo defaults write /Library/Preferences/com.apple.Kerberos logging -dict-add kdc '0-/OSLOG:normal:'
+.It MIT Kerberos Shim
+defaults write com.apple.MITKerberosShim EnableDebugging -bool true
+.It GSS-API framework logging
+sudo defaults write /Library/Preferences/com.apple.GSS DebugLevel -int 10
+.El
+.Sh Other options on Mac OS X
+.Bl -tag -width "XXX" -offset ident
+.It Make the admin API pretend to the server even on client
+sudo defaults write /Library/Preferences/com.apple.Kerberos ForceHeimODServerMode -bool true
+.El
+.Sh SEE ALSO
+.Xr gss 5 ,
+.Xr kerberos 8

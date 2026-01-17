@@ -1,0 +1,382 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) shell.n 1.21 94/12/17 16:04:44
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::shell iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::shell \- Create and manipulate a shell widget
+.SH SYNOPSIS
+\fBiwidgets::shell\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Toplevel <- iwidgets::Shell
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBbackground\fR	\fBcursor\fR	\fBforeground\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "INHERITED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBtitle\fR 
+.fi
+.LP
+See the "Toplevel" manual entry for details on the above inherited options.
+
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBheight\fR
+Class:	\fBHeight\fR
+Command-Line Switch:	\fB-height\fR
+.fi
+.IP
+Specifies the height of the shell.  The value may be specified in 
+any of the forms acceptable to \fBTk_GetPixels\fR.  A value of zero 
+causes the height to be adjusted to the required value based on 
+the size requests of the components placed in the childsite.  
+Otherwise, the height is fixed.  The default is zero.  NOTE: This
+may cause some amount of flickering on slower machines.  To prevent it
+simply set the width and height to a appropriate value.
+.LP
+.nf
+Name:	\fBmaster\fR
+Class:	\fBWindow\fR
+Command-Line Switch:	\fB-master\fR
+.fi
+.IP
+Defines the shell as being a transient window with the master window
+given by the master option.  The master window should be either another
+existing toplevel window or {} for no master.  The default is {} for 
+shells and "." for dialogs.
+.LP
+.nf
+Name:	\fBmodality\fR
+Class:	\fBModality\fR
+Command-Line Switch:	\fB-modality\fR
+.fi
+.IP
+Allows the shell to grab control of the screen in one of three different ways:
+\fBapplication\fR, \fBsystem\fR, or \fBnone\fR.
+Application modal prevents any other toplevel windows within the application
+which are direct children of '.' from gaining focus.  System modal locks 
+the screen and prevents all windows from gaining focus regardless of 
+application.  A modality of none performs no grabs at all.  The default 
+is none.
+.LP
+.nf
+Name:	\fBpadX\fR
+Class:	\fBPad\fR
+Command-Line Switch:	\fB-padx\fR
+.fi
+.IP
+Specifies a padding distance for the childsite in the X-direction in
+any of the forms acceptable to \fBTk_GetPixels\fR.  The default is 10.
+.LP
+.nf
+Name:	\fBpadY\fR
+Class:	\fBPad\fR
+Command-Line Switch:	\fB-pady\fR
+.fi
+.IP
+Specifies a padding distance for the childsite in the Y-direction in
+any of the forms acceptable to \fBTk_GetPixels\fR.  The default is 10.
+.LP
+.nf
+Name:	\fBwidth\fR
+Class:	\fBWidth\fR
+Command-Line Switch:	\fB-width\fR
+.fi
+.IP
+Specifies the width of the shell.  The value may be specified in 
+any of the forms acceptable to \fBTk_GetPixels\fR.  A value of zero 
+causes the width to be adjusted to the required value based on 
+the size requests of the components placed in the childsite.  
+Otherwise, the width is fixed.  The default is zero.  NOTE: This
+may cause some amount of flickering on slower machines.  To prevent it
+simply set the width and height to a appropriate value.
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::shell\fR command creates a shell which is a top 
+level widget which supports modal operation.
+
+.SH "METHODS"
+.PP
+The \fBiwidgets::shell\fR command create a new Tcl command whose
+name is \fIpathName\fR.  This command may be used to invoke various
+operations on the widget.  It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command.  The following
+commands are possible for shell widgets:
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBactivate\fR
+Display the shell and wait based on the modality.  For application
+and system modal activations, perform a grab operation, and wait
+for the result.  The result may be returned via an argument to the
+\fBdeactivate\fR method.
+.TP
+\fIpathName \fBcenter\fR \fI?widget?\fR
+Centers the shell with respect to another widget.  The widget argument
+is optional.  If provided, it should be the path of another widget with
+to center upon.  If absent, then the shell will be centered on the screen
+as a whole.
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::shell\fR
+command.
+.TP
+\fIpathName \fBchildsite\fR
+Returns the pathname of the child site widget.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::shell\fR
+command.
+.TP
+\fIpathName \fBdeactivate\fR ?\fIarg\fR?
+Deactivate the display of the shell.  The method takes an optional
+argument to be passed to the \fBactivate\fR method which returns the value.
+The optional argument is only effective for application and system 
+modal dialogs.
+
+.SH "COMPONENTS"
+.LP
+.nf
+Name:	\fBshellchildsite\fR
+Class:	\fBframe\fR
+.fi
+.IP
+The shellchildsite component is the user child site for the shell.  See 
+the "frame" widget manual entry for details on the shellchildsite 
+component item.
+.fi
+
+.SH EXAMPLE
+.DS
+ package require Iwidgets 4.0
+ iwidgets::shell .sh -modality application -padx 20 -pady 20 -title Shell
+
+ pack [label [.sh childsite].l -text SHELL]
+
+ .sh center
+ .sh activate
+.DE
+.SH AUTHOR
+Mark L. Ulferts
+.DE
+Kris Raney
+.LP
+.SH KEYWORDS
+shell, widget

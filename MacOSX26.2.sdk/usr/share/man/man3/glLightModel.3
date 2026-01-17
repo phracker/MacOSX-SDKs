@@ -1,0 +1,175 @@
+'\" te  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:45
+.ds Dm 4 May 22 14:
+.ds Xs 22290     8
+.TH GLLIGHTMODEL 3G
+.SH NAME
+.B "glLightModelf, glLightModeli, glLightModelfv, glLightModeliv
+\- set the lighting model parameters
+
+.SH C SPECIFICATION
+void \f3glLightModelf\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglLightModelf( 'u
+	GLfloat \fIparam\fP )
+.fi
+void \f3glLightModeli\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglLightModeli( 'u
+	GLint \fIparam\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fIparams\fP\ \ 'u 
+\f2pname\fP
+Specifies a single-valued lighting model parameter.
+\%\f3GL_LIGHT_MODEL_LOCAL_VIEWER\fP,
+\%\f3GL_LIGHT_MODEL_COLOR_CONTROL\fP, and
+\%\f3GL_LIGHT_MODEL_TWO_SIDE\fP are accepted.
+.TP
+\f2param\fP
+Specifies the value that \f2param\fP will be set to.
+.SH C SPECIFICATION
+void \f3glLightModelfv\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglLightModelfv( 'u
+	const GLfloat \fI*params\fP )
+.fi
+void \f3glLightModeliv\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglLightModeliv( 'u
+	const GLint \fI*params\fP )
+.fi
+
+.SH PARAMETERS
+.TP
+\f2pname\fP
+Specifies a lighting model parameter.
+\%\f3GL_LIGHT_MODEL_AMBIENT\fP,
+\%\f3GL_LIGHT_MODEL_COLOR_CONTROL\fP,
+\%\f3GL_LIGHT_MODEL_LOCAL_VIEWER\fP, and
+\%\f3GL_LIGHT_MODEL_TWO_SIDE\fP are accepted.
+.TP
+\f2params\fP
+Specifies a pointer to the value or values that \f2params\fP will be set to.
+.SH DESCRIPTION
+\%\f3glLightModel\fP sets the lighting model parameter.
+\f2pname\fP names a parameter and \f2params\fP gives the new value.
+There are three lighting model parameters:
+.TP 10
+\%\f3GL_LIGHT_MODEL_AMBIENT\fP
+\f2params\fP contains four integer or floating-point values that specify
+the ambient RGBA intensity of the entire scene.
+Integer values are mapped linearly such that the most positive representable
+value maps to 1.0,
+and the most negative representable value maps to \-1.0.
+Floating-point values are mapped directly.
+Neither integer nor floating-point values are clamped.
+The initial ambient scene intensity is (0.2, 0.2, 0.2, 1.0).
+.TP
+\%\f3GL_LIGHT_MODEL_COLOR_CONTROL\fP
+\f2params\fP must be either \%\f3GL_SEPARATE_SPECULAR_COLOR\fP or
+\%\f3GL_SINGLE_COLOR\fP.
+\%\f3GL_SINGLE_COLOR\fP specifies that a single color is generated from the
+lighting computation for a vertex.  \%\f3GL_SEPARATE_SPECULAR_COLOR\fP
+specifies that the specular color computation of lighting be stored
+separately from the remainder of the lighting computation.  The specular
+color is summed into the generated fragment's color after the application
+of texture mapping (if enabled).  The initial value is \%\f3GL_SINGLE_COLOR\fP.
+.TP
+\%\f3GL_LIGHT_MODEL_LOCAL_VIEWER\fP
+\f2params\fP is a single integer or floating-point value that specifies
+how specular reflection angles are computed.
+If \f2params\fP is 0 (or 0.0), specular reflection angles take the
+view direction to be parallel to and in the direction of the -\f2z\fP axis,
+regardless of the location of the vertex in eye coordinates.
+Otherwise, specular reflections are computed from the origin
+of the eye coordinate system.
+The initial value is 0.
+.TP
+\%\f3GL_LIGHT_MODEL_TWO_SIDE\fP
+\f2params\fP is a single integer or floating-point value that specifies
+whether one- or two-sided lighting calculations are done for polygons.
+It has no effect on the lighting calculations for points,
+lines,
+or bitmaps.
+If \f2params\fP is 0 (or 0.0), one-sided lighting is specified,
+and only the \f2front\fP material parameters are used in the
+lighting equation.
+Otherwise, two-sided lighting is specified.
+In this case, vertices of back-facing polygons are lighted using the
+\f2back\fP material parameters,
+and have their normals reversed before the lighting equation is evaluated.
+Vertices of front-facing polygons are always lighted using the
+\f2front\fP material parameters,
+with no change to their normals. The initial value is 0.
+.P
+In RGBA mode, the lighted color of a vertex is the sum of
+the material emission intensity,
+the product of the material ambient reflectance and the lighting model full-scene 
+ambient intensity,
+and the contribution of each enabled light source.
+Each light source contributes the sum of three terms:
+ambient, diffuse, and specular.
+The ambient light source contribution is the product of the material ambient
+reflectance and the light's ambient intensity.
+The diffuse light source contribution is the product of the material diffuse
+reflectance,
+the light's diffuse intensity,
+and the dot product of the vertex's normal with the normalized vector from
+the vertex to the light source.
+The specular light source contribution is the product of the material specular
+reflectance,
+the light's specular intensity,
+and the dot product of the normalized vertex-to-eye and vertex-to-light
+vectors,
+raised to the power of the shininess of the material.
+All three light source contributions are attenuated equally based on
+the distance from the vertex to the light source and on light source
+direction, spread exponent, and spread cutoff angle.
+All dot products are replaced with 0 if they evaluate to a negative value.
+.P
+The alpha component of the resulting lighted color is set to the alpha value
+of the material diffuse reflectance.
+.P
+In color index mode,
+the value of the lighted index of a vertex ranges from the ambient
+to the specular values passed to \%\f3glMaterial\fP using \%\f3GL_COLOR_INDEXES\fP.
+Diffuse and specular coefficients,
+computed with a (.30, .59, .11) weighting of the lights' colors,
+the shininess of the material,
+and the same reflection and attenuation equations as in the RGBA case,
+determine how much above ambient the resulting index is.
+.SH NOTES
+\%\f3GL_LIGHT_MODEL_COLOR_CONTROL\fP is available only if the GL version is
+1.2 or greater.
+.SH ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated if \f2pname\fP is not an accepted value.
+.P
+\%\f3GL_INVALID_ENUM\fP is generated if \f2pname\fP is
+\%\f3GL_LIGHT_MODEL_COLOR_CONTROL\fP and \f2params\fP is not one of
+\%\f3GL_SINGLE_COLOR\fP or \%\f3GL_SEPARATE_SPECULAR_COLOR\fP.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glLightModel\fP is executed between
+the execution of \%\f3glBegin\fP and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_LIGHT_MODEL_AMBIENT\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_LIGHT_MODEL_COLOR_CONTROL\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_LIGHT_MODEL_LOCAL_VIEWER\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_LIGHT_MODEL_TWO_SIDE\fP
+.br
+\%\f3glIsEnabled\fP with argument \%\f3GL_LIGHTING\fP
+.SH SEE ALSO
+\%\f3glLight\fP,
+\%\f3glMaterial\fP

@@ -1,0 +1,492 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd December 11, 2006       \" DATE 
+.Dt sc_auth 8       \" Program name and manual section number 
+.Os MacOSX
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm sc_auth
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd SmartCard authorization setup script
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Ar pair " "
+.Op Fl v
+.Fl u Ar user
+.Fl h Ar hash
+.Nm
+.Ar unpair
+.Op Fl v
+.Op Fl u Ar user
+.Op Fl h Ar hash
+.Nm
+.Ar pairing_ui
+.Op Fl v
+.Op Fl f
+.Op Fl s Ar enable Ns | Ns Ar disable Ns | Ns Ar status
+.Nm
+.Ar identities
+.Nm
+.Ar list " "
+.Op Fl v
+.Op Fl u Ar user
+.Op Fl d Ar domain
+.Nm
+.Ar changepin
+.Op Fl t Ar tokenid
+.Op Fl u
+.Nm
+.Ar verifypin
+.Op Fl t Ar tokenid
+.Op Fl p Ar PIN
+.Nm
+.Ar enable_for_login
+.Fl c Ar class-id
+.Nm
+.Ar filevault
+.Fl o Ar operation
+.Op Fl u Ar user
+.Op Fl h Ar hash
+.Ss CTK Identity
+.Nm
+.Ar create-ctk-identity
+.Fl l Ar label
+.Fl k Ar p-256|p-384|p-521|p-256-ne|p-384-ne
+.Op Fl t Ar bio|none
+.Op Fl N Ar CN
+.Op Fl E Ar emailAddress
+.Op Fl U Ar OU
+.Op Fl O Ar O
+.Op Fl L Ar L
+.Op Fl S Ar ST
+.Op Fl C Ar C
+.Nm
+.Ar delete-ctk-identity
+.Fl h Ar hash
+.Nm
+.Ar delete-all-ctk-identities
+.Nm
+.Ar list-ctk-identities
+.Op Fl t Ar sha1|sha256|ssh
+.Op Fl e Ar hex|b64
+.Nm
+.Ar import-ctk-identities
+.Fl f Ar fileName
+.Op Fl t Ar bio|none
+.Op Fl p Ar password
+.Nm
+.Ar export-ctk-identity
+.Fl h Ar hash
+.Fl f Ar fileName
+.Op Fl p Ar password
+.Nm
+.Ar create-ctk-csr
+.Fl h Ar hash
+.Fl f Ar fileName
+.Op Fl N Ar CN
+.Op Fl E Ar emailAddress
+.Op Fl U Ar OU
+.Op Fl O Ar O
+.Op Fl L Ar L
+.Op Fl S Ar ST
+.Op Fl C Ar C
+.Nm
+.Ar import-ctk-certificate
+.Fl f Ar fileName
+.Ss Legacy Support             \" Section Header - required - don't modify
+.Nm
+.Ar accept
+.Op Fl v
+.Op Fl u Ar user 
+.Op Fl d Ar domain 
+.Fl k Ar keyname
+.Nm
+.Ar accept
+.Op Fl v
+.Op Fl u Ar user 
+.Op Fl d Ar domain 
+.Fl h Ar hash
+.Nm
+.Ar remove
+.Op Fl v
+.Op Fl u Ar user 
+.Op Fl d Ar domain 
+.Nm
+.Ar hash " "
+.Op Fl k Ar keyname
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+Configures a local user account to permit authentication using a supported
+SmartCard.  Authentication is via asymmetric key (also known as
+public-key) encryption.
+.Ss CTK Identity
+CTK Identity allows to create and manipulate CryptoTokenKit identities. CryptoTokenKit identities can use non-exportable or exportable private keys. The non-exportable private key is protected by the Secure Enclave and the key never leves the Secure Enclave in open form. The exportable private key is encrypted with Elliptic Curve Encryption Standard Variable IVX963 algorithm which is backed by a Secure Enclave key. CryptoTokenKit Identities and private keys can be used for TLS authentication, email protection and SSL using
+.Xr ssh-keychain 8
+library.
+.Ss Legacy Support
+Performs the legacy actions.
+.Pp
+.Sh COMMANDS
+.Bl -item
+.It
+.Nm pair
+.Op Fl v
+.Fl u Ar user
+.Fl h Ar hash
+.Bl -item -offset -indent
+Associate a user with a public key. Because user's keychain will be modified to be unlockable by a key, SmartCard with that key must be present in the reader. The key to use has to be specified by its hash.
+.It
+.Bl -tag -compact -width -indent
+.It Fl v
+Verbose mode
+.It Fl u Ar user
+Specifies the user account.
+.It Fl h Ar hash
+Specifies a public key using its hash
+.El
+.El
+.It
+.Nm unpair
+.Op Fl v
+.Op Fl u Ar user
+.Op Fl h Ar hash
+.Bl -item -offset -indent
+Remove association with a user and keychain. If no specific hash is provided, all associations with a user are removed.
+.It
+.Bl -tag -compact -width -indent
+.It Fl v
+Verbose mode
+.It Fl u Ar user
+Specifies the user account.
+.It Fl h Ar hash
+Specifies a public key using its hash
+.El
+.El
+.It
+.Nm pairing_ui
+.Op Fl v
+.Op Fl f
+.Op Fl s Ar enable Ns | Ns Ar disable Ns | Ns Ar status
+.Bl -item -offset -indent
+Enable, disable and force to display pairing dialog when card with unpaired identities is inserted.
+.It
+.Bl -tag -compact -width -indent
+.It Fl v
+Verbose mode
+.It Fl f
+Force to display pairing dialog
+.It Fl s Ar enable Ns | Ns Ar disable Ns | Ns Ar status
+Enable, disable or provide status for pairing dialog
+.El
+.El
+.It
+.Nm identities
+.Bl -item -offset -indent
+List all identities on all SmartCards and display appropriate associations with users (for associated keys) or key names (for unassociated keys).
+.El
+.El
+.It
+.Nm list
+.Op Fl v
+.Op Fl u Ar user
+.Op Fl d Ar domain
+.Bl -item -offset -indent
+List all public keys associated with a user.
+.It
+.Bl -tag -compact -width -indent
+.It Fl v
+Verbose mode
+.It Fl u Ar user
+Specifies the user account.
+.It Fl d Ar domain
+Specifies the directory domain containing the user account
+.El
+.El
+.It
+.Nm changepin
+.Op Fl t Ar tokenid
+.Op Fl u
+.Bl -item -offset -indent
+Change or unblock SmartCard PIN.  This command works only for Personal Identity Verification (PIV) SmartCards.
+.It
+.Bl -tag -compact -width -indent
+.It Fl u
+Unblock PIN using PUK
+.It Fl t Ar tokenid
+Specifies a token by tokenID
+.El
+.El
+.It
+.Nm verifypin
+.Op Fl t Ar tokenid
+.Op Fl p Ar PIN
+.Bl -item -offset -indent
+Verify SmartCard PIN. This command works only for Personal Identity Verification (PIV) SmartCards.
+.It
+.Bl -tag -compact -width -indent
+.It Fl t Ar tokenid
+Specifies a token by tokenID
+.It Fl p Ar PIN
+Specifies SmartCard PIN
+.El
+.El
+.It
+.Nm enable_for_login
+.Op Fl c Ar class-id
+.Bl -item -offset -indent
+Enable the app extension for login and make the token available to the system for authentication.
+.It
+.Bl -tag -compact -width -indent
+.It Fl c Ar class-id
+Specifies a token by  'com.apple.ctk.class-id' from Info.plist
+.El
+.El
+.It
+.Nm filevault
+.Fl o Ar status Ns | Ns Ar enable Ns | Ns Ar disable
+.Op Fl u Ar user
+.Op Fl h Ar hash
+.Bl -item -offset -indent
+Manage SmartCard support for FileVault unlock.
+.It
+.Bl -tag -compact -width -indent
+.It Fl o Ar status Ns | Ns Ar enable Ns | Ns Ar disable
+Use status to query the
+.Ar status
+of SmartCard support for FileVault unlock for the specified user (current user by default)
+.Ar enable/disable
+to activate/deactivate SmartCard support for FileVault unlock
+.It Fl u Ar user
+Specifies the user account.
+.It Fl h Ar hash
+Specifies a public key using its hash
+.El
+.El
+.EL
+.Pp
+.Sh COMMANDS - CTK Identity
+.Bl -item
+.It
+.Nm create-ctk-identity
+.Fl l Ar label
+.Fl k Ar p-256 Ns | Ns Ar p-384 Ns | Ns Ar p-521 Ns | Ns Ar p-256-ne Ns Ns | Ns Ar p-384-ne
+.Op Fl t Ar bio Ns | Ns Ar none
+.Op Fl N Ar CN
+.Op Fl E Ar emailAddress
+.Op Fl U Ar OU
+.Op Fl O Ar O
+.Op Fl L Ar L
+.Op Fl S Ar ST
+.Op Fl C Ar C
+.Bl -item -offset -indent
+Create an CTK Identity.
+.It
+.Bl -tag -compact -width -indent
+.It Fl l Ar label
+Specifies the key label
+.It Fl k Ar p-256 Ns | Ns Ar p-384 Ns | Ns Ar p-521 Ns | Ns Ar p-256-ne Ns Ns | Ns Ar p-384-ne
+Specifies the key type. The "-ne" suffix means non-exportable variant of key
+.It Fl t Ar bio Ns | Ns Ar none
+Specifies private key protection
+.It Fl N Ar CN
+Specifies certificate Common Name. If not specified the
+.Ar label
+is used instead
+.It Fl E Ar emailAddress
+Specifies certificate Email Address
+.It Fl U Ar OU
+Specifies certificate Organizational Unit Name
+.It Fl O Ar O
+Specifies certificate Organization Name
+.It Fl L Ar L
+Specifies certificate Locality Name
+.It Fl S Ar ST
+Specifies certificate State Or Province Name
+.It Fl C Ar C
+Specifies certificate Country Name
+.El
+.El
+.It
+.Nm delete-ctk-identity
+.Fl h Ar hash
+.Bl -item -offset -indent
+Delete an CTK Identity.
+.It
+.Bl -tag -compact -width -indent
+.It Fl h Ar hash
+Specifies the identity by its public key hash
+.El
+.El
+.It
+.Nm delete-all-ctk-identities
+.Bl -item -offset -indent
+Delete all CTK Identities.
+.El
+.It
+.Nm list-ctk-identities
+.Op Fl t Ar sha1 Ns | Ns Ar sha256 | Ns Ar ssh
+.Op Fl e Ar hex Ns | Ns Ar b64
+.Bl -item -offset -indent
+List all CTK identities.
+.It
+.Bl -tag -compact -width -indent
+.It Fl t Ar sha1 Ns | Ns Ar sha256 Ns | Ns Ar ssh
+Specifies used alghorithm for public key hash. SHA-1, SHA-256 and SHA-256 compatible with SSH.
+.It Fl e Ar hex Ns | Ns Ar b64
+Specifies public key hash encoding, hexadecimal or Base64
+.El
+.El
+.It
+.Nm import-ctk-identities
+.Fl f Ar fileName
+.Op Fl t Ar bio Ns | Ns Ar none
+.Op Fl p Ar password
+.Bl -item -offset -indent
+Import one or more Identities from a PKCS#12 archive.
+.It
+.Bl -tag -compact -width -indent
+.It Fl f Ar fileName
+Specifies the PKCS#12 file
+.It Fl t Ar bio Ns | Ns Ar none
+Specifies private key protection.
+.It Fl p Ar password
+Specifies password for PKCS#12 archive
+.El
+.El
+.It
+.Nm export-ctk-identity
+.Fl h Ar hash
+.Fl f Ar fileName
+.Op Fl p Ar password
+.Bl -item -offset -indent
+Export one CTK Identity in to the PKCS#12 archive.
+.It
+.Bl -tag -compact -width -indent
+.Fl h Ar hash
+Specifies the CTK Identity by its public key hash
+.It Fl f Ar fileName
+Specifies the PKCS#12 file
+.It Fl p Ar password
+Specifies password for PKCS#12 archive
+.El
+.El
+.It
+.Nm create-ctk-csr
+.Fl h Ar hash
+.Fl f Ar fileName
+.Op Fl N Ar CN
+.Op Fl E Ar emailAddress
+.Op Fl U Ar OU
+.Op Fl O Ar O
+.Op Fl L Ar L
+.Op Fl S Ar ST
+.Op Fl C Ar C
+.Bl -item -offset -indent
+Create an PEM formated Certificate Signing Request (CSR)
+.It
+.Bl -tag -compact -width -indent
+.Fl h Ar hash
+Specifies the CTK Identity by its public key hash
+.It Fl f Ar fileName
+Specifies the CSR file
+.It Fl N Ar CN
+Specifies certificate Common Name. If not specified the
+.Ar label
+is used instead
+.It Fl E Ar emailAddress
+Specifies Email Address
+.It Fl U Ar OU
+Specifies Organizational Unit Name
+.It Fl O Ar O
+Specifies Organization Name
+.It Fl L Ar L
+Specifies Locality Name
+.It Fl S Ar ST
+Specifies State Or Province Name
+.It Fl C Ar C
+Specifies Country Name
+.El
+.El
+.It
+.Nm import-ctk-certificate
+.Fl f Ar fileName
+.Bl -item -offset -indent
+Import an PEM formated Certificate
+.It
+.Bl -tag -compact -width -indent
+.It Fl f Ar fileName
+Specifies the certificate file name
+.El
+.El
+.El
+.Sh COMMANDS - Legacy Support
+.Bl -item
+.It
+.Nm accept
+.Op Fl v
+.Op Fl u Ar user
+.Op Fl d Ar domain
+.Fl k Ar keyname
+.Fl h Ar hash
+.Bl -item -offset -indent
+Associate a user with a public key on a card.  The key to use can be specified either by its name or its hash.
+.It
+.Bl -tag -compact -width -indent
+.It Fl v
+Verbose mode
+.It Fl u Ar user
+Specifies the user account.
+.It Fl d Ar domain
+Specifies the directory domain containing the user account
+.It Fl k Ar keyname
+Specifies a public key using its name
+.It Fl k Ar hash
+Specifies a public key using its hash
+.El
+.El
+.It
+.Nm remove
+.Op Fl v
+.Op Fl u Ar user
+.Op Fl d Ar domain
+.Bl -item -offset -indent
+Remove all public keys associated with a user.
+.It
+.Bl -tag -compact -width -indent
+.It Fl v
+Verbose mode
+.It Fl u Ar user
+Specifies the user account.
+.It Fl d Ar domain
+Specifies the directory domain containing the user account
+.El
+.El
+.It
+.Nm hash
+.Op Fl k Ar keyname
+.Bl -item -offset -indent
+Print hashes for all keys on all inserted cards.
+.It
+.Bl -tag -compact -width -indent
+.It Fl k Ar keyname
+Specifies a public key using its name
+.El
+.El
+.El
+.Pp
+.Sh NOTES
+.Nm
+is a shell script.  It is intended to be modified by administrators to 
+suit their local environments.  
+.Pp
+.Nm
+is only known to work with a local directory.  Consult the script's source
+for some limited guidance to using remote directories.  
+.Sh SEE ALSO
+.Xr SmartCardServices 7 ,
+.Xr SmartCardServices-legacy 7 ,
+.Xr pam_smartcard 8 ,
+.Xr ssh-keychain 8

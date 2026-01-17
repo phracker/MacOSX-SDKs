@@ -1,0 +1,157 @@
+.TH "MPSMatrix" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSMatrix
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSMatrixTypes\&.h>\fP
+.PP
+Inherits NSObject\&.
+.PP
+Inherited by \fBMPSTemporaryMatrix\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithBuffer:descriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:descriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinit\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBsynchronizeOnCommandBuffer:\fP"
+.br
+.ti -1c
+.RI "(NSUInteger) \- \fBresourceSize\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "id< MTLDevice > \fBdevice\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBrows\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBcolumns\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBmatrices\fP"
+.br
+.ti -1c
+.RI "\fBMPSDataType\fP \fBdataType\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBrowBytes\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBmatrixBytes\fP"
+.br
+.ti -1c
+.RI "id< MTLBuffer > \fBdata\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework
+.PP
+\fBA\fP \fBMPSMatrix\fP object describes a set of 2-dimensional arrays of data and provides storage for its values\&. \fBMPSMatrix\fP objects serve as inputs and outputs of MPSMatrixKernel objects\&.
+.PP
+Implementation note: \fBA\fP \fBMPSMatrix\fP object maintains its internal storage using a MTLBuffer object and thus the same rules for maintaining coherency of a MTLBuffer's data between CPU memory and GPU memory apply to a \fBMPSMatrix\fP\&. An \fBMPSMatrix\fP object's data refers to an array of matrices\&. Data is assumed to be ordered by matrix first, followed by row, followed by column\&.
+.PP
+For example, index [i,j] of the k'th matrix of an \fBMPSMatrix\fP is located at byte offset: k * matrixBytes + i * rowBytes + j * sizeof(dataType)
+.PP
+Where matrixBytes is a multiple of rowBytes at least equal to rows * rowBytes\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) init "
+
+.SS "\- (nonnull instancetype) initWithBuffer: (nonnull id< MTLBuffer >) buffer(nonnull \fBMPSMatrixDescriptor\fP *) descriptor"
+Initialize a \fBMPSMatrix\fP object with a MTLBuffer\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIbuffer\fP The MTLBuffer object which contains the data to use for the \fBMPSMatrix\fP\&. May not be NULL\&.
+.br
+\fIdescriptor\fP The \fBMPSMatrixDescriptor\fP\&. May not be NULL\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSMatrix\fP object or nil, if failure\&.
+.RE
+.PP
+This function returns a \fBMPSMatrix\fP object which uses the supplied MTLBuffer\&. The dimensions and stride of the matrix are specified by the \fBMPSMatrixDescriptor\fP object\&.
+.PP
+The provided MTLBuffer must have enough storage to hold 
+.PP
+.nf
+(descriptor.matrices-1) * descriptor.matrixBytes +
+(descriptor.rows-1) * descriptor.rowBytes +
+ descriptor.columns * (element size) bytes.
+.fi
+.PP
+ 
+.PP
+Reimplemented in \fBMPSTemporaryMatrix\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device(\fBMPSMatrixDescriptor\fP *__nonnull) descriptor"
+Initialize a \fBMPSMatrix\fP object with a descriptor\&. Allocate the buffer\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device with which it will be used 
+.br
+\fIdescriptor\fP The shape and style of the matrix 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSMatrix\fP object or nil  The matrix object will be created, but the storage to hold the matrix data will only be allocated when it is needed, typically when the data property is invoked\&. In conjunction with -resourceSize, this will allow you to estimate storage needs without actually creating the backing store for the matrix\&. 
+.RE
+.PP
+
+.SS "\- (NSUInteger) resourceSize "
+Get the number of bytes used to allocate underyling MTLResources  This is the size of the backing store of underlying MTLResources\&. It does not include all storage used by the object, for example the storage used to hold the \fBMPSMatrix\fP instantiation and MTLBuffer is not included\&. It only measures the size of the allocation used to hold the matrix data in the buffer\&. This value is subject to change between different devices and operating systems\&.
+.PP
+Except when -initWithBuffer:descriptor: is used, most MPSMatrixes are allocated without a backing store\&. The backing store is allocated lazily when it is needed, typically when the \&.texture property is called\&. Consequently, in most cases, it should be inexpensive to make a \fBMPSImage\fP to see how much memory it will need, and release it if it is too large\&.
+.PP
+This method may fail in certain circumstances, such as when the \fBMPSImage\fP is created with -initWithTexture:featureChannels:\&. In such cases, 0 will be returned\&. 
+.SS "\- (void) synchronizeOnCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer"
+Flush the underlying MTLBuffer from the device's caches, and invalidate any CPU caches if needed\&.  This will call [id <MTLBlitEncoder> synchronizeResource: ] on the matrix's MTLBuffer, if any\&. This is necessary for all MTLStorageModeManaged resources\&. For other resources, including temporary resources (these are all MTLStorageModePrivate), and buffers that have not yet been allocated, nothing is done\&. It is more efficient to use this method than to attempt to do this yourself with the data property\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The commandbuffer on which to synchronize 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- columns\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of columns in a matrix in the \fBMPSMatrix\fP\&. 
+.SS "\- data\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+An MTLBuffer to store the data\&. 
+.SS "\- dataType\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The type of the \fBMPSMatrix\fP data\&. 
+.SS "\- device\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The device on which the \fBMPSMatrix\fP will be used\&. 
+.SS "\- matrices\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of matrices in the \fBMPSMatrix\fP\&. 
+.SS "\- matrixBytes\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The stride, in bytes, between corresponding elements of consecutive matrices\&. 
+.SS "\- rowBytes\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The stride, in bytes, between corresponding elements of consecutive rows\&. 
+.SS "\- rows\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of rows in a matrix in the \fBMPSMatrix\fP\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

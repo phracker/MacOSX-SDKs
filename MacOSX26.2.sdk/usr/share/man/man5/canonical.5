@@ -1,0 +1,285 @@
+.TH CANONICAL 5 
+.ad
+.fi
+.SH NAME
+canonical
+\-
+Postfix canonical table format
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap /etc/postfix/canonical\fR
+
+\fBpostmap \-q "\fIstring\fB" /etc/postfix/canonical\fR
+
+\fBpostmap \-q \- /etc/postfix/canonical <\fIinputfile\fR
+.SH DESCRIPTION
+.ad
+.fi
+The optional \fBcanonical\fR(5) table specifies an address mapping for
+local and non\-local addresses. The mapping is used by the
+\fBcleanup\fR(8) daemon, before mail is stored into the
+queue.  The address mapping is recursive.
+
+Normally, the \fBcanonical\fR(5) table is specified as a text file
+that serves as input to the \fBpostmap\fR(1) command.
+The result, an indexed file in \fBdbm\fR or \fBdb\fR format,
+is used for fast searching by the mail system. Execute the command
+"\fBpostmap /etc/postfix/canonical\fR" to rebuild an indexed
+file after changing the corresponding text file.
+
+When the table is provided via other means such as NIS, LDAP
+or SQL, the same lookups are done as for ordinary indexed files.
+
+Alternatively, the table can be provided as a regular\-expression
+map where patterns are given as regular expressions, or lookups
+can be directed to TCP\-based server. In those cases, the lookups
+are done in a slightly different way as described below under
+"REGULAR EXPRESSION TABLES" or "TCP\-BASED TABLES".
+
+By default the \fBcanonical\fR(5) mapping affects both message
+header addresses (i.e. addresses that appear inside messages)
+and message envelope addresses (for example, the addresses
+that are used in SMTP protocol commands). This is controlled with
+the \fBcanonical_classes\fR parameter.
+
+NOTE: Postfix versions 2.2 and later rewrite message headers
+from remote SMTP clients only if the client matches the
+local_header_rewrite_clients parameter, or if the
+remote_header_rewrite_domain configuration parameter specifies
+a non\-empty value. To get the behavior before Postfix 2.2,
+specify "local_header_rewrite_clients = static:all".
+
+Typically, one would use the \fBcanonical\fR(5) table to replace login
+names by \fIFirstname.Lastname\fR, or to clean up addresses produced
+by legacy mail systems.
+
+The \fBcanonical\fR(5) mapping is not to be confused with \fIvirtual
+alias\fR support or with local aliasing. To change the destination
+but not the headers, use the \fBvirtual\fR(5) or \fBaliases\fR(5)
+map instead.
+.SH "CASE FOLDING"
+.na
+.nf
+.ad
+.fi
+The search string is folded to lowercase before database
+lookup. As of Postfix 2.3, the search string is not case
+folded with database types such as regexp: or pcre: whose
+lookup fields can match both upper and lower case.
+.SH "TABLE FORMAT"
+.na
+.nf
+.ad
+.fi
+The input format for the \fBpostmap\fR(1) command is as follows:
+.IP "\fIpattern address\fR"
+When \fIpattern\fR matches a mail address, replace it by the
+corresponding \fIaddress\fR.
+.IP "blank lines and comments"
+Empty lines and whitespace\-only lines are ignored, as
+are lines whose first non\-whitespace character is a `#'.
+.IP "multi\-line text"
+A logical line starts with non\-whitespace text. A line that
+starts with whitespace continues a logical line.
+.SH "TABLE SEARCH ORDER"
+.na
+.nf
+.ad
+.fi
+With lookups from indexed files such as DB or DBM, or from networked
+tables such as NIS, LDAP or SQL, each \fIuser\fR@\fIdomain\fR
+query produces a sequence of query patterns as described below.
+
+Each query pattern is sent to each specified lookup table
+before trying the next query pattern, until a match is
+found.
+.IP "\fIuser\fR@\fIdomain address\fR"
+Replace \fIuser\fR@\fIdomain\fR by \fIaddress\fR. This form
+has the highest precedence.
+.sp
+This is useful to clean up addresses produced by legacy mail systems.
+It can also be used to produce \fIFirstname.Lastname\fR style
+addresses, but see below for a simpler solution.
+.IP "\fIuser address\fR"
+Replace \fIuser\fR@\fIsite\fR by \fIaddress\fR when \fIsite\fR is
+equal to $\fBmyorigin\fR, when \fIsite\fR is listed in
+$\fBmydestination\fR, or when it is listed in $\fBinet_interfaces\fR
+or $\fBproxy_interfaces\fR.
+.sp
+This form is useful for replacing login names by
+\fIFirstname.Lastname\fR.
+.IP "@\fIdomain address\fR"
+Replace other addresses in \fIdomain\fR by \fIaddress\fR.
+This form has the lowest precedence.
+.sp
+Note: @\fIdomain\fR is a wild\-card. When this form is applied
+to recipient addresses, the Postfix SMTP server accepts
+mail for any recipient in \fIdomain\fR, regardless of whether
+that recipient exists.  This may turn your mail system into
+a backscatter source: Postfix first accepts mail for
+non\-existent recipients and then tries to return that mail
+as "undeliverable" to the often forged sender address.
+.SH "RESULT ADDRESS REWRITING"
+.na
+.nf
+.ad
+.fi
+The lookup result is subject to address rewriting:
+.IP \(bu
+When the result has the form @\fIotherdomain\fR, the
+result becomes the same \fIuser\fR in \fIotherdomain\fR.
+.IP \(bu
+When "\fBappend_at_myorigin=yes\fR", append "\fB@$myorigin\fR"
+to addresses without "@domain".
+.IP \(bu
+When "\fBappend_dot_mydomain=yes\fR", append
+"\fB.$mydomain\fR" to addresses without ".domain".
+.SH "ADDRESS EXTENSION"
+.na
+.nf
+.fi
+.ad
+When a mail address localpart contains the optional recipient delimiter
+(e.g., \fIuser+foo\fR@\fIdomain\fR), the lookup order becomes:
+\fIuser+foo\fR@\fIdomain\fR, \fIuser\fR@\fIdomain\fR, \fIuser+foo\fR,
+\fIuser\fR, and @\fIdomain\fR.
+
+The \fBpropagate_unmatched_extensions\fR parameter controls whether
+an unmatched address extension (\fI+foo\fR) is propagated to the
+result of table lookup.
+.SH "REGULAR EXPRESSION TABLES"
+.na
+.nf
+.ad
+.fi
+This section describes how the table lookups change when the table
+is given in the form of regular expressions. For a description of
+regular expression lookup table syntax, see \fBregexp_table\fR(5)
+or \fBpcre_table\fR(5).
+
+Each pattern is a regular expression that is applied to the entire
+address being looked up. Thus, \fIuser@domain\fR mail addresses are not
+broken up into their \fIuser\fR and \fI@domain\fR constituent parts,
+nor is \fIuser+foo\fR broken up into \fIuser\fR and \fIfoo\fR.
+
+Patterns are applied in the order as specified in the table, until a
+pattern is found that matches the search string.
+
+Results are the same as with indexed file lookups, with
+the additional feature that parenthesized substrings from the
+pattern can be interpolated as \fB$1\fR, \fB$2\fR and so on.
+.SH "TCP-BASED TABLES"
+.na
+.nf
+.ad
+.fi
+This section describes how the table lookups change when lookups
+are directed to a TCP\-based server. For a description of the TCP
+client/server lookup protocol, see \fBtcp_table\fR(5).
+This feature is not available up to and including Postfix version 2.4.
+
+Each lookup operation uses the entire address once.  Thus,
+\fIuser@domain\fR mail addresses are not broken up into their
+\fIuser\fR and \fI@domain\fR constituent parts, nor is
+\fIuser+foo\fR broken up into \fIuser\fR and \fIfoo\fR.
+
+Results are the same as with indexed file lookups.
+.SH BUGS
+.ad
+.fi
+The table format does not understand quoting conventions.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+The following \fBmain.cf\fR parameters are especially relevant.
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP \fBcanonical_classes\fR
+What addresses are subject to canonical address mapping.
+.IP \fBcanonical_maps\fR
+List of canonical mapping tables.
+.IP \fBrecipient_canonical_maps\fR
+Address mapping lookup table for envelope and header recipient
+addresses.
+.IP \fBsender_canonical_maps\fR
+Address mapping lookup table for envelope and header sender
+addresses.
+.IP \fBpropagate_unmatched_extensions\fR
+A list of address rewriting or forwarding mechanisms that propagate
+an address extension from the original address to the result.
+Specify zero or more of \fBcanonical\fR, \fBvirtual\fR, \fBalias\fR,
+\fBforward\fR, \fBinclude\fR, or \fBgeneric\fR.
+.PP
+Other parameters of interest:
+.IP \fBinet_interfaces\fR
+The network interface addresses that this system receives mail on.
+You need to stop and start Postfix when this parameter changes.
+.IP \fBlocal_header_rewrite_clients\fR
+Rewrite message header addresses in mail from these clients
+and update incomplete addresses with the domain name in
+$myorigin or $mydomain; either don't rewrite message headers
+from other clients at all, or rewrite message headers and
+update incomplete addresses with the domain specified in
+the remote_header_rewrite_domain parameter.
+.IP \fBproxy_interfaces\fR
+Other interfaces that this machine receives mail on by way of a
+proxy agent or network address translator.
+.IP \fBmasquerade_classes\fR
+List of address classes subject to masquerading: zero or more of
+\fBenvelope_sender\fR, \fBenvelope_recipient\fR, \fBheader_sender\fR,
+\fBheader_recipient\fR.
+.IP \fBmasquerade_domains\fR
+List of domains that hide their subdomain structure.
+.IP \fBmasquerade_exceptions\fR
+List of user names that are not subject to address masquerading.
+.IP \fBmydestination\fR
+List of domains that this mail system considers local.
+.IP \fBmyorigin\fR
+The domain that is appended to locally\-posted mail.
+.IP \fBowner_request_special\fR
+Give special treatment to \fBowner\-\fIxxx\fR and \fIxxx\fB\-request\fR
+addresses.
+.IP \fBremote_header_rewrite_domain\fR
+Don't rewrite message headers from remote clients at all
+when this parameter is empty; otherwise, rewrite message
+headers and append the specified domain name to incomplete
+addresses.
+.SH "SEE ALSO"
+.na
+.nf
+cleanup(8), canonicalize and enqueue mail
+postmap(1), Postfix lookup table manager
+postconf(5), configuration parameters
+virtual(5), virtual aliasing
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+ADDRESS_REWRITING_README, address rewriting guide
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

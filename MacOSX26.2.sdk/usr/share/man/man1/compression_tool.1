@@ -1,0 +1,59 @@
+.Dd January 04, 2023
+.Dt COMPRESSION_TOOL 1
+.Os macOS
+.Sh NAME
+.Nm compression_tool
+.Nd encode/decode files using the Compression library.
+.Sh SYNOPSIS
+.Nm
+compression_tool -encode | -decode [-a algorithm] [-A algorithm] [-i input_file] [-o output_file] [-v] [-h]
+.Sh DESCRIPTION
+.Nm
+encodes (compresses), or decodes (uncompresses) files using the Compression library.
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl encode
+Encode (compress) the input
+.It Fl decode
+Decode (uncompress) the input
+.It Fl \-a\ \fIalgorithm\fR
+Set the compression algorithm, valid options are \fBzlib\fR, \fBlzma\fR, \fBlzfse\fR, \fBlz4\fR, \fBlz4_raw\fR.
+Default is \fBlzfse\fR.
+.br
+\- \fBzlib\ \ \ \ \ \fR raw DEFLATE payload, as defined in IETF RFC 1951, encoder is zlib level 5,
+.br
+\- \fBlzma\ \ \ \ \ \ \fRLZMA2 payload inside a XZ container, encoder is LZMA2 preset 6,
+.br
+\- \fBlz4\ \ \ \ \ \ \ \fRraw LZ4 payload inside a simple frame format (described in compression.h),
+.br
+\- \fBlz4_raw\ \ \ \fRraw LZ4 payload,
+.br
+\- \fBlzfse\ \ \ \ \ \fRLZFSE payload.
+.It Fl  \-A\ \fIalgorithm\fR
+Enable block compression, and set compression algorithm, valid options are \fBzlib\fR, \fBlzma\fR, \fBlzfse\fR, \fBlz4\fR.
+Default is \fBlzfse\fR.
+.It Fl  \-b\ \fIblock_size\fR
+Set block size for block compression.
+The integer value can be followed by \fBm\fR or \fBk\fR or \fBb\fR.
+.It Fl  \-t\ \fIthread_count\fR
+Set the number of worker threads to use for block compression/decompression.
+Default is the number of logical threads on the machine.
+.It Fl  \-i\ \fIinput_file\fR
+Input file.
+If omitted, read from standard input.
+.It Fl  \-o\ \fIoutput_file\fR
+Output file.
+If omitted, write to standard output.
+.It Fl  \-v
+Increase verbosity.
+Default is silent operation.
+.It Fl  \-h
+Print usage and exit.
+.El
+.Sh BLOCK COMPRESSION FILE FORMAT
+The file starts with a 4-byte header 'p','b','z',<algo>, where <algo> indicates the algorithm used to compress data. 
+The header is followed by the 64-bit block size in bytes. 
+Then for each block, we have 64-bit uncompressed size (will batch the block size, except possibly for the last block), 64-bit compressed size, and the compressed payload. 
+If both uncompressed and compressed sizes for a block are equal, the payload is stored uncompressed. 
+All 64-bit values are stored big-endian. 
+Valid values for <algo> are: 'z' for zlib, 'x' for lzma, '4' for lz4, and 'e' for lzfse.

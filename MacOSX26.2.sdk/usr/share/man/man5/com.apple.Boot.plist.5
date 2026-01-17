@@ -1,0 +1,92 @@
+.\" Automatically generated from mdocxml
+.Dd December 14, 2015
+.Dt "com.apple.Boot.plist" 5
+.Os "Darwin" ""
+.Sh NAME
+.Nm com.apple.Boot.plist
+.Nd Configuration plist for \&OS \&X booter
+.Sh DESCRIPTION
+The \&OS \&X booter \&(
+.Pa boot.efi
+\&on EFI-based Macintosh systems) \&is responsible for loading the initial parts \&of the operating system into memory and executing them. Its default behavior \&is \&to start \&up \&OS \&X \&in graphical mode. However, certain behavior can \&be configured using the 
+.Pa com.apple.Boot.plist
+file, \&as well \&as NVRAM variables, EFI boot options, and keyboard "snag keys". 
+.Pp
+The 
+.Pa com.apple.Boot.plist
+\&is \&a standard 
+.Xr plist 5  
+format Core Foundation property list stored \&in XML format. Keys are generally strings like 
+.Nm Kernel Flags,
+with either string \&or integer values. The following key-values are currently supported: 
+.Pp
+.Bl -tag -width XXXXX
+.It  Nm Kernel Flags
+[string] This option specifies arguments \&to \&be passed directly \&to the kernel \&to change its behavior (although some kernel options are parsed \&by the booter \&as well for correctness). Common options include "debug=0x144" \&to enable kernel debugging, "-v" \&to enable verbose boot, "-s" \&to boot \&to single user mode, "cpus=1" \&to simulate \&a single core system, and "maxmem=1024" \&to cap available memory \&to 1024 \&MB RAM. All desired options should \&be space-separated within the <string> tag. The default value \&is the empty string.
+.It  Nm Kernel Cache
+[string] This option specifies the prelinked kernel file \&to \&be loaded, which contains both the kernel and kernel extensions, linked \&at their final load addresses. The path uses backslash \&("\e \&") path delimeters. The default value \&is calculated programmatically using 
+.Pa System\e Library\e PrelinkedKernels\e prelinkedkernel.
+.It  Nm Root UUID
+[string] This option \&is rarely used and specifies \&to the kernel what block device should \&be probed \&as the root filesystem ("/"), and \&is most commonly overriden \&by the \&OS installation software when installing onto AppleRAID volumes. \&It can \&be either \&a filesystem volume UUID, \&as represented \&by 
+.Nm diskutil info,
+\&or \&a GPT partition UUID. The default \&is generated programmatically based \&on which filesystem the booter itself was loaded from.
+.El
+.Pp
+Since the 
+.Pa com.apple.Boot.plist
+file exists \&on the root filesystem, \&it \&is tied \&to that  \&OS volume, and \&is \&no longer honored \&if Startup Disk \&or 
+.Xr bless 8  
+\&is used \&to change the boot preference \&to another volume. 
+.Pp
+The 
+.Nm Kernel Flags
+options can also \&be specified via 
+.Pa --option\&to 
+.Xr bless 8  ,
+which encodes the string \&in the EFI boot options along with the \&OS boot volume preference. The space-separated strings are merged with kernel flags specified \&in the 
+.Pa com.apple.Boot.plist
+and NVRAM. 
+.Pp
+\&At boot time, the booter checks \&to see \&if certain keys are being pressed, and alters behavior accordingly. This \&is \&in addition \&to similar functionality that the firmware itself may implement before starting the booter. Since pressing keys requires physical interaction, they take precendence over preferences set through other means, including the 
+.Pa com.apple.Boot.plist
+file and NVRAM. The following key combinations are currently supported: 
+.Pp
+.Bl -tag -width XXXXX
+.It  Nm Shift
+Boot \&in Safe Mode. Effectively the same \&as passing "-x" \&in 
+.Nm Kernel Flags,
+and causes most caches \&to \&be ignored \&by the booter.
+.It  Nm Command-S
+Boot \&in Single User Mode. Effectively the same \&as passing "-s" \&in 
+.Nm Kernel Flags,
+and causes the system \&to boot \&to \&an interactive shell with \&no system services started.
+.It  Nm Command-V
+Boot \&in Verbose Mode. Effectively the same \&as passing "-v" \&in 
+.Nm Kernel Flags,
+and causes the system \&to boot \&to verbose text logging before starting the graphical user interface.
+.It  Nm Command-R
+Boot \&in Recovery Mode.  This causes the system \&to boot into special Recovery System image, which can \&be used \&to restore the system from Time Machine Backup, re-install \&OS \&X, \&or use Disk Utility \&to repair \&or erase disks.
+.El
+.Pp
+.Sh ENVIRONMENT
+The \&OS \&X booter can also \&be controlled \&by NVRAM variables, which are analogous \&to environment variables. NVRAM variables are key-value pairs. The "boot-args" NVRAM variable can \&be used \&to provide additional arguments \&to the kernel, and will \&be merged with 
+.Nm Kernel Flags
+\&in the 
+.Pa com.apple.Boot.plist
+file and EFI boot options set with 
+.Xr bless 8  .
+.Pp
+Since NVRAM variables are system-wide, they are consulted regardless \&of what \&OS volume \&is set \&as the boot preference. NVRAM variables are persistent even when the boot preference \&is changed \&by Startup Disk \&or 
+.Xr bless 8  .
+.Pp
+.Sh FILES
+.Bl -tag -width indent
+.It Pa /Library/Preferences/SystemConfiguration/com.apple.Boot.plist
+Location \&of the 
+.Pa com.apple.Boot.plist
+file.
+.El
+.Sh SEE ALSO
+.Xr nvram 8 ,  
+.Xr bless 8 ,  
+.Xr kextcache 8  

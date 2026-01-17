@@ -1,0 +1,91 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 6 March 1997
+.ds Re Release 1.2.0
+.ds Dp May 22 14:54
+.ds Dm 1 May 22 14:
+.ds Xs 64359     5
+.TH GLUPICKMATRIX 3G
+.SH NAME
+.B "gluPickMatrix
+\- define a picking region
+
+.SH C SPECIFICATION
+void \f3gluPickMatrix\fP(
+GLdouble \fIx\fP,
+.nf
+.ta \w'\f3void \fPgluPickMatrix( 'u
+	GLdouble \fIy\fP,
+	GLdouble \fIdelX\fP,
+	GLdouble \fIdelY\fP,
+	GLint \fI*viewport\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\f2x\fP\ \f2y\fP\ \ 'u 
+\f2x\fP, \f2y\fP
+Specify the center of a picking region in window coordinates.
+.TP
+\f2delX\fP, \f2delY\fP
+Specify the width and height, respectively, of the picking region in window 
+coordinates.
+.TP
+\f2viewport\fP
+Specifies the current viewport (as from a \f3glGetIntegerv\fP call).
+.SH DESCRIPTION
+\%\f3gluPickMatrix\fP creates a projection matrix that can be used to restrict drawing
+to a small region of the viewport.
+This is typically useful to
+determine what objects are being drawn near the cursor.
+Use \%\f3gluPickMatrix\fP to
+restrict drawing to a small region around the cursor.
+Then,
+enter selection mode (with \f3glRenderMode\fP) and rerender the scene.
+All primitives that would have been drawn near
+the cursor are identified and stored in the selection buffer.
+.P
+The matrix created by \%\f3gluPickMatrix\fP is multiplied by the current matrix just
+as if \f3glMultMatrix\fP is called with the generated matrix.
+To effectively use the generated pick matrix for picking,
+first call \f3glLoadIdentity\fP to load an identity matrix onto the
+perspective matrix stack.
+Then call \%\f3gluPickMatrix\fP,
+and finally, call a command (such as \%\f3gluPerspective\fP)
+to multiply the perspective matrix by the pick matrix.
+.P
+When using \%\f3gluPickMatrix\fP to pick NURBS, be careful to turn off the NURBS 
+property
+\%\f3GLU_AUTO_LOAD_MATRIX\fP.  If \%\f3GLU_AUTO_LOAD_MATRIX\fP is not
+turned off, then any NURBS surface rendered is subdivided differently with
+the pick matrix than the way it was subdivided without the pick matrix.
+.bp
+.SH EXAMPLE
+When rendering a scene as follows:
+.sp
+.Bd -literal
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ gluPerspective(...);
+ glMatrixMode(GL_MODELVIEW);
+ /* Draw the scene */
+.Ed
+
+a portion of the viewport can be selected as a pick region like this:
+
+.Bd -literal
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ gluPickMatrix(x, y, width, height, viewport);
+ gluPerspective(...);
+ glMatrixMode(GL_MODELVIEW);
+ /* Draw the scene */
+.Ed
+
+.SH SEE ALSO
+\f3glGet\fP,
+\f3glLoadIndentity\fP, 
+\f3glMultMatrix\fP, 
+\f3glRenderMode\fP,
+\%\f3gluPerspective\fP
+

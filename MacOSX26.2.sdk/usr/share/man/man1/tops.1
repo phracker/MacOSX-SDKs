@@ -1,0 +1,159 @@
+.TH TOPS 1 "March 14, 1995" "Apple Computer, Inc."
+.SH NAME
+tops \- perform in-place substitutions on code.
+.SH SYNOPSIS
+.B tops
+[\fB-help\fR] [\fB-verbose\fR] [\fB-nocontext\fR] [\fB-nofileinfo\fR] [\fB-semiverbose\fR)] [\fB-dont\fR] 
+(\fB\-scriptfile\fR \fIscript_name\fR) | (\fBfind "\fIsearch_pattern\fB"\fR [\fBwhere ("\fIsymbol\fB"\fR...\fB) isOneOf {("\fImatch\fB"\fR...\fB)\fR...\fB}\fR] ...) | (\fBreplace "\fIsearch_pattern\fB" with "\fIreplacement_pattern\fB"\fR | \fBsame\fR [\fBwhere ("\fIsymbol\fB"\fR...\fB) isOneOf {("\fImatch\fB"\fR...\fB)\fR...\fB}\fR]... [\fBwithin ("\fIsymbol\fB") {\fR...\fB}\fR]... [\fBerror "\fImessage\fB"\fR] [\fBwarning "\fImessage\fB"\fR]) | ( \fBreplacemethod "\fIselector\fB" with "\fInew_selector\fB"{\fR [\fBreplace "\fIsymbol\fB" with "\fIsymbol_replacement\fB"\fR]... \fB }\fR [\fBwhere ("\fIsymbol\fB"\fR...\fB) isOneOf {("\fImatch\fB" \fR...\fB)\fR...\fB}\fR]... [\fBwithin ("\fIsymbol\fB") {\fR...\fB}\fR]... [\fBerror "\fImessage\fB"\fR] [\fBwarning "\fImessage\fB"\fR] ) [\fB-classfile\fR \fIclassfile\fR] [\fIfilename\fR ...]
+.SH DESCRIPTION
+.B tops
+is a tool that performs in-place substitutions on source files according to a set of rules. Each tops rule describes a particular translation. For example, one tops rule might specify that occurrences of the token 'Application' should be converted to 'NSApplication'. In tops syntax, this rule will appear as:
+.PP
+replace "Application" with "NSApplication"
+.SH OPTIONS
+.TP
+.B -help
+Displays the tops syntax line.
+.TP
+.B -verbose
+Prints out the source code lines that are being changed by the command.
+.TP
+.B -nocontext
+Instead of printing the whole source code line that is being changed or searched for, shows only the portion of the line that has the change.
+.TP
+.B -nofileinfo
+Does not print the file name and line number information in verbose messages.
+.TP
+.B -semiverbose
+Shows how much of the file has been processed.
+.TP
+.B -dont
+Shows what changes would be made to the source code without actually performing the changes.
+.TP
+\fB\-scriptfile\fR \fIscript_name\fR
+Specifies the script file containing the rules that tops will apply to your code. The script file can contain three types of rules: \fBfind\fR, \fBreplace\fR, and \fBreplacemethod\fR. It also can contain C-style comments, /* ... */.
+.TP
+\fBfind "\fIsearch_pattern\fB"\fR 
+Locates all occurrences of \fIsearch_pattern\fR in the file. \fIsearch_pattern\fR can contain literal strings and tokens in angle brackets, as described below. 
+.TP
+\fBwhere ("\fIsymbol\fB"\fR...\fB) isOneOf {("\fImatch\fB"\fR...\fB)\fR...\fB}
+When \fIsearch_pattern\fR contains tokens in angle brackets, further refines what the token specified by \fIsymbol\fR should match.
+.TP
+\fBreplace "\fIsearch_pattern\fB" with "\fIreplacement_pattern\fB"\fR | \fBsame\fR 
+Replaces all occurrences of \fIsearch_pattern\fR in the file with \fIreplacement_pattern\fR. \fBsame\fR replaces \fIsearch_pattern\fR with itself. You usually use \fBsame\fR when you want to print out an error or warning message instead of replacing the code. 
+.TP
+\fBwithin ("\fIsymbol\fB") {\fR...\fB}\fR
+Specifies further conversions within one of the tokens specified in \fIsearch_pattern\fR. \fBfind\fR, \fBreplace\fR, and \fBreplacemethod\fR rules can appear within the angle brackets.
+.TP
+\fBerror "\fImessage\fB"\fR
+Generates an \fB#error\fR message located at \fIsearch_pattern\fR.
+.TP
+\fBwarning "\fImessage\fB"\fR
+Generates a \fB#warning\fR message located at \fIsearch_pattern\fR.
+.TP
+\fBreplacemethod "\fIselector\fB" with "\fInew_selector\fB"\fR
+Replaces all invocations, declarations, implementations, and \fB@selector\fR expressions using the method \fIselector\fR with \fInew_selector\fR.
+.TP
+\fB-classfile\fR \fIclassfile\fR
+Specifies a file that describes the class hierarchy used by the files being processed.
+.TP
+\fIfilename\fR ...
+Specifies the source file(s) you want to convert. You can specify more than one filename, separated by spaces. The files are converted in place; no backups are created. If no file is specified, the tops commands are performed on standard input.
+.PP
+The simplest search pattern is a literal string, such as "Application". Within the search pattern, you can define tokens that specify a particular syntax element rather than a literal string. The tokens have the form:
+.PP
+\fB<\fItype label\fB>\fR
+.PP
+where:
+.TP
+.I type
+Specifies the type of syntax element the token can match with.  
+.TP
+.I label
+Is a unique label that you assign to the token.
+.PP
+\fItype\fR can be one of the following:
+.TP
+.B a
+Matches any sequence of tokens.
+.TP
+.B b
+Matches any balanced sequence of tokens, that is, a sequence of tokens within parentheses or curly braces.
+.TP
+.B e
+Matches any expression. This is the default.
+.TP
+.B s
+Matches any string.
+.TP
+.B t
+Matches any one token.
+.TP
+.B w
+Matches white space, including comments.
+.PP
+In a \fBreplacemethod\fR rule, three subtokens are defined for each token you specify in the selector. For each token \fB<foo>\fR in the selector, \fBreplacemethod\fR defines the following. The Examples section shows an example of using one of these.
+.TP
+.B <foo_arg>
+Represents the tokens in the invocation of the method, that is, what is supplied for the foo argument.
+.TP
+.B <foo_type>
+Represents the type for foo that appears in the declaration.
+.TP
+.B <foo_param>
+Represents the parameter in the declaration.
+.PP
+\fBreplacemethod\fR also defines the following labels:
+.TP
+.B <implementation>
+Represents the body of the method implementation (not including curly braces).
+.TP
+.B <receiver>
+Represents the receiver of the message.
+.TP
+.B <call>
+Represents the entire method invocation (including the square brackets).
+.SH EXAMPLES
+The following is a typical \fBtops\fR command invocation. The script file MyRules.tops contains the \fBfind\fR, \fBreplace\fR, and \fBreplacemethod\fR rules that are performed on the files in MyProjectDir. The \fB-semiverbose\fR option means that name of the file being processed and the progress of the command will be printed to standard output.
+.IP
+tops -semiverbose -scriptfile MyRules.tops MyProjectDir/*.[hm]
+.PP
+The following is a typical rule that a tops script file would contain. The rule renames the method \fBremoveRowAt:andFree:\fR to \fBremoveRow:andRelease:\fR in all invocations, declarations, implementations, and \fB@selector\fR expressions. 
+.IP
+replacemethod "removeRowAt:andFree:" with "removeRow:andRelease:"
+.PP
+The following rule marks all calls to the function \fBNXGetNamedObject()\fR with the error message. \fBsame\fR means replace this function with itself. \fBNXGetNamedObject()\fR will still appear in the file, but it will be marked by the error message. \fB<b args>\fR specifies to replace all of the arguments in between the parentheses as well.
+.IP
+replace "NXGetNamedObject(<b args>)" with same
+    error "ApplicationConversion:  NXGetNamedObject() is obsolete. Replace with
+nib file outlets."
+.PP
+The following rule renames the method in all occurrences, and swaps the second and third argument in all invocations and declarations.
+.IP
+replacemethod "browser:fillMatrix:<2>inColumn:<3>" with "browser:createRowsForColumn:<3>inMatrix:<2>"
+.PP
+The following rule renames the method in all occurrences. In the invocations, it reverses the value specified for the flag argument.
+.IP
+replacemethod "myMethod:<flag>" with "myNewMethod:<flag>" 
+    { replace "<flag_arg>" with "!<flag_arg>" }
+.PP
+The following rule renames the method \fBinitContent:style:backing:buttonMask:defer:\fR to \fBinitWithContentRect:styleMask:backing:defer:\fR in all occurrences. In the declarations of this method, it changes the type for the style argument to be \fBunsigned int\fR and the type for the backing argument to be NSBackingStoreType.
+.IP
+replacemethod "<old>" with "<new>" {
+    replace "<style_type>" with "(unsigned int)"
+    replace "<backing_type>" with "(NSBackingStoreType)"
+    }
+    where ("<old>", "<new>") isOneOf {
+	("initContent:style:<style> backing:<backing> buttonMask:<bmask> defer:<flag>", "initWithContentRect:styleMask:<style> backing:<backing> defer:<flag>"),
+    }
+.PP
+The following rule renames the method \fBminFrameWidth:forStyle:buttonMask:\fR to \fBminFrameWidthWithTitle:styleMask:\fR in all occurrences. Within invocations of this method, it changes the style argument to be the logical OR of the previous style argument and the previous button mask argument. Within method declarations, it changes the type for the style argument to be \fBunsigned int\fR. Within the implementation of this method, it changes all uses of the button mask argument to the style argument.
+.IP
+replacemethod "minFrameWidth:forStyle:<style> buttonMask:<bmask>" with "minFrameWidthWithTitle:styleMask:<style>" {
+    replace "<style_arg>" with "<style_arg>|<bmask_arg>"
+    replace "<style_type>" with "(unsigned int)"
+    }
+    within ("<implementation") {
+	replace "<bmask_param>" "<style_param>"
+    }
+

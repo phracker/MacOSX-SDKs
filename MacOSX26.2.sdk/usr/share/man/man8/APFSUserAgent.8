@@ -1,0 +1,85 @@
+.\" Copyright (c) 2017-2021 Apple Inc. All rights reserved.
+.\"
+.\"     @(#)APFSUserAgent.8
+.Dd September 22, 2021
+.Dt APFSUSERAGENT 8
+.Os "Mac OS X"
+.Sh NAME
+.Nm APFSUserAgent
+.Nd APFS new container observer
+.Sh DESCRIPTION
+The
+.Nm
+watches for IOKit notifications about new APFS containers appearing, and about volume hash mismatch.
+.Pp
+If
+.Nm
+finds a new container with an encrypted volume, it will pop up a DiskUnlock dialog to ask the user for volume unlock password.
+.Pp
+The
+.Nm
+can display the following notifications:
+.br
+\fBIncompatible Features\fP - Mounting the device (volume or container) was rejected because it uses features that are not supported by the current version of macOS. Updating to a newer version of macOS may allow the device to mount.
+.br
+\fBVolume Hash Mismatch\fP - The cryptographic integrity of the volume is not valid. Reinstalling macOS on this volume will fix its integrity.
+.Pp
+The
+.Nm
+uses the
+.Ar defaults
+bundle \fBcom.apple.APFSUserAgent\fP in order to control whether or not to pop notifications or automatically ask the user to unlock an encrypted volume.
+.br
+The settings are controlled globally - for all devices, or locally - for a specific volume or container, identified by its UUID.
+In the
+.Ar defaults
+dictionary, the key is the action that the user would like to mute, and the value is the date to mute up to.
+.Nm
+Will use the system timezone.
+.Pp
+The values in the
+.Ar defaults
+dictionary could be updated using the
+.Ar defaults
+cli as well.
+.Sh KEYS
+The bundle keys are as follows:
+.Bl -hang -offset indent
+.It \fBIncompatibleFeatures\fP
+Mute notifications about either a volume or a container that has features which are not supported with the current running OS.
+.br
+.It \fBHashMismatch\fP
+Mute notification about volume hash mismatch.
+.br
+.It \fBDontUnlockVolume\fP
+Disable the DiskUnlock dialog to ask the user for volume unlock password.
+.br
+.It \fBMuteAllNotifications\fP
+Mute all APFS notifications. Does not include the dialog to unlock a volume.
+.Sh EXAMPLE
+The following setting mutes the
+.Ar HashMismatch
+notification only for the volume with UUID \fBF55502F4-1A9E-4B48-8A11-106E1226AE2F\fP up to 2021-08-18 15:10:31, and mutes the
+.Ar IncompatibleFeatures
+notification for any device, up to 2021-08-18 15:09:43
+.Pp
+~ % defaults read com.apple.APFSUserAgent
+.br
+{
+.br
+    "F55502F4-1A9E-4B48-8A11-106E1226AE2F" =     {
+.br
+        HashMismatch = "2021-08-18 15:10:31";
+.br
+    };
+.br
+    IncompatibleFeatures = "2021-08-18 15:09:43";
+.br
+}
+.br
+~ %
+.Sh EXIT STATUS
+.Nm
+always exits with 0.
+.Sh SEE ALSO
+defaults(1), apfsd(8), diskutil(8)

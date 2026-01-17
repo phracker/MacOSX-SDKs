@@ -1,0 +1,220 @@
+.\"
+.\" Backend man page for CUPS.
+.\"
+.\" Copyright © 2007-2019 by Apple Inc.
+.\" Copyright © 1997-2006 by Easy Software Products.
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH backend 7 "CUPS" "26 April 2019" "Apple Inc."
+.SH NAME
+backend \- cups backend transmission interfaces
+.SH SYNOPSIS
+.B backend
+.br
+.B backend
+.I job
+.I user
+.I title
+.I num-copies
+.I options
+[
+.I filename
+]
+.nf
+
+\fB#include <cups/cups.h>\fR
+
+\fBconst char *cupsBackendDeviceURI\fR(\fBchar **\fIargv\fR);
+
+\fBvoid cupsBackendReport\fR(\fBconst char *\fIdevice_scheme\fR,
+                       \fBconst char *\fIdevice_uri\fR,
+                       \fBconst char *\fIdevice_make_and_model\fR,
+                       \fBconst char *\fIdevice_info\fR,
+                       \fBconst char *\fIdevice_id\fR,
+                       \fBconst char *\fIdevice_location\fR);
+
+\fBssize_t cupsBackChannelWrite\fR(\fBconst char *\fIbuffer\fR,
+                             \fBsize_t \fIbytes\fR, \fBdouble \fItimeout\fR);
+
+\fBint cupsSideChannelRead\fR(\fBcups_sc_command_t *\fIcommand\fR,
+                        \fBcups_sc_status_t *\fIstatus\fR, \fBchar *\fIdata\fR,
+                        \fBint *\fIdatalen\fR, \fBdouble \fItimeout\fR);
+
+\fBint cupsSideChannelWrite\fR(\fBcups_sc_command_t \fIcommand\fR,
+                         \fBcups_sc_status_t \fIstatus\fR, \fBconst char *\fIdata\fR,
+                         \fBint \fIdatalen\fR, \fBdouble \fItimeout\fR);
+.fi
+.SH DESCRIPTION
+Backends are a special type of
+.BR filter (7)
+which is used to send print data to and discover different devices on the system.
+.LP
+Like filters, backends must be capable of reading from a filename on the command-line or from the standard input, copying the standard input to a temporary file as required by the physical interface.
+.LP
+The command name (\fIargv[0]\fR) is set to the device URI of the destination printer.
+Authentication information in
+.I argv[0]
+is removed, so backend developers are urged to use the
+.B DEVICE_URI
+environment variable whenever authentication information is required. The
+.BR cupsBackendDeviceURI ()
+function may be used to retrieve the correct device URI.
+.LP
+Back-channel data from the device should be relayed to the job filters using the \fIcupsBackChannelWrite\fR function.
+.LP
+Backends are responsible for reading side-channel requests using the
+.BR cupsSideChannelRead ()
+function and responding with the
+.BR cupsSideChannelWrite ()
+function. The
+.B CUPS_SC_FD
+constant defines the file descriptor that should be monitored for incoming requests.
+.SS DEVICE DISCOVERY
+When run with no arguments, the backend should list the devices and schemes it supports or is advertising to the standard output.
+The output consists of zero or more lines consisting of any of the following forms:
+.nf
+
+    device-class scheme "Unknown" "device-info"
+    device-class device-uri "device-make-and-model" "device-info"
+    device-class device-uri "device-make-and-model" "device-info" "device-id"
+    device-class device-uri "device-make-and-model" "device-info" "device-id" "device-location"
+.fi
+.LP
+The
+.BR cupsBackendReport ()
+function can be used to generate these lines and handle any necessary escaping of characters in the various strings.
+.LP
+The
+.I device-class
+field is one of the following values:
+.TP 5
+.B direct
+The device-uri refers to a specific direct-access device with no options, such as a parallel, USB, or SCSI device.
+.TP 5
+.B file
+The device-uri refers to a file on disk.
+.TP 5
+.B network
+The device-uri refers to a networked device and conforms to the general form for
+network URIs.
+.TP 5
+.B serial
+The device-uri refers to a serial device with configurable baud rate and other options.
+If the device-uri contains a baud value, it represents the maximum baud rate supported by the device.
+.LP
+The
+.I scheme
+field provides the URI scheme that is supported by the backend.
+Backends should use this form only when the backend supports any URI using that scheme.
+The
+.I device-uri
+field specifies the full URI to use when communicating with the device.
+.LP
+The
+.I device-make-and-model
+field specifies the make and model of the device, e.g. "Example Foojet 2000".
+If the make and model is not known, you must report "Unknown".
+.LP
+The
+.I device-info
+field specifies additional information about the device.
+Typically this includes the make and model along with the port number or network address, e.g. "Example Foojet 2000 USB #1".
+.LP
+The optional
+.I device-id
+field specifies the IEEE-1284 device ID string for the device, which is used to select a matching driver.
+.LP
+The optional
+.I device-location
+field specifies the physical location of the device, which is often used to pre-populate the printer-location attribute when adding a printer.
+.SS PERMISSIONS
+Backends without world read and execute permissions are run as the root user.
+Otherwise, the backend is run using an unprivileged user account, typically "lp".
+.SH EXIT STATUS
+The following exit codes are defined for backends:
+.TP 5
+.B CUPS_BACKEND_OK
+The print file was successfully transmitted to the device or remote server.
+.TP 5
+.B CUPS_BACKEND_FAILED
+.br
+The print file was not successfully transmitted to the device or remote server.
+The scheduler will respond to this by canceling the job, retrying the job, or stopping the queue depending on the state of the
+.I printer-error-policy
+attribute.
+.TP 5
+.B CUPS_BACKEND_AUTH_REQUIRED
+The print file was not successfully transmitted because valid authentication information is required.
+The scheduler will respond to this by holding the job and adding the 'cups-held-for-authentication' keyword to the "job-reasons" Job Description attribute.
+.TP 5
+.B CUPS_BACKEND_HOLD
+The print file was not successfully transmitted because it cannot be printed at this time.
+The scheduler will respond to this by holding the job.
+.TP 5
+.B CUPS_BACKEND_STOP
+The print file was not successfully transmitted because it cannot be printed at this time.
+The scheduler will respond to this by stopping the queue.
+.TP 5
+.B CUPS_BACKEND_CANCEL
+The print file was not successfully transmitted because one or more attributes are not supported or the job was canceled at the printer.
+The scheduler will respond to this by canceling the job.
+.TP 5
+.B CUPS_BACKEND_RETRY
+The print file was not successfully transmitted because of a temporary issue.
+The scheduler will retry the job at a future time - other jobs may print before this one.
+.TP 5
+.B CUPS_BACKEND_RETRY_CURRENT
+The print file was not successfully transmitted because of a temporary issue.
+The scheduler will retry the job immediately without allowing intervening jobs.
+.PP
+All other exit code values are reserved.
+.SH ENVIRONMENT
+In addition to the environment variables listed in
+.BR cups (1)
+and
+.BR filter (7),
+CUPS backends can expect the following environment variable:
+.TP 5
+.B DEVICE_URI
+The device URI associated with the printer.
+.SH FILES
+.I /etc/cups/cups-files.conf
+.SH NOTES
+CUPS backends are not generally designed to be run directly by the user.
+Aside from the device URI issue (
+.I argv[0]
+and
+.B DEVICE_URI
+environment variable contain the device URI), CUPS backends also expect specific environment variables and file descriptors, and typically run in a user session that (on macOS) has additional restrictions that affect how it runs.
+Backends can also be installed with restricted permissions (0500 or 0700) that tell the scheduler to run them as the "root" user instead of an unprivileged user (typically "lp") on the system.
+.LP
+Unless you are a developer and know what you are doing, please do not run backends directly.
+Instead, use the
+.BR lp (1)
+or
+.BR lpr (1)
+programs to send print jobs or
+.BR lpinfo (8)
+to query for available printers using the backend.
+The one exception is the SNMP backend - see
+.BR cups-snmp (8)
+for more information.
+.SH NOTES
+CUPS printer drivers and backends are deprecated and will no longer be supported in a future feature release of CUPS.
+Printers that do not support IPP can be supported using applications such as
+.BR ippeveprinter (1).
+.SH SEE ALSO
+.IR cups (1),
+.IR cups-files.conf (5),
+.IR cups-snmp (8),
+.IR cupsd (8),
+.IR filter (7),
+.IR lp (1),
+.IR lpinfo (8),
+.IR lpr (1),
+.br
+CUPS Online Help (http://localhost:631/help)
+.SH COPYRIGHT
+Copyright \[co] 2007-2019 by Apple Inc.

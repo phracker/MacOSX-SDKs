@@ -1,0 +1,1321 @@
+.\"
+.\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd $Mdocdate$
+.Dt OPENRSYNC 1
+.Os
+.Sh NAME
+.Nm openrsync
+.Nd synchronise local and remote files
+.Sh SYNOPSIS
+.Nm openrsync
+.Op Fl 0468BCDEFHILOPRSTWVabcdefghiklmnopqrtuvxyz
+.Op Fl e Ar program
+.Op Fl f Ar filter
+.Op Fl -address Ns = Ns Ar sourceaddr
+.Op Fl -append
+.Op Fl -backup-dir Ns = Ns directory
+.Op Fl -bwlimit Ns = Ns limit
+.Op Fl -cache | Fl -no-cache
+.Op Fl -checksum-seed Ns = Ns NUM
+.Op Fl -chmod Ns = Ns MODE
+.Op Fl -compare-dest Ns = Ns Ar directory
+.Op Fl -compress-level Ns = Ns NUM
+.Op Fl -contimeout Ns = Ns Ar seconds
+.Op Fl -copy-dest Ns = Ns Ar directory
+.Op Fl -copy-unsafe-links
+.Op Fl -del
+.Op Fl -delay-updates
+.Op Fl -delete-before
+.Op Fl -delete-during
+.Op Fl -delete-delay
+.Op Fl -delete-after
+.Op Fl -delete-excluded
+.Op Fl -exclude Ar pattern
+.Op Fl -exclude-from Ns = Ns Ar file
+.Op Fl -extended-attributes
+.Op Fl -files-from Ns = Ns Ar filespec
+.Op Fl -force
+.Op Fl -ignore-errors
+.Op Fl -ignore-existing
+.Op Fl -ignore-non-existing
+.Op Fl -include Ar pattern
+.Op Fl -include-from Ns = Ns Ar file
+.Op Fl -inplace
+.Op Fl -keep-dirlinks
+.Op Fl -link-dest Ns = Ns Ar directory
+.Op Fl -list-only
+.Op Fl -log-file Ns = Ns Ar file
+.Op Fl -log-file-format Ns = Ns Ar format
+.Op Fl -max-delete Ns = Ns MAX
+.Op Fl -max-size Ns = Ns size
+.Op Fl -min-size Ns = Ns size
+.Op Fl -modify-window Ns = Ns sec
+.Op Fl -no-implied-dirs
+.Op Fl -no-motd
+.Op Fl -numeric-ids
+.Op Fl -partial
+.Op Fl -partial-dir Ns = Ns DIR
+.Op Fl -password-file Ns = Ns Ar pwfile
+.Op Fl -port Ns = Ns Ar service
+.Op Fl -progress Ns = Ns Ar VER
+.Op Fl -protocol
+.Op Fl -read-batch Ns = Ns Ar file
+.Op Fl -remove-source-files
+.Op Fl -rsync-path Ns = Ns Ar program
+.Op Fl -safe-links
+.Op Fl -size-only
+.Op Fl -sockopts Ns = Ns Ar sockopts
+.Op Fl -specials
+.Op Fl -stats
+.Op Fl -suffix Ns = Ns Ar suffix
+.Op Fl -super
+.Op Fl -timeout Ns = Ns Ar seconds
+.Op Fl -only-write-batch Ns = Ns Ar file | Fl -write-batch Ns = Ns Ar file
+.Ar source ...
+.Ar directory
+.Pp
+.Nm
+.Fl -daemon
+.Op Fl 46hv
+.Op Fl -address Ns = Ns Ar bindaddr
+.Op Fl -bwlimit Ns = Ns Ar bwlimit
+.Op Fl -config Ns = Ns Ar configfile
+.Op Fl -no-detach
+.Op Fl -log-file Ns = Ns Ar logfile
+.Op Fl -port Ns = Ns Ar service
+.Op Fl -sockopts Ns = Ns Ar sockopts
+.Sh DESCRIPTION
+The
+.Nm
+utility synchronises files in the destination
+.Ar directory
+with one or more
+.Ar source
+files.
+Either the
+.Ar source
+or the destination
+.Ar directory
+may be remote,
+but not both.
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl 4 , -ipv4
+Use IPv4 when connecting to a remote host, or binding to a local address.
+If
+.Nm
+is configured to use an
+.Fl -rsh
+program named
+.Dq ssh ,
+then it will pass
+.Fl 4
+to it.
+.It Fl 6 , -ipv6
+Use IPv6 when connecting to a remote host, or binding to a local address.
+As with the
+.Fl 4
+option,
+.Nm
+will pass
+.Fl 6
+to the
+.Fl -rsh
+program if it is named
+.Dq ssh .
+.It Fl 8 , Fl -8-bit-output
+Do not escape high-bit characters in the output
+.Pq which is otherwise the default .
+.It Fl a , -archive
+Shorthand for
+.Fl Dgloprt .
+.It Fl -address Ns = Ns Ar sourceaddr
+When connecting to an rsync daemon, use
+.Ar sourceaddr
+as the source address for connections, which is useful on machines with
+multiple interfaces.
+.It Fl -append
+If the destination file exists and is shorter than the source file then rsync
+will append the difference to the destination file.
+If after the transfer the whole-file checksums do not match then the
+destination file will be updated via the usual block-based delta-merge
+protocol.
+This option implies
+.Fl -inplace .
+.It Fl b , -backup
+Make a backup of changed files with ~ suffix.
+.It Fl -backup-dir Ar directory
+When combined with the
+.Fl -backup
+flag,
+.Nm
+will store backups of files being replaced in the designated backup directory on
+the receiving side.
+Can be combined with the
+.Fl -suffix
+flag to name the backup files with a suffix.
+The default is to not append a suffix.
+.Pp
+If specified as a relative path, the backup directory will be contained within
+the copied tree, and may cause conflicts or be subject to
+.Fl -delete
+rules.
+It is advised to use an absolute path outside of the copied tree, or a relative
+path such as "../".
+.It Fl B , -block-size Ns = Ns Ar BLOCKSIZE
+Specify the block size to be used for file transfers.  The upper bound
+is 512M, but it is enforced only if a differential transfer is required.
+.It Fl -blocking-io
+This flag is ignored by openrsync, but is accepted for compatibility.
+.It Fl -bwlimit Ar limit
+Limit transfer speed to
+.Ar limit
+kilobytes/sec.
+The
+.Ar limit
+may also contain any of the suffixes described in the
+.Fl -max-size
+definition of size.
+.It Fl -cache
+Use the operating system buffer cache when reading and writing files.
+This is the default on all operating systems except macOS, where
+.Nm
+sets
+.Dv F_NOCACHE
+by default to limit memory growth.
+Setting this option will enabling caching by not setting any flags.
+.It Fl -no-cache
+Sets
+.Dv O_DIRECT
+when reading and writing files to avoid using the buffer cache.
+Setting this option can avoid filling the cache with files that will not be
+read again, such as during a backup.
+This is the default on macOS, where
+.Dv F_NOCACHE
+is used instead of
+.Dv O_DIRECT .
+.It Fl c , -checksum
+Use full-file checksums to determine which files have changed and should
+be transferred, rather than the usual file size and modification time
+"quick check".
+.It Fl -checksum-seed Ns = Ns Ar NUM
+Use
+.Ar NUM
+as the seed for both the 4-byte block and MD4 file checksums.
+By default,
+.Ar NUM
+is randomly generated, but if set to zero directs
+.Nm
+to use
+.Ar time(3)
+as the checksum seed.
+.It Fl -chmod Ns = Ns Ar MODE
+Modify the permissions on files that are transferred, overriding the original source permissions.
+Only has an effect if
+.Fl -perms
+is specified as well.
+The
+.Ar MODE
+string can be a comma separated list of literal
+.Pq 755
+or relative
+.Pq g+w
+permissions.
+.Pp
+.Nm
+also supports two additional extensions to relative permissions, adding a
+.Sq D
+or
+.Sq F
+infront of the relative permissions will apply the changes to only directories
+or files respectively.
+For example: -chmod=Dg+w,Fo-w
+.It Fl -compare-dest Ns = Ns Ar directory
+Use directory as an alternate base directory to compare files against on the
+destination machine.
+If file in
+.Ar directory
+is found and identical to the sender's file, the file will not be transferred.
+Multiple
+.Fl -compare-dest
+directories may be provided.
+If
+.Ar directory
+is a relative path, it is relative to the destination directory.
+.It Fl z , Fl -compress
+Compress file data during transfer to reduce the amount of data transferred.
+.It Fl -compress-level Ns = Ns NUM
+Set the compression level used by
+.Fl -compress .
+.It Fl -contimeout Ns = Ns Ar seconds
+Set the connection timeout in seconds.
+Exit if no connection established within the specified time.
+The default is 0, which means no timeout.
+.It Fl -copy-dest Ns = Ns Ar directory
+Use directory as an alternate base directory to compare files against on the
+destination machine.
+If file in
+.Ar directory
+is found and identical to the sender's file, the file will be locally copied.
+Multiple
+.Fl -copy-dest
+directories may be provided.
+If
+.Ar directory
+is a relative path, it is relative to the destination directory.
+.It Fl L , -copy-links
+Copy targets of symbolic links, rather than the link itself.
+.It Fl -copy-unsafe-links
+Copy targets of symbolic links that are unsafe (absolute symlinks or where the
+target reaches outside the copied tree).
+.It Fl k , -copy-dirlinks
+Copy targets of symbolic links that point to directories only.
+.It Fl C , Fl -cvs-exclude
+Exclude a common list of files as CVS would.
+The patterns deployed are specifically:
+.Bl -column -offset indent ".make.state" ".nse_depinfo" "*.BAK" "CVS.adm"
+.It RCS         Ta SCCS         Ta CVS   Ta CVS.adm
+.It RCSLOG      Ta cvslog.*     Ta tags  Ta TAGS
+.It .make.state Ta .nse_depinfo Ta *~    Ta #*
+.It .#*         Ta ,*           Ta _$*   Ta *$
+.It *.old       Ta *.bak        Ta *.BAK Ta *.orig
+.It *.rej       Ta .del-*       Ta *.a   Ta *.olb
+.It *.o         Ta *.obj        Ta *.so  Ta *.exe
+.It *.Z         Ta *.elc        Ta *.ln  Ta core
+.It .svn/       Ta              Ta       Ta
+.El
+Followed by any patterns included in
+.Pa $HOME/.cvsignore
+and the
+.Ev CVSIGNORE
+environment variable.
+.Pp
+The
+.Fl C
+flag also adds a
+.Dq dir-merge
+CVS rule to include per-dir
+.Pa .cvsignore
+files.
+All of these rules are appended to the end of the filter list with the
+equivalent of specifying
+.Fl f Dq Ar -C
+.Fl f Dq Ar :C .
+.It Fl D
+Also transfer device and special files.
+Shorthand for
+.Fl -devices -specials .
+.It Fl -del , -delete
+Delete files in
+.Ar directory
+not found in
+.Ar source
+directories.
+Only applicable with
+.Fl r .
+.It Fl -delay-updates
+Delay updates of (only) plain files until all other operations
+are complete.
+This is done to be more atomic.
+Requires extra space in the destination directory up to the amount of the
+whole tree.
+.It Fl -delete-before
+Execute the above described
+.Fl -delete
+behavior before the transfer begins.
+This is the default timing when
+.It Fl -delete
+is used.
+This option is mutually exclusive with
+.Fl -delete-during ,
+.Fl -delete-delay ,
+and
+.Fl -delete-after .
+.It Fl -delete-during
+Execute the above described
+.Fl -delete
+behavior as the transfer happens, right before each directory to be transferred
+is checked for updates.
+This option is mutually exclusive with
+.Fl -delete-before ,
+.Fl -delete-delay ,
+and
+.Fl -delete-after .
+.It Fl -delete-delay
+Execute the above described
+.Fl -delete
+behavior after the transfer happens, but collect the list to be deleted right
+before each directory to be transferred is checked for updates.
+This option is mutually exclusive with
+.Fl -delete-before ,
+.Fl -delete-during ,
+and
+.Fl -delete-after .
+.It Fl -delete-after
+Execute the above described
+.Fl -delete
+behavior after the transfer has completed.
+This option is mutually exclusive with
+.Fl -delete-before ,
+.Fl -delete-during ,
+and
+.Fl -delete-delay .
+.It Fl -delete-excluded
+When used in combination with any one of the above
+.Fl -delete
+options, supplied
+.Fl -exclude
+patterns will not prevent a file from being deleted.
+.It Fl d, -dirs
+Copies directories, which are normally skipped unless
+.Fl -recursive
+is specified.
+Directory contents are not copied, unless the path specified includes a
+trailing slash
+.Po Do dir/ Dc Pc ,
+or is the literal
+.Dq \&. .
+.It Fl -exclude Ar pattern
+Exclude files matching
+.Em pattern .
+.It Fl -exclude-from Ns = Ns Ar file
+Load
+.Em patterns
+and
+.Em rules
+from
+.Em file .
+.It Fl E , -extended-attributes
+Apple specific option to copy extended attributes, resource forks, and ACLs.
+Requires at least Mac OS X 10.4 or suitably patched rsync.
+.It Fl -executability
+Preserve the executability of regular files (i.e., a file is "executable" if
+at least one 'x' mode bit is enabled in its permissions).
+If the source file is executable, then for each 'r' mode bit enabled in the
+destination file's permissions, the corresponding 'x' mode bit will be enabled.
+If the source file is not executable then all ugo 'x' mode bits of the destination
+file will be disabled.
+This option has no effect if
+.Fl -perms
+is also specified.
+.It Fl 0 , -from0
+Use a null (\&'\e0\&') character, rather than a newline to separate filenames read from:
+.Fl -exclude-from ,
+.Fl -include-from ,
+.Fl -files-from ,
+and any merged files specified in
+.Fl -filter
+rules.
+Does not affect
+.Fl -cvs-exclude .
+.It Fl -files-from Ns = Ns Ar filespec
+Load list of files to transfer (as opposed to the
+command line)
+from
+.Em filespec .
+.Ar Filespec
+can be of the form hostname:port:path.
+.It Fl -force
+Force deletion of non-empty directories about to be replaced
+by a non-directory.
+This option has no effect if any of the
+.Fl -delete 
+options are present.
+.It Fl -ignore-errors
+Works in conjunction with
+.Fl -delete
+to delete files despite I/O errors.
+.It Fl y , Fl -fuzzy
+Look for files in the destination directory that might be the same to use as a
+basis to avoid copying the entire file.
+The first file with an identical size and modification time is used to try to
+reduce the total amount of data that has to be transferred.
+.Pp
+Note that the use of the
+.Fl -delete
+option might get rid of any potential fuzzy-matches, so either use
+.Fl -delete-after
+or specify some exclusions to prevent this.
+.It Fl -ignore-existing
+Ignore files that already exist.
+.It Fl -ignore-non-existing , Fl -existing
+Ignore files that do not already exist (do not create them).
+.It Fl I , -ignore-times
+Do not skip based on file size and modification time.
+.It Fl -include Ar pattern
+Include files matching
+.Em pattern .
+.It Fl -include-from Ns = Ns Ar file
+Load
+.Em patterns
+and
+.Em rules
+from
+.Em file .
+.It Fl -devices
+Also transfer device files.
+.It Fl e Ar program , Fl -rsh Ns = Ns Ar program
+Specify alternative communication program, defaults to
+.Xr ssh 1 .
+The
+.Ev RSYNC_RSH
+environment variable will be used if an
+.Fl e
+option is not present.
+Note that
+.Nm
+will generally handle quotes, but it makes no attempt to deal with escape
+sequences.
+In particular, escaped quotation marks will not be escaped.
+.It Fl F
+Adds a standard
+.Pa .rsync-filter
+dir-merge filter rule.
+Specifically,
+.Fl F
+will add
+.Dq : /.rsync-filter
+the first time it is seen, and
+.Dq - .rsync-filter
+the second time it is seen.
+Subsequent uses have no effect.
+.It Fl f Ar filter , Fl -filter Ns = Ns Ar filter
+Process
+.Ar filter
+against the global filter chain.
+The specified
+.Ar filter
+may be a rule to include a filter file, or to include a per-directory filter
+file.
+Regular filter files are processed immediately, while per-directory filter files
+are processed as directories are encountered.
+See
+.Sx PATTERNS AND RULES
+for more details about the syntax and capabilities of
+.Nm
+filters.
+.It Fl g , -group
+Set the group name to match the source.
+For example, group
+.Qq kristaps
+with ID 1000 on a remote server is matched to group
+.Qq kristaps
+on the local machine with ID 2000.
+If
+.Fl -numeric-ids
+is also given or if the remote group name is unknown on the local machine,
+set the numeric group ID to match the source instead.
+.It Fl H , -hard-links
+Attempt to preserve hard links within the list of files transferred.
+.It Fl h, -human-readable
+Display numbers of bytes in human readable units.
+If specified once, uses units of 1000, if specified twice uses units of 1024.
+.It Fl -help
+Print a brief description of all options.
+.It Fl l , -links
+Also transfer symbolic links.
+The link is transferred as a standalone file: if the destination does
+not exist, it will be broken.
+.It Fl -inplace
+Avoid creating temporary files, instead operating on files directly in place
+in the destination.
+This option has some notable trade-offs that must be considered prior to using
+it.
+For example, hardlinks will not be broken even if a file is no longer hardlinked
+in the source directory.
+.It Fl -keep-dirlinks
+When a directory is sent, and the receiving side has a symlink to a
+directory in that place, follow that symlink and place the directory's
+contents in that symlinked dir.
+.It Fl -link-dest Ns = Ns Ar directory
+Use directory as an alternate base directory to compare files against on the
+destination machine.
+If file in
+.Ar directory
+is found and identical to the sender's file, the file will be hardlinked.
+Multiple
+.Fl -link-dest
+directories may be provided.
+If
+.Ar directory
+is a relative path, it is relative to the destination directory.
+.It Fl -list-only
+Instead of transferring files, only list them.
+This option is implied if there is only a single source argument and no destination argument.
+.It Fl -log-file Ns = Ns Ar file
+Specify a
+.Ar file
+to log to instead of
+.Va stdout .
+This implies a
+.Fl -log-file-format
+of
+.Dq "%i %n%L"
+if none was previously specified.
+.It Fl -log-file-format Ns = Ns Ar format
+Specify a log format for each file involved in the transfer.
+The
+.Ar format
+argument may contain any number of tokens, like
+.Dq %i ,
+with special meaning.
+The following tokens are defined for daemon mode, but are also accepted for
+normal
+.Nm
+usage:
+.Bl -tag -width "%L"
+.It %a
+The client's remote IP address.
+.It %h
+The client's hostname.
+.It %m
+The module requested by the client.
+.It %P
+The path to the module requested by the client.
+.It %u
+The username that the client has authenticated as.
+.El
+.Pp
+These tokens are globally defined:
+.Bl -tag -width "%L"
+.It %b
+The number of bytes transferred.
+.It %B
+The file mode, in a human-readable format.
+.It %c
+The size of block checksums received for the source file.
+This is not currently implemented by this implementation, but will be accepted.
+.It %f
+The long-form filename without a trailing
+.Dq /
+indicator.
+.It %G
+The group of the file in decimal format, or
+.Dq DEFAULT
+when the group is
+.Li 0 .
+.It %I
+The itemized list of updates including unchanged files, as if
+.Fl -itemize-changes
+was specified twice.
+.It %i
+The itemized list of updates, as if
+.Fl -itemize-changes
+was specified.
+.It %l
+The length of the file.
+.It %L
+An indicator of the file being a symlink or a hardlink.
+For hardlinks, this token is replaced with
+.Dq => FILENAME .
+For symlinks, this token is replaced with
+.Dq => FILENAME .
+For non-links, this token is replaced with the empty string.
+.It %M
+The mtime of the file, in full date-time format.
+.It %n
+The short-form filename with a trailing
+.Dq /
+indicator.
+.It %o
+The operation conducted on the file.
+This can be one of
+.Dq send ,
+.Dq recv ,
+or
+.Dq del. .
+.It %p
+The PID of the rsync client.
+.It %t
+The current time, in date-time format.
+.It %U
+The user of the file in decimal format, or
+.Dq DEFAULT
+when the user is
+.Li 0 .
+.El
+.It Fl -max-delete Ar MAX
+Once MAX files have been deleted, do not delete any more files.
+.It Fl -max-size Ar size
+Don't transfer any file that is larger than
+.Ar size
+bytes.
+Alternatively
+.Ar size
+may instead use a multiplier (such as
+0B, 100B, 1023B, 1K, 1.5K, 5.5M; or any sequence with a case-insensitive
+terminal scale multiplier of B, K, M, G, T, P, or E; corresponding to bytes,
+kilobytes, and so on)
+to specify the size.
+.It Fl -min-size Ar size
+Don't transfer any file that is smaller than
+.Ar size
+bytes.
+See
+.Fl -max-size
+on the definition of size.
+.It Fl -modify-window Ar sec
+When comparing file modification times for the purpose of speeding up
+transfers consider offsets of up to
+.Ar sec
+seconds the same.
+.It Fl n , -dry-run
+Do not actually modify the destination.
+Mainly useful in combination with
+.Fl v .
+.It Fl -no-motd
+Do not display the Message of the Day.
+.It Fl -numeric-ids
+Ignore user and group names, use numeric user and group IDs only.
+Has no effect unless
+.Fl g
+or
+.Fl o
+is also given.
+.It Fl O , -omit-dir-times
+Do not perserve the modification times of directories.
+This can be expensive when the directories reside on NFS.
+This option is inferred if you use
+.Fl -backup
+without
+.Fl -backup-dir .
+.It Fl o , -owner
+Set the user name to match the source, with similar matching logic as for
+.Fl g .
+If
+.Fl -numeric-ids
+is also given or if the remote user name is unknown on the local machine,
+set the numeric user ID to match the source instead.
+Only works if run as root.
+.It Fl P
+Shorthand for
+.Fl -partial
+.Fl -progress .
+.It Fl p , -perms
+Set destination file or directory permissions to match the source when
+it is updated.
+.It Fl -partial
+Do not remove partially transferred files if
+.Nm
+is interrupted, which opens up the possibility for them to be easily resumed
+later.
+.It Fl -partial-dir Ns = Ns Ar DIR
+Store all partially transferred files in
+.Ar DIR
+to allow an interrupted transfer to resume without re-transferring files.
+Implies
+.Fl partial .
+.It Fl -password-file Ns = Ns Ar pwfile
+Define a file to read the password from when connecting to an rsync daemon.
+The password should be written on the first line of the file, and may have a
+terminating newline.
+The
+.Ar pwfile
+is expected to not be readable by 'other', and to be owned by root if
+.Nm
+is running as root.
+.It Fl -port Ns = Ns Ar service
+Specify an alternative TCP port number.
+The
+.Ar service
+can be given as a decimal integer or as a name to be looked up in the
+.Xr services 5
+database.
+The default is
+.Dq rsync .
+.It Fl m , -prune-empty-dirs
+Prune empty directories from the file list on the receiver side.
+Empty directories may be excluded from pruning with an exclude or protect filter
+rule.
+A directory wich only contains other empty, non-excluded directories, is also
+considered empty.
+.It Fl q , -quiet
+Suppress all non-error related informational messages.
+.It Fl -progress
+Periodically report file transfer progress.
+.It Fl -protocol Ns = Ns VER
+Force
+.Nm
+to operate using the specified protocol version.
+Normally the protocol version is negotiated automatically, but an older
+protocol version can be forced with this flag.
+.It Fl r , -recursive
+If
+.Ar source
+designates a directory, synchronise the directory and the entire subtree
+connected at that point.
+If
+.Ar source
+ends with a slash, only the subtree is synchronised, not the
+.Ar source
+directory itself.
+If
+.Ar source
+is a file, this has no effect.
+.It Fl -read-batch Ns = Ns Ar file
+Read a batch file previously prepared by
+.Nm
+from
+.Ar file .
+See the
+.Fl -write-batch
+option for a description of a batch file.
+When reading a batch file, the
+.Ar source
+arguments are optional and ignored if specified.
+.It Fl -remove-source-files
+Remove
+.Ar source
+files as they are transferred into
+.Ar directory .
+Files are only removed once they are confirmed to be fully in place.
+By default
+.Nm
+will delete files as the transfer progresses, but given its asynchronous nature
+there may be a noticeable delay between a given file finishing its transfer and
+its subsequent removal.
+.Pp
+When combined with
+.Fl -delay-updates ,
+files will be removed in a larger batch toward the end of the transfer.
+.It Fl R , -relative
+Normally, pathnames on the commandline omit the directory components.
+This option will include the dir components.
+.It Fl -no-implied-dirs
+Changes the default behavior of
+.Fl -relative
+such that implied directories do not have their attributes modified,
+or are created with default attributes, rather than the source attributes,
+if they do not exist.
+This allows the implied directories to differ, including being a symlink on
+one side and a real directory on the other.
+.It Fl -rsync-path Ns = Ns Ar program
+Run
+.Ar program
+on the remote host instead of the default
+.Pa rsync .
+.It Fl -size-only
+Skip files whose sizes match (regardless of timestamp).
+.It Fl -safe-links
+Skip any symlinks that are unsafe (absolute symlinks or where the target is
+outside the copied tree).
+.It Fl -sockopts Ns = Ns Ar sockopts
+Set custom
+.Ar sockopts
+on the socket created to communicate with an rsync daemon.
+.Ar sockopts
+should be of the form
+.Dq name Ns Oo = Ns value Oc Ns Oo , Ns ... Oc ,
+where
+.Ar name
+matches an
+.Dv SO_*
+option described in
+.Xr setsockopt 2 .
+Note that only the following options are currently supported:
+.Bl -column SO_REUSEADDR -offset indent
+.It Dv SO_KEEPALIVE
+.It Dv SO_REUSEADDR
+.It Dv SO_SNDBUF
+.It Dv SO_RCVBUF
+.It Dv SO_SNDLOWAT
+.It Dv SO_RCVLOWAT
+.It Dv SO_SNDTIMEO
+.It Dv SO_RCVTIMEO
+.It Dv SO_REUSEPORT
+May not be available on all systems.
+.El
+.It Fl S , -sparse
+Attempt to efficiently handle sparse files.
+Note that attempting to combine
+.Fl S
+and
+.Fl -inplace
+will result in an error.
+.It Fl -specials
+Also transfer fifo and unix domain socket files.
+.It Fl -stats
+Print verbose statistics about the transfer at the end of the run.
+Provides details about how much data transfer was saved by
+.Nm .
+.It Fl -suffix Ar suffix
+Sets the suffix to be appended to filenames when creating backups on the
+receiver before replacing files.
+Defaults to ~ except when combined with
+.Fl -backup-dir
+where the default is an empty string.
+.It Fl -super
+Always attempt traditionally super-user activities.
+This flag mostly interacts with the
+.Fl -owner ,
+.Fl -group ,
+and
+.Fl -devices
+options, which may be permitted to unprivileged users on the receiving end in
+some configurations.
+.Fl -no-super
+is also supported to avoid them entirely.
+.It Fl T , -temp-dir Ns = Ns Ar directory
+Instead of creating temporarily files in the destination directory, create
+them in the specified temporary directory.
+If this directory is on a different filesystem, that will require moving
+the file rather than renaming it into place, and is therefore not atomic.
+.It Fl -timeout Ns = Ns Ar seconds
+Set the I/O timeout in seconds.
+Exit if no data was transferred for the specified time.
+The default is 0, which means no timeout.
+.It Fl t , -times
+Set destination file and directory modification time to match the source
+when it is updated or created.
+.It Fl u , -update
+Skip existing files on the destination that have a modification time newer
+than the source file.
+.It Fl v , -verbose
+Increase verbosity.
+Specify once for files being transferred, twice for specific status,
+thrice for per-file transfer information, and four times for per-file
+breakdowns.
+.It Fl x , -one-file-system
+Do not cross filesystem boundaries.
+If this option is repeated, all mount point directories from the copy are
+omitted.
+Otherwise, it includes an empty directory at each mount point it encounters.
+.It Fl V , -version
+Print version and exit.
+.It Fl W , -whole-file
+Copy the entire file rather than using the rsync incremental algorithm.
+This option may be faster, especially if the network link is faster than the disk.
+.It Fl -only-write-batch Ns = Ns Ar file
+Prepare a batch file and write it to
+.Ar file .
+With this option, the batch file is written without updating the destination.
+See the below
+.Fl -write-batch
+option for a description of a batch file.
+.It Fl -write-batch Ns = Ns Ar file
+Prepare a batch file and write it to
+.Ar file .
+A batch file is composed of a small heading describing the transfer parameters
+negotiated, followed by a raw dump of the data transmitted by the sender.
+When used with
+.Fl -read-batch
+on the other side, the transfer is simply replayed from the batch file against
+the application's reeceiver, and the destination tree is updated accordingly.
+.Pp
+Batch files are intended to reproduce an update to a destination tree to many
+other identical trees without needing to establish a direct connection between
+them.
+This mechanism also avoids having to perform many of the intermediate steps
+required for a transfer, such as receiver-side checksums and blocking.
+.El
+.Pp
+A remote
+.Ar source
+or
+.Ar directory
+has the syntax
+.Ar host : Ns Ar path
+for connecting via
+.Xr ssh 1 ,
+or
+.Cm rsync Ns :// Ns Ar host Ns / Ns Ar path
+or
+.Ar host Ns :: Ns Ar path
+for connecting to a remote daemon.
+Subsequent to the first remote
+.Ar source ,
+the host may be dropped to become just
+.Pf : Ar path
+or
+.Pf :: Ar path .
+.Pp
+For connecting to a remote daemon with
+.Cm rsync Ns :// Ns Ar host
+or
+.Ar host Ns :: Ns Ar path ,
+the first path component is interpreted as a
+.Qq module :
+.Ar host Ns :: Ns Ar module Ns / Ns Ar path .
+This only applies to the first
+.Ar source
+invocation; subsequent to that, the module should not be specified.
+.Pp
+By default, new destination files and directories are given the current
+time and the source file permissions.
+Updated files retain their existing permissions.
+It is an error if updated files have their file types change (e.g.,
+updating a directory with a file).
+.Pp
+At this time,
+.Ar source
+may only consist of regular files, directories
+.Pq only with Fl r ,
+or symbolic links
+.Pq only with Fl l .
+The destination
+.Ar directory
+must be a directory and is created if not found.
+.Pp
+.Nm
+also supports a
+.Fl -daemon
+mode, which may be run either standalone or may be invoked by, e.g.,
+.Xr inetd 8
+or similar services that hand a socket off to an external program for handling.
+.Pp
+Daemon options that are shared with the non-daemon mode of
+.Nm
+behave as described above.
+Options specific to daemon mode are as follows:
+.Bl -tag -width Ds
+.It Fl -config Ns = Ns Ar configfile
+Load daemon configuration from the named
+.Ar configfile
+instead of the default location.
+By default,
+.Nm
+will look for its configuration at
+.Pa /etc/rsyncd.conf .
+See
+.Xr rsyncd.conf 5
+for details of the format of this file.
+.It Fl -no-detach
+Run the
+.Nm
+daemon in the foreground, instead of the background.
+.El
+.Pp
+Note that the
+.Nm
+daemon mode will log to
+.Xr syslog 3
+by default unless
+.Fl -log-file
+is specified, regardless of whether
+.Fl -no-detach
+has been specified to run in the foreground or not.
+.Sh PATTERNS AND RULES
+The
+.Fl f ,
+.Fl -include ,
+.Fl -include-from ,
+.Fl -exclude ,
+and
+.Fl -exclude-from
+options may be used to load a filter rule or a set of filter rules.
+A single filter rule consists of a
+.Ar type ,
+an optional set of
+.Ar modifiers ,
+and a
+.Ar pattern .
+Each
+.Ar type
+has a short name and a long name.
+These will be described in more depth shortly.
+.Pp
+A filter file is a set of rules, one per line.
+Comments are accepted, starting with a
+.Sq # .
+Empty lines are ignored.
+.Pp
+Each rule is of the following form:
+.Bd -literal
+<TYPE>[,<MODIFIERS>] <PATTERN>
+.Ed
+.Pp
+If the short name is used, then the comma separating the modifiers from the rule
+type is optional.
+The delimiter between the type/modifiers and the pattern may also be an
+underbar instead of a space.
+.Pp
+The following rule types are supported:
+.Bl -column -offset indent "LONG NAME" "SHORT NAME" "DESCRIPTION"
+.It LONG NAME Ta SHORT NAME Ta DESCRIPTION
+.It exclude   Ta - Ta Exclude a file from the transfer
+.It include   Ta + Ta Include a file from the transfer
+.It merge     Ta . Ta Merge rules in from a file
+.It dir-merge Ta : Ta Merge rules in from a per-directory file
+.It hide      Ta H Ta Hide a file from the transfer
+.It show      Ta S Ta Do not hide a file from the transfer
+.It protect   Ta P Ta Protect a file from deletion
+.It risk      Ta R Ta Do not protect a file from deletion
+.It clear     Ta ! Ta Clear the current filter list
+.El
+.Pp
+The following rule modifiers are supported for the
+.Dq exclude
+and
+.Dq include
+rule types:
+.Bl -column -offset indent "MODIFIER" "DESCRIPTION"
+.It MODIFIER Ta DESCRIPTION
+.It / Ta Match against the absolute pathname of the entry
+.It ! Ta Take effect if the pattern does not match the entry
+.It C Ta Insert the global CVS exclusions
+.It s Ta Marks a rule as sender-side only
+.It r Ta Marks a rule as receiver-side only
+.It p Ta Marks a rule as perishable (do not prevent removal of a directory)
+.El
+.Pp
+The above modifiers will be ignored if applied to other rule types, with the
+exception of
+.Dq merge
+and
+.Dq dir-merge
+rules.
+See the
+.Sx Merge Rules
+section for more details of the semantics.
+.Ss Include and Exclude Rules
+The six basic types of include and exclude rules briefly described above are
+.Dq exclude ,
+.Dq include ,
+.Dq hide ,
+.Dq show ,
+.Dq protect ,
+.Dq risk .
+.Pp
+The
+.Dq hide
+and
+.Dq show
+types are sender-side versions of the
+.Dq exclude
+and
+.Dq include
+rules, while the
+.Dq protect
+and
+.Dq risk
+types are their receiver-side equivalents.
+.Pp
+Each of these rules take a pattern that is typically matched against the
+basename of a transfer candidate's name.
+A trailing
+.Sq /
+in the pattern indicates that the entry should only match a directory name,
+while a leading
+.Sq /
+indicates that the pattern is anchored to the beginning of the transfer path.
+The beginning of the transfer path is either the root of the transfer, or the
+directory containing a dir-merge file if the rule in question comes from a
+dir-merge file.
+A
+.Sq /
+at any other position, or a
+.Dq **
+in the pattern, will match against the full path to the transfer entry beginning
+at the root of the transfer.
+.Pp
+Patterns may contain any of the following wildcards.
+.Bl -column -offset indent "WILDCARD" "DESCRIPTION"
+.It WILDCARD Ta DESCRIPTION
+.It ?        Ta Matches any character, except Sq /
+.It *        Ta Matches zero or more characters, except Sq /
+.It **       Ta Matches zero or more characters
+.It [        Ta Character class, as in POSIX regular expressions
+.It /***     Ta Matches a directory and all of its contents
+.El
+.Pp
+Backslashes may be used to escape one of the above wildcard characters, but is
+ordinary when appearing before any other character.
+.Pp
+Note that exclude rules with the
+.Dq C
+modifier applied do not take a pattern.
+.Ss Merge Rules
+The merge rules,
+.Dq merge
+and
+.Dq dir-merge ,
+are another way to insert a filter rule file.
+.Dq merge
+rules are evaluated once as soon as they are processed, and the rules read in
+are inserted at the same position as the merge file.
+.Dq dir-merge
+rules are evaluated as
+.Nm
+progresses through the file list, searching each directory encountered for the
+file named in the rule's pattern.
+.Pp
+If a
+.Dq dir-merge
+rule appears before a
+.Dq clear
+rule, it will not be processed at all.
+.Pp
+.Dq dir-merge
+rules are inserted into their own chain of rules, rather than directly into the
+global ruleset.
+.Dq clear
+rules appearing in a dir-merged file do not affect the global ruleset.
+As we find dir-merged files in the transfer, their rules are prepended to their
+dir-merge chain so that a deeper directory's rules take precedence over its
+parent's rules.
+.Pp
+When one of the above exclude/include modifiers are applied to
+.Dq merge
+or
+.Dq dir-merge
+rule, those modifiers are applied to the exclude/include rules within the file.
+The following modifiers may additionally be specified for merge rules:
+.Bl -column -offset indent "MODIFIER" "DESCRIPTION"
+.It MODIFIER Ta DESCRIPTION
+.It -        Ta All rules within are exclude rules
+.It +        Ta All rules within are include rules
+.It C        Ta File processing should assume CVS-compatible parsing
+.It e        Ta Exclude the file's name from the transfer
+.It n        Ta Rules are not inherited by subdirectories
+.It w        Ta Rules are word-split instead of line-split
+.El
+.Pp
+The CVS-compatible modifier implies the
+.Sq - ,
+.Sq n
+and
+.Sq w
+modifiers.
+If a filename is not supplied with it, then
+.Dq .cvsignore
+is used.
+.Sh ENVIRONMENT
+The following environment variables affect execution of
+.Nm :
+.Bl -tag -width "RSYNC_PASSWORD"
+.It Ev LOGNAME
+This variable may also hold the username to use when connecting to an rsync
+daemon.
+If
+.Ev LOGNAME
+is not set, then
+.Dq nobody
+will be used.
+.It Ev USER
+This variable holds the username to use when connecting to an rsync daemon.
+If
+.Ev USER
+is not set, then
+.Ev LOGNAME
+will be used.
+.It Ev RSYNC_RSH
+This variable specifies the remote shell to use for remote connections.
+The default remote shell is
+.Xr ssh 1
+if neither
+.Ev RSYNC_RSH
+nor
+.Fl -rsh
+are specified.
+.It Ev RSYNC_PASSWORD
+This variable specifies the password to use when connecting to an rsync daemon.
+It will be ignored if the
+.Fl -password-file
+option is specified and passes the mode and owner check described above in the
+option's description.
+On many systems, environment variables are readable by other processes and
+should be considered insecure.
+Please prefer a password file instead.
+.El
+.\" .Sh FILES
+.Sh EXIT STATUS
+The
+.Nm
+utility exits 0 on success, 1 if an error occurs, or 2 if the remote
+protocol version is older than the local protocol version.
+.Sh EXAMPLES
+A common invocation of
+.Nm
+is for archiving from a remote host to the local computer:
+.Pp
+.Dl % openrsync -av --delete remote:rpath /local/path
+.Pp
+This will update the contents of
+.Pa /local/path/rpath
+with those on the remote server.
+Switching remote and local wil update the remote contents instead:
+.Pp
+.Dl % openrsync -av --delete /local/path remote:rpath
+.Pp
+All examples use
+.Fl t
+so that destination files inherit the source time.
+If not changed, subsequent invocations of
+.Nm
+will then consider the file up to date and not transfer block hashes.
+.Pp
+To update the out-of-date remote files
+.Pa host:dest/bar
+and
+.Pa host:dest/baz
+with the local
+.Pa ../src/bar
+and
+.Pa ../src/baz :
+.Pp
+.Dl % openrsync -t ../src/bar ../src/baz host:dest
+.Pp
+To update the out-of-date local files
+.Pa bar
+and
+.Pa baz
+with the remote files
+.Pa host:src/bar
+and
+.Pa host:src/baz :
+.Pp
+.Dl % openrsync -t host:src/bar :src/baz \&.
+.Pp
+To update the out-of-date local files
+.Pa ../dest/bar
+and
+.Pa ../dest/baz
+with
+.Pa bar
+and
+.Pa baz :
+.Pp
+.Dl % openrsync -t bar baz ../dest
+.Pp
+To update the out-of-date remote files in
+.Pa host:dest
+on a remote host running
+.Nm
+with the local host running
+.Xr rsync 1 :
+.Pp
+.Dl % rsync --rsync-path openrsync -t ../dest/* host:dest
+.\" .Sh DIAGNOSTICS
+.Sh SEE ALSO
+.Xr ssh 1 ,
+.Xr rsync 5 ,
+.Xr rsyncd 5
+.Sh STANDARDS
+.Nm
+is compatible with rsync protocol versions 27 - 29
+as supported by the samba.org implementation of rsync.
+.Sh HISTORY
+The
+.Nm
+utility has been available since
+.Ox 6.5 .
+.Sh AUTHORS
+The
+.Nm
+utility was written by
+.An Kristaps Dzonsons Aq Mt kristaps@bsd.lv .
+.\" .Sh CAVEATS
+.\" .Sh BUGS

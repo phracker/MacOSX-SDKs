@@ -1,0 +1,202 @@
+.TH MASTER 8 
+.ad
+.fi
+.SH NAME
+master
+\-
+Postfix master process
+.SH "SYNOPSIS"
+.na
+.nf
+\fBmaster\fR [\fB\-Ddtvw\fR] [\fB\-c \fIconfig_dir\fR] [\fB\-e \fIexit_time\fR]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBmaster\fR(8) daemon is the resident process that runs Postfix
+daemons on demand: daemons to send or receive messages via the
+network, daemons to deliver mail locally, etc.  These daemons are
+created on demand up to a configurable maximum number per service.
+
+Postfix daemons terminate voluntarily, either after being idle for
+a configurable amount of time, or after having serviced a
+configurable number of requests. Exceptions to this rule are the
+resident queue manager, address verification server, and the TLS
+session cache and pseudo\-random number server.
+
+The behavior of the \fBmaster\fR(8) daemon is controlled by the
+\fBmaster.cf\fR configuration file, as described in \fBmaster\fR(5).
+
+Options:
+.IP "\fB\-c \fIconfig_dir\fR"
+Read the \fBmain.cf\fR and \fBmaster.cf\fR configuration files in
+the named directory instead of the default configuration directory.
+This also overrides the configuration files for other Postfix
+daemon processes.
+.IP \fB\-D\fR
+After initialization, run a debugger on the master process. The
+debugging command is specified with the \fBdebugger_command\fR in
+the \fBmain.cf\fR global configuration file.
+.IP \fB\-d\fR
+Do not redirect stdin, stdout or stderr to /dev/null, and
+do not discard the controlling terminal. This must be used
+for debugging only.
+.IP "\fB\-e \fIexit_time\fR"
+Terminate the master process after \fIexit_time\fR seconds. Child
+processes terminate at their convenience.
+.IP \fB\-t\fR
+Test mode. Return a zero exit status when the \fBmaster.pid\fR lock
+file does not exist or when that file is not locked.  This is evidence
+that the \fBmaster\fR(8) daemon is not running.
+.IP \fB\-v\fR
+Enable verbose logging for debugging purposes. This option
+is passed on to child processes. Multiple \fB\-v\fR options
+make the software increasingly verbose.
+.IP \fB\-w\fR
+Wait in a dummy foreground process, while the real master
+daemon initializes in a background process.  The dummy
+foreground process returns a zero exit status only if the
+master daemon initialization is successful, and if it
+completes in a reasonable amount of time.
+.sp
+This feature is available in Postfix 2.10 and later.
+.PP
+Signals:
+.IP \fBSIGHUP\fR
+Upon receipt of a \fBHUP\fR signal (e.g., after "\fBpostfix reload\fR"),
+the master process re\-reads its configuration files. If a service has
+been removed from the \fBmaster.cf\fR file, its running processes
+are terminated immediately.
+Otherwise, running processes are allowed to terminate as soon
+as is convenient, so that changes in configuration settings
+affect only new service requests.
+.IP \fBSIGTERM\fR
+Upon receipt of a \fBTERM\fR signal (e.g., after "\fBpostfix abort\fR"),
+the master process passes the signal on to its child processes and
+terminates.
+This is useful for an emergency shutdown. Normally one would
+terminate only the master ("\fBpostfix stop\fR") and allow running
+processes to finish what they are doing.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems are reported to \fBsyslogd\fR(8). The exit status
+is non\-zero in case of problems, including problems while
+initializing as a master daemon process in the background.
+.SH "ENVIRONMENT"
+.na
+.nf
+.ad
+.fi
+.IP \fBMAIL_DEBUG\fR
+After initialization, start a debugger as specified with the
+\fBdebugger_command\fR configuration parameter in the \fBmain.cf\fR
+configuration file.
+.IP \fBMAIL_CONFIG\fR
+Directory with Postfix configuration files.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Unlike most Postfix daemon processes, the \fBmaster\fR(8) server does
+not automatically pick up changes to \fBmain.cf\fR. Changes
+to \fBmaster.cf\fR are never picked up automatically.
+Use the "\fBpostfix reload\fR" command after a configuration change.
+.SH "RESOURCE AND RATE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBdefault_process_limit (100)\fR"
+The default maximal number of Postfix child processes that provide
+a given service.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBservice_throttle_time (60s)\fR"
+How long the Postfix \fBmaster\fR(8) waits before forking a server that
+appears to be malfunctioning.
+.PP
+Available in Postfix version 2.6 and later:
+.IP "\fBmaster_service_disable (empty)\fR"
+Selectively disable \fBmaster\fR(8) listener ports by service type
+or by service name and type.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_directory (see 'postconf -d' output)\fR"
+The directory with Postfix support programs and daemon programs.
+.IP "\fBdebugger_command (empty)\fR"
+The external command to execute when a Postfix daemon program is
+invoked with the \-D option.
+.IP "\fBinet_interfaces (all)\fR"
+The network interface addresses that this mail system receives
+mail on.
+.IP "\fBinet_protocols (all)\fR"
+The Internet protocols Postfix will attempt to use when making
+or accepting connections.
+.IP "\fBimport_environment (see 'postconf -d' output)\fR"
+The list of environment parameters that a Postfix process will
+import from a non\-Postfix parent process.
+.IP "\fBmail_owner (postfix)\fR"
+The UNIX system account that owns the Postfix queue and most Postfix
+daemon processes.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "FILES"
+.na
+.nf
+.ad
+.fi
+To expand the directory names below into their actual values,
+use the command "\fBpostconf config_directory\fR" etc.
+.na
+.nf
+
+$config_directory/main.cf, global configuration file.
+$config_directory/master.cf, master server configuration file.
+$queue_directory/pid/master.pid, master lock file.
+$data_directory/master.lock, master lock file.
+.SH "SEE ALSO"
+.na
+.nf
+qmgr(8), queue manager
+verify(8), address verification
+master(5), master.cf configuration file syntax
+postconf(5), main.cf configuration file syntax
+syslogd(8), system logging
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

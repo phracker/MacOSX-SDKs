@@ -1,0 +1,113 @@
+.TH "<MPSNNPadding >" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+<MPSNNPadding >
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSNeuralNetworkTypes\&.h>\fP
+.PP
+Inherits <NSObject>, and <NSSecureCoding>\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(\fBMPSNNPaddingMethod\fP) \- \fBpaddingMethod\fP"
+.br
+.ti -1c
+.RI "(NSString *__nonnull) \- \fBlabel\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageDescriptor\fP *__nonnull) \- \fBdestinationImageDescriptorForSourceImages:sourceStates:forKernel:suggestedDescriptor:\fP"
+.br
+.ti -1c
+.RI "(instancetype __nullable) \- \fBinverse\fP"
+.br
+.in -1c
+.SH "Method Documentation"
+.PP 
+.SS "\- (\fBMPSImageDescriptor\fP * __nonnull \fBMPSNNPadding\fP) destinationImageDescriptorForSourceImages: (NSArray< \fBMPSImage\fP * > *__nonnull) sourceImages(NSArray< \fBMPSState\fP * > *__nullable) sourceStates(\fBMPSKernel\fP *__nonnull) kernel(\fBMPSImageDescriptor\fP *__nonnull) inDescriptor\fC [optional]\fP"
+Determine padding and sizing of result images  \fBA\fP MPSNNPaddingMethod must both return a valid \fBMPSImageDescriptor\fP and set the MPSKernel\&.offset to the correct value\&. This is a required feature if the MPSNNPaddingMethodCustom bit is set in the paddingMethod\&.
+.PP
+Some code that may prove helpful:
+.PP
+.PP
+.nf
+const int centeringPolicy = 0;  // When kernelSize is even: 0 pad bottom right\&. 1 pad top left\&.    Centers the kernel for even sized kernels\&.
+
+typedef enum Style{
+    StyleValidOnly = -1,
+    StyleSame = 0,
+    StyleFull = 1
+}Style;
+
+// Typical destination size in one dimension for forward filters (most filters)
+static int DestSize( int sourceSize, int stride, int filterWindowSize, Style style ){
+    sourceSize += style * (filterWindowSize - 1);       // adjust how many pixels we are allowed to read
+    return (sourceSize + stride - 1) / stride;          // sourceSize / stride, round up
+}
+
+// Typical destination size in one dimension for reverse filters (e\&.g\&. convolution transpose)
+static int DestSizeReverse( int sourceSize, int stride, int filterWindowSize, Style style ){
+    return (sourceSize-1) * stride +        // center tap for the last N-1 results\&. Take stride into account
+            1 +                             // center tap for the first result
+            style * (filterWindowSize-1);   // add or subtract (or ignore) the filter extent
+}
+
+// Find the MPSOffset in one dimension
+static int Offset( int sourceSize, int stride, int filterWindowSize, Style style ){
+    // The correction needed to adjust from position of left edge to center per MPSOffset definition
+    int correction = filterWindowSize / 2;
+
+    // exit if all we want is to start consuming pixels at the left edge of the image\&.
+    if( 0 )
+        return correction;
+
+    // Center the area consumed in the source image:
+    // Calculate the size of the destination image
+    int destSize = DestSize( sourceSize, stride, filterWindowSize, style ); // use DestSizeReverse here instead as appropriate
+
+    // calculate extent of pixels we need to read in source to populate the destination
+    int readSize = (destSize-1) * stride + filterWindowSize;
+
+    // calculate number of missing pixels in source
+    int extraSize = readSize - sourceSize;
+
+    // number of missing pixels on left side
+    int leftExtraPixels = (extraSize + centeringPolicy) / 2;
+
+    // account for the fact that the offset is based on the center pixel, not the left edge
+    return correction - leftExtraPixels;
+}
+.fi
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsourceImages\fP The list of source images to be used 
+.br
+\fIsourceStates\fP The list of source states to be used 
+.br
+\fIkernel\fP The \fBMPSKernel\fP the padding method will be applied to\&. Set the kernel\&.offset 
+.br
+\fIinDescriptor\fP MPS will prepare a starting guess based on the padding policy (exclusive of MPSNNPaddingMethodCustom) set for the object\&. You should adjust the offset and image size accordingly\&. It is on an autoreleasepool\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The \fBMPSImageDescriptor\fP to use to make a \fBMPSImage\fP to capture the results from the filter\&. The \fBMPSImageDescriptor\fP is assumed to be on an autoreleasepool\&. Your method must also set the kernel\&.offset property\&. 
+.RE
+.PP
+
+.SS "\- (instancetype __nullable \fBMPSNNPadding\fP) inverse \fC [optional]\fP"
+Make a 'inverted' padding policy suitable for a training gradient pass\&. 
+.SS "\- (NSString*__nonnull \fBMPSNNPadding\fP) label \fC [optional]\fP"
+\fBA\fP human readable string that describes the padding policy\&. Useful for verbose debugging support\&. 
+.SS "\- (\fBMPSNNPaddingMethod\fP \fBMPSNNPadding\fP) paddingMethod \fC [required]\fP"
+Get the preferred padding method for the node 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

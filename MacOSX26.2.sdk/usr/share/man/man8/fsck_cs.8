@@ -1,0 +1,111 @@
+.\" Copyright (c) 2010-2011 Apple Inc.  All rights reserved.
+.\"
+.Dd July 22, 2011
+.Dt FSCK_CS 8
+.Os OS X
+.Sh NAME
+.Nm fsck_cs
+.Nd verify and repair CoreStorage logical volume groups
+.Sh SYNOPSIS
+.Nm
+.Fl q
+.Ar device ...
+.Nm
+.Fl p
+.Ar device ...
+.Nm
+.Op Fl y | n
+.Op Fl x | g
+.Op Fl l Ar logfile
+.Ar device ...
+.Sh DESCRIPTION
+.Pp
+The
+.Nm
+utility verifies and repairs
+.Tn CoreStorage
+logical volume group metadata.
+.Pp
+The
+.Ar device
+parameter(s) should be path(s) to the "raw" (character special) disk device(s) such as
+.Pa /dev/rdisk1s1 
+that constitute the CoreStorage logical volume group.
+If you specify a "non-raw" (block special) path such as
+.Pa /dev/disk1s1 ,
+or just the disk name such as
+.Pa disk1s1 ,
+it will automatically be converted to the corresponding raw disk device
+.Pa ( /dev/rdisk1s1 ) .
+.Pp
+The options are as follows:
+.Bl -tag -offset indent
+.It Fl q
+Performs a "quick" check and indicates if any corruptions were
+found via the exit status.  In this mode stale MLV segments are not
+checked, nor is proactive MLV mirror scrubbing performed.
+.It Fl p
+Operates in "preen" mode.  MLV mirror blocks are repaired where
+necessary.  Newer transactions may be invalidated to force a
+roll-back to an older, but consistent, filesystem state.
+.It Fl y
+Causes
+.Nm
+to assume "yes" as the answer to all questions.  In other words,
+always attempt to repair any errors that are found.
+.It Fl n
+Causes
+.Nm
+to assume "no" as the answer to all questions.  In other words,
+never attempt to repair any errors that are found.
+.It Fl x
+Causes
+.Nm
+to produce its output in an XML-like (plist) format.  This option is
+used when another application with a graphical user interface (like
+OS X Disk Utility) is invoking the
+.Nm
+tool and processing the output.
+.It Fl g
+Causes
+.Nm
+to produce its output in GUI-compatible form.  This is similar in
+usage to the
+.Fl x
+option.
+.It Fl l Ar logfile
+Reproduce all console output, as well as additional status and
+error messages, to the specified file.
+.El
+.Pp
+Alternatively
+.Ar device
+can be specified as the UUID of the CoreStorage logical volume group or as
+the name of a CoreStorage-hosted logical volume within that group, causing
+.Nm
+to derive the constituent raw device(s) from the
+.Pa IORegistry .
+In these cases you must indicate what object is being supplied to
+identify the logical volume group:
+.Bl -hang -offset indent
+.It Fl -pv
+the component CoreStorage physical volume(s) directly
+.It Fl -uuid
+the CoreStorage logical volume group (as a UUID)
+.It Fl -lv
+a CoreStorage logical volume (as a device name)
+.El
+.Sh DIAGNOSTICS
+The
+.Nm
+utility exits with 0 if no corruption was detected or if all
+corruptions were repaired, and with >0 if any unrepaired corruption
+remains.
+.Sh BUGS
+.Nm
+does not perform an exhaustive validation, nor is it able to fix
+many of the inconsistencies that it does detect.
+.Sh HISTORY
+The
+.Nm
+utility first appeared along with CoreStorage in OS X 10.7.0.

@@ -1,0 +1,70 @@
+.\"
+.\" Copyright (c) 2009 Apple Inc. All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\" 
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.Dd March 20, 2023
+.Dt pam_localauthentication 8
+.Os
+.Sh NAME
+.Nm pam_localauthentication
+.Nd LocalAuthentication PAM module
+.Sh SYNOPSIS
+.Op Ar service-name
+.Ar function-class
+.Ar control-flag
+pam_localauthentication
+.Op Ar options
+.Sh DESCRIPTION
+The LocalAuthentication PAM module supports the authentication function class,
+.Ar function-class
+parameter is
+.Dq auth .
+.Ss The LocalAuthentication Authentication Module
+The LocalAuthentication authentication module permits or denies authentication based on LAContext policy evaluation.
+.Pp
+The module will try to create LAContext from the externalized blob returned by previous invocation of
+.Dq LAContext.externalizedContext .
+The blob will be queried by
+.Xr pam_get_data 3
+as data named
+.Dq token_la .
+.Pp
+When the LAContext instance is successfully created, the module will try to evaluate
+.Dq LAPolicyDeviceOwnerAuthenticationWithBiometrics
+on it with user interaction disabled. The expectation is that the policy was already successfully evaluated before. If so, then the authentication performed by this module will succeed as well.
+.Pp
+The following options may be passed to this authentication module:
+.Bl -tag
+.It Cm continuityunlock
+Use the alternative LAContext for AppleWatch unlock. The LAContext blob will be queried by
+.Xr pam_get_data 3
+as data named
+.Dq token_lacont
+and the policy evaluated will be
+.Dq LAPolicyContinuityUnlock .
+
+.El
+.Sh SEE ALSO
+.Xr mbr_check_membership 3 ,
+.Xr pam.conf 5 ,
+.Xr pam 8 ,
+.Xr pwpolicy 8 ,
+.Xr pam_get_data 3

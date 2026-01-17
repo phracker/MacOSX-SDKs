@@ -1,0 +1,166 @@
+.TH "MPSMatrixFullyConnectedGradient" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSMatrixFullyConnectedGradient
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSMatrixFullyConnected\&.h>\fP
+.PP
+Inherits \fBMPSMatrixBinaryKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeGradientForDataToCommandBuffer:gradientMatrix:weightMatrix:resultGradientForDataMatrix:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeGradientForWeightsAndBiasToCommandBuffer:gradientMatrix:inputMatrix:resultGradientForWeightMatrix:resultGradientForBiasVector:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBsourceNumberOfFeatureVectors\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBsourceOutputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBsourceInputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "double \fBalpha\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework\&.
+.PP
+Computes the gradient of the fully connected layer with respect to either the weights and bias terms or the input feature vectors\&.
+.PP
+An \fBMPSMatrixFullyConnectedGradient\fP kernel may be used to compute the gradients corresponding to a \fBMPSMatrixFullyConnected\fP kernel\&. The properties, input, and weight data must match those values used in the forward computation\&. This kernel does not compute the gradient of any non-identity activation function which may have been applied in the forward kernel\&. Such a kernel must be expressed using both \fBMPSMatrixFullyConnected\fP and \fBMPSMatrixNeuron\fP if a gradient is to be computed\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device"
+Make a copy of this kernel for a new device - 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSKernel\fP 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP The NSZone in which to allocate the object 
+.br
+\fIdevice\fP The device for the new \fBMPSKernel\fP\&. If nil, then use self\&.device\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to a copy of this \fBMPSKernel\fP\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (void) encodeGradientForDataToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSMatrix\fP const *__nonnull) gradientMatrix(\fBMPSMatrix\fP const *__nonnull) weightMatrix(\fBMPSMatrix\fP *__nonnull) resultGradientForDataMatrix"
+Encode a \fBMPSMatrixFullyConnectedGradient\fP object to a command buffer and produce the gradient of the loss function with respect to the input data\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&.
+.br
+\fIgradientMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the input gradient\&.
+.br
+\fIweightMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the weight array\&.
+.br
+\fIresultGradientForDataMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the result gradient\&.
+.RE
+.PP
+This operation computes the resulting gradient of the loss function with respect to the forward kernel's input data\&. weightMatrix should contain the same values used to compute the result of the forward kernel\&. 
+.SS "\- (void) encodeGradientForWeightsAndBiasToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSMatrix\fP const *__nonnull) gradientMatrix(\fBMPSMatrix\fP const *__nonnull) inputMatrix(\fBMPSMatrix\fP *__nonnull) resultGradientForWeightMatrix(\fBMPSVector\fP *__nullable) resultGradientForBiasVector"
+Encode a \fBMPSMatrixFullyConnectedGradient\fP object to a command buffer and produce the gradient of the loss function with respect to the weight matrix and bias vector\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&.
+.br
+\fIgradientMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the input gradient\&.
+.br
+\fIinputMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the input array\&.
+.br
+\fIresultGradientForWeightMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the resulting gradients with respect to the weights\&.
+.br
+\fIresultGradientForBiasVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the resulting gradients with respect to the bias terms\&. If NULL these values will not be returned\&.
+.RE
+.PP
+This operation computes the resulting gradient of the loss function with respect to the forward kernel's weight data\&. inputMatrix should contain the same values used to compute the result of the forward kernel\&. 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  See \fBMPSKernel::initWithCoder\fP\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSMatrixFullyConnectedGradient\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSMatrixFullyConnectedGradient\fP object\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSMatrixFullyConnected\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "\- alpha\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Scale factor to apply to the product\&. This value should be equal to the corresponding value in the forward fully connected kernel\&. 
+.SS "\- sourceInputFeatureChannels\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels in the input to the forward fully connected layer\&. This is equivalent to the number of columns in the input matrix\&.
+.PP
+This value should be equal to the corresponding value in the forward fully connected kernel\&. 
+.SS "\- sourceNumberOfFeatureVectors\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of input vectors which make up the input array\&. This is equivalent to the number of rows in both the input matrix and the source gradient matrix\&.
+.PP
+This value should be equal to the corresponding value in the forward fully connected kernel\&. 
+.SS "\- sourceOutputFeatureChannels\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels in the output of the forward fully connected layer\&. This is equivalent to the number of columns in both the weight matrix and the source gradient matrix\&.
+.PP
+This value should be equal to the corresponding value in the forward fully connected kernel\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

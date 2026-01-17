@@ -1,0 +1,192 @@
+.\" Portions Copyright (c) 2006 Apple Computer, Inc. All Rights Reserved.
+.\"	$NetBSD: passwd.5,v 1.4 1995/07/28 06:46:05 phil Exp $
+.\"
+.\" Copyright (c) 1988, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\" Portions Copyright (c) 1994, Jason Downs.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"     @(#)passwd.5	8.1 (Berkeley) 6/5/93
+.\"
+.Dd July 18, 1995
+.Dt PASSWD 5
+.Os
+.Sh NAME
+.Nm passwd ,
+.Nm master.passwd
+.Nd format of the password file
+.Sh DESCRIPTION
+The /etc/passwd file is a legacy BSD 4.3 format file.
+It is mostly unused, but is updated by some utility programs.
+Its format is similar to the /etc/master.passwd file,
+except that it does not contain the
+.Ar class ,
+.Ar change ,
+and
+.Ar expire
+fields described below.
+.Pp
+The /etc/master.passwd file comprises newline separated records, one per user.
+Each line contains ten colon (``:'') separated fields.  These fields are as
+follows:
+.Pp
+.Bl -tag -width password -offset indent
+.It name
+User's login name.
+.It password
+User's
+.Em encrypted
+password.
+.It uid
+User's id.
+.It gid
+User's login group id.
+.It class
+User's general classification (unused).
+.It change
+Password change time.
+.It expire
+Account expiration time.
+.It gecos
+User's full name.
+.It home_dir
+User's home directory.
+.It shell
+User's login shell.
+.El
+.Pp
+The
+.Ar name
+field is the login used to access the computer account, and the
+.Ar uid
+field is the number associated with it.  They should both be unique
+across the system (and often across a group of systems) since they
+control file access.
+.Pp
+While it is possible to have multiple entries with identical login names
+and/or identical user id's, it is usually a mistake to do so.  Routines
+that manipulate these files will often return only one of the multiple
+entries, and that one by random selection.
+.Pp
+The login name must never begin with a hyphen (``-''); also, it is strongly
+suggested that neither upper-case characters or dots (``.'') be part
+of the name, as this tends to confuse mailers.  No field may contain a
+colon (``:'') as this has been used historically to separate the fields
+in the user database.
+.Pp
+The
+.Ar password
+field is the
+.Em encrypted
+form of the password.
+If the
+.Ar password
+field is empty, no password will be required to gain access to the
+machine.  This is almost invariably a mistake.
+Because these files contain the encrypted user passwords, they should
+not be readable by anyone without appropriate privileges.
+.Pp
+The
+.Ar group
+field is the group that the user will be placed in upon login.
+Since this system supports multiple groups (see
+.Xr groups 1 )
+this field currently has little special meaning.
+.Pp
+The
+.Ar class
+field is currently unused.
+.Pp
+The
+.Ar change
+field is the number in seconds,
+.Dv GMT ,
+from the epoch, until the
+password for the account must be changed.
+This field may be left empty to turn off the password aging feature.
+.Pp
+The
+.Ar expire
+field is the number in seconds,
+.Dv GMT ,
+from the epoch, until the
+account expires.
+This field may be left empty to turn off the account aging feature.
+.Pp
+The
+.Ar gecos
+field normally contains the user's full name.
+Note that Mac OS X differs from some other operating systems, where the
+.Ar gecos
+field may contain other comma-separcted information about the user.
+.Pp
+The
+.Ar home_dir
+field is the user's home directory.
+This is the full path name where the user
+will be placed on login.
+.Pp
+The
+.Ar shell
+field is the command interpreter the user prefers.
+If there is nothing in the
+.Ar shell
+field, the Bourne shell
+.Pq Pa /bin/sh
+is assumed.
+.Sh INTERACTION WITH DIRECTORY SERVICES
+Processes generally find user records using one of the
+.Xr getpwent 3
+family of functions.
+On Mac OS X, these functions interact with the
+.Xr DirectoryService 8
+daemon,
+which reads the /etc/master.passwd file as well as searching other directory information services
+to find user accounts.
+.Sh FILES
+.Bl -tag -width /etc/master.passwd -compact
+.It Pa /etc/passwd
+.It Pa /etc/master.passwd
+.El
+.Sh SEE ALSO
+.Xr chpass 1 ,
+.Xr login 1 ,
+.Xr passwd 1 ,
+.Xr getpwent 3 ,
+.Xr netgroup 5 ,
+.Xr DirectoryService 8 ,
+.Xr pwd_mkdb 8 ,
+.Xr vipw 8
+.Pp
+.Sh HISTORY
+A
+.Nm passwd
+file format appeared in
+.At v6 .

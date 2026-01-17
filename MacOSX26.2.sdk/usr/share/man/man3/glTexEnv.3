@@ -1,0 +1,214 @@
+'\" te  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:46
+.ds Dm 4 May 22 14:
+.ds Xs 19951     8
+.TH GLTEXENV 3G
+.SH NAME
+.B "glTexEnvf, glTexEnvi, glTexEnvfv, glTexEnviv
+\- set texture environment parameters
+
+.SH C SPECIFICATION
+void \f3glTexEnvf\fP(
+GLenum \fItarget\fP,
+.nf
+.ta \w'\f3void \fPglTexEnvf( 'u
+	GLenum \fIpname\fP,
+	GLfloat \fIparam\fP )
+.fi
+void \f3glTexEnvi\fP(
+GLenum \fItarget\fP,
+.nf
+.ta \w'\f3void \fPglTexEnvi( 'u
+	GLenum \fIpname\fP,
+	GLint \fIparam\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\f2target\fP\ \ 'u 
+\f2target\fP
+Specifies a texture environment.
+Must be \%\f3GL_TEXTURE_ENV\fP.
+.TP
+\f2pname\fP
+Specifies the symbolic name of a single-valued texture environment parameter.
+Must be \%\f3GL_TEXTURE_ENV_MODE\fP.
+.TP
+\f2param\fP
+Specifies a single symbolic constant, one of \%\f3GL_MODULATE\fP, 
+\%\f3GL_DECAL\fP, \%\f3GL_BLEND\fP, or \%\f3GL_REPLACE\fP.
+.SH C SPECIFICATION
+void \f3glTexEnvfv\fP(
+GLenum \fItarget\fP,
+.nf
+.ta \w'\f3void \fPglTexEnvfv( 'u
+	GLenum \fIpname\fP,
+	const GLfloat \fI*params\fP )
+.fi
+void \f3glTexEnviv\fP(
+GLenum \fItarget\fP,
+.nf
+.ta \w'\f3void \fPglTexEnviv( 'u
+	GLenum \fIpname\fP,
+	const GLint \fI*params\fP )
+.fi
+
+.SH PARAMETERS
+.TP
+\f2target\fP
+Specifies a texture environment.
+Must be \%\f3GL_TEXTURE_ENV\fP.
+.TP
+\f2pname\fP
+Specifies the symbolic name of a texture environment parameter.
+Accepted values are \%\f3GL_TEXTURE_ENV_MODE\fP and \%\f3GL_TEXTURE_ENV_COLOR\fP.
+.TP
+\f2params\fP
+Specifies a pointer to a parameter array that contains
+either a single symbolic constant or an RGBA color.
+.SH DESCRIPTION
+A texture environment specifies how texture values are interpreted
+when a fragment is textured.
+\f2target\fP must be \%\f3GL_TEXTURE_ENV\fP.
+\f2pname\fP can be either \%\f3GL_TEXTURE_ENV_MODE\fP or \%\f3GL_TEXTURE_ENV_COLOR\fP.
+.P
+If \f2pname\fP is \%\f3GL_TEXTURE_ENV_MODE\fP,
+then \f2params\fP is (or points to) the symbolic name of a texture function.
+Four texture functions may be specified:
+\%\f3GL_MODULATE\fP, 
+\%\f3GL_DECAL\fP, 
+\%\f3GL_BLEND\fP, and
+\%\f3GL_REPLACE\fP.
+.P
+A texture function acts on the fragment to be textured using
+the texture image value that applies to the fragment
+(see \%\f3glTexParameter\fP)
+and produces an RGBA color for that fragment.
+The following table shows how the RGBA color is produced for each
+of the three texture functions that can be chosen.
+C is a triple of color values (RGB) and A is the associated alpha value.
+RGBA values extracted from a texture image are in the range [0,1].
+The subscript f refers to the incoming fragment,
+the subscript t to the texture image,
+the subscript c to the texture environment color,
+and subscript v indicates a value produced by the texture function.
+.P
+A texture image can have up to four components per texture element
+(see \%\f3glTexImage1D\fP, \%\f3glTexImage2D\fP, \%\f3glTexImage3D\fP,
+\%\f3glCopyTexImage1D\fP, and \%\f3glCopyTexImage2D\fP). 
+In a one-component image,
+Lt indicates that single component.
+A two-component image uses Lt and At.
+A three-component image has only a color value, Ct.
+A four-component image has both a color value Ct
+and an alpha value At.
+.sp
+.ne
+
+.Bd -literal
+ +---------------+--------------+---------------+
+ | Base Internal |  GL_REPLACE  | GL_MODULATE   |
+ |     Format    |              |               |
+ +---------------+--------------+---------------+
+ | GL_ALPHA      |C=Cf          |C=Cf           |
+ |               |A=At          |A=Af At        |
+ +---------------+--------------+---------------+
+ | GL_LUMINANCE  |C=Lt          |C=CfLt         |
+ |               |A=Af          |A=Af           |
+ +---------------+--------------+---------------+
+ | GL_LUMINANCE_ |C=Lt          |C=CfLt         |
+ | ALPHA         |A=At          |A=AfAt         |
+ +---------------+--------------+---------------+
+ | GL_INTENSITY  |C=It          |C=CfIt         |
+ |               |A=It          |A=AfIt         |
+ +---------------+--------------+---------------+
+ | GL_RGB        |C=Ct          |C=CfCt         |
+ |               |A=Af          |A=Af           |
+ +---------------+--------------+---------------+
+ | GL_RGBA       |C=Ct          |C=CfCt         |
+ |               |A=At          |A=AfAt         |
+ +---------------+--------------+---------------+
+
+
+ +---------------+--------------+---------------+
+ | Base Internal |   GL_DECAL   |   GL_BLEND    |
+ |     Format    |              |               |
+ +---------------+--------------+---------------+
+ | GL_ALPHA      |undefined     |C=Cf           |
+ |               |              |A=AfAt         |
+ +---------------+--------------+---------------+
+ | GL_LUMINANCE  |undefined     |C=Cf(1-Lt) +   |
+ |               |              |CcLt           |
+ |               |              |A=Af           |
+ +---------------+--------------+---------------+
+ | GL_LUMINANCE_ |undefined     |C=Cf(1-Lt) +   |
+ | ALPHA         |              |CcLt           |
+ |               |              |A=AfAt         |
+ +---------------+--------------+---------------+
+ | GL_INTENSITY  |undefined     |C=Cf(1-It) +   |
+ |               |              |CcIt           |
+ |               |              |A=Af(1-It) +   |
+ |               |              |AcIt           |
+ +---------------+--------------+---------------+
+ | GL_RGB        |C=Ct          |C=Cf(1-Ct) +   |
+ |               |A=Af          |CcCt           |
+ |               |              |A=Af           |
+ +---------------+--------------+---------------+
+ | GL_RGBA       |C=C(1-At) +   |C=Cf(1-Ct) +   |
+ |               |CtAt          |CcCt           |
+ |               |A=Af          |A=AfAt         |
+ +---------------+--------------+---------------+
+.Ed
+
+.bp
+If \f2pname\fP is \%\f3GL_TEXTURE_ENV_COLOR\fP,
+\f2params\fP is a pointer to an array that holds an RGBA color consisting of four
+values.
+Integer color components are interpreted linearly such that the most
+positive integer maps to 1.0,
+and the most negative integer maps to -1.0.
+The values are clamped to the range [0,1] when they are specified.
+Cc takes these four values.
+.P
+\%\f3GL_TEXTURE_ENV_MODE\fP defaults to \%\f3GL_MODULATE\fP and
+\%\f3GL_TEXTURE_ENV_COLOR\fP defaults to (0, 0, 0, 0).
+.SH NOTES
+\%\f3GL_REPLACE\fP may only be used if the GL version is 1.1 or greater.
+.P
+Internal formats other than 1, 2, 3, or 4 may only be used if the GL
+version is 1.1 or greater.
+.P
+When the \%\f3GL_ARB_multitexture\fP extension is supported, \%\f3glTexEnv\fP controls 
+the texture environment for the current active texture unit, selected by 
+\%\f3glActiveTextureARB\fP.
+.sh ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated when \f2target\fP or \f2pname\fP is not
+one of the accepted defined values,
+or when \f2params\fP should have a defined constant value
+(based on the value of \f2pname\fP)
+and does not.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glTexEnv\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGetTexEnv\fP
+.SH SEE ALSO
+\%\f3glActiveTextureARB\fP,
+\%\f3glCopyPixels\fP,
+\%\f3glCopyTexImage1D\fP,
+\%\f3glCopyTexImage2D\fP,
+\%\f3glCopyTexSubImage1D\fP,
+\%\f3glCopyTexSubImage2D\fP,
+\%\f3glCopyTexSubImage3D\fP,
+\%\f3glTexImage1D\fP,
+\%\f3glTexImage2D\fP,
+\%\f3glTexImage3D\fP,
+\%\f3glTexParameter\fP,
+\%\f3glTexSubImage1D\fP,
+\%\f3glTexSubImage2D\fP,
+\%\f3glTexSubImage3D\fP
+

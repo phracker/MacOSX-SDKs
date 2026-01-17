@@ -1,0 +1,91 @@
+.TH "MPSNNImageNode" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSNNImageNode
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSNNGraphNodes\&.h>\fP
+.PP
+Inherits NSObject\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithHandle:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinit\fP"
+.br
+.in -1c
+.SS "Class Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) + \fBnodeWithHandle:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) + \fBexportedNodeWithHandle:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "id< \fBMPSHandle\fP > \fBhandle\fP"
+.br
+.ti -1c
+.RI "\fBMPSImageFeatureChannelFormat\fP \fBformat\fP"
+.br
+.ti -1c
+.RI "id< MPSImageAllocator > \fBimageAllocator\fP"
+.br
+.ti -1c
+.RI "BOOL \fBexportFromGraph\fP"
+.br
+.ti -1c
+.RI "BOOL \fBsynchronizeResource\fP"
+.br
+.ti -1c
+.RI "BOOL BOOL \fBstopGradient\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+\fBA\fP placeholder node denoting the position of a \fBMPSImage\fP in a graph  MPS neural network graphs are made up of filter nodes connected by image (or state) nodes\&. An image node is produced by one filter but may be consumed by more than one filter\&.
+.PP
+Most image nodes will be created by MPS and made available through \fBMPSNNFilterNode\&.resultImage\fP\&. Image nodes that are not created by MPS (i\&.e\&. 'the graph inputs') must be created by you\&. 
+.SH "Method Documentation"
+.PP 
+.SS "+ (nonnull instancetype) exportedNodeWithHandle: (NSObject< \fBMPSHandle\fP > *__nullable) handle"
+Create a autoreleased \fBMPSNNImageNode\fP with exportFromGraph = YES\&.  Note: image is still temporary\&. See \fBMPSNNImageNode\&.imageAllocator\fP parameter\&. 
+.SS "\- (nonnull instancetype) init "
+
+.SS "\- (nonnull instancetype) initWithHandle: (NSObject< \fBMPSHandle\fP > *__nullable) handle"
+
+.SS "+ (nonnull instancetype) nodeWithHandle: (NSObject< \fBMPSHandle\fP > *__nullable) handle"
+
+.SH "Property Documentation"
+.PP 
+.SS "\- (BOOL) exportFromGraph\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Tag a image node for view later  Most image nodes are private to the graph\&. These alias memory heavily and consequently generally have invalid state when the graph exits\&. When exportFromGraph = YES, the image is preserved and made available through the [\fBMPSNNGraph\fP encode\&.\&.\&. intermediateImages:\&.\&.\&. list\&.
+.PP
+CAUTION: exporting an image from a graph prevents MPS from recycling memory\&. It will nearly always cause the amount of memory used by the graph to increase by the size of the image\&. There will probably be a performance regression accordingly\&. This feature should generally be used only when the node is needed as an input for further work and recomputing it is prohibitively costly\&.
+.PP
+Default: NO 
+.SS "\- (\fBMPSImageFeatureChannelFormat\fP) format\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The preferred precision for the image  Default: MPSImageFeatureChannelFormatNone, meaning MPS should pick a format Typically, this is 16-bit floating-point\&. 
+.SS "\- (id<\fBMPSHandle\fP>) handle\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+MPS resource identifier  See \fBMPSHandle\fP protocol description\&. Default: nil 
+.SS "\- (id<MPSImageAllocator>) imageAllocator\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+Configurability for image allocation  Allows you to influence how the image is allocated Default: \fBdefaultAllocator (MPSTemporaryImage)\fP 
+.SS "\- (BOOL BOOL) stopGradient\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Stop training graph automatic creation at this node\&.  An inference graph of MPSNNFilterNodes, MPSNNStateNodes and MPSNNImageNodes can be automatically converted to a training graph using -[\fBMPSNNFilterNode\fP trainingGraphWithSourceGradient:nodeHandler:]\&. Sometimes, an inference graph may contain extra nodes at start to do operations like resampling or range adjustment that should not be part of the training graph\&. To prevent gradient operations for these extra nodes from being included in the training graph, set <undesired node>=''>\&.resultImage\&.stopGradient = YES\&. This will prevent gradient propagation beyond this \fBMPSNNImageNode\fP\&. Default: NO 
+.SS "\- (BOOL) synchronizeResource\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Set to true to cause the resource to be synchronized with the CPU  It is not needed on iOS/tvOS devices, where it does nothing\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

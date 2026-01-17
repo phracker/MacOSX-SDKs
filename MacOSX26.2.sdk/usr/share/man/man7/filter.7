@@ -1,0 +1,221 @@
+.\"
+.\" filter man page for CUPS.
+.\"
+.\" Copyright © 2007-2019 by Apple Inc.
+.\" Copyright © 1997-2007 by Easy Software Products.
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH filter 7 "CUPS" "26 April 2019" "Apple Inc."
+.SH NAME
+filter \- cups file conversion filter interface
+.SH SYNOPSIS
+.B filter
+.I job
+.I user
+.I title
+.I num-copies
+.I options
+[
+.I filename
+]
+.nf
+
+\fB#include <cups/cups.h>\fR
+
+\fBssize_t cupsBackChannelRead\fR(\fBchar *\fIbuffer\fR, \fBsize_t \fIbytes\fR,
+                            \fBdouble \fItimeout\fR);
+
+\fBcups_sc_status_t cupsSideChannelDoRequest\fR(\fBcups_sc_command_t \fIcommand\fR,
+                                          \fBchar *\fIdata\fR, \fBint *\fIdatalen\fR,
+                                          \fBdouble \fItimeout\fR);
+
+\fB#include <cups/ppd.h>\fR
+
+\fBconst char *cupsGetOption\fR(\fBconst char *\fIname\fR, \fBint \fInum_options\fR,
+                 \fBcups_option_t *\fIoptions\fR);
+
+\fBint cupsMarkOptions\fR(\fBppd_file_t *\fIppd\fR, \fBint \fInum_options\fR,
+                    \fBcups_option_t *\fIoptions\fR);
+
+\fBint cupsParseOptions\fR(\fBconst char *\fIarg\fR, \fBint \fInum_options\fR,
+                     \fBcups_option_t **\fIoptions\fR);
+
+\fBppd_choice_t *ppdFindMarkedChoice\fR(\fBppd_file_t *\fIppd\fR, \fBconst char *\fIkeyword\fR);
+
+\fBvoid ppdMarkDefaults\fR(\fBppd_file_t *\fIppd\fR);
+
+\fBppd_file_t *ppdOpenFile\fR(\fBconst char *\fIfilename\fR);
+.fi
+.SH DESCRIPTION
+The CUPS filter interface provides a standard method for adding support for new document types or printers to CUPS.
+Each filter is capable of converting from one or more input formats to another format that can either be printed directly or piped into another filter to get it to a printable format.
+.LP
+Filters \fBMUST\fR be capable of reading from a filename on the command-line or from the standard input, copying the standard input to a temporary file as required by the file format.
+All output \fBMUST\fR be sent to the standard output.
+Filters \fBMUST NOT\fR attempt to communicate directly with the printer, other processes, or other services.
+.LP
+The command name (\fIargv[0]\fR) is set to the name of the destination printer but is also available in the \fBPRINTER\fI environment variable.
+.SH OPTIONS
+Options are passed in \fIargv[5]\fR and are encoded from the corresponding IPP attributes used when the job was submitted. Use the
+.BR cupsParseOptions ()
+function to load the options into a \fBcups_option_t\fR array and the
+.BR cupsGetOption ()
+function to get the value of a specific attribute.
+Be careful to look for common aliases of IPP attributes such as "landscape" for the IPP "orientation-requested" attribute.
+.LP
+Options passed on the command-line typically do not include the default choices the printer's PPD file. Use the
+.BR ppdMarkDefaults ()
+and
+.BR cupsMarkOptions ()
+functions in the CUPS library to apply the options to the PPD defaults and map any IPP attributes to the corresponding PPD options.
+Use
+.BR ppdFindMarkedChoice ()
+to get the user-selected choice for a PPD option. For example, a filter might use the following code to determine the current value of the \fBDuplex\fR PPD option:
+.nf
+
+    ppd_file_t *ppd = ppdOpenFile(getenv("PPD"));
+    cups_option_t *options = NULL;
+    int num_options = cupsParseOptions(argv[5], 0, &options);
+
+    ppdMarkDefaults(ppd);
+    cupsMarkOptions(ppd, num_options, options);
+
+    ppd_choice_t *choice = ppdFindMarkedChoice(ppd, "Duplex");
+.fi
+.LP
+Raster filters should use option choices set through the raster page header, as those reflect the options in effect for a given page.
+Options specified on the command-line determine the default values for the entire job, which can be overridden on a per-page basis.
+.SH LOG MESSAGES
+Messages sent to the standard error are generally stored in the printer's "printer-state-message" attribute and the current \fBErrorLog\fR file.
+Each line begins with a standard prefix:
+.TP 5
+\fBALERT: \fImessage\fR
+Sets the "printer-state-message" attribute and adds the specified message to the current \fBErrorLog\fR using the "alert" log level.
+.TP 5
+\fBATTR: \fIattribute=value \fR[ \fI... attribute=value\fR]
+Sets the named job or printer attribute(s). The following job attributes can be set: "job-media-progress". The following printer attributes can be set:
+"auth-info-required", "marker-colors", "marker-high-levels", "marker-levels",
+"marker-low-levels", "marker-message", "marker-names", "marker-types",
+"printer-alert", and "printer-alert-description".
+.TP 5
+\fBCRIT: \fImessage\fR
+Sets the "printer-state-message" attribute and adds the specified message to the current \fBErrorLog\fR using the "critical" log level.
+.TP 5
+\fBDEBUG: \fImessage\fR
+Adds the specified message to the current \fBErrorLog\fR using the "debug" log level.
+\fBDEBUG\fR messages are never stored in the "printer-state-message" attribute.
+.TP 5
+\fBDEBUG2: \fImessage\fR
+.br
+Adds the specified message to the current \fBErrorLog\fR using the "debug2" log level.
+\fBDEBUG2\fR messages are never stored in the "printer-state-message" attribute.
+.TP 5
+\fBEMERG: \fImessage\fR
+Sets the "printer-state-message" attribute and adds the specified message to the current \fBErrorLog\fR using the "emergency" log level.
+.TP 5
+\fBERROR:\fI message\fR
+Sets the "printer-state-message" attribute and adds the specified message to the current \fBErrorLog\fR using the "error" log level.
+.TP 5
+\fBINFO:\fI message\fR
+Sets the "printer-state-message" attribute. If the current \fBLogLevel\fR is set to "debug2", also adds the specified message to the current \fBErrorLog\fR using the "info" log level.
+.TP 5
+\fBNOTICE:\fI message\fR
+Sets the "printer-state-message" attribute and adds the specified message to the current \fBErrorLog\fR using the "notice" log level.
+.TP 5
+\fBPAGE:\fI page-number #-copies\fR
+.TP 5
+\fBPAGE:\fI total #-pages\fR
+Adds an entry to the current \fBPageLog\fR. The first form adds \fI#-copies\fR to the "job-media-sheets-completed" attribute. The second form sets the "job-media-sheets-completed" attribute to \fI#-pages\fR.
+.TP 5
+\fBPPD:\fI Keyword=Value\fR [ \fI... KeywordN=Value\fR ]
+Sets the named keywords in the printer's PPD file. This is typically used to update default option keywords such as \fBDefaultPageSize\fR and the various installable options in the PPD file.
+.TP 5
+\fBSTATE:\fI printer-state-reason \fR[ \fI... printer-state-reason\fR ]
+.TP 5
+\fBSTATE: +\fI printer-state-reason \fR[ \fI... printer-state-reason\fR ]
+.TP 5
+\fBSTATE: -\fI printer-state-reason \fR[ \fI... printer-state-reason\fR ]
+Sets, adds, or removes "printer-state-reason" keywords for the current queue. Typically this is used to indicate media, ink, and toner conditions on a printer.
+.TP 5
+\fBWARNING:\fI message\fR
+Sets the "printer-state-message" attribute and adds the specified message to the current \fBErrorLog\fR using the "warning" log level.
+.SH ENVIRONMENT VARIABLES
+The following environment variables are defined by the CUPS
+server when executing the filter:
+.TP 5
+.B CHARSET
+The default text character set, typically "utf-8".
+.TP 5
+.B CLASS
+When a job is submitted to a printer class, contains the name of the destination printer class. Otherwise this environment variable will not be set.
+.TP 5
+.B CONTENT_TYPE
+The MIME media type associated with the submitted job file, for example "application/postscript".
+.TP 5
+.B CUPS_CACHEDIR
+The directory where semi-persistent cache files can be found and stored.
+.TP 5
+.B CUPS_DATADIR
+The directory where data files can be found.
+.TP 5
+.B CUPS_FILETYPE
+The type of file being printed: "job-sheet" for a banner page and "document"
+for a regular print file.
+.TP 5
+.B CUPS_MAX_MESSAGE
+The maximum size of a message sent to \fIstderr\fR, including any leading prefix and the trailing newline.
+.TP 5
+.B CUPS_SERVERROOT
+The root directory of the server.
+.TP 5
+.B FINAL_CONTENT_TYPE
+The MIME media type associated with the output destined for the printer, for example "application/vnd.cups-postscript".
+.TP 5
+.B LANG
+The default language locale (typically C or en).
+.TP 5
+.B PATH
+The standard execution path for external programs that may be run by the filter.
+.TP 5
+.B PPD
+The full pathname of the PostScript Printer Description (PPD) file for this printer.
+.TP 5
+.B PRINTER
+The name of the printer.
+.TP 5
+.B RIP_CACHE
+The recommended amount of memory to use for Raster Image Processors (RIPs).
+.TP 5
+.B SOFTWARE
+The name and version number of the server (typically CUPS/\fImajor.minor\fR).
+.TP 5
+.B TZ
+The timezone of the server.
+.TP 5
+.B USER
+The user executing the filter, typically "lp" or "root"; consult the \fIcups-files.conf\fR file for the current setting.
+.SH CONFORMING TO
+While the filter interface is compatible with System V interface scripts, CUPS does not support System V interface scripts.
+.SH NOTES
+CUPS printer drivers and backends are deprecated and will no longer be supported in a future feature release of CUPS.
+Printers that do not support IPP can be supported using applications such as
+.BR ippeveprinter (1).
+.LP
+CUPS filters are not meant to be run directly by the user.
+Aside from the legacy System V interface issues (\fIargv[0]\fR is the printer name), CUPS filters also expect specific environment variables and file descriptors, and typically run in a user session that (on macOS) has additional restrictions that affect how it runs.
+Unless you are a developer and know what you are doing, please do not run filters directly.
+Instead, use the
+.BR cupsfilter (8)
+program to use the appropriate filters to do the conversions you need.
+.SH SEE ALSO
+.BR backend (7),
+.BR cups (1),
+.BR cups-files.conf (5),
+.BR cupsd (8),
+.BR cupsfilter (8),
+.br
+CUPS Online Help (http://localhost:631/help)
+.SH COPYRIGHT
+Copyright \[co] 2007-2019 by Apple Inc.

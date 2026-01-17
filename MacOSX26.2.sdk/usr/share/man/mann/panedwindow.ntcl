@@ -1,0 +1,559 @@
+'\"
+'\" Copyright (c) 1992 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH panedwindow n 8.4 Tk "Tk Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+panedwindow \- Create and manipulate panedwindow widgets
+.SH SYNOPSIS
+\fBpanedwindow\fR \fIpathName \fR?\fIoptions\fR?
+.SO
+\-background	\-borderwidth	\-cursor
+\-orient	\-relief
+.SE
+.SH "WIDGET-SPECIFIC OPTIONS"
+.OP \-handlepad handlePad HandlePad
+When sash handles are drawn, specifies the distance from the top or
+left end of the sash (depending on the orientation of the widget) at
+which to draw the handle.  May be any value accepted by \fBTk_GetPixels\fR.
+.OP \-handlesize handleSize HandleSize
+Specifies the side length of a sash handle.  Handles are always
+drawn as squares.  May be any value accepted by \fBTk_GetPixels\fR.
+.OP \-height height Height
+Specifies a desired height for the overall panedwindow widget. May be any
+value accepted by \fBTk_GetPixels\fR. If an empty string, the widget will be
+made high enough to allow all contained widgets to have their natural height.
+.OP \-opaqueresize opaqueResize OpaqueResize
+Specifies whether panes should be resized as a sash is moved (true),
+or if resizing should be deferred until the sash is placed (false).
+.OP \-sashcursor sashCursor SashCursor
+Mouse cursor to use when over a sash.  If null,
+\fBsb_h_double_arrow\fR will be used for horizontal panedwindows, and
+\fBsb_v_double_arrow\fR will be used for vertical panedwindows.
+.OP \-sashpad sashPad SashPad
+Specifies the amount of padding to leave of each side of a sash.  May
+be any value accepted by \fBTk_GetPixels\fR.
+.OP \-sashrelief sashRelief SashRelief
+Relief to use when drawing a sash.  May be any of the standard Tk
+relief values.
+.OP \-sashwidth sashWidth SashWidth
+Specifies the width of each sash.  May be any value accepted by
+\fBTk_GetPixels\fR.
+.OP \-showhandle showHandle ShowHandle
+Specifies whether sash handles should be shown.  May be any valid Tcl
+boolean value.
+.OP \-width width Width
+Specifies a desired width for the overall panedwindow widget. May be any
+value accepted by \fBTk_GetPixels\fR. If an empty string, the widget will be
+made wide enough to allow all contained widgets to have their natural width.
+.BE
+.SH DESCRIPTION
+.PP
+The \fBpanedwindow\fR command creates a new window (given by the
+\fIpathName\fR argument) and makes it into a panedwindow widget.
+Additional options, described above, may be specified on the command
+line or in the option database to configure aspects of the panedwindow
+such as its default background color and relief.  The
+\fBpanedwindow\fR command returns the path name of the new window.
+.PP
+A panedwindow widget contains any number of panes, arranged
+horizontally or vertically, according to the value of the
+\fB\-orient\fR option.  Each pane contains one widget, and each pair of
+panes is separated by a moveable (via mouse movements) sash.  Moving a
+sash causes the widgets on either side of the sash to be resized.
+.SH "WIDGET COMMAND"
+.PP
+The \fBpanedwindow\fR command creates a new Tcl command whose name is
+the same as the path name of the panedwindow's window.  This command
+may be used to invoke various operations on the widget.  It has the
+following general form:
+.CS
+\fIpathName option \fR?\fIarg arg ...\fR?
+.CE
+\fIPathName\fR is the name of the command, which is the same as
+the panedwindow widget's path name.  \fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command.  The following
+commands are possible for panedwindow widgets:
+.TP
+\fIpathName \fBadd \fIwindow ?window ...? ?option value ...?\fR
+Add one or more windows to the panedwindow, each in a separate pane.
+The arguments consist of the names of one or more windows
+followed by pairs of arguments that specify how to manage the windows.
+\fIOption\fR may have any of the values accepted by the
+\fBconfigure\fR subcommand.
+.TP
+\fIpathName \fBcget \fIoption\fR
+Returns the current value of the configuration option given by
+\fIoption\fR.  \fIOption\fR may have any of the values accepted by the
+\fBpanedwindow\fR command.
+.TP
+\fIpathName \fBconfigure \fI?option? ?value option value ...?\fR
+Query or modify the configuration options of the widget.  If no
+\fIoption\fR is specified, returns a list describing all of the
+available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string. \fIOption\fR may have
+any of the values accepted by the \fBpanedwindow\fR command.
+.TP
+\fIpathName \fBforget \fIwindow ?window ...?\fR
+Remove the pane containing \fIwindow\fR from the panedwindow.  All
+geometry management options for \fIwindow\fR will be forgotten.
+.TP
+\fIpathName \fBidentify \fIx y\fR
+Identify the panedwindow component underneath the point given by
+\fIx\fR and \fIy\fR, in window coordinates.  If the point is over a
+sash or a sash handle, the result is a two element list containing the
+index of the sash or handle, and a word indicating whether it is over
+a sash or a handle, such as {0 sash} or {2 handle}.  If the point is
+over any other part of the panedwindow, the result is an empty list.
+.TP
+\fIpathName \fBproxy \fI?args?\fR
+This command is used to query and change the position of the sash
+proxy, used for rubberband-style pane resizing. It can take any of
+the following forms:
+.RS
+.TP
+\fIpathName \fBproxy coord\fR
+Return a list containing the x and y coordinates of the most recent
+proxy location.
+.TP
+\fIpathName \fBproxy forget\fR
+Remove the proxy from the display.
+.TP
+\fIpathName \fBproxy place \fIx y\fR
+Place the proxy at the given \fIx\fR and \fIy\fR coordinates.  
+.RE
+.TP
+\fIpathName \fBsash \fI?args?\fR
+This command is used to query and change the position of sashes in the
+panedwindow.  It can take any of the following forms:
+.RS
+.TP
+\fIpathName \fBsash coord \fIindex\fR
+Return the current x and y coordinate pair for the sash given by
+\fIindex\fR.  \fIIndex\fR must be an integer between 0 and 1 less than
+the number of panes in the panedwindow.  The coordinates given are
+those of the top left corner of the region containing the sash.
+.TP
+\fIpathName \fBsash dragto \fIindex x y\fR
+This command computes the difference between the given coordinates and the
+coordinates given to the last \fBsash mark\fR command for the given
+sash.  It then moves that sash the computed difference.  The return
+value is the empty string.
+.TP
+\fIpathName \fBsash mark \fIindex x y\fR
+Records \fIx\fR and \fIy\fR for the sash given by \fIindex\fR; used in
+conjunction with later \fBsash dragto\fR commands to move the sash.
+.TP
+\fIpathName \fBsash place \fIindex x y\fR
+Place the sash given by \fIindex\fR at the given coordinates.
+.RE
+.TP
+\fIpathName \fBpanecget \fIwindow option\fR
+Query a management option for \fIwindow\fR.  \fIOption\fR may be any
+value allowed by the \fBpaneconfigure\fR subcommand.
+.TP
+\fIpathName \fBpaneconfigure \fIwindow ?option? ?value option value ...?\fR
+Query or modify the management options for \fIwindow\fR.  If no
+\fIoption\fR is specified, returns a list describing all of the
+available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.  The following options
+are supported:
+.RS
+.TP
+\fB\-after \fIwindow\fR
+Insert the window after the window specified.  \fIwindow\fR should be the
+name of a window already managed by \fIpathName\fR.
+.TP
+\fB\-before \fIwindow\fR
+Insert the window before the window specified.  \fIwindow\fR should be
+the name of a window already managed by \fIpathName\fR.
+.TP
+\fB\-height \fIsize\fR
+Specify a height for the window.  The height will be the outer
+dimension of the window including its border, if any.  If \fIsize\fR
+is an empty string, or if \fB\-height\fR is not specified, then the
+height requested internally by the window will be used initially; the
+height may later be adjusted by the movement of sashes in the
+panedwindow.  \fISize\fR may be any value accepted by \fBTk_GetPixels\fR.
+.TP
+\fB\-hide \fIboolean\fR
+.VS 8.5
+Controls the visibility of a pane.  When the \fIboolean\fR is true
+(according to \fBTcl_GetBoolean\fR) the pane will not be visible, but
+it will still be maintained in the list of panes.
+.VE 8.5
+.TP
+\fB\-minsize \fIn\fR
+Specifies that the size of the window cannot be made less than
+\fIn\fR.  This constraint only affects the size of the widget in the
+paned dimension \(em the x dimension for horizontal panedwindows, the y
+dimension for vertical panedwindows.  May be any value accepted by
+\fBTk_GetPixels\fR.
+.TP
+\fB\-padx \fIn\fR
+Specifies a non-negative value indicating how much extra space to
+leave on each side of the window in the X-direction.  The value may 
+have any of the forms accepted by \fBTk_GetPixels\fR.
+.TP
+\fB\-pady \fIn\fR
+Specifies a non-negative value indicating how much extra space to
+leave on each side of the window in the Y-direction.  The value may 
+have any of the forms accepted by \fBTk_GetPixels\fR.
+.TP
+\fB\-sticky \fIstyle\fR
+If a window's pane is larger than the requested dimensions of the
+window, this option may be used to position (or stretch) the window
+within its pane.  \fIStyle\fR  is a string that contains zero or more
+of the characters \fBn\fR, \fBs\fR, \fBe\fR or \fBw\fR.  The string
+can optionally contains spaces or commas, but they are ignored.  Each
+letter refers to a side (north, south, east, or west) that the window
+will
+.QW stick
+to.  If both \fBn\fR and \fBs\fR (or \fBe\fR and \fBw\fR)
+are specified, the window will be stretched to fill the entire height
+(or width) of its cavity.
+.TP
+\fB\-stretch \fIwhen\fR
+.VS 8.5
+Controls how extra space is allocated to each of the panes.
+\fIWhen\fR is one of \fBalways\fR, \fBfirst\fR, \fBlast\fR,
+\fBmiddle\fR, and \fBnever\fR.
+The panedwindow will calculate the required size of all its panes. Any
+remaining (or deficit) space will be distributed to those panes marked
+for stretching. The space will be distributed based on each panes
+current ratio of the whole.  The \fIwhen\fR values have the following
+definition:
+.RS
+.TP
+\fBalways\fR
+This pane will always stretch.
+.TP
+\fBfirst\fR
+Only if this pane is the first pane (left-most or top-most) will it 
+stretch.
+.TP
+\fBlast\fR
+Only if this pane is the last pane (right-most or bottom-most) will it 
+stretch.  This is the default value.
+.TP
+\fBmiddle\fR
+Only if this pane is not the first or last pane will it stretch.
+.TP
+\fBnever\fR
+This pane will never stretch.
+.RE
+.VE 8.5
+.TP
+\fB\-width \fIsize\fR
+Specify a width for the window.  The width will be the outer
+dimension of the window including its border, if any.  If \fIsize\fR
+is an empty string, or if \fB\-width\fR is not specified, then the
+width requested internally by the window will be used initially; the
+width may later be adjusted by the movement of sashes in the
+panedwindow.  \fISize\fR may be any value accepted by \fBTk_GetPixels\fR.
+.RE
+.TP
+\fIpathName \fBpanes\fR
+Returns an ordered list of the widgets managed by \fIpathName\fR.
+.SH "RESIZING PANES"
+A pane is resized by grabbing the sash (or sash handle if present) and
+dragging with the mouse.  This is accomplished via mouse motion
+bindings on the widget.  When a sash is moved, the sizes of the panes
+on each side of the sash, and thus the widgets in those panes, are
+adjusted.
+.PP
+When a pane is resized from outside (e.g. it is packed to expand and
+fill, and the containing toplevel is resized), space is added to the final
+(rightmost or bottommost) pane in the window.
+.SH "SEE ALSO"
+ttk::panedwindow(n)
+.SH KEYWORDS
+panedwindow, widget, geometry management

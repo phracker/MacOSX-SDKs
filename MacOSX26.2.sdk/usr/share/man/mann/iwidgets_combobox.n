@@ -1,0 +1,561 @@
+'\"
+'\" Copyright (c) 1995 John S. Sigler
+'\" Copyright (c) 1997 Mitch Gorman
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) Combobox.n
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::combobox iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::combobox \- Create and manipulate combination box widgets
+.SH SYNOPSIS
+\fBiwidgets::combobox\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::LabeledWidget <- iwidgets::Entryfield <- iwidgets::Combobox
+.SH "STANDARD OPTIONS"
+.LP
+.ta 4c 8c 12c
+.nf
+\fB
+background        borderWidth        cursor          justify
+exportSelection   foreground         highlightColor  highlightThickness
+insertWidth       insertBackground   insertOffTime   insertOnTime
+insertWidth       insertBorderWidth  relief          selectForeground
+selectBackground  selectBorderWidth  textVariable    width\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "ASSOCIATED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBhscrollmode\fR	\fBtextBackground\fR	\fBtextFont\fR	\fBvscrollmode\fR
+.fi
+.LP
+See the "scrolledlistbox" manual entry for details on the above inherited 
+options.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBshow\fR
+.fi
+.LP
+See the "entry" manual entry for details on the above inherited option.
+.SH "INHERITED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBchildSitePos\fR	\fBcommand\fR	\fBfixed\fR	\fBfocusCommand\fR
+\fBinvalid\fR	\fBtextBackground\fR	\fBtextFont\fR	\fBvalidate\fR
+.fi
+.LP
+See the "entryfield" class manual entry for details on the inherited options.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBlabelBitmap\fR	\fBlabelFont\fR	\fBlabelImage\fR	\fBlabelMargin\fR
+\fBlabelPos\fR	\fBlabelText\fR	\fBlabelVariable\fR \fBsticky\fR
+.fi
+.LP
+See the "labeledwidget" class manual entry for details on the 
+inherited options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBarrowRelief\fR
+Class:	\fBRelief\fR
+Command-Line Switch:	\fB-arrowrelief\fR
+.fi
+.IP
+Specifies the relief style to use for a dropdown Combobox's arrow
+button in a normal (not depressed) state. Acceptable values 
+are \fBraised\fR, \fBsunken\fR, \fBflat\fR, \fBridge\fR, and \fBgroove\fR.  
+Sunken is discouraged as this is the relief used to indicate a depressed 
+state. This option has no effect on simple Comboboxes. The default is raised.
+.LP
+.nf
+Name:	\fBcompletion\fR
+Class:	\fBCompletion\fR
+Command-Line Switch:	\fB-completion\fR
+.fi
+.IP
+Boolean given in any of the forms acceptable to \fBTcl_GetBoolean\fR which
+determines whether insertions into the entry field, whether from the
+keyboard or programmatically via the \fBinsert\fR method, are
+automatically completed with the first matching item from the listbox.  The
+default is true.
+.LP
+.nf
+Name:	\fBdropdown\fR
+Class:	\fBDropdown\fR
+Command-Line Switch:	\fB-dropdown\fR
+.fi
+.IP
+Boolean describing the Combobox layout style given in any of the forms
+acceptable to \fBTcl_GetBoolean\fR. If true, the Combobox 
+will be a dropdown style
+widget which displays an entry field and an arrow button which when activated
+will pop up a scrollable list of items. If false, a simple Combobox style 
+will be used which has an entry field and a scrollable list beneath it 
+which is always visible. Both styles allow an optional label for the entry
+field area. The default is true. 
+.LP
+.nf
+Name:	\fBeditable\fR
+Class:	\fBEditable\fR
+Command-Line Switch:	\fB-editable\fR
+.fi
+.IP
+Boolean describing whether or not the text entry area is editable
+by the user. If true the user can add items to the combobox by entering text
+into the entry area and then pressing Return. If false, the list of items is
+non-editable and can only be changed by calling the insert or delete
+methods. (The value in the entry field can still be modified by selecting
+from the list.)  Given in any of the forms acceptable to \fBTcl_GetBoolean\fR. 
+The default is true.
+.LP
+.nf
+Name:	\fBgrab\fR
+Class:	\fBGrab\fR
+Command-Line Switch:	\fB-grab\fR
+.fi
+.IP
+This option sets the grab scope for the appearance of the listbox in
+drop-down comboboxes.  It can be either global or local.  The default is
+local.
+.LP
+.nf
+Name:	\fBlistHeight\fR
+Class:	\fBHeight\fR
+Command-Line Switch:	\fB-listheight\fR
+.fi
+.IP
+Height of the listbox specified in any of the forms acceptable to 
+\fBTk_GetPixels\fR.  The default is 150 pixels.
+.LP
+.nf
+Name:	\fBmargin\fR
+Class:	\fBMargin\fR
+Command-Line Switch:	\fB-margin\fR
+.fi
+.IP
+Specifies the width in pixels between the entry component and the arrow button
+for a dropdown Combobox given in any of the forms acceptable to 
+\fBTk_GetPixels\fR. This option has no effect on a simple Combobox. The
+default is 1.
+.LP
+.nf
+Name:	\fBpopupCursor\fR
+Class:	\fBCursor\fR
+Command-Line Switch:	\fB-popupcursor\fR
+.fi
+.IP
+Specifies the cursor to be used for dropdown style listboxes. The value
+may have any of the forms acceptable to \fBTk_GetCursor\fR. The default is
+arrow. 
+.LP
+.nf
+Name:	\fBselectionCommand\fR
+Class:	\fBSelectionCommand\fR
+Command-Line Switch:	\fB-selectioncommand\fR
+.fi
+.IP
+Specifies a Tcl command procedure which is called when an item in the
+listbox area is selected. The item will be selected in the list, the listbox 
+will be removed if it is a dropdown Combobox, and the selected item's 
+text will be inserted into the entry field before the -selectioncommand proc is
+called. The default is {}.
+.LP
+.nf
+Name:	\fBstate\fR
+Class:	\fBState\fR
+Command-Line Switch:	\fB-state\fR
+.fi
+.IP
+Specifies the overall state of the Combobox megawidget.  Can be either
+normal or disabled.  If the Combobox is disabled, no text can be entered
+into the entry field, no selection can be made in the listbox, and the
+arrowBtn component is disabled.  The default is normal.
+.LP
+.nf
+Name:	\fBunique\fR
+Class:	\fBUnique\fR
+Command-Line Switch:	\fB-unique\fR
+.fi
+.IP
+Boolean describing whether or not duplicate items are allowed in the combobox
+list. If true, then duplicates are not allowed to be inserted. If false, a
+duplicate entry causes selection of the item. Given in any of the forms
+acceptable to \fBTcl_GetBoolean\fR. The default is true. 
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::combobox\fR command creates an enhanced entry field widget with an
+optional associated label and a scrollable list. When an item is selected in
+the list area of a Combobox, its value is then displayed in the entry field
+text area. Functionally similar to an Optionmenu, the Combobox adds (optional)
+list scrolling and (optional) item editing and inserting capabilities. 
+.PP
+There are two basic styles of Comboboxes (determined by the -dropdown option):
+dropdown and simple. The dropdown style adds an arrow button to the right of
+the entry field which when activated will pop up (and down) the scrolled
+listbox beneath the entry field. The simple (non-dropdown) Combobox 
+permanently displays the listbox beneath the entry field and has no 
+arrow button. Either style allows an optional entry field label.
+.SH "METHODS"
+.PP
+The \fBiwidgets::combobox\fR command creates a new Tcl command whose
+name is \fIpathName\fR. This
+command may be used to invoke various
+operations on the widget. It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command. The following
+commands are possible for Combobox widgets:
+.SH "ASSOCIATED METHODS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBicursor\fR	\fBscan\fR
+.fi
+.LP
+See the "entry" manual entries for details on the above associated methods.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBcurselection\fR	\fBindex\fR	\fBsee\fR	\fBsize\fR
+\fBxview\fR	\fByview\fR
+.fi
+.LP
+See the "listbox" manual entries for details on the above associated methods.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBgetcurselection\fR	\fBjustify\fR	\fBsort\fR
+.fi
+.LP
+See the "scrolledlistbox" manual entries for details on the above associated 
+methods.
+.LP
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::combobox\fR
+command.
+.TP
+\fIpathName \fBclear\fR ?\fBcomponent\fR?
+Clears the contents from one or both components. Valid component values
+are \fBlist\fR, or \fBentry\fR.  With no component specified, both are cleared.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::combobox\fR
+command.
+.TP
+\fIpathName \fBdelete \fIcomponent\fR \fIfirst\fR ?\fIlast\fR?
+Delete one or more elements from a given component, \fBlist\fR or \fBentry\fR.
+If a list item to be removed is currently selected (displayed in the entry 
+field area), the entry field will be cleared.
+.TP
+\fIpathName \fBget ?\fIindex\fR? \fR
+With no arguments, returns the contents currently in the entry 
+field area. With a single argument, returns the contents of the 
+listbox item at the indicated index.
+.TP
+\fIpathName \fBinsert\fR \fIcomponent\fR \fIindex\fR \fIelement\fR ?\fIelement element ...\fR?
+Insert one or more new elements into the given component, \fBlist\fR or
+\fBentry\fR, just before the element given by \fIindex\fR.
+.TP
+\fIpathName \fBselection\fR \fIoption\fR \fIfirst\fR ?\fIlast\fR?
+Adjust the selection within the listbox component and updates the contents
+of the entry field component to the value of the selected item. See the
+"listbox" manual entry for more details on parameter options.
+.SH "COMPONENTS"
+.LP
+.nf
+Name:	\fBentry\fR
+Class:	\fBEntry\fR
+.fi
+.IP
+Text entry area where the current selection is displayed. If the 
+Combobox is editable and its state is normal, the user can edit the 
+contents of this item.
+.LP
+.nf
+Name:	\fBlist\fR
+Class:	\fBScrolledlistbox\fR
+.fi
+.IP
+Scrollable list which stores all the items which the user can select
+from. For dropdown Comboboxes, this component is hidden until the user pops it
+up by pressing on the arrow button to the right of the entry component. For
+simple Comboboxes this component is always visible just beneath the entry
+component.
+.SH "DEFAULT BINDINGS"
+.PP
+The Combobox generally has the same bindings as its primary component items -
+the Scrolledlistbox and Entryfield. However it also adds these:
+.PP
+[1] Button-1 mouse press on the arrow key of a dropdown Combobox causes the
+list to be popped up. If the combobox is non-editable, a Button-1 press on the
+entry field area will also pop up the list.
+.PP
+[2] Button-1 mouse press anywhere on the display removes a dropdown listbox
+which has been popped up, unless the keypress is upon one of the Combobox
+scrollbars which scrolls the list. If it is pressed upon an item in the list
+area, that item will be selected before the list is removed.
+.PP
+[3] Button-3 mouse press on the arrow key of a dropdown Combobox causes the
+next item to be selected. Shift-Button-3 causes the previous item to be
+selected. 
+.PP
+[4] Escape keypress removes a dropdown list which has been popped up. 
+.PP
+[5] The <space> and <Return> keystrokes select the current item. They also
+remove the popped up list for dropdown comboboxes.
+.PP
+[6] Up and Down arrow keypresses from the entry field and arrow button
+component cause the previous and next items in the listbox to be selected 
+respectively. Ctl-P and Ctl-N are similarly mapped for emacs emulation.
+.PP
+[7] Entry field and arrow button component Shift-Up and Shift-Down arrow keys
+pop up and down the listbox of a dropdown Combobox. The arrow button component
+also maps <Return> and <space> similarly.
+
+.SH EXAMPLE
+.DS
+ package require Iwidgets 4.0
+ proc selectCmd {} {
+    puts stdout "[.cb2 getcurselection]"
+ }
+
+ #
+ # Non-editable Dropdown Combobox
+ #
+ iwidgets::combobox .cb1 -labeltext Month: \\
+     -selectioncommand {puts "selected: [.cb1 getcurselection]"} \\
+     -editable false -listheight 185 -popupcursor hand1 
+ .cb1 insert list end Jan Feb Mar Apr May June Jul Aug Sept Oct Nov Dec
+	
+ #
+ # Editable Dropdown Combobox
+ #
+ iwidgets::combobox .cb2 -labeltext "Operating System:" -selectioncommand selectCmd
+ .cb2 insert list end Linux HP-UX SunOS Solaris Irix
+ .cb2 insert entry end L
+
+ pack .cb1 -padx 10 -pady 10 -fill x 
+ pack .cb2 -padx 10 -pady 10 -fill x
+
+.DE
+.SH ORIGINAL AUTHOR
+John S. Sigler
+.SH CURRENT MAINTAINER
+Mitch Gorman (logain@erols.com)
+.SH KEYWORDS
+combobox, entryfield, scrolledlistbox, itk::Widget, entry, listbox, widget,
+iwidgets

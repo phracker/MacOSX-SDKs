@@ -1,0 +1,231 @@
+.\"
+.\" lpadmin man page for CUPS.
+.\"
+.\" Copyright © 2007-2019 by Apple Inc.
+.\" Copyright © 1997-2006 by Easy Software Products.
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH lpadmin 8 "CUPS" "26 April 2019" "Apple Inc."
+.SH NAME
+lpadmin \- configure cups printers and classes
+.SH SYNOPSIS
+.B lpadmin
+[
+.B \-E
+] [
+.B \-U
+.I username
+] [
+\fB\-h \fIserver\fR[\fB:\fIport\fR]
+]
+.B \-d
+.I destination
+.br
+.B lpadmin
+[
+.B \-E
+] [
+.B \-U
+.I username
+] [
+\fB\-h \fIserver\fR[\fB:\fIport\fR]
+]
+.B \-p
+.I destination
+[
+.B \-R
+.I name-default
+]
+.I option(s)
+.br
+.B lpadmin
+[
+.B \-E
+] [
+.B \-U
+.I username
+] [
+\fB\-h \fIserver\fR[\fB:\fIport\fR]
+]
+.B \-x
+.I destination
+.SH DESCRIPTION
+\fBlpadmin\fR configures printer and class queues provided by CUPS.
+It can also be used to set the server default printer or class.
+.LP
+When specified before the \fI-d\fR, \fI-p\fR, or \fI-x\fR options, the \fI-E\fR option forces encryption when connecting to the server.
+.LP
+The first form of the command (\fI-d\fR) sets the default printer or class to \fIdestination\fR.
+Subsequent print jobs submitted via the
+.BR lp (1)
+or
+.BR lpr (1)
+commands will use this destination unless the user specifies otherwise with the
+.BR lpoptions (1)
+command.
+.LP
+The second form of the command (\fI-p\fR) configures the named printer or class.  The additional options are described below.
+.LP
+The third form of the command (\fI-x\fR) deletes the printer or class \fIdestination\fR.
+Any jobs that are pending for the destination will be removed and any job that is currently printed will be aborted.
+.SH OPTIONS
+The following options are recognized when configuring a printer queue:
+.TP 5
+\fB\-c \fIclass\fR
+Adds the named \fIprinter\fR to \fIclass\fR.
+If \fIclass\fR does not exist it is created automatically.
+.TP 5
+\fB\-m \fImodel\fR
+Sets a standard PPD file for the printer from the \fImodel\fR directory or using one of the driver interfaces.
+Use the \fI-m\fR option with the
+.BR lpinfo (8)
+command to get a list of supported models.
+The model "raw" clears any existing PPD file and the model "everywhere" queries the printer referred to by the specified IPP \fIdevice-uri\fR.
+Note: Models other than "everywhere" are deprecated and will not be supported in a future version of CUPS.
+.TP 5
+\fB\-o cupsIPPSupplies=true\fR
+.TP 5
+\fB\-o cupsIPPSupplies=false\fR
+Specifies whether IPP supply level values should be reported.
+.TP 5
+\fB\-o cupsSNMPSupplies=true\fR
+.TP 5
+\fB\-o cupsSNMPSupplies=false\fR
+Specifies whether SNMP supply level (RFC 3805) values should be reported.
+.TP 5
+\fB\-o job\-k\-limit=\fIvalue\fR
+Sets the kilobyte limit for per-user quotas.
+The value is an integer number of kilobytes; one kilobyte is 1024 bytes.
+.TP 5
+\fB\-o job\-page\-limit=\fIvalue\fR
+Sets the page limit for per-user quotas.
+The value is the integer number of pages that can be printed; double-sided pages are counted as two pages.
+.TP 5
+\fB-o job\-quota\-period=\fIvalue\fR
+Sets the accounting period for per-user quotas.
+The value is an integer number of seconds; 86,400 seconds are in one day.
+.TP 5
+\fB\-o job\-sheets\-default=\fIbanner\fR
+.TP 5
+\fB\-o job\-sheets\-default=\fIbanner\fB,\fIbanner\fR
+Sets the default banner page(s) to use for print jobs.
+.TP 5
+\fB\-o \fIname\fB=\fIvalue\fR
+Sets a PPD option for the printer.
+PPD options can be listed using the \fI-l\fR option with the
+.BR lpoptions (1)
+command.
+.TP 5
+\fB\-o \fIname\fB-default=\fIvalue\fR
+Sets a default server-side option for the destination.
+Any print-time option can be defaulted, e.g., "-o number-up-default=2" to set the default "number-up" option value to 2.
+.TP 5
+\fB\-o port\-monitor=\fIname\fR
+Sets the binary communications program to use when printing, "none", "bcp", or "tbcp".
+The default program is "none".
+The specified port monitor must be listed in the printer's PPD file.
+.TP 5
+\fB\-o printer-error-policy=\fIname\fR
+Sets the policy for errors such as printers that cannot be found or accessed, don't support the format being printed, fail during submission of the print data, or cause one or more filters to crash.
+The name must be one of "abort-job" (abort the job on error), "retry-job" (retry the job at a future time), "retry-current-job" (retry the current job immediately), or "stop-printer" (stop the printer on error).
+The default error policy is "stop-printer" for printers and "retry-current-job" for
+classes.
+.TP 5
+\fB\-o printer\-is\-shared=true\fR
+.TP 5
+\fB\-o printer\-is\-shared=false\fR
+Sets the destination to shared/published or unshared/unpublished.
+Shared/published destinations are publicly announced by the server on the LAN based on the browsing configuration in \fIcupsd.conf\fR, while unshared/unpublished destinations are not announced.
+The default value is "true".
+.TP 5
+\fB\-o printer-op-policy=\fIname\fR
+Sets the IPP operation policy associated with the destination.
+The name must be defined in the \fIcupsd.conf\fR in a Policy section.
+The default operation policy is "default".
+.TP 5
+\fB\-R \fIname\fB\-default\fR
+Deletes the named option from \fIprinter\fR.
+.TP 5
+\fB\-r \fIclass\fR
+Removes the named \fIprinter\fR from \fIclass\fR.
+If the resulting class becomes empty it is removed.
+.TP 5
+\fB-u allow:\fR{\fIuser\fR|\fB@\fIgroup\fR}{\fB,\fIuser\fR|\fB,@\fIgroup\fR}*
+.TP 5
+\fB-u deny:\fR{\fIuser\fR|\fB@\fIgroup\fR}{\fB,\fIuser\fR|\fB,@\fIgroup\fR}*
+.TP 5
+\fB\-u allow:all\fR
+.TP 5
+\fB\-u deny:none\fR
+Sets user-level access control on a destination.
+Names starting with "@" are interpreted as UNIX groups.
+The latter two forms turn user-level access control off.
+Note: The user 'root' is not granted special access - using "-u allow:foo,bar" will allow users 'foo' and 'bar' to access the printer but NOT 'root'.
+.TP 5
+\fB\-v "\fIdevice-uri\fB"\fR
+Sets the \fIdevice-uri\fR attribute of the printer queue.
+Use the \fI-v\fR option with the
+.BR lpinfo (8)
+command to get a list of supported device URIs and schemes.
+.TP 5
+\fB\-D "\fIinfo\fB"\fR
+Provides a textual description of the destination.
+.TP 5
+.B \-E
+When specified before the \fB\-d\fR, \fB\-p\fR, or \fB\-x\fR options, forces the use of TLS encryption on the connection to the scheduler.
+Otherwise, enables the destination and accepts jobs; this is the same as running the
+.BR cupsaccept (8)
+and
+.BR cupsenable (8)
+programs on the destination.
+.TP 5
+\fB\-L "\fIlocation\fB"\fR
+Provides a textual location of the destination.
+.SH DEPRECATED OPTIONS
+The following \fBlpadmin\fR options are deprecated:
+.TP 5
+\fB\-i \fIfilename\fR
+This option historically has been used to provide either a System V interface script or (as an implementation side-effect) a PPD file.
+Note: Interface scripts are not supported by CUPS.
+PPD files and printer drivers are deprecated and will not be supported in a future version of CUPS.
+.TP 5
+\fB\-P \fIppd-file\fR
+Specifies a PostScript Printer Description (PPD) file to use with the printer.
+Note: PPD files and printer drivers are deprecated and will not be supported in a future version of CUPS.
+.SH CONFORMING TO
+Unlike the System V printing system, CUPS allows printer names to contain any printable character except SPACE, TAB, "/", or "#".
+Also, printer and class names are \fInot\fR case-sensitive.
+.PP
+Finally, the CUPS version of \fBlpadmin\fR may ask the user for an access password depending on the printing system configuration.
+This differs from the System V version which requires the root user to execute this command.
+.SH NOTES
+CUPS printer drivers and backends are deprecated and will no longer be supported in a future feature release of CUPS.
+Printers that do not support IPP can be supported using applications such as
+.BR ippeveprinter (1).
+.LP
+The CUPS version of \fBlpadmin\fR does not support all of the System V or Solaris printing system configuration options.
+.PP
+Interface scripts are not supported for security reasons.
+.PP
+The double meaning of the \fB\-E\fR option is an unfortunate historical oddity.
+.PP
+The \fBlpadmin\fR command communicates with the scheduler (\fBcupsd\fR) to make changes to the printing system configuration.
+This configuration information is stored in several files including \fIprinters.conf\fR and \fIclasses.conf\fR.
+These files should not be edited directly and are an implementation detail of CUPS that is subject to change at any time.
+.SH EXAMPLE
+Create an IPP Everywhere print queue:
+.nf
+
+    lpadmin -p myprinter -E -v ipp://myprinter.local/ipp/print -m everywhere
+
+.fi
+.SH SEE ALSO
+.BR cupsaccept (8),
+.BR cupsenable (8),
+.BR lpinfo (8),
+.BR lpoptions (1),
+CUPS Online Help (http://localhost:631/help)
+.SH COPYRIGHT
+Copyright \[co] 2007-2019 by Apple Inc.

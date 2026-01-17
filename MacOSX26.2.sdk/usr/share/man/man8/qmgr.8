@@ -1,0 +1,448 @@
+.TH QMGR 8 
+.ad
+.fi
+.SH NAME
+qmgr
+\-
+Postfix queue manager
+.SH "SYNOPSIS"
+.na
+.nf
+\fBqmgr\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBqmgr\fR(8) daemon awaits the arrival of incoming mail
+and arranges for its delivery via Postfix delivery processes.
+The actual mail routing strategy is delegated to the
+\fBtrivial\-rewrite\fR(8) daemon.
+This program expects to be run from the \fBmaster\fR(8) process
+manager.
+
+Mail addressed to the local \fBdouble\-bounce\fR address is
+logged and discarded.  This stops potential loops caused by
+undeliverable bounce notifications.
+.SH "MAIL QUEUES"
+.na
+.nf
+.ad
+.fi
+The \fBqmgr\fR(8) daemon maintains the following queues:
+.IP \fBincoming\fR
+Inbound mail from the network, or mail picked up by the
+local \fBpickup\fR(8) daemon from the \fBmaildrop\fR directory.
+.IP \fBactive\fR
+Messages that the queue manager has opened for delivery. Only
+a limited number of messages is allowed to enter the \fBactive\fR
+queue (leaky bucket strategy, for a fixed delivery rate).
+.IP \fBdeferred\fR
+Mail that could not be delivered upon the first attempt. The queue
+manager implements exponential backoff by doubling the time between
+delivery attempts.
+.IP \fBcorrupt\fR
+Unreadable or damaged queue files are moved here for inspection.
+.IP \fBhold\fR
+Messages that are kept "on hold" are kept here until someone
+sets them free.
+.SH "DELIVERY STATUS REPORTS"
+.na
+.nf
+.ad
+.fi
+The \fBqmgr\fR(8) daemon keeps an eye on per\-message delivery status
+reports in the following directories. Each status report file has
+the same name as the corresponding message file:
+.IP \fBbounce\fR
+Per\-recipient status information about why mail is bounced.
+These files are maintained by the \fBbounce\fR(8) daemon.
+.IP \fBdefer\fR
+Per\-recipient status information about why mail is delayed.
+These files are maintained by the \fBdefer\fR(8) daemon.
+.IP \fBtrace\fR
+Per\-recipient status information as requested with the
+Postfix "\fBsendmail \-v\fR" or "\fBsendmail \-bv\fR" command.
+These files are maintained by the \fBtrace\fR(8) daemon.
+.PP
+The \fBqmgr\fR(8) daemon is responsible for asking the
+\fBbounce\fR(8), \fBdefer\fR(8) or \fBtrace\fR(8) daemons to
+send delivery reports.
+.SH "STRATEGIES"
+.na
+.nf
+.ad
+.fi
+The queue manager implements a variety of strategies for
+either opening queue files (input) or for message delivery (output).
+.IP "\fBleaky bucket\fR"
+This strategy limits the number of messages in the \fBactive\fR queue
+and prevents the queue manager from running out of memory under
+heavy load.
+.IP \fBfairness\fR
+When the \fBactive\fR queue has room, the queue manager takes one
+message from the \fBincoming\fR queue and one from the \fBdeferred\fR
+queue. This prevents a large mail backlog from blocking the delivery
+of new mail.
+.IP "\fBslow start\fR"
+This strategy eliminates "thundering herd" problems by slowly
+adjusting the number of parallel deliveries to the same destination.
+.IP "\fBround robin\fR"
+The queue manager sorts delivery requests by destination.
+Round\-robin selection prevents one destination from dominating
+deliveries to other destinations.
+.IP "\fBexponential backoff\fR"
+Mail that cannot be delivered upon the first attempt is deferred.
+The time interval between delivery attempts is doubled after each
+attempt.
+.IP "\fBdestination status cache\fR"
+The queue manager avoids unnecessary delivery attempts by
+maintaining a short\-term, in\-memory list of unreachable destinations.
+.IP "\fBpreemptive message scheduling\fR"
+The queue manager attempts to minimize the average per\-recipient delay
+while still preserving the correct per\-message delays, using
+a sophisticated preemptive message scheduling.
+.SH "TRIGGERS"
+.na
+.nf
+.ad
+.fi
+On an idle system, the queue manager waits for the arrival of
+trigger events, or it waits for a timer to go off. A trigger
+is a one\-byte message.
+Depending on the message received, the queue manager performs
+one of the following actions (the message is followed by the
+symbolic constant used internally by the software):
+.IP "\fBD (QMGR_REQ_SCAN_DEFERRED)\fR"
+Start a deferred queue scan.  If a deferred queue scan is already
+in progress, that scan will be restarted as soon as it finishes.
+.IP "\fBI (QMGR_REQ_SCAN_INCOMING)\fR"
+Start an incoming queue scan. If an incoming queue scan is already
+in progress, that scan will be restarted as soon as it finishes.
+.IP "\fBA (QMGR_REQ_SCAN_ALL)\fR"
+Ignore deferred queue file time stamps. The request affects
+the next deferred queue scan.
+.IP "\fBF (QMGR_REQ_FLUSH_DEAD)\fR"
+Purge all information about dead transports and destinations.
+.IP "\fBW (TRIGGER_REQ_WAKEUP)\fR"
+Wakeup call, This is used by the master server to instantiate
+servers that should not go away forever. The action is to start
+an incoming queue scan.
+.PP
+The \fBqmgr\fR(8) daemon reads an entire buffer worth of triggers.
+Multiple identical trigger requests are collapsed into one, and
+trigger requests are sorted so that \fBA\fR and \fBF\fR precede
+\fBD\fR and \fBI\fR. Thus, in order to force a deferred queue run,
+one would request \fBA F D\fR; in order to notify the queue manager
+of the arrival of new mail one would request \fBI\fR.
+.SH "STANDARDS"
+.na
+.nf
+RFC 3463 (Enhanced status codes)
+RFC 3464 (Delivery status notifications)
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBqmgr\fR(8) daemon is not security sensitive. It reads
+single\-character messages from untrusted local users, and thus may
+be susceptible to denial of service attacks. The \fBqmgr\fR(8) daemon
+does not talk to the outside world, and it can be run at fixed low
+privilege in a chrooted environment.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to the syslog daemon.
+Corrupted message files are saved to the \fBcorrupt\fR queue
+for further inspection.
+
+Depending on the setting of the \fBnotify_classes\fR parameter,
+the postmaster is notified of bounces and of other trouble.
+.SH BUGS
+.ad
+.fi
+A single queue manager process has to compete for disk access with
+multiple front\-end processes such as \fBcleanup\fR(8). A sudden burst of
+inbound mail can negatively impact outbound delivery rates.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are not picked up automatically
+as \fBqmgr\fR(8)
+is a persistent process. Use the "\fBpostfix reload\fR" command after
+a configuration change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+
+In the text below, \fItransport\fR is the first field in a
+\fBmaster.cf\fR entry.
+.SH "COMPATIBILITY CONTROLS"
+.na
+.nf
+.ad
+.fi
+Available before Postfix version 2.5:
+.IP "\fBallow_min_user (no)\fR"
+Allow a sender or recipient address to have `\-' as the first
+character.
+.PP
+Available with Postfix version 2.7 and later:
+.IP "\fBdefault_filter_nexthop (empty)\fR"
+When a content_filter or FILTER request specifies no explicit
+next\-hop destination, use $default_filter_nexthop instead; when
+that value is empty, use the domain in the recipient address.
+.SH "ACTIVE QUEUE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBqmgr_clog_warn_time (300s)\fR"
+The minimal delay between warnings that a specific destination is
+clogging up the Postfix active queue.
+.IP "\fBqmgr_message_active_limit (20000)\fR"
+The maximal number of messages in the active queue.
+.IP "\fBqmgr_message_recipient_limit (20000)\fR"
+The maximal number of recipients held in memory by the Postfix
+queue manager, and the maximal size of the short\-term,
+in\-memory "dead" destination status cache.
+.IP "\fBqmgr_message_recipient_minimum (10)\fR"
+The minimal number of in\-memory recipients for any message.
+.IP "\fBdefault_recipient_limit (20000)\fR"
+The default per\-transport upper limit on the number of in\-memory
+recipients.
+.IP "\fItransport\fB_recipient_limit ($default_recipient_limit)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.IP "\fBdefault_extra_recipient_limit (1000)\fR"
+The default value for the extra per\-transport limit imposed on the
+number of in\-memory recipients.
+.IP "\fItransport\fB_extra_recipient_limit ($default_extra_recipient_limit)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.PP
+Available in Postfix version 2.4 and later:
+.IP "\fBdefault_recipient_refill_limit (100)\fR"
+The default per\-transport limit on the number of recipients refilled at
+once.
+.IP "\fItransport\fB_recipient_refill_limit ($default_recipient_refill_limit)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.IP "\fBdefault_recipient_refill_delay (5s)\fR"
+The default per\-transport maximum delay between recipients refills.
+.IP "\fItransport\fB_recipient_refill_delay ($default_recipient_refill_delay)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.SH "DELIVERY CONCURRENCY CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBinitial_destination_concurrency (5)\fR"
+The initial per\-destination concurrency level for parallel delivery
+to the same destination.
+.IP "\fBdefault_destination_concurrency_limit (20)\fR"
+The default maximal number of parallel deliveries to the same
+destination.
+.IP "\fItransport\fB_destination_concurrency_limit ($default_destination_concurrency_limit)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.PP
+Available in Postfix version 2.5 and later:
+.IP "\fItransport\fB_initial_destination_concurrency ($initial_destination_concurrency)\fR"
+Initial concurrency for delivery via the named message
+\fItransport\fR.
+.IP "\fBdefault_destination_concurrency_failed_cohort_limit (1)\fR"
+How many pseudo\-cohorts must suffer connection or handshake
+failure before a specific destination is considered unavailable
+(and further delivery is suspended).
+.IP "\fItransport\fB_destination_concurrency_failed_cohort_limit ($default_destination_concurrency_failed_cohort_limit)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.IP "\fBdefault_destination_concurrency_negative_feedback (1)\fR"
+The per\-destination amount of delivery concurrency negative
+feedback, after a delivery completes with a connection or handshake
+failure.
+.IP "\fItransport\fB_destination_concurrency_negative_feedback ($default_destination_concurrency_negative_feedback)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.IP "\fBdefault_destination_concurrency_positive_feedback (1)\fR"
+The per\-destination amount of delivery concurrency positive
+feedback, after a delivery completes without connection or handshake
+failure.
+.IP "\fItransport\fB_destination_concurrency_positive_feedback ($default_destination_concurrency_positive_feedback)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.IP "\fBdestination_concurrency_feedback_debug (no)\fR"
+Make the queue manager's feedback algorithm verbose for performance
+analysis purposes.
+.SH "RECIPIENT SCHEDULING CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBdefault_destination_recipient_limit (50)\fR"
+The default maximal number of recipients per message delivery.
+.IP "\fItransport\fB_destination_recipient_limit ($default_destination_recipient_limit)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.SH "MESSAGE SCHEDULING CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBdefault_delivery_slot_cost (5)\fR"
+How often the Postfix queue manager's scheduler is allowed to
+preempt delivery of one message with another.
+.IP "\fItransport\fB_delivery_slot_cost ($default_delivery_slot_cost)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.IP "\fBdefault_minimum_delivery_slots (3)\fR"
+How many recipients a message must have in order to invoke the
+Postfix queue manager's scheduling algorithm at all.
+.IP "\fItransport\fB_minimum_delivery_slots ($default_minimum_delivery_slots)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.IP "\fBdefault_delivery_slot_discount (50)\fR"
+The default value for transport\-specific _delivery_slot_discount
+settings.
+.IP "\fItransport\fB_delivery_slot_discount ($default_delivery_slot_discount)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.IP "\fBdefault_delivery_slot_loan (3)\fR"
+The default value for transport\-specific _delivery_slot_loan
+settings.
+.IP "\fItransport\fB_delivery_slot_loan ($default_delivery_slot_loan)\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.SH "OTHER RESOURCE AND RATE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBminimal_backoff_time (300s)\fR"
+The minimal time between attempts to deliver a deferred message;
+prior to Postfix 2.4 the default value was 1000s.
+.IP "\fBmaximal_backoff_time (4000s)\fR"
+The maximal time between attempts to deliver a deferred message.
+.IP "\fBmaximal_queue_lifetime (5d)\fR"
+Consider a message as undeliverable, when delivery fails with a
+temporary error, and the time in the queue has reached the
+maximal_queue_lifetime limit.
+.IP "\fBqueue_run_delay (300s)\fR"
+The time between deferred queue scans by the queue manager;
+prior to Postfix 2.4 the default value was 1000s.
+.IP "\fBtransport_retry_time (60s)\fR"
+The time between attempts by the Postfix queue manager to contact
+a malfunctioning message delivery transport.
+.PP
+Available in Postfix version 2.1 and later:
+.IP "\fBbounce_queue_lifetime (5d)\fR"
+Consider a bounce message as undeliverable, when delivery fails
+with a temporary error, and the time in the queue has reached the
+bounce_queue_lifetime limit.
+.PP
+Available in Postfix version 2.5 and later:
+.IP "\fBdefault_destination_rate_delay (0s)\fR"
+The default amount of delay that is inserted between individual
+deliveries to the same destination; the resulting behavior depends
+on the value of the corresponding per\-destination recipient limit.
+.IP "\fItransport\fB_destination_rate_delay $default_destination_rate_delay\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.PP
+Available in Postfix version 3.1 and later:
+.IP "\fBdefault_transport_rate_delay (0s)\fR"
+The default amount of delay that is inserted between individual
+deliveries over the same message delivery transport, regardless of
+destination.
+.IP "\fItransport\fB_transport_rate_delay $default_transport_rate_delay\fR"
+Idem, for delivery via the named message \fItransport\fR.
+.SH "SAFETY CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBqmgr_daemon_timeout (1000s)\fR"
+How much time a Postfix queue manager process may take to handle
+a request before it is terminated by a built\-in watchdog timer.
+.IP "\fBqmgr_ipc_timeout (60s)\fR"
+The time limit for the queue manager to send or receive information
+over an internal communication channel.
+.PP
+Available in Postfix version 3.1 and later:
+.IP "\fBaddress_verify_pending_request_limit (see 'postconf -d' output)\fR"
+A safety limit that prevents address verification requests from
+overwhelming the Postfix queue.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdefer_transports (empty)\fR"
+The names of message delivery transports that should not deliver mail
+unless someone issues "\fBsendmail \-q\fR" or equivalent.
+.IP "\fBdelay_logging_resolution_limit (2)\fR"
+The maximal number of digits after the decimal point when logging
+sub\-second delay values.
+.IP "\fBhelpful_warnings (yes)\fR"
+Log warnings about problematic configuration settings, and provide
+helpful suggestions.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.PP
+Available in Postfix version 3.0 and later:
+.IP "\fBconfirm_delay_cleared (no)\fR"
+After sending a "your message is delayed" notification, inform
+the sender when the delay clears up.
+.SH "FILES"
+.na
+.nf
+/var/spool/postfix/incoming, incoming queue
+/var/spool/postfix/active, active queue
+/var/spool/postfix/deferred, deferred queue
+/var/spool/postfix/bounce, non\-delivery status
+/var/spool/postfix/defer, non\-delivery status
+/var/spool/postfix/trace, delivery status
+.SH "SEE ALSO"
+.na
+.nf
+trivial\-rewrite(8), address routing
+bounce(8), delivery status reports
+postconf(5), configuration parameters
+master(5), generic daemon options
+master(8), process manager
+syslogd(8), system logging
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+SCHEDULER_README, scheduling algorithm
+QSHAPE_README, Postfix queue analysis
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Preemptive scheduler enhancements:
+Patrik Rak
+Modra 6
+155 00, Prague, Czech Republic
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

@@ -1,0 +1,108 @@
+.\"
+.\" mime.types man page for CUPS.
+.\"
+.\" Copyright © 2007-2019 by Apple Inc.
+.\" Copyright © 1997-2006 by Easy Software Products.
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH mime.types 5 "CUPS" "26 April 2019" "Apple Inc."
+.SH NAME
+mime.types \- mime type description file for cups
+.SH DESCRIPTION
+The \fBmime.types\fR file defines the recognized file types.
+.LP
+Additional file types are specified in files with the extension \fI.types\fR in the CUPS configuration directory.
+.LP
+Each line in the \fBmime.types\fR file is a comment, blank, or rule line.
+Comment lines start with the # character.
+Rule lines start with the MIME media type and are optionally followed by a series of file recognition rules:
+.nf
+
+    \fImime/type \fR[ \fIrule \fR... \fIrule \fR]
+
+.fi
+Rules can be extended over multiple lines using the backslash character (\\):
+.nf
+
+    \fImime/type \fR[ \fIreally-really-really-long-rule \fR... \fB\\
+      \fIrule \fR]
+
+.fi
+MIME media types specified by the \fImime/type\fR field are case-insensitive and are sorted in ascending alphanumeric order for the purposes of matching.
+See the "TYPE MATCHING AND PRIORITY" section for more information.
+.LP
+The rules may be grouped using parenthesis, joined using "+" for a logical AND, joined using "," or whitespace for a logical OR, and negated using "!".
+.SS RULES
+Rules take two forms - a filename extension by itself and functions with test
+values inside parenthesis.
+The following functions are available:
+.TP 5
+\fBmatch("\fIpattern\fB")\fR
+True if the filename matches the given shell wildcard \fIpattern\fR.
+.TP 5
+\fBascii(\fIoffset\fB,\fIlength\fB)\fR
+True if the \fIlength\fR bytes starting at \fIoffset\fR are valid printable ASCII (CR, NL, TAB, BS, 32-126).
+.TP 5
+\fBprintable(\fIoffset\fB,\fIlength\fB)\fR
+True if the \fIlength\fR bytes starting at \fIoffset\fR are printable 8-bit chars (CR, NL, TAB, BS, 32-126, 128-254).
+.TP 5
+\fBpriority(\fInumber\fB)\fR
+Specifies the relative priority of this MIME media type.
+The default priority is 100.
+Larger values have higher priority while smaller values have lower priority.
+.TP 5
+\fBstring(\fIoffset\fB,"\fIstring\fB")\fR
+True if the bytes starting at \fIoffset\fR are identical to \fIstring\fR.
+.TP 5
+\fBistring(\fIoffset\fB,"\fIstring\fB")\fR
+True if the bytes starting at \fIoffset\fR match \fIstring\fR without respect to case.
+.TP 5
+\fBchar(\fIoffset\fB,\fIvalue\fB)\fR
+True if the byte at \fIoffset\fR is identical to \fIvalue\fR.
+.TP 5
+\fBshort(\fIoffset\fB,\fIvalue\fB)\fR
+True if the 16-bit big-endian integer at \fIoffset\fR is identical to \fIvalue\fR.
+.TP 5
+\fBint(\fIoffset\fB,\fIvalue\fB)\fR
+True if the 32-bit big-endian integer at \fIoffset\fR is identical to \fIvalue\fR.
+.TP 5
+\fBlocale("\fIstring\fB")\fR
+True if current locale matches \fIstring\fR.
+.TP 5
+\fBcontains(\fIoffset\fB,\fIrange\fB,"\fIstring\fB")\fR
+True if the bytes starting at \fIoffset\fR for \fIrange\fR bytes contains \fIstring\fR.
+.SS STRING CONSTANTS
+String constants can be specified inside quotes ("") for strings containing whitespace and angle brackets (<>) for hexadecimal strings.
+.SS TYPE MATCHING AND PRIORITY
+When CUPS needs to determine the MIME media type of a given file, it checks every MIME media type defined in the \fI.types\fR files.
+When two or more types match a given file, the type chosen will depend on the type name and priority, with higher-priority types being used over lower-priority ones.
+If the types have the same priority, the type names are sorted alphanumerically in ascending order and the first type is chosen.
+.LP
+For example, if two types "text/bar" and "text/foo" are defined as matching the
+extension "doc", normally the type "text/bar" will be chosen since its name is
+alphanumerically smaller than "text/foo".
+However, if "text/foo" also defines a higher priority than "text/bar", "text/foo" will be chosen instead.
+.SH FILES
+\fI/etc/cups\fR - Typical CUPS configuration directory.
+.SH EXAMPLES
+Define two MIME media types for raster data, with one being a subset with higher priority:
+.nf
+
+    application/vnd.cups\-raster  string(0,"RaSt") string(0,"tSaR") \\
+                                  string(0,"RaS2") string(0,"2SaR") \\
+                                  string(0,"RaS3") string(0,"3SaR")
+
+    image/pwg-raster              string(0,"RaS2") + \\
+                                  string(4,PwgRaster<00>) priority(150)
+.fi
+.SH SEE ALSO
+.BR cups-files.conf (5),
+.BR cupsd.conf (5),
+.BR cupsd (8),
+.BR cupsfilter (8),
+.BR mime.convs (5),
+CUPS Online Help (http://localhost:631/help)
+.SH COPYRIGHT
+Copyright \[co] 2007-2019 by Apple Inc.

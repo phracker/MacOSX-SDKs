@@ -1,0 +1,340 @@
+.\" Copyright (c) 2022-2023, Apple Inc.  All rights reserved.
+.\"
+.Dd December 1, 2023
+.Dt TRACE 1
+.Os "Darwin"
+.Sh NAME
+.Nm trace
+.Nd record and modify trace files
+.
+.Sh SYNOPSIS
+.Bl -hang -compact -width "trace "
+.It Nm Cm record Ar file-name Op options
+.It Nm Cm amend Ar file-path Fl Fl add Ar provider Op options
+.It Nm Cm trim Ar file-name Op options
+.It Nm Cm plans Op options
+.It Nm Cm providers Op options
+.El
+.
+.Sh DESCRIPTION
+.Nm
+records and modifies files of software events used for performance analysis.
+A trace file captures what the system was doing over a period of time,
+like which threads are scheduled,
+what memory is used for the first time,
+and thousands of other kinds of events from software running in the kernel,
+user space,
+or on coprocessors.
+.
+.Sh RECORD
+Trace files
+.Po
+with the
+.Sy .atrc
+extension
+.Pc
+capture how a Darwin system behaves for a period of time.
+By default, they include a selection of kdebug trace events,
+Unified Logging information,
+and metadata to support analysis,
+like symbols and machine configuration.
+.Pp
+The
+.Cm record
+subcommand creates these files from the current system,
+according to a plan and options passed in on the command line.
+The
+.Ar file-name
+positional argument is used as a prefix and can include path components.
+The path to the file is derived by adding an incrementing number at the end,
+followed by the file extension.
+To write to a particular file path, end the argument with
+.Ql .atrc .
+The default plan produces files readable by Instruments System Trace and
+.Xr spindump 1 .
+.Pp
+Plans support safe configuration by the user with
+.Ql layers
+and
+.Ql providers .
+Layers are listed by the help output for
+.Nm Cm record
+and alter basic configuration of the plan,
+like which events are collected.
+Listing providers is not yet implemented,
+but they add more complex features,
+like custom data sources beyond kdebug trace.
+Unified Logging support is implemented as a provider,
+for instance.
+.Pp
+This subcommand is opinionated about unsafe operations,
+and requires any options that may impact the reliability of the tool to also include the
+.Fl Fl unsafe
+flag to acknowledge that the files produced may be unusable.
+Experimental features are treated similarly,
+requiring a
+.Fl Fl experimental
+flag while they are still being vetted.
+.Pp
+.Bl -tag
+.It Fl Fl help | Fl h
+Present a help message for the
+.Cm record
+subcommand.
+.It Fl Fl plan
+Use a non-default plan.
+Must be one of those listed by
+.Nm Cm plans .
+.It Fl Fl add Ar layer-or-provider
+Add a layer or provider to the chosen plan, augmenting its behavior.
+The list of layers is shown in the help message or
+.Nm Cm plans.
+The list of providers can be obtained using
+.Nm Cm providers .
+.It Fl Fl Ar provider-name Ns : Ns Ar option-name Ns = Ns Ar option-value
+Set the option
+.Ar option-name
+to
+.Ar option-value
+for use by the provider named
+.Ar provider-name .
+The list of possible options are reported by
+.Nm Cm providers .
+.It Fl Fl omit Ar layer-or-provider
+Omit a default layer or provider from the chosen plan.
+.It Fl Fl overwrite
+Allow the output file to overwrite a pre-existing file.
+.It Fl Fl compress
+Compress the events in the output file.
+.It Fl Fl notify-after-start Ar notification-name
+Emit a Darwin notification named
+.Ar notification-name
+with
+.Xr notify 3
+after starting the trace session.
+Other systems can use this notification to stage their workloads,
+either with the
+.Xr notify 3
+interfaces or
+.Xr notifyutil 1 .
+For instance,
+.Ql notifyutil -1 ktrace-start
+will wait for the notification named
+.Ar ktrace-start
+to be published and then exit.
+This option can be specified multiple times to send additional notifications.
+.It Fl Fl notify-after-end Ar notification-name
+Emit a Darwin notification named
+.Ar notification-name
+with
+.Xr notify 3
+after the trace session has finished.
+.It Xo
+.Fl Fl end-after-duration
+.Ar duration Ns
+.Ns Sy s
+.Xc
+End tracing after the specified time period elapses.
+.It Fl Fl end-on-notification Ar notification-name
+End tracing when a Darwin notification matching the
+.Ar notification-nameis published with
+.Xr notify 3 .
+.It Fl Fl end-on-kdebug-event Ar event-id
+End tracing when a kdebug event with the given
+.Ar event-id
+is emitted.
+This is currently experimental and unsafe if the event is not part of the plan.
+.It Fl Fl end-after-kdebug-events-size Ar size-bytes
+End tracing when the file reaches the specified
+.Ar size-bytes
+number of bytes for kdebug events.
+.It Fl Fl trailing-duration Ar duration
+Only include events within the specified
+.Ar duration
+before trace is ended.
+In other words, keep a ringbuffer of events, dropping any that are older than
+.Ar duration
+time in the past.
+This can be used to reduce the impact of recording's I/O on storage,
+at the cost of higher CPU usage spent processing incoming events.
+.It Fl Fl start-on-notification Ar notification-name
+Wait to start tracing until a Darwin notification matching the
+.Ar notification-name
+is published with
+.Xr notify 3
+or
+.Xr notifyutil 1 .
+For instance,
+.Ql notifyutil -p ktrace-end
+published a notification named
+.Ar ktrace-end .
+.It Fl Fl profiling-interval Ar duration
+Fire the profiling timer at a different rate than the plan specifies.
+The
+.Ar duration
+argument accepts suffixes of
+.Sy us ,
+.Sy ms ,
+and
+.Sy s .
+.El
+.Pp
+The following options are unsafe and have a may produce an unusable trace file.
+.Bl -tag
+.It Fl Fl unsafe
+Allow unsafe options to be used.
+.It Fl Fl experimental
+Allow experimental plans and options to be used.
+.It Fl Fl kdebug-buffer-size Ar size-with-suffix
+Override the default buffer size for the kdebug trace system.
+Smaller buffers are likely to lose events,
+while larger buffers can have a more significant impact on the system.
+.It Fl Fl kdebug-filter-include Ar filter-description
+Specify additional kdebug events to include in the trace file,
+following a filter description.
+Filter descriptions are a comma-separated list of either two rules:
+.Bl -tag
+.It C Ns Ar 0x01
+Filter all events in the given class;
+in this case, class 1.
+.It S Ns Ar 0x0140
+Filter events in a particular subclass,
+where the top byte is the class and the bottom byte is the subclass within that class.
+In this case, class 1 and subclass 0x40.
+.El
+.Pp
+Additional events may require changes to the buffer size.
+.It Fl Fl kdebug-filter-exclude Ar filter-description
+Prevent kdebug events from being included in the trace file,
+following a filter description.
+Some events are necessary for particular analysis tools.
+.It Fl Fl prioritize-collection
+Use the highest collection priority possible, or the value specified by
+.Fl Fl collection-priority .
+Potentially interferes with other processes.
+.It Fl Fl collection-priority
+Set priority of collection, potentially interfering with other processes.
+.El
+.
+.Sh AMEND
+.Nm Cm amend
+adds more information to previously-recorded trace files from providers.
+.Bl -tag
+.It Fl Fl add Ar provider-name
+At least one provider must be added to the amending process.
+.It Fl Fl provider-name Ns : Ns option-name Ns = Ns option-value
+Set options for the provider to amend with,
+as described in
+.Nm Cm providers .
+.
+.Sh TRIM
+.Nm Cm trim
+removes events from a trace file except for those within a specified time range.
+.Bl -tag
+.It Fl Fl from Ar time-spec
+Removes all events before the provided
+.Ar time-spec ,
+which is a number interpreted based on its prefix:
+.Bl -tag
+.It Sy @
+event timestamp
+.It Sy +
+time since the start of tracing, with a suffix indicating the units
+.Po
+.Ql s ,
+.Ql ms ,
+or
+.Ql us
+.Pc
+.It Sy -
+time before the end of tracing, with a suffix indicating the units
+.El
+.It Fl Fl to Ar time-spec
+Removes all events after the provided
+.Ar time-spec .
+.It Fl Fl output | Fl o Ar path
+Write the trimmed file to the specified
+.Ar path .
+.
+.Sh PLANS
+.Nm Cm plans
+lists the plans available to
+.Nm Cm record
+and the layers that can be added to them.
+.Bl -tag
+.It Fl Fl verbose
+Print additional information about each plan, like its documentation.
+.It Fl Fl experimental
+Show experimental plans.
+.El
+.
+.Sh PROVIDERS
+.Nm Cm providers
+lists the providers available to
+.Nm Cm record
+and the options that can be passed to them.
+.Bl -tag
+.It Fl Fl experimental
+Show experimental providers.
+.El
+.
+.Sh KTRACE
+The
+.Ql ktrace
+feature is supported by two kernel subsystems:
+kdebug provides the event format and buffering system and
+kperf emits sampling information as events based on triggers.
+.Pp
+The event format used by kdebug is simple and constraining, but effective.
+Events are classified using a 32-bit debug ID:
+.Pp
+.Bd -literal -offset indent
+ class  subclass     code     function
+╭──────┬───────┬─────────────┬─╮
+│  8   │   8   │     14      │2│
+╰──────┴───────┴─────────────┴─╯
+╰──────────────╯               │
+ class-subclass              00│
+╰──────────────────────────────╯
+│          event ID            │
+╰──────────────────────────────╯
+           debug ID
+.Ed
+.Pp
+Classes are assigned in
+.In sys/kdebug.h
+for broad parts of the system.
+Each class can assign its own subclasses.
+The class-subclass is the finest granularity that can be filtered on.
+Codes are for specific events in each subclass,
+and functions denote whether the event is a start
+.Pq Dv DBG_FUNC_START ,
+end
+.Pq Dv DBG_FUNC_END ,
+or impulse
+.Pq left unset .
+An event ID is a debug ID with the function bits set to 0.
+.Pp
+Events also contain a timestamp, 4 pointer-sized arguments,
+the ID of the thread that emitted the event,
+and the CPU ID on which it was emitted.
+The CPU ID may be greater than the number of CPUs on the system \(em
+denoting a coprocessor event.
+.Pp
+Trace files can be analyzed with dedicated tools,
+including
+.Xr fs_usage 1 ,
+.Xr spindump 1 ,
+or
+Instruments,
+depending on how they were recorded and the filters in effect.
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh SEE ALSO
+.Xr fs_usage 1 ,
+.Xr notify 3 ,
+.Xr ktrace 5 ,
+and
+.Xr ktrace 1

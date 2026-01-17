@@ -1,0 +1,210 @@
+.TH "MPSCNNBatchNormalizationGradient" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNBatchNormalizationGradient
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNBatchNormalization\&.h>\fP
+.PP
+Inherits \fBMPSCNNGradientKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:fusedNeuronDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:destinationGradient:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:destinationGradients:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBencodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageBatch\fP *__nonnull) \- \fBencodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBencodeToCommandBuffer:primaryImage:secondaryImage:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageBatch\fP *__nonnull) \- \fBencodeBatchToCommandBuffer:primaryImages:secondaryImages:\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework
+.PP
+\fBMPSCNNBatchNormalizationGradient\fP computes the gradients of a loss function resulting from a network containing a corresponding \fBMPSCNNBatchNormalization\fP kernel\&.
+.PP
+Two sets of values are computed: the gradient of the loss function with respect to the batch normalization source images, and the gradient of the loss function with respect to the scale and bias terms used to compute the batch normalization\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (\fBMPSImageBatch\fP * __nonnull) encodeBatchToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) primaryImage(\fBMPSImageBatch\fP *__nonnull) secondaryImage"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. Create textures to hold the results and return them\&.  In the first iteration on this method, encodeBatchToCommandBuffer:sourceImage:destinationImage: some work was left for the developer to do in the form of correctly setting the offset property and sizing the result buffer\&. With the introduction of the padding policy (see padding property) the filter can do this work itself\&. If you would like to have some input into what sort of \fBMPSImage\fP (e\&.g\&. temporary vs\&. regular) or what size it is or where it is allocated, you may set the destinationImageAllocator to allocate the image yourself\&.
+.PP
+This method uses the \fBMPSNNPadding\fP padding property to figure out how to size the result image and to set the offset property\&. See discussion in \fBMPSNeuralNetworkTypes\&.h\fP\&. All images in a batch must have \fBMPSImage\&.numberOfImages\fP = 1\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer 
+.br
+\fIprimaryImage\fP \fBA\fP MPSImages to use as the primary source images for the filter\&. 
+.br
+\fIsecondaryImage\fP \fBA\fP MPSImages to use as the secondary source images for the filter\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP \fBMPSImage\fP or \fBMPSTemporaryImage\fP allocated per the destinationImageAllocator containing the output of the graph\&. The returned image will be automatically released when the command buffer completes\&. If you want to keep it around for longer, retain the image\&. (ARC will do this for you if you use it later\&.) 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryKernel\fP\&.
+.SS "\- (void) encodeBatchToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) primaryImages(\fBMPSImageBatch\fP *__nonnull) secondaryImages(\fBMPSImageBatch\fP *__nonnull) destinationImages"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. The operation shall proceed out-of-place\&.  This is the older style of encode which reads the offset, doesn't change it, and ignores the padding method\&. Multiple images are processed concurrently\&. All images must have \fBMPSImage\&.numberOfImages\fP = 1\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIprimaryImages\fP An array of \fBMPSImage\fP objects containing the primary source images\&. 
+.br
+\fIsecondaryImages\fP An array \fBMPSImage\fP objects containing the secondary source images\&. 
+.br
+\fIdestinationImages\fP An array of \fBMPSImage\fP objects to contain the result images\&. destinationImages may not alias primarySourceImages or secondarySourceImages in any manner\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryKernel\fP\&.
+.SS "\- (\fBMPSImageBatch\fP * __nonnull) encodeBatchToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) sourceGradients(\fBMPSImageBatch\fP *__nonnull) sourceImages(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState"
+Encode this operation to a command buffer\&. Create an MPSImageBatch to contain the result and return it\&. See encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:destinationGradients for further details\&. 
+.SS "\- (void) encodeBatchToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) sourceGradients(\fBMPSImageBatch\fP *__nonnull) sourceImages(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState(\fBMPSImageBatch\fP *__nonnull) destinationGradients"
+Encode this operation to a command buffer\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer\&. 
+.br
+\fIsourceGradients\fP An MPSImageBatch containing the gradient of the loss function with respect to the results of batch normalization on the source images\&. 
+.br
+\fIsourceImages\fP An MPSImageBatch containing the source images for batch normalization\&. 
+.br
+\fIbatchNormalizationState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which has been previously updated using a \fBMPSCNNBatchNormalizationStatisticsGradient\fP kernel and the source images\&. If the state is temporary its read count will be decremented\&. 
+.br
+\fIdestinationGradients\fP An MPSImageBatch whose images will contain the gradient of the loss function with respect to the source images\&. 
+.RE
+.PP
+
+.SS "\- (\fBMPSImage\fP * __nonnull) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) primaryImage(\fBMPSImage\fP *__nonnull) secondaryImage"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. Create a texture to hold the result and return it\&.  In the first iteration on this method, encodeToCommandBuffer:sourceImage:destinationImage: some work was left for the developer to do in the form of correctly setting the offset property and sizing the result buffer\&. With the introduction of the padding policy (see padding property) the filter can do this work itself\&. If you would like to have some input into what sort of \fBMPSImage\fP (e\&.g\&. temporary vs\&. regular) or what size it is or where it is allocated, you may set the destinationImageAllocator to allocate the image yourself\&.
+.PP
+This method uses the \fBMPSNNPadding\fP padding property to figure out how to size the result image and to set the offset property\&. See discussion in \fBMPSNeuralNetworkTypes\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer 
+.br
+\fIprimaryImage\fP \fBA\fP MPSImages to use as the primary source images for the filter\&. 
+.br
+\fIsecondaryImage\fP \fBA\fP MPSImages to use as the secondary source images for the filter\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP \fBMPSImage\fP or \fBMPSTemporaryImage\fP allocated per the destinationImageAllocator containing the output of the graph\&. The returned image will be automatically released when the command buffer completes\&. If you want to keep it around for longer, retain the image\&. (ARC will do this for you if you use it later\&.) 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryKernel\fP\&.
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) primaryImage(\fBMPSImage\fP *__nonnull) secondaryImage(\fBMPSImage\fP *__nonnull) destinationImage"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. The operation shall proceed out-of-place\&.  This is the older style of encode which reads the offset, doesn't change it, and ignores the padding method\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIprimaryImage\fP \fBA\fP valid \fBMPSImage\fP object containing the primary source image\&. 
+.br
+\fIsecondaryImage\fP \fBA\fP valid \fBMPSImage\fP object containing the secondary source image\&. 
+.br
+\fIdestinationImage\fP \fBA\fP valid \fBMPSImage\fP to be overwritten by result image\&. destinationImage may not alias primarySourceImage or secondarySourceImage\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryKernel\fP\&.
+.SS "\- (\fBMPSImage\fP*__nonnull) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceGradient(\fBMPSImage\fP *__nonnull) sourceImage(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState"
+Encode this operation to a command buffer\&. Create an \fBMPSImage\fP to contain the result and return it\&. See encodeToCommandBuffer:sourceImage:sourceGradient:sourceImage:batchNormalizationState:destinationGradient for further details\&. 
+.SS "\- (void) encodeToCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceGradient(\fBMPSImage\fP *__nonnull) sourceImage(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState(\fBMPSImage\fP *__nonnull) destinationGradient"
+Encode this operation to a command buffer for a single image\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer\&. 
+.br
+\fIsourceGradient\fP An \fBMPSImage\fP containing the gradient of the loss function with respect to the results of batch normalization on the source image\&. 
+.br
+\fIsourceImage\fP An \fBMPSImage\fP containing the source image for batch normalization\&. 
+.br
+\fIbatchNormalizationState\fP \fBA\fP valid \fBMPSCNNBatchNormalizationState\fP object which has been previously updated using a \fBMPSCNNBatchNormalizationStatisticsGradient\fP kernel and the source images\&. If the state is temporary its read count will be decremented\&. 
+.br
+\fIdestinationGradient\fP An \fBMPSImage\fP which contains the gradient of the loss function with respect to the source image\&. 
+.RE
+.PP
+
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use a subclass of NSCoder that implements the <MPSDeviceProvider> protocol to tell MPS the MTLDevice to use\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSCNNBatchNormalizationGradient\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNGradientKernel\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(\fBMPSNNNeuronDescriptor\fP *__nullable) fusedNeuronDescriptor"
+Initializes a batch normalization gradient kernel using a device and neuron descriptor\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this filter will be used 
+.br
+\fIfusedNeuronDescriptor\fP \fBA\fP \fBMPSNNNeuronDescriptor\fP object which specifies a neuron activation function whose gradient should be applied prior to computing the resulting gradient\&. This neuron descriptor should match that used in the corresponding forward batch normalization kernel as well as the preceeding batch normalization statistics gradient kernel\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSCNNBatchNormalizationGradient\fP object or nil, if failure\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

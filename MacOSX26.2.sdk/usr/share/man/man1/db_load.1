@@ -1,0 +1,142 @@
+.Dd December 3, 2003       \" DATE 
+.Dt db_load 1       \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm db_load
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl nTV
+.Op Fl c Ar name=value
+.Op Fl f Ar file
+.Op Fl h Ar home
+.Op Fl P Ar password
+.Op Fl t Ar btree | hash | queue | recno
+file
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+The
+.Nm
+utility reads from the standard input and loads it into the database file. The database file is created if it does not already exist.
+.Pp
+The input to
+.Nm
+must be in the output format specified by the db_dump utility, utilities, or as specified for the -T below.
+.Pp
+The options are as follows:
+.Bl -tag -width
+.It Fl c
+Specify configuration options ignoring any value they may have based on the input. The command-line format is name=value. See the Supported Keywords section below for a list of keywords supported by the -c option.
+.It Fl f
+Read from the specified input file instead of from the standard input.
+.It Fl h
+Specify a home directory for the database environment.
+.Pp
+If a home directory is specified, the database environment is opened using the Db.DB_INIT_LOCK, Db.DB_INIT_LOG, Db.DB_INIT_MPOOL, Db.DB_INIT_TXN, and Db.DB_USE_ENVIRON flags to DB_ENV->open. (This means that db_load can be used to load data into databases while they are in use by other processes.) If the DB_ENV->open call fails, or if no home directory is specified, the database is still updated, but the environment is ignored; for example, no locking is done.
+.It Fl n
+Do not overwrite existing keys in the database when loading into an already existing database. If a key/data pair cannot be loaded into the database for this reason, a warning message is displayed on the standard error output, and the key/data pair are skipped.
+.It Fl P
+Specify an environment password. Although Berkeley DB utilities overwrite password strings as soon as possible, be aware there may be a window of vulnerability on systems where unprivileged users can see command-line arguments or where utilities are not able to overwrite the memory containing the command-line arguments.
+.It Fl T
+The -T option allows non-Berkeley DB applications to easily load text files into databases.
+.Pp
+If the database to be created is of type Btree or Hash, or the keyword keys is specified as set, the input must be paired lines of text, where the first line of the pair is the key item, and the second line of the pair is its corresponding data item. If the database to be created is of type Queue or Recno and the keyword keys is not set, the input must be lines of text, where each line is a new data item for the database.
+.Pp
+A simple escape mechanism, where newline and backslash (\) characters are special, is applied to the text input. Newline characters are interpreted as record separators. Backslash characters in the text will be interpreted in one of two ways: If the backslash character precedes another backslash character, the pair will be interpreted as a literal backslash. If the backslash character precedes any other character, the two characters following the backslash will be interpreted as a hexadecimal specification of a single character; for example, \0a is a newline character in the ASCII character set.
+.Pp
+For this reason, any backslash or newline characters that naturally occur in the text input must be escaped to avoid misinterpretation by db_load.
+.Pp
+If the -T option is specified, the underlying access method type must be specified using the -t option.
+.It Fl t
+Specify the underlying access method. If no -t option is specified, the database will be loaded into a database of the same type as was dumped; for example, a Hash database will be created if a Hash database was dumped.
+.Pp
+Btree and Hash databases may be converted from one to the other. Queue and Recno databases may be converted from one to the other. If the -k option was specified on the call to db_dump then Queue and Recno databases may be converted to Btree or Hash, with the key being the integer record number.
+.It Fl V
+Write the library version number to the standard output, and exit.
+.El
+.Pp
+The db_load utility may be used with a Berkeley DB environment (as described for the -h option, the environment variable DB_HOME, or because the utility was run in a directory containing a Berkeley DB environment). In order to avoid environment corruption when using a Berkeley DB environment, db_load should always be given the chance to detach from the environment and exit gracefully. To cause db_load to release all environment resources and exit cleanly, send it an interrupt signal (SIGINT).
+.Pp
+The db_load utility exits 0 on success, 1 if one or more key/data pairs were not loaded into the database because the key already existed, and >1 if an error occurs.
+.Pp
+.Sh EXAMPLES
+The
+.Nm
+utility can be used to load text files into databases. For example, the following command loads the standard UNIX /etc/passwd file into a database, with the login name as the key item and the entire password entry as the data item:
+.Bd -ragged -offset 5
+awk -F: '{print $1; print $0}' < /etc/passwd |
+    sed 's/\\/\\\\/g' | db_load -T -t hash passwd.db
+.Ed
+.Pp
+Note that backslash characters naturally occurring in the text are escaped to avoid interpretation as escape characters by db_load.
+.Sh ENVIRONMENT      \" May not be needed
+.Bl -tag -width "DB_HOME" \" ENV_VAR_1 is width of the string ENV_VAR_1
+.It Ev DB_HOME
+If the -h option is not specified and the environment variable DB_HOME is set, it is used as the path of the database home, as described in DB_ENV->open.
+.El
+.Sh SUPPORTED KEYWORDS
+The following keywords are supported for the -c command-line option to the
+.Nm
+utility. See DB->open for further discussion of these keywords and what values should be specified.
+.Pp
+The parenthetical listing specifies how the value part of the name=value pair is interpreted. Items listed as (boolean) expect value to be 1 (set) or 0 (unset). Items listed as (number) convert value to a number. Items listed as (string) use the string value without modification.
+.Bl -tag -width
+.It bt_minkey (number)
+The minimum number of keys per page.
+.It chksum (boolean)
+Enable page checksums.
+.It database (string)
+The database to load.
+.It db_lorder (number)
+The byte order for integers in the stored database metadata.
+.It db_pagesize (number)
+The size of database pages, in bytes.
+.It duplicates (boolean)
+The value of the Db.DB_DUP flag.
+.It dupsort (boolean)
+The value of the Db.DB_DUPSORT flag.
+.It extentsize (number)
+The size of database extents, in pages, for Queue databases configured to use extents.
+.It h_ffactor (number)
+The density within the Hash database.
+.It h_nelem (number)
+The size of the Hash database.
+.It keys (boolean)
+Specify whether keys are present for Queue or Recno databases.
+.It re_len (number)
+Specify fixed-length records of the specified length.
+.It re_pad (string)
+Specify the fixed-length record pad character.
+.It recnum (boolean)
+The value of the Db.DB_RECNUM flag.
+.It renumber (boolean)
+The value of the Db.DB_RENUMBER flag.
+.It subdatabase (string)
+The subdatabase to load.
+.El
+.\" .Sh FILES                \" File used or created by the topic of the man page
+.\" .Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.\" .It Pa /usr/share/file_name
+.\" FILE_1description
+.\" .It Pa /Users/joeuser/Library/really_long_file_name
+.\" FILE_2 description
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.Xr db_archive 1 ,
+.Xr db_checkpoint 1 ,
+.Xr db_deadlock 1 ,
+.Xr db_dump 1 ,
+.Xr db_printlog 1 ,
+.Xr db_recover 1 ,
+.Xr db_stat 1 ,
+.Xr db_upgrade 1 ,
+.Xr db_verify 1
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

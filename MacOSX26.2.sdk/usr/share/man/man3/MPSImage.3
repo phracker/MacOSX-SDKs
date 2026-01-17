@@ -1,0 +1,403 @@
+.TH "MPSImage" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSImage
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSImage\&.h>\fP
+.PP
+Inherits NSObject\&.
+.PP
+Inherited by \fBMPSTemporaryImage\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:imageDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithParentImage:sliceRange:featureChannels:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithTexture:featureChannels:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinit\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageBatch\fP *__nonnull) \- \fBbatchRepresentationWithSubRange:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageBatch\fP *__nonnull) \- \fBbatchRepresentation\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBsubImageWithFeatureChannelRange:\fP"
+.br
+.ti -1c
+.RI "(NSUInteger) \- \fBresourceSize\fP"
+.br
+.ti -1c
+.RI "(\fBMPSPurgeableState\fP) \- \fBsetPurgeableState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreadBytes:dataLayout:bytesPerRow:region:featureChannelInfo:imageIndex:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBwriteBytes:dataLayout:bytesPerRow:region:featureChannelInfo:imageIndex:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreadBytes:dataLayout:bytesPerRow:bytesPerImage:region:featureChannelInfo:imageIndex:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBwriteBytes:dataLayout:bytesPerRow:bytesPerImage:region:featureChannelInfo:imageIndex:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreadBytes:dataLayout:imageIndex:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBwriteBytes:dataLayout:imageIndex:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBsynchronizeOnCommandBuffer:\fP"
+.br
+.in -1c
+.SS "Class Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull id< MPSImageAllocator >) + \fBdefaultAllocator\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "id< MTLDevice > \fBdevice\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBwidth\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBheight\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBfeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBnumberOfImages\fP"
+.br
+.ti -1c
+.RI "MTLTextureType \fBtextureType\fP"
+.br
+.ti -1c
+.RI "MTLPixelFormat \fBpixelFormat\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBprecision\fP"
+.br
+.ti -1c
+.RI "MTLTextureUsage \fBusage\fP"
+.br
+.ti -1c
+.RI "size_t \fBpixelSize\fP"
+.br
+.ti -1c
+.RI "id< MTLTexture > \fBtexture\fP"
+.br
+.ti -1c
+.RI "NSString * \fBlabel\fP"
+.br
+.ti -1c
+.RI "\fBMPSImage\fP * \fBparent\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  \fBA\fP \fBMPSImage\fP object describes a MTLTexture that may have more than 4 channels\&.  Some image types, such as those found in convolutional neural networks (CNN) differ from a standard texture in that they may have more than 4 channels per image\&. While the channels could hold RGBA data, they will more commonly hold a number of structural permutations upon a multi-channel image as the neural network progresses\&. It is not uncommon for each pixel to have 32 or 64 channels in it\&.
+.PP
+\fBA\fP standard MTLTexture may have no more than 4 channels\&. The additional channels are stored in slices of 2d texture array (i\&.e\&. texture type is MTLTextureType2DArray) such that 4 consecutive channels are stored in each slice of this array\&. If the number of feature channels is N, number of array slices needed is (N+3)/4\&. E\&.g\&. a CNN image with width 3 and height 2 with 9 channels will be stored as 
+.PP
+.nf
+slice 0   RGBA   RGBA  RGBA
+          RGBA   RGBA  RGBA
+
+slice 1      RGBA   RGBA   RGBA
+             RGBA   RGBA   RGBA         (ASCII art /diagonal offset/ intended to show a Z dimension)
+
+slice 2         R???   R???   R???
+                R???   R???   R???
+
+.fi
+.PP
+ The width and height of underlying 2d texture array is the same as the width and height of the \fBMPSImage\fP\&. The array length is equal to (featureChannels + 3) / 4\&. Channels marked with ? are just for padding and should not contain NaNs or Infs\&.
+.PP
+\fBA\fP \fBMPSImage\fP can be container of multiple CNN images for batch processing\&. In order to create a \fBMPSImage\fP that contains N images, create \fBMPSImageDescriptor\fP with numberOfImages set to N\&.
+.PP
+Although a \fBMPSImage\fP can contain numberOfImages > 1, the actual number of images among these processed by \fBMPSCNNKernel\fP is controlled by z-dimension of the clipRect\&. \fBA\fP \fBMPSCNNKernel\fP processes n=clipRect\&.size\&.depth images from this collection\&. The starting source image index to process is given by offset\&.z\&. The starting index of the destination image is given by clipRect\&.origin\&.z\&. The \fBMPSCNNKernel\fP takes n=clipRect\&.size\&.depth images from tje source at indices [offset\&.z, offset\&.z+n], processes each independently and stores the result in the destination at indices [clipRect\&.origin\&.z, clipRect\&.origin\&.z+n] respectively\&. Offset\&.z+n should be <= [src numberOfImage] and clipRect\&.origin\&.z+n should be <= [dest numberOfImages] and offset\&.z must be >= 0\&.
+.PP
+Example: Suppose \fBMPSCNNConvolution\fP takes an input image with 8 channels and outputs an image with 16 channels\&. The number of slices needed in the source 2d texture array is 2 and the number of slices needed in the destination 2d array is 4\&. Suppose the source batch size is 5 and destination batch size is 4\&. (Multiple N-channel images can be processed concurrently in a batch\&.) The number of source slices will be 2*5=10 and number of destination slices will be 4*4=16\&. If you want to process just images 2 and 3 of the source and store the result at index 1 and 2 in the destination, you may achieve this by setting offset\&.z=2, clipRect\&.origin\&.z=1 and clipRect\&.size\&.depth=2\&. \fBMPSCNNConvolution\fP will take, in this case, slice 4 and 5 of source and produce slices 4 to 7 of destination\&. Similarly, slices 6 and 7 will be used to produce slices 8 to 11 of destination\&.
+.PP
+All MPSCNNKernels process images within each batch independently\&. That is, calling a \fBMPSCNNKernel\fP on an batch is formally the same as calling it on each image in the batch one at a time\&. However, quite a lot of CPU and GPU overhead will be avoided if batch processing is used\&. This is especially important for better performance on small images\&.
+.PP
+If the number of feature channels is <= 4 and numberOfImages = 1 i\&.e\&. only one slice is needed to represent a \fBMPSImage\fP, the underlying metal texture type will be MTLTextureType2D rather than MTLTextureType2DArray\&.
+.PP
+There are also MPSTemporaryImages, intended for use for very short-lived image data that are produced and consumed immediately in the same MTLCommandBuffer\&. They are a useful way to minimize CPU-side texture allocation costs and greatly reduce the amount of memory used by your image pipeline\&.
+.PP
+Creation of the underlying texture may in some cases occur lazily\&. You should in general avoid calling \fBMPSImage\&.texture\fP except when unavoidable to avoid materializing memory for longer than necessary\&. When possible, use the other \fBMPSImage\fP properties to get information about the \fBMPSImage\fP instead\&.
+.PP
+Most MPSImages of 4 or fewer feature channels can generate quicklooks output in Xcode for easy visualization of image data in the object\&. MPSTemporaryImages can not\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (\fBMPSImageBatch\fP * __nonnull) batchRepresentation "
+Make a MPSImageBatch that points to the individual images in the \fBMPSImage\fP  If the original is a temporary image, the result will be a temporary image\&. It will hold 1 readCount on the original\&. When the readCount drops to 0, it will decrement the appropriate counter on the parent\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP MPSImageBatch aliasing the texel storage in the original batch image 
+.RE
+.PP
+
+.SS "\- (\fBMPSImageBatch\fP * __nonnull) batchRepresentationWithSubRange: (NSRange) subRange"
+Make a representation of a \fBMPSImage\fP (batch) as a MPSImageBatch  Before the MPSImageBatch was introduced, several images could be concatenated into a \fBMPSImage\fP as multiple image slices in a MTLTexture2DArray to make a image batch\&. If the image contained more than 4 feature channels, then each image would have round_up( feature channels / 4) slices and the total number of slices in the \fBMPSImage\fP would be slices * number of images\&.
+.PP
+Because many devices can operate on texture arrays of no more than 2048 slices, storage in this format is limited\&. For example in InceptionV3, 2048 feature channels at its widest point, the largest batch size that can be processed in this way is 4, well under commonly accepted practice for training\&. Consequently, the older batching style is deprecated and the MPSImageBatch is introduced\&. It is also easier to manage sub-batches and to concatenate sub-batches for memory management with the MPSImageBatch, so this format is favored going forward\&.
+.PP
+To facilitate forward migration, this method will prepare an array of MPSImages that each point to the appropriate set of slices in storage for the original image\&. Since they share storage, writes to the parent will alter the content of the children, and vice versa\&.
+.PP
+If the original is a temporary image, the result will be a temporary image\&. It will hold 1 readCount on the original\&. When the readCount drops to 0, it will decrement the appropriate counter on the parent\&.
+.PP
+This is a much cheaper form of the slice operator, and should be used instead when the slice operator does not need to operate out of place\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsubRange\fP The range of images in the original image from which the batch will be derived\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP MPSImageBatch referencing a subregion of the original batch image\&. 
+.RE
+.PP
+
+.SS "+ (nonnull id <MPSImageAllocator>) defaultAllocator "
+Get a well known MPSImageAllocator that makes MPSImages 
+.PP
+Reimplemented in \fBMPSTemporaryImage\fP\&.
+.SS "\- (nonnull instancetype) init "
+
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device(const \fBMPSImageDescriptor\fP *__nonnull) imageDescriptor"
+Initialize an empty image object 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the image will be used\&. May not be NULL\&. 
+.br
+\fIimageDescriptor\fP The \fBMPSImageDescriptor\fP\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSImage\fP object or nil, if failure\&.  Storage to store data needed is allocated lazily on first use of \fBMPSImage\fP or when application calls \fBMPSImage\&.texture\fP 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSTemporaryImage\fP\&.
+.SS "\- (nonnull instancetype) initWithParentImage: (\fBMPSImage\fP *__nonnull) parent(NSRange) sliceRange(NSUInteger) featureChannels"
+Use -batchRepresentation or -subImageWithFeatureChannelRange instead  Generally, you should call -batchRepresentation or -subImageWithFeatureChannelRange instead because they are safer\&. This is provided so that these interfaces will work with your \fBMPSImage\fP subclass\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIparent\fP The parent image that owns the texture\&. It may be a sub-image\&. 
+.br
+\fIsliceRange\fP The range of MTLTexture2dArray slices to be included in the sub-image 
+.br
+\fIfeatureChannels\fP The number of feature channels in the new image\&. The number of images is inferred\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP \fBMPSImage\fP that references a subregion of the texel storage in parent instead of using its own storage\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) initWithTexture: (nonnull id< MTLTexture >) texture(NSUInteger) featureChannels"
+Initialize an \fBMPSImage\fP object using Metal texture\&. Metal texture has been created by user for specific number of feature channels and number of images\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fItexture\fP The MTLTexture allocated by the user to be used as backing for \fBMPSImage\fP\&. 
+.br
+\fIfeatureChannels\fP Number of feature channels this texture contains\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSImage\fP object or nil, if failure\&.  Application can let MPS framework allocate texture with properties specified in imageDescriptor using initWithDevice:\fBMPSImageDescriptor\fP API above\&. However in memory intensive application, you can save memory (and allocation/deallocation time) by using \fBMPSTemporaryImage\fP where MPS framework aggressively reuse memory underlying textures on same command buffer\&. See \fBMPSTemporaryImage\fP class for details below\&. However, in certain cases, application developer may want more control on allocation, placement, reusing/recycling of memory backing textures used in application using Metal Heaps API\&. In this case, application can create \fBMPSImage\fP from pre-allocated texture using initWithTexture:featureChannels\&.
+.RE
+.PP
+MTLTextureType of texture can be MTLTextureType2D ONLY if featureChannels <= 4 in which case \fBMPSImage\&.numberOfImages\fP is set to 1\&. Else it should be MTLTextureType2DArray with arrayLength == numberOfImage * ((featureChannels + 3)/4)\&. \fBMPSImage\&.numberOfImages\fP is set to texture\&.arrayLength / ((featureChannels + 3)/4)\&.
+.PP
+For MTLTextures containing typical image data which application may obtain from MetalKit or other libraries such as that drawn from a JPEG or PNG, featureChannels should be set to number of valid color channel e\&.g\&. for RGB data, even thought MTLPixelFormat will be MTLPixelFormatRGBA, featureChannels should be set to 3\&. 
+.PP
+Reimplemented in \fBMPSTemporaryImage\fP\&.
+.SS "\- (void) readBytes: (void *__nonnull) dataBytes(\fBMPSDataLayout\fP) dataLayout(NSUInteger) bytesPerRow(NSUInteger) bytesPerImage(MTLRegion) region(\fBMPSImageReadWriteParams\fP) featureChannelInfo(NSUInteger) imageIndex"
+readBytes  Get the values inside \fBMPSImage\fP and put them in the Buffer passed in\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdataBytes\fP The array allocated by the user to be used to put data from \fBMPSImage\fP, the length should be imageWidth * imageHeight * numberOfFeatureChannels and dataType should be inferred from pixelFormat defined in the Image Descriptor\&. 
+.br
+\fIdataLayout\fP The enum tells how to layout MPS data in the buffer\&. 
+.br
+\fIbytesPerRow\fP Bytes to stride to point to next row(pixel just below current one) in the user buffer\&. 
+.br
+\fIbytesPerImage\fP Bytes to stride to point to next slice in the user buffer\&. 
+.br
+\fIfeatureChannelInfo\fP information user fills in to write to a set of feature channels in the image 
+.br
+\fIimageIndex\fP Image index in \fBMPSImage\fP to write to\&. 
+.br
+\fIregion\fP region of the \fBMPSImage\fP to read from\&. \fBA\fP region is a structure with the origin in the Image from which to start reading values and a size which represents the width and height of the rectangular region to read from\&. The z direction denotes the number of images, thus for 1 image, origin\&.z = 0 and size\&.depth = 1  Use the enum to set data is coming in with what order\&. The data type will be determined by the pixelFormat defined in the Image Descriptor\&. 
+.RE
+.PP
+
+.SS "\- (void) readBytes: (void *__nonnull) dataBytes(\fBMPSDataLayout\fP) dataLayout(NSUInteger) bytesPerRow(MTLRegion) region(\fBMPSImageReadWriteParams\fP) featureChannelInfo(NSUInteger) imageIndex"
+readBytes  Get the values inside \fBMPSImage\fP and put them in the Buffer passed in\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdataBytes\fP The array allocated by the user to be used to put data from \fBMPSImage\fP, the length should be imageWidth * imageHeight * numberOfFeatureChannels and dataType should be inferred from pixelFormat defined in the Image Descriptor\&. 
+.br
+\fIdataLayout\fP The enum tells how to layout MPS data in the buffer\&. 
+.br
+\fIbytesPerRow\fP Bytes to stride to point to next row(pixel just below current one) in the user buffer\&. 
+.br
+\fIfeatureChannelInfo\fP information user fills in to write to a set of feature channels in the image 
+.br
+\fIimageIndex\fP Image index in \fBMPSImage\fP to write to\&. 
+.br
+\fIregion\fP region of the \fBMPSImage\fP to read from\&. \fBA\fP region is a structure with the origin in the Image from which to start reading values and a size which represents the width and height of the rectangular region to read from\&. The z direction denotes the number of images, thus for 1 image, origin\&.z = 0 and size\&.depth = 1  Use the enum to set data is coming in with what order\&. The data type will be determined by the pixelFormat defined in the Image Descriptor\&. 
+.RE
+.PP
+
+.SS "\- (void) readBytes: (void *__nonnull) dataBytes(\fBMPSDataLayout\fP) dataLayout(NSUInteger) imageIndex"
+readBytes  Get the values inside \fBMPSImage\fP and put them in the Buffer passed in\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdataBytes\fP The array allocated by the user to be used to put data from \fBMPSImage\fP, the length should be imageWidth * imageHeight * numberOfFeatureChannels and dataType should be inferred from pixelFormat defined in the Image Descriptor\&. 
+.br
+\fIdataLayout\fP The enum tells how to layout MPS data in the buffer\&. 
+.br
+\fIimageIndex\fP Image index in \fBMPSImage\fP to read from\&.  Use the enum to set data is coming in with what order\&. The data type will be determined by the pixelFormat defined in the Image Descriptor\&. Region is full image, buffer width and height is same as \fBMPSImage\fP width and height\&. 
+.RE
+.PP
+
+.SS "\- (NSUInteger) resourceSize "
+Get the number of bytes used to allocate underyling MTLResources  This is the size of the backing store of underlying MTLResources\&. It does not include all storage used by the object, for example the storage used to hold the \fBMPSImage\fP instantiation and MTLTexture is not included\&. It only measures the size of the allocation used to hold the texels in the image\&. This value is subject to change between different devices and operating systems\&.
+.PP
+Except when -initWithTexture:featureChannels: is used, most MPSImages (including MPSTemporaryImages) are allocated without a backing store\&. The backing store is allocated lazily when it is needed, typically when the \&.texture property is called\&. Consequently, in most cases, it should be inexpensive to make a \fBMPSImage\fP to see how much memory it will need, and release it if it is too large\&.
+.PP
+This method may fail in certain circumstances, such as when the \fBMPSImage\fP is created with -initWithTexture:featureChannels:, in which case 0 will be returned\&. 0 will also be returned if it is a sub-image or sub-batch (\&.parent is not nil)\&. 
+.SS "\- (\fBMPSPurgeableState\fP) setPurgeableState: (\fBMPSPurgeableState\fP) state"
+Set (or query) the purgeability state of a \fBMPSImage\fP  Usage is per [MTLResource setPurgeableState:], except that the MTLTexture might be MPSPurgeableStateAllocationDeferred, which means there is no texture to mark volatile / nonvolatile\&. Attempts to set purgeability on MTLTextures that have not been allocated will be ignored\&. 
+.SS "\- (\fBMPSImage\fP * __nonnull) subImageWithFeatureChannelRange: (NSRange) range"
+
+.SS "\- (void) synchronizeOnCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer"
+Flush the underlying MTLTexture from the device's caches, and invalidate any CPU caches if needed\&.  This will call [id <MTLBlitEncoder> synchronizeResource: ] on the image's MTLTexture, if any\&. This is necessary for all MTLStorageModeManaged resources\&. For other resources, including temporary resources (these are all MTLStorageModePrivate), and textures that have not yet been allocated, nothing is done\&. It is more efficient to use this method than to attempt to do this yourself with the texture property\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The commandbuffer on which to synchronize 
+.RE
+.PP
+
+.SS "\- (void) writeBytes: (const void *__nonnull) dataBytes(\fBMPSDataLayout\fP) dataLayout(NSUInteger) bytesPerRow(NSUInteger) bytesPerImage(MTLRegion) region(\fBMPSImageReadWriteParams\fP) featureChannelInfo(NSUInteger) imageIndex"
+writeBytes  Set the values inside \fBMPSImage\fP with the Buffer passed in\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdataBytes\fP The array allocated by the user to be used to put data from \fBMPSImage\fP, the length should be imageWidth * imageHeight * numberOfFeatureChannels and dataType should be inferred from pixelFormat defined in the Image Descriptor\&. 
+.br
+\fIdataLayout\fP The enum tells how to layout MPS data in the buffer\&. 
+.br
+\fIbytesPerRow\fP Bytes to stride to point to next row(pixel just below current one) in the user buffer\&. 
+.br
+\fIbytesPerImage\fP Bytes to stride to point to next slice in the user buffer\&. 
+.br
+\fIregion\fP region of the \fBMPSImage\fP to write to\&. \fBA\fP region is a structure with the origin in the Image from which to start writing values and a size which represents the width and height of the rectangular region to write in\&. The z direction denotes the number of images, thus for 1 image, origin\&.z = 0 and size\&.depth = 1 
+.br
+\fIfeatureChannelInfo\fP information user fills in to read from a set of feature channels in the image 
+.br
+\fIimageIndex\fP Image index in \fBMPSImage\fP to write to\&.  Use the enum to set data is coming in with what order\&. The data type will be determined by the pixelFormat defined in the Image Descriptor\&. 
+.RE
+.PP
+
+.SS "\- (void) writeBytes: (const void *__nonnull) dataBytes(\fBMPSDataLayout\fP) dataLayout(NSUInteger) bytesPerRow(MTLRegion) region(\fBMPSImageReadWriteParams\fP) featureChannelInfo(NSUInteger) imageIndex"
+writeBytes  Set the values inside \fBMPSImage\fP with the Buffer passed in\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdataBytes\fP The array allocated by the user to be used to put data from \fBMPSImage\fP, the length should be imageWidth * imageHeight * numberOfFeatureChannels and dataType should be inferred from pixelFormat defined in the Image Descriptor\&. 
+.br
+\fIdataLayout\fP The enum tells how to layout MPS data in the buffer\&. 
+.br
+\fIbytesPerRow\fP Bytes to stride to point to next row(pixel just below current one) in the user buffer\&. 
+.br
+\fIregion\fP region of the \fBMPSImage\fP to write to\&. \fBA\fP region is a structure with the origin in the Image from which to start writing values and a size which represents the width and height of the rectangular region to write in\&. The z direction denotes the number of images, thus for 1 image, origin\&.z = 0 and size\&.depth = 1 
+.br
+\fIfeatureChannelInfo\fP information user fills in to read from a set of feature channels in the image 
+.br
+\fIimageIndex\fP Image index in \fBMPSImage\fP to write to\&.  Use the enum to set data is coming in with what order\&. The data type will be determined by the pixelFormat defined in the Image Descriptor\&. 
+.RE
+.PP
+
+.SS "\- (void) writeBytes: (const void *__nonnull) dataBytes(\fBMPSDataLayout\fP) dataLayout(NSUInteger) imageIndex"
+writeBytes  Set the values inside \fBMPSImage\fP with the Buffer passed in\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdataBytes\fP The array allocated by the user to be used to put data from \fBMPSImage\fP, the length should be imageWidth * imageHeight * numberOfFeatureChannels and dataType should be inferred from pixelFormat defined in the Image Descriptor\&. 
+.br
+\fIdataLayout\fP The enum tells how to layout MPS data in the buffer\&. 
+.br
+\fIimageIndex\fP Image index in \fBMPSImage\fP to write to\&.  Use the enum to set data is coming in with what order\&. The data type will be determined by the pixelFormat defined in the Image Descriptor\&. Region is full image, buffer width and height is same as \fBMPSImage\fP width and height\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- device\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The device on which the \fBMPSImage\fP will be used 
+.SS "\- featureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels per pixel\&. 
+.SS "\- height\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The formal height of the image in pixels\&. 
+.SS "\- label\fC [read]\fP, \fC [write]\fP, \fC [atomic]\fP, \fC [copy]\fP"
+\fBA\fP string to help identify this object\&. 
+.SS "\- numberOfImages\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+numberOfImages for batch processing 
+.SS "\- (\fBMPSImage\fP*) parent\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The \fBMPSImage\fP from which this \fBMPSImage\fP was derived\&. Otherwise nil\&.  This will point to the original image if this image was created using -batchRepresentation, -batchRepresentationWithRange: or -subImageWithRange:\&. 
+.SS "\- pixelFormat\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The MTLPixelFormat of the underlying texture 
+.SS "\- pixelSize\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Number of bytes from the first byte of one pixel to the first byte of the next pixel in storage order\&. (Includes padding\&.) 
+.SS "\- precision\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of bits of numeric precision available for each feature channel\&.  This is precision, not size\&. That is, float is 24 bits, not 32\&. half precision floating-point is 11 bits, not 16\&. SNorm formats have one less bit of precision for the sign bit, etc\&. For formats like MTLPixelFormatB5G6R5Unorm it is the precision of the most precise channel, in this case 6\&. When this information is unavailable, typically compressed formats, 0 will be returned\&. 
+.SS "\- texture\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The associated MTLTexture object\&. This is a 2D texture if numberOfImages is 1 and number of feature channels <= 4\&. It is a 2D texture array otherwise\&.  To avoid the high cost of premature allocation of the underlying texture, avoid calling this property except when strictly necessary\&. [\fBMPSCNNKernel\fP encode\&.\&.\&.] calls typically cause their arguments to become allocated\&. Likewise, MPSImages initialized with -initWithTexture: featureChannels: have already been allocated\&. 
+.SS "\- textureType\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The type of the underlying texture, typically MTLTextureType2D or MTLTextureType2DArray 
+.SS "\- usage\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+Description of texture usage\&. 
+.SS "\- width\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The formal width of the image in pixels\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

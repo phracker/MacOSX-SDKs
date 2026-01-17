@@ -1,0 +1,195 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:45
+.ds Dm 5 May 22 14:
+.ds Xs 07467     7
+.TH GLFOG 3G
+.SH NAME
+.B "glFogf, glFogi, glFogfv, glFogiv
+\- specify fog parameters
+
+.SH C SPECIFICATION
+void \f3glFogf\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglFogf( 'u
+	GLfloat \fIparam\fP )
+.fi
+void \f3glFogi\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglFogi( 'u
+	GLint \fIparam\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fIparams\fP\ \ 'u 
+\f2pname\fP
+Specifies a single-valued fog parameter.
+\%\f3GL_FOG_MODE\fP,
+\%\f3GL_FOG_DENSITY\fP,
+\%\f3GL_FOG_START\fP,
+\%\f3GL_FOG_END\fP,
+and
+\%\f3GL_FOG_INDEX\fP
+are accepted.
+.TP
+\f2param\fP
+Specifies the value that \f2pname\fP will be set to.
+.SH C SPECIFICATION
+void \f3glFogfv\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglFogfv( 'u
+	const GLfloat \fI*params\fP )
+.fi
+void \f3glFogiv\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglFogiv( 'u
+	const GLint \fI*params\fP )
+.fi
+
+.SH PARAMETERS
+.TP
+\f2pname\fP
+Specifies a fog parameter.
+\%\f3GL_FOG_MODE\fP,
+\%\f3GL_FOG_DENSITY\fP,
+\%\f3GL_FOG_START\fP,
+\%\f3GL_FOG_END\fP,
+\%\f3GL_FOG_INDEX\fP,
+and
+\%\f3GL_FOG_COLOR\fP
+are accepted.
+.TP
+\f2params\fP
+Specifies the value or values to be assigned to \f2pname\fP.
+\%\f3GL_FOG_COLOR\fP requires an array of four values.
+All other parameters accept an array containing only a single value.
+.SH DESCRIPTION
+Fog is initially disabled.
+While enabled, fog affects rasterized geometry,
+bitmaps, and pixel blocks, but not buffer clear operations. To enable
+and disable fog, call \%\f3glEnable\fP and \%\f3glDisable\fP with argument
+\%\f3GL_FOG\fP. 
+.P
+\%\f3glFog\fP assigns the value or values in \f2params\fP to the fog parameter
+specified by \f2pname\fP.
+The following values are accepted for \f2pname\fP:
+.TP 20
+\%\f3GL_FOG_MODE\fP
+\f2params\fP is a single integer or floating-point value that specifies
+the equation to be used to compute the fog blend factor, f.
+Three symbolic constants are accepted:
+\%\f3GL_LINEAR\fP,
+\%\f3GL_EXP\fP,
+and \%\f3GL_EXP2\fP.
+The equations corresponding to these symbolic constants are defined below.
+The initial fog mode is \%\f3GL_EXP\fP.
+.TP
+\%\f3GL_FOG_DENSITY\fP
+\f2params\fP is a single integer or floating-point value that specifies density,
+the fog density used in both exponential fog equations.
+Only nonnegative densities are accepted.
+The initial fog density is 1.
+.TP
+\%\f3GL_FOG_START\fP
+\f2params\fP is a single integer or floating-point value that specifies start,
+the near distance used in the linear fog equation.
+The initial near distance is 0.
+.TP
+\%\f3GL_FOG_END\fP
+\f2params\fP is a single integer or floating-point value that specifies end,
+the far distance used in the linear fog equation.
+The initial far distance is 1.
+.TP
+\%\f3GL_FOG_INDEX\fP
+\f2params\fP is a single integer or floating-point value that specifies
+if,
+the fog color index.
+The initial fog index is 0.
+.TP
+\%\f3GL_FOG_COLOR\fP
+\f2params\fP contains four integer or floating-point values that specify
+Cf, the fog color.
+Integer values are mapped linearly such that the most positive representable
+value maps to 1.0,
+and the most negative representable value maps to \-1.0.
+Floating-point values are mapped directly.
+After conversion,
+all color components are clamped to the range [0,1].
+The initial fog color is (0, 0, 0, 0).
+.P
+Fog blends a fog color with each rasterized pixel fragment's posttexturing
+color using a blending factor f.
+Factor f is computed in one of three ways,
+depending on the fog mode.
+Let z be the distance in eye coordinates from the origin to the fragment
+being fogged.
+The equation for \%\f3GL_LINEAR\fP fog is
+
+.ce
+f = (end - z) / (end - start)
+
+.Pp
+The equation for \%\f3GL_EXP\fP fog is
+
+.ce
+f = e^-(density dot z)
+
+.Pp
+The equation for \%\f3GL_EXP2\fP fog is
+
+.ce
+f = e^-( (density dot z)^2)
+
+.P
+Regardless of the fog mode,
+f is clamped to the range [0,\ 1] after it is computed.
+Then,
+if the GL is in RGBA color mode,
+the fragment's red, green, and blue colors, represented by Cr,
+are replaced by
+.sp
+
+.ce
+Cr' = f * Cr + (1-f) Cf
+
+.sp
+Fog does not affect a fragment's alpha component.
+.P
+In color index mode, the fragment's color index ir is replaced by
+.sp
+.ce
+ir' = ir + (1 - f) if 
+.P
+.SH ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated if \f2pname\fP is not an accepted value,
+or if \f2pname\fP is \%\f3GL_FOG_MODE\fP and \f2params\fP is not an accepted value.
+.P
+\%\f3GL_INVALID_VALUE\fP is generated if \f2pname\fP is \%\f3GL_FOG_DENSITY\fP, 
+and \f2params\fP is negative.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glFog\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glIsEnabled\fP with argument \%\f3GL_FOG\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FOG_COLOR\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FOG_INDEX\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FOG_DENSITY\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FOG_START\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FOG_END\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_FOG_MODE\fP
+.SH SEE ALSO
+\%\f3glEnable\fP

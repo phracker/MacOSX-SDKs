@@ -1,0 +1,417 @@
+'\"
+'\" Copyright (c) 1995-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: Exit.3,v 1.6 2003/09/29 21:47:38 dkf Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tcl_Exit 3 8.5 Tcl "Tcl Library Procedures"
+.BS
+.SH NAME
+Tcl_Exit, Tcl_Finalize, Tcl_CreateExitHandler, Tcl_DeleteExitHandler, Tcl_ExitThread, Tcl_FinalizeThread, Tcl_CreateThreadExitHandler, Tcl_DeleteThreadExitHandler, Tcl_SetExitProc \- end the application or thread (and invoke exit handlers)
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+\fBTcl_Exit\fR(\fIstatus\fR)
+.sp
+\fBTcl_Finalize\fR()
+.sp
+\fBTcl_CreateExitHandler\fR(\fIproc, clientData\fR)
+.sp
+\fBTcl_DeleteExitHandler\fR(\fIproc, clientData\fR)
+.sp
+\fBTcl_ExitThread\fR(\fIstatus\fR)
+.sp
+\fBTcl_FinalizeThread\fR()
+.sp
+\fBTcl_CreateThreadExitHandler\fR(\fIproc, clientData\fR)
+.sp
+\fBTcl_DeleteThreadExitHandler\fR(\fIproc, clientData\fR)
+.sp
+.VS 8.5
+Tcl_ExitProc *
+\fBTcl_SetExitProc\fR(\fIproc\fR)
+.VE 8.5
+.SH ARGUMENTS
+.AS Tcl_ExitProc clientData
+.AP int status  in
+Provides information about why the application or thread exited.
+Exact meaning may
+be platform-specific.  0 usually means a normal exit, any nonzero value
+usually means that an error occurred.
+.AP Tcl_ExitProc *proc in
+Procedure to invoke before exiting application, or (for
+\fBTcl_SetExitProc\fR) NULL to uninstall the current application exit
+procedure.
+.AP ClientData clientData in
+Arbitrary one-word value to pass to \fIproc\fR.
+.BE
+
+.SH DESCRIPTION
+.PP
+The procedures described here provide a graceful mechanism to end the
+execution of a \fBTcl\fR application. Exit handlers are invoked to cleanup the
+application's state before ending the execution of \fBTcl\fR code.
+.PP
+Invoke \fBTcl_Exit\fR to end a \fBTcl\fR application and to exit from this
+process. This procedure is invoked by the \fBexit\fR command, and can be
+invoked anyplace else to terminate the application.
+No-one should ever invoke the \fBexit\fR system procedure directly;  always
+invoke \fBTcl_Exit\fR instead, so that it can invoke exit handlers.
+Note that if other code invokes \fBexit\fR system procedure directly, or
+otherwise causes the application to terminate without calling
+\fBTcl_Exit\fR, the exit handlers will not be run.
+\fBTcl_Exit\fR internally invokes the \fBexit\fR system call, thus it never
+returns control to its caller.
+.VS 8.5
+If an application exit handler has been installed (see
+\fBTcl_SetExitProc\fR), that handler is invoked with an argument
+consisting of the exit status (cast to ClientData); the application
+exit handler should not return control to Tcl.
+.VE 8.5
+.PP
+\fBTcl_Finalize\fR is similar to \fBTcl_Exit\fR except that it does not
+exit from the current process.
+It is useful for cleaning up when a process is finished using \fBTcl\fR but
+wishes to continue executing, and when \fBTcl\fR is used in a dynamically
+loaded extension that is about to be unloaded.
+On some systems \fBTcl\fR is automatically notified when it is being
+unloaded, and it calls \fBTcl_Finalize\fR internally; on these systems it
+not necessary for the caller to explicitly call \fBTcl_Finalize\fR.
+However, to ensure portability, your code should always invoke
+\fBTcl_Finalize\fR when \fBTcl\fR is being unloaded, to ensure that the
+code will work on all platforms. \fBTcl_Finalize\fR can be safely called
+more than once.
+.PP
+\fBTcl_ExitThread\fR is used to terminate the current thread and invoke
+per-thread exit handlers.  This finalization is done by
+\fBTcl_FinalizeThread\fR, which you can call if you just want to clean
+up per-thread state and invoke the thread exit handlers.
+\fBTcl_Finalize\fR calls \fBTcl_FinalizeThread\fR for the current
+thread automatically.
+.PP
+\fBTcl_CreateExitHandler\fR arranges for \fIproc\fR to be invoked
+by \fBTcl_Finalize\fR and \fBTcl_Exit\fR.
+\fBTcl_CreateThreadExitHandler\fR arranges for \fIproc\fR to be invoked
+by \fBTcl_FinalizeThread\fR and \fBTcl_ExitThread\fR.
+This provides a hook for cleanup operations such as flushing buffers
+and freeing global memory.
+\fIProc\fR should match the type \fBTcl_ExitProc\fR:
+.CS
+typedef void Tcl_ExitProc(ClientData \fIclientData\fR);
+.CE
+The \fIclientData\fR parameter to \fIproc\fR is a
+copy of the \fIclientData\fR argument given to
+\fBTcl_CreateExitHandler\fR or \fBTcl_CreateThreadExitHandler\fR when
+the callback
+was created.  Typically, \fIclientData\fR points to a data
+structure containing application-specific information about
+what to do in \fIproc\fR.
+.PP
+\fBTcl_DeleteExitHandler\fR and \fBTcl_DeleteThreadExitHandler\fR may be
+called to delete a
+previously-created exit handler.  It removes the handler
+indicated by \fIproc\fR and \fIclientData\fR so that no call
+to \fIproc\fR will be made.  If no such handler exists then
+\fBTcl_DeleteExitHandler\fR or \fBTcl_DeleteThreadExitHandler\fR does nothing.
+.PP
+.PP
+\fBTcl_Finalize\fR and \fBTcl_Exit\fR execute all registered exit handlers,
+in reverse order from the order in which they were registered.
+This matches the natural order in which extensions are loaded and unloaded;
+if extension \fBA\fR loads extension \fBB\fR, it usually
+unloads \fBB\fR before it itself is unloaded.
+If extension \fBA\fR registers its exit handlers before loading extension
+\fBB\fR, this ensures that any exit handlers for \fBB\fR will be executed
+before the exit handlers for \fBA\fR.
+.PP
+\fBTcl_Finalize\fR and \fBTcl_Exit\fR call \fBTcl_FinalizeThread\fR 
+and the thread exit handlers \fIafter\fR
+the process-wide exit handlers.  This is because thread finalization shuts
+down the I/O channel system, so any attempt at I/O by the global exit
+handlers will vanish into the bitbucket.
+.PP
+.VS 8.5
+\fBTcl_SetExitProc\fR installs an application exit handler, returning
+the previously-installed application exit handler or NULL if no
+application handler was installed.  If an application exit handler is
+installed, that exit handler takes over complete responsibility for
+finalization of Tcl's subsystems via \fBTcl_Finalize\fR at an
+appropriate time.  The argument passed to \fIproc\fR when it is
+invoked will be the exit status code (as passed to \fBTcl_Exit\fR)
+cast to a ClientData value.
+.VE 8.5
+
+.SH KEYWORDS
+callback, cleanup, dynamic loading, end application, exit, unloading, thread

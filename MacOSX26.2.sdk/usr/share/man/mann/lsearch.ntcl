@@ -1,0 +1,460 @@
+'\" 
+'\" Copyright (c) 1993 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\" Copyright (c) 2001 Kevin B. Kenny <kennykb@acm.org>.  All rights reserved.
+'\" Copyright (c) 2003-2004 Donal K. Fellows.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: lsearch.n,v 1.34 2008/03/26 09:59:22 dkf Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH lsearch n 8.5 Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+lsearch \- See if a list contains a particular element
+.SH SYNOPSIS
+\fBlsearch \fR?\fIoptions\fR? \fIlist pattern\fR
+.BE
+
+.SH DESCRIPTION
+.PP
+This command searches the elements of \fIlist\fR to see if one
+of them matches \fIpattern\fR.  If so, the command returns the index
+of the first matching element
+(unless the options \fB\-all\fR or \fB\-inline\fR are specified.)
+If not, the command returns \fB\-1\fR.  The \fIoption\fR arguments
+indicates how the elements of the list are to be matched against
+\fIpattern\fR and must have one of the values below:
+.SS "MATCHING STYLE OPTIONS"
+If all matching style options are omitted, the default matching style
+is \fB\-glob\fR.  If more than one matching style is specified, the
+last matching style given takes precedence.
+.TP
+\fB\-exact\fR
+\fIPattern\fR is a literal string that is compared for exact equality
+against each list element.
+.TP
+\fB\-glob\fR
+\fIPattern\fR is a glob-style pattern which is matched against each list
+element using the same rules as the \fBstring match\fR command.
+.TP
+\fB\-regexp\fR
+\fIPattern\fR is treated as a regular expression and matched against
+each list element using the rules described in the \fBre_syntax\fR
+reference page.
+.TP
+\fB\-sorted\fR
+The list elements are in sorted order.  If this option is specified,
+\fBlsearch\fR will use a more efficient searching algorithm to search
+\fIlist\fR.  If no other options are specified, \fIlist\fR is assumed
+to be sorted in increasing order, and to contain ASCII strings.  This
+option is mutually exclusive with \fB\-glob\fR and \fB\-regexp\fR, and
+is treated exactly like \fB\-exact\fR when either \fB\-all\fR or
+\fB\-not\fR are specified.
+.SS "GENERAL MODIFIER OPTIONS"
+These options may be given with all matching styles.
+.TP
+\fB\-all\fR
+.
+Changes the result to be the list of all matching indices (or all matching
+values if \fB\-inline\fR is specified as well.) If indices are returned, the
+indices will be in numeric order. If values are returned, the order of the
+values will be the order of those values within the input \fIlist\fR.
+.TP
+\fB\-inline\fR
+The matching value is returned instead of its index (or an empty
+string if no value matches.)  If \fB\-all\fR is also specified, then
+the result of the command is the list of all values that matched.
+.TP
+\fB\-not\fR
+This negates the sense of the match, returning the index of the first
+non-matching value in the list.
+.TP
+\fB\-start\fR\0\fIindex\fR
+The list is searched starting at position \fIindex\fR.
+.VS 8.5
+The interpretation of the \fIindex\fR value is the same as
+for the command \fBstring index\fR, supporting simple index
+arithmetic and indices relative to the end of the list.
+.VE 8.5
+.SS "CONTENTS DESCRIPTION OPTIONS"
+These options describe how to interpret the items in the list being
+searched.  They are only meaningful when used with the \fB\-exact\fR
+and \fB\-sorted\fR options.  If more than one is specified, the last
+one takes precedence.  The default is \fB\-ascii\fR.
+.TP
+\fB\-ascii\fR
+The list elements are to be examined as Unicode strings (the name is
+for backward-compatibility reasons.)
+.TP
+\fB\-dictionary\fR
+The list elements are to be compared using dictionary-style
+comparisons (see \fBlsort\fR for a fuller description). Note that this
+only makes a meaningful difference from the \fB\-ascii\fR option when
+the \fB\-sorted\fR option is given, because values are only
+dictionary-equal when exactly equal.
+.TP
+\fB\-integer\fR
+The list elements are to be compared as integers.
+.VS 8.5
+.TP
+\fB\-nocase\fR
+Causes comparisons to be handled in a case-insensitive manner.  Has no
+effect if combined with the \fB\-dictionary\fR, \fB\-integer\fR, or 
+\fB\-real\fR options.
+.VE 8.5
+.TP
+\fB\-real\fR
+The list elements are to be compared as floating-point values.
+.SS "SORTED LIST OPTIONS"
+These options (only meaningful with the \fB\-sorted\fR option) specify
+how the list is sorted.  If more than one is given, the last one takes
+precedence.  The default option is \fB\-increasing\fR.
+.TP
+\fB\-decreasing\fR
+The list elements are sorted in decreasing order.  This option is only
+meaningful when used with \fB\-sorted\fR.
+.TP
+\fB\-increasing\fR
+The list elements are sorted in increasing order.  This option is only
+meaningful when used with \fB\-sorted\fR.
+.SS "NESTED LIST OPTIONS"
+.VS 8.5
+These options are used to search lists of lists.  They may be used
+with any other options.
+.TP
+\fB\-index\fR\0\fIindexList\fR
+This option is designed for use when searching within nested lists.
+The \fIindexList\fR argument gives a path of indices (much as might be
+used with the \fBlindex\fR or \fBlset\fR commands) within each element
+to allow the location of the term being matched against.
+.TP
+\fB\-subindices\fR
+If this option is given, the index result from this command (or every
+index result when \fB\-all\fR is also specified) will be a complete
+path (suitable for use with \fBlindex\fR or \fBlset\fR) within the
+overall list to the term found.  This option has no effect unless the
+\fI\-index\fR is also specified, and is just a convenience short-cut.
+.VE 8.5
+.SH EXAMPLES
+Basic searching:
+.CS
+\fBlsearch\fR {a b c d e} c
+      \fI\(-> 2\fR
+\fBlsearch\fR -all {a b c a b c} c
+      \fI\(-> 2 5\fR
+.CE
+.PP
+Using \fBlsearch\fR to filter lists:
+.CS
+\fBlsearch\fR -inline {a20 b35 c47} b*
+      \fI\(-> b35\fR
+\fBlsearch\fR -inline -not {a20 b35 c47} b*
+      \fI\(-> a20\fR
+\fBlsearch\fR -all -inline -not {a20 b35 c47} b*
+      \fI\(-> a20 c47\fR
+\fBlsearch\fR -all -not {a20 b35 c47} b*
+      \fI\(-> 0 2\fR
+.CE
+.PP
+This can even do a
+.QW set-like
+removal operation:
+.CS
+\fBlsearch\fR -all -inline -not -exact {a b c a d e a f g a} a
+      \fI\(-> b c d e f g\fR
+.CE
+.PP
+Searching may start part-way through the list:
+.CS
+\fBlsearch\fR -start 3 {a b c a b c} c
+      \fI\(-> 5\fR
+.CE
+.PP
+It is also possible to search inside elements:
+.CS
+\fBlsearch\fR -index 1 -all -inline {{a abc} {b bcd} {c cde}} *bc*
+      \fI\(-> {a abc} {b bcd}\fR
+.CE
+.SH "SEE ALSO"
+foreach(n), list(n), lappend(n), lindex(n), linsert(n), llength(n), 
+lset(n), lsort(n), lrange(n), lreplace(n),
+.VS 8.5
+string(n)
+.VE
+.SH KEYWORDS
+list, match, pattern, regular expression, search, string
+'\" Local Variables:
+'\" mode: nroff
+'\" End:

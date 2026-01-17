@@ -1,0 +1,837 @@
+'\"
+'\" Copyright (c) 1995-1997 Sun Microsystems, Inc.
+'\" Copyright (c) 1998-2000 by Ajuba Solutions.
+'\" Copyright (c) 2004 ActiveState Corporation.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: http.n,v 1.36 2008/03/12 10:01:02 hobbs Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH "http" n 2.7 http "Tcl Bundled Packages"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+http \- Client-side implementation of the HTTP/1.1 protocol
+.SH SYNOPSIS
+\fBpackage require http ?2.7?\fR
+.\" See Also -useragent option documentation in body!
+.sp
+\fB::http::config \fI?options?\fR
+.sp
+\fB::http::geturl \fIurl ?options?\fR
+.sp
+\fB::http::formatQuery\fR \fIkey value\fR ?\fIkey value\fR ...?
+.sp
+\fB::http::reset\fR \fItoken\fR ?\fIwhy\fR?
+.sp
+\fB::http::wait \fItoken\fR
+.sp
+\fB::http::status \fItoken\fR
+.sp
+\fB::http::size \fItoken\fR
+.sp
+\fB::http::code \fItoken\fR
+.sp
+\fB::http::ncode \fItoken\fR
+.sp
+\fB::http::meta \fItoken\fR
+.sp
+\fB::http::data \fItoken\fR
+.sp
+\fB::http::error \fItoken\fR
+.sp
+\fB::http::cleanup \fItoken\fR
+.sp
+\fB::http::register \fIproto port command\fR
+.sp
+\fB::http::unregister \fIproto\fR
+.BE
+.SH DESCRIPTION
+.PP
+The \fBhttp\fR package provides the client side of the HTTP/1.1
+protocol.  The package implements the GET, POST, and HEAD operations
+of HTTP/1.1.  It allows configuration of a proxy host to get through
+firewalls.  The package is compatible with the \fBSafesock\fR security
+policy, so it can be used by untrusted applets to do URL fetching from
+a restricted set of hosts. This package can be extended to support
+additional HTTP transport protocols, such as HTTPS, by providing
+a custom \fBsocket\fR command, via \fB::http::register\fR.
+.PP
+The \fB::http::geturl\fR procedure does a HTTP transaction.
+Its \fIoptions \fR determine whether a GET, POST, or HEAD transaction
+is performed.  
+The return value of \fB::http::geturl\fR is a token for the transaction.
+The value is also the name of an array in the ::http namespace
+that contains state information about the transaction.  The elements
+of this array are described in the \fBSTATE ARRAY\fR section.
+.PP
+If the \fB\-command\fR option is specified, then
+the HTTP operation is done in the background.
+\fB::http::geturl\fR returns immediately after generating the
+HTTP request and the callback is invoked
+when the transaction completes.  For this to work, the Tcl event loop
+must be active.  In Tk applications this is always true.  For pure-Tcl
+applications, the caller can use \fB::http::wait\fR after calling
+\fB::http::geturl\fR to start the event loop.
+.SH COMMANDS
+.TP
+\fB::http::config\fR ?\fIoptions\fR?
+The \fB::http::config\fR command is used to set and query the name of the
+proxy server and port, and the User-Agent name used in the HTTP
+requests.  If no options are specified, then the current configuration
+is returned.  If a single argument is specified, then it should be one
+of the flags described below.  In this case the current value of
+that setting is returned.  Otherwise, the options should be a set of
+flags and values that define the configuration:
+.RS
+.TP
+\fB\-accept\fR \fImimetypes\fR
+The Accept header of the request.  The default is */*, which means that
+all types of documents are accepted.  Otherwise you can supply a 
+comma-separated list of mime type patterns that you are
+willing to receive.  For example,
+.QW "image/gif, image/jpeg, text/*" .
+.TP
+\fB\-proxyhost\fR \fIhostname\fR
+The name of the proxy host, if any.  If this value is the
+empty string, the URL host is contacted directly.
+.TP
+\fB\-proxyport\fR \fInumber\fR
+The proxy port number.
+.TP
+\fB\-proxyfilter\fR \fIcommand\fR
+The command is a callback that is made during
+\fB::http::geturl\fR
+to determine if a proxy is required for a given host.  One argument, a
+host name, is added to \fIcommand\fR when it is invoked.  If a proxy
+is required, the callback should return a two-element list containing
+the proxy server and proxy port.  Otherwise the filter should return
+an empty list.  The default filter returns the values of the
+\fB\-proxyhost\fR and \fB\-proxyport\fR settings if they are
+non-empty.
+.TP
+\fB\-urlencoding\fR \fIencoding\fR
+The \fIencoding\fR used for creating the x-url-encoded URLs with
+\fB::http::formatQuery\fR.  The default is \fButf-8\fR, as specified by RFC
+2718.  Prior to http 2.5 this was unspecified, and that behavior can be
+returned by specifying the empty string (\fB{}\fR), although
+\fIiso8859-1\fR is recommended to restore similar behavior but without the
+\fB::http::formatQuery\fR throwing an error processing non-latin-1
+characters.
+.TP
+\fB\-useragent\fR \fIstring\fR
+The value of the User-Agent header in the HTTP request.  The default is
+.QW "\fBTcl http client package 2.7\fR" .
+.RE
+.TP
+\fB::http::geturl\fR \fIurl\fR ?\fIoptions\fR? 
+The \fB::http::geturl\fR command is the main procedure in the package.
+The \fB\-query\fR option causes a POST operation and
+the \fB\-validate\fR option causes a HEAD operation;
+otherwise, a GET operation is performed.  The \fB::http::geturl\fR command
+returns a \fItoken\fR value that can be used to get
+information about the transaction.  See the \fBSTATE ARRAY\fR and
+\fBERRORS\fR section for
+details.  The \fB::http::geturl\fR command blocks until the operation
+completes, unless the \fB\-command\fR option specifies a callback
+that is invoked when the HTTP transaction completes.
+\fB::http::geturl\fR takes several options:
+.RS
+.TP
+\fB\-binary\fR \fIboolean\fR
+Specifies whether to force interpreting the URL data as binary.  Normally
+this is auto-detected (anything not beginning with a \fBtext\fR content
+type or whose content encoding is \fBgzip\fR or \fBcompress\fR is
+considered binary data).
+.TP
+\fB\-blocksize\fR \fIsize\fR
+The block size used when reading the URL.
+At most \fIsize\fR bytes are read at once.  After each block, a call to the
+\fB\-progress\fR callback is made (if that option is specified).
+.TP
+\fB\-channel\fR \fIname\fR
+Copy the URL contents to channel \fIname\fR instead of saving it in
+\fBstate(body)\fR.
+.TP
+\fB\-command\fR \fIcallback\fR
+Invoke \fIcallback\fR after the HTTP transaction completes.
+This option causes \fB::http::geturl\fR to return immediately.
+The \fIcallback\fR gets an additional argument that is the \fItoken\fR returned
+from \fB::http::geturl\fR. This token is the name of an array that is
+described in the \fBSTATE ARRAY\fR section.  Here is a template for the
+callback:
+.RS
+.CS
+proc httpCallback {token} {
+    upvar #0 $token state
+    # Access state as a Tcl array
+}
+.CE
+.RE
+.TP
+\fB\-handler\fR \fIcallback\fR
+Invoke \fIcallback\fR whenever HTTP data is available; if present, nothing
+else will be done with the HTTP data.  This procedure gets two additional
+arguments: the socket for the HTTP data and the \fItoken\fR returned from
+\fB::http::geturl\fR.  The token is the name of a global array that is
+described in the \fBSTATE ARRAY\fR section.  The procedure is expected
+to return the number of bytes read from the socket.  Here is a
+template for the callback:
+.RS
+.CS
+proc httpHandlerCallback {socket token} {
+    upvar #0 $token state
+    # Access socket, and state as a Tcl array
+    # For example...
+    ...
+    set data [read $socket 1000]
+    set nbytes [string length $data]
+    ...
+    return $nbytes
+}
+.CE
+.RE
+.TP
+\fB\-headers\fR \fIkeyvaluelist\fR
+This option is used to add extra headers to the HTTP request.  The
+\fIkeyvaluelist\fR argument must be a list with an even number of
+elements that alternate between keys and values.  The keys become
+header field names.  Newlines are stripped from the values so the
+header cannot be corrupted.  For example, if \fIkeyvaluelist\fR is
+\fBPragma no-cache\fR then the following header is included in the
+HTTP request:
+.CS
+Pragma: no-cache
+.CE
+.TP
+\fB\-keepalive\fR \fIboolean\fR
+If true, attempt to keep the connection open for servicing
+multiple requests.  Default is 0.
+.TP
+\fB\-method\fR \fItype\fR
+Force the HTTP request method to \fItype\fR. \fB::http::geturl\fR will
+auto-select GET, POST or HEAD based on other options, but this option
+enables choices like PUT and DELETE for webdav support.
+.TP
+\fB\-myaddr\fR \fIaddress\fR
+Pass an specific local address to the underlying \fBsocket\fR call in case
+multiple interfaces are available.
+.TP
+\fB\-progress\fR \fIcallback\fR
+The \fIcallback\fR is made after each transfer of data from the URL.
+The callback gets three additional arguments: the \fItoken\fR from
+\fB::http::geturl\fR, the expected total size of the contents from the
+\fBContent-Length\fR meta-data, and the current number of bytes
+transferred so far.  The expected total size may be unknown, in which
+case zero is passed to the callback.  Here is a template for the
+progress callback:
+.RS
+.CS
+proc httpProgress {token total current} {
+    upvar #0 $token state
+}
+.CE
+.RE
+.TP
+\fB\-protocol\fR \fIversion\fR
+Select the HTTP protocol version to use. This should be 1.0 or 1.1 (the
+default). Should only be necessary for servers that do not understand or
+otherwise complain about HTTP/1.1.
+.TP
+\fB\-query\fR \fIquery\fR
+This flag causes \fB::http::geturl\fR to do a POST request that passes the
+\fIquery\fR to the server. The \fIquery\fR must be an x-url-encoding
+formatted query.  The \fB::http::formatQuery\fR procedure can be used to
+do the formatting.
+.TP
+\fB\-queryblocksize\fR \fIsize\fR
+The block size used when posting query data to the URL.
+At most 
+\fIsize\fR
+bytes are written at once.  After each block, a call to the
+\fB\-queryprogress\fR
+callback is made (if that option is specified).
+.TP
+\fB\-querychannel\fR \fIchannelID\fR
+This flag causes \fB::http::geturl\fR to do a POST request that passes the
+data contained in \fIchannelID\fR to the server. The data contained in
+\fIchannelID\fR must be an x-url-encoding
+formatted query unless the \fB\-type\fR option below is used.
+If a Content-Length header is not specified via the \fB\-headers\fR options,
+\fB::http::geturl\fR attempts to determine the size of the post data
+in order to create that header.  If it is
+unable to determine the size, it returns an error.
+.TP
+\fB\-queryprogress\fR \fIcallback\fR
+The \fIcallback\fR is made after each transfer of data to the URL
+(i.e. POST) and acts exactly like the \fB\-progress\fR option (the
+callback format is the same).
+.TP
+\fB\-strict\fR \fIboolean\fR
+Whether to enforce RFC 3986 URL validation on the request.  Default is 1.
+.TP
+\fB\-timeout\fR \fImilliseconds\fR
+If \fImilliseconds\fR is non-zero, then \fB::http::geturl\fR sets up a timeout
+to occur after the specified number of milliseconds.
+A timeout results in a call to \fB::http::reset\fR and to
+the \fB\-command\fR callback, if specified.
+The return value of \fB::http::status\fR is \fBtimeout\fR
+after a timeout has occurred.
+.TP
+\fB\-type\fR \fImime-type\fR
+Use \fImime-type\fR as the \fBContent-Type\fR value, instead of the
+default value (\fBapplication/x-www-form-urlencoded\fR) during a
+POST operation.
+.TP
+\fB\-validate\fR \fIboolean\fR
+If \fIboolean\fR is non-zero, then \fB::http::geturl\fR does an HTTP HEAD
+request.  This request returns meta information about the URL, but the
+contents are not returned.  The meta information is available in the
+\fBstate(meta) \fR variable after the transaction.  See the
+\fBSTATE ARRAY\fR section for details.
+.RE
+.TP
+\fB::http::formatQuery\fR \fIkey value\fR ?\fIkey value\fR ...?
+This procedure does x-url-encoding of query data.  It takes an even
+number of arguments that are the keys and values of the query.  It
+encodes the keys and values, and generates one string that has the
+proper & and = separators.  The result is suitable for the
+\fB\-query\fR value passed to \fB::http::geturl\fR.
+.TP
+\fB::http::reset\fR \fItoken\fR ?\fIwhy\fR?
+This command resets the HTTP transaction identified by \fItoken\fR, if
+any.  This sets the \fBstate(status)\fR value to \fIwhy\fR, which defaults to \fBreset\fR, and then calls the registered \fB\-command\fR callback.
+.TP
+\fB::http::wait\fR \fItoken\fR
+This is a convenience procedure that blocks and waits for the
+transaction to complete.  This only works in trusted code because it
+uses \fBvwait\fR.  Also, it is not useful for the case where
+\fB::http::geturl\fR is called \fIwithout\fR the \fB\-command\fR option
+because in this case the \fB::http::geturl\fR call does not return
+until the HTTP transaction is complete, and thus there is nothing to
+wait for.
+.TP
+\fB::http::data\fR \fItoken\fR
+This is a convenience procedure that returns the \fBbody\fR element
+(i.e., the URL data) of the state array.
+.TP
+\fB::http::error\fR \fItoken\fR
+This is a convenience procedure that returns the \fBerror\fR element
+of the state array.
+.TP
+\fB::http::status\fR \fItoken\fR
+This is a convenience procedure that returns the \fBstatus\fR element of
+the state array.
+.TP
+\fB::http::code\fR \fItoken\fR
+This is a convenience procedure that returns the \fBhttp\fR element of the
+state array.
+.TP
+\fB::http::ncode\fR \fItoken\fR
+This is a convenience procedure that returns just the numeric return
+code (200, 404, etc.) from the \fBhttp\fR element of the state array.
+.TP
+\fB::http::size\fR \fItoken\fR
+This is a convenience procedure that returns the \fBcurrentsize\fR
+element of the state array, which represents the number of bytes
+received from the URL in the \fB::http::geturl\fR call.
+.TP
+\fB::http::meta\fR \fItoken\fR
+This is a convenience procedure that returns the \fBmeta\fR
+element of the state array which contains the HTTP response
+headers. See below for an explanation of this element.
+.TP
+\fB::http::cleanup\fR \fItoken\fR
+This procedure cleans up the state associated with the connection
+identified by \fItoken\fR.  After this call, the procedures
+like \fB::http::data\fR cannot be used to get information
+about the operation.  It is \fIstrongly\fR recommended that you call
+this function after you are done with a given HTTP request.  Not doing
+so will result in memory not being freed, and if your app calls
+\fB::http::geturl\fR enough times, the memory leak could cause a
+performance hit...or worse.
+.TP
+\fB::http::register\fR \fIproto port command\fR
+This procedure allows one to provide custom HTTP transport types
+such as HTTPS, by registering a prefix, the default port, and the
+command to execute to create the Tcl \fBchannel\fR. E.g.:
+.RS
+.CS
+package require http
+package require tls
+
+::http::register https 443 ::tls::socket
+
+set token [::http::geturl https://my.secure.site/]
+.CE
+.RE
+.TP
+\fB::http::unregister\fR \fIproto\fR
+This procedure unregisters a protocol handler that was previously
+registered via \fB::http::register\fR.
+.SH ERRORS
+The \fB::http::geturl\fR procedure will raise errors in the following cases:
+invalid command line options,
+an invalid URL,
+a URL on a non-existent host,
+or a URL at a bad port on an existing host.
+These errors mean that it
+cannot even start the network transaction.
+It will also raise an error if it gets an I/O error while
+writing out the HTTP request header.
+For synchronous \fB::http::geturl\fR calls (where \fB\-command\fR is
+not specified), it will raise an error if it gets an I/O error while
+reading the HTTP reply headers or data.  Because \fB::http::geturl\fR
+does not return a token in these cases, it does all the required
+cleanup and there is no issue of your app having to call
+\fB::http::cleanup\fR.
+.PP
+For asynchronous \fB::http::geturl\fR calls, all of the above error
+situations apply, except that if there is any error while reading the
+HTTP reply headers or data, no exception is thrown.  This is because
+after writing the HTTP headers, \fB::http::geturl\fR returns, and the
+rest of the HTTP transaction occurs in the background.  The command
+callback can check if any error occurred during the read by calling
+\fB::http::status\fR to check the status and if its \fIerror\fR,
+calling \fB::http::error\fR to get the error message.
+.PP
+Alternatively, if the main program flow reaches a point where it needs
+to know the result of the asynchronous HTTP request, it can call
+\fB::http::wait\fR and then check status and error, just as the
+callback does.
+.PP
+In any case, you must still call
+\fB::http::cleanup\fR to delete the state array when you are done.
+.PP
+There are other possible results of the HTTP transaction
+determined by examining the status from \fB::http::status\fR.
+These are described below.
+.TP
+ok
+If the HTTP transaction completes entirely, then status will be \fBok\fR.
+However, you should still check the \fB::http::code\fR value to get
+the HTTP status.  The \fB::http::ncode\fR procedure provides just
+the numeric error (e.g., 200, 404 or 500) while the \fB::http::code\fR
+procedure returns a value like
+.QW "HTTP 404 File not found" .
+.TP
+eof
+If the server closes the socket without replying, then no error
+is raised, but the status of the transaction will be \fBeof\fR.
+.TP
+error
+The error message will also be stored in the \fBerror\fR status
+array element, accessible via \fB::http::error\fR.
+.PP
+Another error possibility is that \fB::http::geturl\fR is unable to
+write all the post query data to the server before the server
+responds and closes the socket.
+The error message is saved in the \fBposterror\fR status array
+element and then  \fB::http::geturl\fR attempts to complete the
+transaction.
+If it can read the server's response
+it will end up with an \fBok\fR status, otherwise it will have
+an \fBeof\fR status.
+.SH "STATE ARRAY"
+The \fB::http::geturl\fR procedure returns a \fItoken\fR that can be used to
+get to the state of the HTTP transaction in the form of a Tcl array.
+Use this construct to create an easy-to-use array variable:
+.CS
+upvar #0 $token state
+.CE
+Once the data associated with the URL is no longer needed, the state
+array should be unset to free up storage.
+The \fB::http::cleanup\fR procedure is provided for that purpose.
+The following elements of
+the array are supported:
+.RS
+.TP
+\fBbody\fR
+The contents of the URL.  This will be empty if the \fB\-channel\fR
+option has been specified.  This value is returned by the \fB::http::data\fR command.
+.TP
+\fBcharset\fR
+The value of the charset attribute from the \fBContent-Type\fR meta-data
+value.  If none was specified, this defaults to the RFC standard
+\fBiso8859-1\fR, or the value of \fB$::http::defaultCharset\fR.  Incoming
+text data will be automatically converted from this charset to utf-8.
+.TP
+\fBcoding\fR
+A copy of the \fBContent-Encoding\fR meta-data value.
+.TP
+\fBcurrentsize\fR
+The current number of bytes fetched from the URL.
+This value is returned by the \fB::http::size\fR command.
+.TP
+\fBerror\fR
+If defined, this is the error string seen when the HTTP transaction
+was aborted.
+.TP
+\fBhttp\fR
+The HTTP status reply from the server.  This value
+is returned by the \fB::http::code\fR command.  The format of this value is:
+.RS
+.CS
+\fIHTTP/1.1 code string\fR
+.CE
+The \fIcode\fR is a three-digit number defined in the HTTP standard.
+A code of 200 is OK.  Codes beginning with 4 or 5 indicate errors.
+Codes beginning with 3 are redirection errors.  In this case the
+\fBLocation\fR meta-data specifies a new URL that contains the
+requested information.
+.RE
+.TP
+\fBmeta\fR
+The HTTP protocol returns meta-data that describes the URL contents.
+The \fBmeta\fR element of the state array is a list of the keys and
+values of the meta-data.  This is in a format useful for initializing
+an array that just contains the meta-data:
+.RS
+.CS
+array set meta $state(meta)
+.CE
+Some of the meta-data keys are listed below, but the HTTP standard defines
+more, and servers are free to add their own.
+.TP
+\fBContent-Type\fR
+The type of the URL contents.  Examples include \fBtext/html\fR,
+\fBimage/gif,\fR \fBapplication/postscript\fR and
+\fBapplication/x-tcl\fR.
+.TP
+\fBContent-Length\fR
+The advertised size of the contents.  The actual size obtained by
+\fB::http::geturl\fR is available as \fBstate(size)\fR.
+.TP
+\fBLocation\fR
+An alternate URL that contains the requested data.
+.RE
+.TP
+\fBposterror\fR
+The error, if any, that occurred while writing
+the post query data to the server.
+.TP
+\fBstatus\fR
+Either \fBok\fR, for successful completion, \fBreset\fR for
+user-reset, \fBtimeout\fR if a timeout occurred before the transaction
+could complete, or \fBerror\fR for an error condition.  During the
+transaction this value is the empty string.
+.TP
+\fBtotalsize\fR
+A copy of the \fBContent-Length\fR meta-data value.
+.TP
+\fBtype\fR
+A copy of the \fBContent-Type\fR meta-data value.
+.TP
+\fBurl\fR
+The requested URL.
+.RE
+.SH EXAMPLE
+.CS
+# Copy a URL to a file and print meta-data
+proc httpcopy { url file {chunk 4096} } {
+   set out [open $file w]
+   set token [\fB::http::geturl\fR $url -channel $out \e
+          -progress httpCopyProgress -blocksize $chunk]
+   close $out
+
+   # This ends the line started by httpCopyProgress
+   puts stderr ""
+
+   upvar #0 $token state
+   set max 0
+   foreach {name value} $state(meta) {
+      if {[string length $name] > $max} {
+         set max [string length $name]
+      }
+      if {[regexp -nocase ^location$ $name]} {
+         # Handle URL redirects
+         puts stderr "Location:$value"
+         return [httpcopy [string trim $value] $file $chunk]
+      }
+   }
+   incr max
+   foreach {name value} $state(meta) {
+      puts [format "%-*s %s" $max $name: $value]
+   }
+
+   return $token
+}
+proc httpCopyProgress {args} {
+   puts -nonewline stderr .
+   flush stderr
+}
+.CE
+.SH "SEE ALSO"
+safe(n), socket(n), safesock(n)
+.SH KEYWORDS
+security policy, socket

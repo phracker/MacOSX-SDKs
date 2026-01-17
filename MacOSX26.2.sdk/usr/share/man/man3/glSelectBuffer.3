@@ -1,0 +1,112 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:46
+.ds Dm 4 May 22 14:
+.ds Xs 39171     6
+.TH GLSELECTBUFFER 3G
+.SH NAME
+.B "glSelectBuffer
+\- establish a buffer for selection mode values
+
+.SH C SPECIFICATION
+void \f3glSelectBuffer\fP(
+GLsizei \fIsize\fP,
+.nf
+.ta \w'\f3void \fPglSelectBuffer( 'u
+	GLuint \fI*buffer\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fIbuffer\fP\ \ 'u 
+\f2size\fP
+Specifies the size of \f2buffer\fP.
+.TP
+\f2buffer\fP
+Returns the selection data.
+.SH DESCRIPTION
+\%\f3glSelectBuffer\fP has two arguments:
+\f2buffer\fP is a pointer to an array of unsigned integers,
+and \f2size\fP indicates the size of the array.
+\f2buffer\fP returns values from the name stack
+(see \%\f3glInitNames\fP, \%\f3glLoadName\fP, \%\f3glPushName\fP)
+when the rendering mode is \%\f3GL_SELECT\fP (see \%\f3glRenderMode\fP).
+\%\f3glSelectBuffer\fP must be issued before selection mode is enabled,
+and it must not be issued while the rendering mode is \%\f3GL_SELECT\fP.
+.P
+A programmer can use selection to determine which primitives
+are drawn into some region of a window.
+The region is defined by the current modelview and perspective matrices. 
+.P
+In selection mode, no pixel fragments are produced from rasterization.
+Instead,
+if a primitive or a raster position intersects the clipping 
+volume defined by the viewing frustum
+and the user-defined clipping planes,
+this primitive causes a selection hit.
+(With polygons, no hit occurs if the polygon is culled.)
+When a change is made to the name stack,
+or when \%\f3glRenderMode\fP is called,
+a hit record is copied to \f2buffer\fP if any hits have occurred since the
+last such event
+(name stack change or 
+\%\f3glRenderMode\fP call).
+The hit record consists of the number of names in the name stack at the
+time of the event, followed by the minimum and maximum depth values
+of all vertices that hit since the previous event,
+followed by the name stack contents,
+bottom name first.
+.P
+Depth values (which are in the range [0,1]) are multiplied by 2^32 - 1,
+before being placed in the hit record.
+.P
+An internal index into \f2buffer\fP is reset to 0 whenever selection mode
+is entered.
+Each time a hit record is copied into \f2buffer\fP,
+the index is incremented to point to the cell just past the end
+of the block of names \- that is, to the next available cell.
+If the hit record is larger than the number of remaining locations in \f2buffer\fP,
+as much data as can fit is copied,
+and the overflow flag is set.
+If the name stack is empty when a hit record is copied,
+that record consists of 0 followed by the minimum and maximum depth values.
+.P
+To exit selection mode, call \%\f3glRenderMode\fP with an argument
+other than \%\f3GL_SELECT\fP.
+Whenever \%\f3glRenderMode\fP is called while the render mode is \%\f3GL_SELECT\fP,
+it returns the number of hit records copied to \f2buffer\fP,
+resets the overflow flag and the selection buffer pointer,
+and initializes the name stack to be empty.
+If the overflow bit was set when \%\f3glRenderMode\fP was called,
+a negative hit record count is returned.
+.SH NOTES
+The contents of \f2buffer\fP is undefined until \%\f3glRenderMode\fP is called
+with an argument other than \%\f3GL_SELECT\fP.
+.P
+\%\f3glBegin\fP/\%\f3glEnd\fP primitives and calls to \%\f3glRasterPos\fP
+can result in hits.
+.SH ERRORS
+\%\f3GL_INVALID_VALUE\fP is generated if \f2size\fP is negative.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glSelectBuffer\fP is called while the
+render mode is \%\f3GL_SELECT\fP,
+or if \%\f3glRenderMode\fP is called with argument \%\f3GL_SELECT\fP before
+\%\f3glSelectBuffer\fP is called at least once.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glSelectBuffer\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_NAME_STACK_DEPTH\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_SELECTION_BUFFER_SIZE\fP
+.br
+\%\f3glGetPointerv\fP with argument \%\f3GL_SELECTION_BUFFER_POINTER\fP
+.SH SEE ALSO
+\%\f3glFeedbackBuffer\fP,
+\%\f3glInitNames\fP,
+\%\f3glLoadName\fP,
+\%\f3glPushName\fP,
+\%\f3glRenderMode\fP

@@ -1,0 +1,152 @@
+.\" $Id: racoon.8,v 1.3.10.1 2005/04/18 11:10:55 manubsd Exp $
+.\"
+.\" Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. Neither the name of the project nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE PROJECT OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd November 20, 2000
+.Dt RACOON 8
+.Os
+.\"
+.Sh NAME
+.Nm racoon
+.Nd IKE (ISAKMP/Oakley) key management daemon
+.\"
+.Sh SYNOPSIS
+.Nm racoon
+.Bk -words
+.Op Fl 46BdFLv
+.Ek
+.Bk -words
+.Op Fl f Ar configfile
+.Ek
+.Bk -words
+.Op Fl l Ar logfile
+.Ek
+.\"
+.Sh DESCRIPTION
+.Nm
+is used to setup and maintain an IPSec tunnel or transport channel, 
+between two devices, over which network traffic is conveyed securely. 
+This security is made possible by cryptographic keys and operations 
+on both devices.
+.\"
+.Nm
+relies on a standardized network protocol (IKE) to automatically 
+negotiate and manage the cryptographic keys (e.g. security 
+associations) that are necessary for the 
+IPSec tunnel or transport channel to function.
+.\"
+.Nm
+speaks the IKE
+.Pq ISAKMP/Oakley
+key management protocol,
+to establish security associations with other hosts.
+The SPD
+.Pq Security Policy Database
+in the kernel usually triggers
+.Nm .
+.Nm
+usually sends all informational messages, warnings and error messages to
+.Xr syslogd 8
+with the facility
+.Dv LOG_DAEMON
+and the priority
+.Dv LOG_INFO .
+Debugging messages are sent with the priority
+.Dv LOG_DEBUG .
+You should configure
+.Xr syslog.conf 5
+appropriately to see these messages.
+.Bl -tag -width Ds
+.It Fl 4
+.It Fl 6
+Specify the default address family for the sockets.
+.It Fl B
+Install SA(s) from the file which is specified in
+.Xr racoon.conf 5 .
+.It Fl d
+Increase the debug level.
+Multiple
+.Fl d
+arguments will increase the debug level even more.
+.It Fl F
+Run
+.Nm
+in the foreground.
+.It Fl f Ar configfile
+Use
+.Ar configfile
+as the configuration file instead of the default.
+.It Fl L
+Include
+.Ar file_name:line_number:function_name
+in all messages.
+.It Fl l Ar logfile
+Use
+.Ar logfile
+as the logging file instead of
+.Xr syslogd 8 .
+.It Fl v
+This flag causes the packet dump be more verbose, with higher
+debugging level.
+.El
+.Pp
+.Nm
+assumes the presence of the kernel random number device
+.Xr rnd 4
+at
+.Pa /dev/urandom .
+.\"
+.Sh RETURN VALUES
+The command exits with 0 on success, and non-zero on errors.
+.\"
+.Sh FILES
+.Bl -tag -width /private/etc/racoon/remote/anonymous -compact
+.It Pa /private/etc/racoon/racoon.conf 
+default configuration file.
+.It Pa /private/etc/racoon/psk.txt 
+default pre-shared key file.
+.El
+.\"
+.Sh SEE ALSO
+.Xr ipsec 4 ,
+.Xr racoon.conf 5 ,
+.Xr syslog.conf 5 ,
+.Xr setkey 8 ,
+.Xr syslogd 8
+.\"
+.Sh HISTORY
+The
+.Nm
+command first appeared in the
+.Dq YIPS
+Yokogawa IPsec implementation.
+.\"
+.Sh SECURITY CONSIDERATIONS
+The use of IKE phase 1 aggressive mode is not recommended,
+as described in
+.Pa http://www.kb.cert.org/vuls/id/886601 .

@@ -1,0 +1,123 @@
+.Dd December 3, 2003       \" DATE 
+.Dt db_dump 1       \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm db_dump
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl klNpRrV
+.Op Fl d Ar ahr
+.Op Fl f Ar output
+.Op Fl h Ar home
+.Op Fl P Ar password
+.Op Fl s Ar database
+file
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+The
+.Nm
+utility reads the database file file and writes it to the standard output using a portable flat-text format understood by the db_load utility. The file argument must be a file produced using the Berkeley DB library functions.
+.Pp
+The options are as follows:
+.Bl -tag -width
+.It Fl d
+Dump the specified database in a format helpful for debugging the Berkeley DB library routines.
+.Bl -tag -width
+.It a
+Display all information.
+.It h
+Display only page headers.
+.It r
+Do not display the free-list or pages on the free list. This mode is used by the recovery tests.
+.El
+.Pp
+.Em The output format of the -d option is not standard and may change, without notice, between releases of the Berkeley DB library.
+.It Fl f
+Write to the specified file instead of to the standard output.
+.It Fl h
+Specify a home directory for the database environment; by default, the current working directory is used.
+.It Fl k
+Dump record numbers from Queue and Recno databases as keys.
+.It Fl l
+List the databases stored in the file.
+.It Fl N
+Do not acquire shared region mutexes while running. Other problems, such as potentially fatal errors in Berkeley DB, will be ignored as well. This option is intended only for debugging errors, and should not be used under any other circumstances.
+.It Fl P
+Specify an environment password. Although Berkeley DB utilities overwrite password strings as soon as possible, be aware there may be a window of vulnerability on systems where unprivileged users can see command-line arguments or where utilities are not able to overwrite the memory containing the command-line arguments.
+.It Fl p
+If characters in either the key or data items are printing characters (as defined by isprint(3)), use printing characters in file to represent them. This option permits users to use standard text editors and tools to modify the contents of databases.
+.Pp
+Note: different systems may have different notions about what characters are considered 
+.Em printing characters,
+and databases dumped in this manner may be less portable to external systems.
+.It Fl R
+Aggressively salvage data from a possibly corrupt file. The -R flag differs from the -r option in that it will return all possible data from the file at the risk of also returning already deleted or otherwise nonsensical items. Data dumped in this fashion will almost certainly have to be edited by hand or other means before the data is ready for reload into another database
+.It Fl r
+Salvage data from a possibly corrupt file. When used on a uncorrupted database, this option should return equivalent data to a normal dump, but most likely in a different order.
+.It Fl s
+Specify a single database to dump. If no database is specified, all databases in the database file are dumped.
+.It Fl V
+Write the library version number to the standard output, and exit.
+.El
+.Pp
+Dumping and reloading Hash databases that use user-defined hash functions will result in new databases that use the default hash function. Although using the default hash function may not be optimal for the new database, it will continue to work correctly.
+.Pp
+Dumping and reloading Btree databases that use user-defined prefix or comparison functions will result in new databases that use the default prefix and comparison functions. 
+.Em \&In this case, it is quite likely that the database will be damaged beyond repair permitting neither record storage or retrieval.
+.Pp
+The only available workaround for either case is to modify the sources for the db_load utility to load the database using the correct hash, prefix, and comparison functions.
+.Pp
+The 
+.Nm
+utility output format is documented in the Dump Output Formats section of the Berkeley DB Reference Guide.
+.Pp
+The
+.Nm
+utility may be used with a Berkeley DB environment (as described for the -h option, the environment variable DB_HOME, or because the utility was run in a directory containing a Berkeley DB environment). In order to avoid environment corruption when using a Berkeley DB environment, 
+.Nm
+should always be given the chance to detach from the environment and exit gracefully. To cause
+.Nm 
+to release all environment resources and exit cleanly, send it an interrupt signal (SIGINT).
+.Pp
+Even when using a Berkeley DB database environment, the
+.Nm
+utility does not use any kind of database locking if it is invoked with the -d, -R, or -r arguments. If used with one of these arguments, the
+.Nm
+utility may only be safely run on databases that are not being modified by any other process; otherwise, the output may be corrupt.
+.Pp
+The 
+.Nm
+utility exits 0 on success, and >0 if an error occurs.
+.Pp
+.Sh ENVIRONMENT      \" May not be needed
+.Bl -tag -width "DB_HOME" \" ENV_VAR_1 is width of the string ENV_VAR_1
+.It Ev DB_HOME
+If the -h option is not specified and the environment variable DB_HOME is set, it is used as the path of the database home, as described in DB_ENV->open.
+.El                      
+.\" .Sh FILES                \" File used or created by the topic of the man page
+.\" .Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.\" .It Pa /usr/share/file_name
+.\" FILE_1description
+.\" .It Pa /Users/joeuser/Library/really_long_file_name
+.\" FILE_2 description
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.Xr db_archive 1 ,
+.Xr db_checkpoint 1 ,
+.Xr db_deadlock 1 ,
+.Xr db_load 1 ,
+.Xr db_printlog 1 ,
+.Xr db_recover 1 ,
+.Xr db_stat 1 ,
+.Xr db_upgrade 1 ,
+.Xr db_verify 1
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

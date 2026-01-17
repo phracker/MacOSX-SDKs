@@ -1,0 +1,231 @@
+.Dd 2 April, 2021
+.Dt cryptexctl-personalize 1
+.Os Darwin
+.Sh NAME
+.Nm cryptexctl personalize
+.Nd personalize a cryptex from a cryptex bundle
+.Sh SYNOPSIS
+\" Offline personalisation
+.Nm cryptexctl personalize
+.Op Fl -replace
+.Fl -identity-plist Ar IDENTITY-PLIST
+.Fl -variant Ar VARIANT
+.Ar PATH-TO-CRYPTEX-BUNDLE
+\" Host form...
+.Nm cryptexctl personalize
+.Op Fl -host-identity
+.Op Fl -replace
+.Fl -variant Ar VARIANT
+.Ar PATH-TO-CRYPTEX-BUNDLE
+\" Long form...
+.Nm cryptexctl personalize
+.Op Fl -replace
+.Op Fl -ALGO Ar CRYPTO-ALGORITHM
+.Op Fl -CEPO Ar CERTIFICATE-EPOCH
+.Op Fl -BORD Ar BOARD-ID
+.Op Fl -CHIP Ar CHIP-ID
+.Op Fl -ECID Ar ECID
+.Op Fl -SDOM Ar SDOM
+.Op Fl -CPRO Ar CERTIFICATE-PRODUCTION-STATUS
+.Op Fl -CSEC Ar CERTIFICATE-SECURITY-MODE
+.Op Fl -EPRO Ar EFFECTIVE-PRODUCTION-STATUS
+.Op Fl -ESEC Ar EFFECTIVE-SECURITY-MODE
+.Op Fl -BNCH Ar NONCE-HASH
+.Fl -variant Ar VARIANT
+.Ar PATH-TO-CRYPTEX-BUNDLE
+.Sh DESCRIPTION
+.Nm cryptexctl personalize
+personalize a
+.Xr cryptex 5
+from a cryptex bundle. The result will be a cryptex bundle with the same
+name as the original bundle but with a "signed" suffix. An im4m asset will
+be added to the signed cryptex bundle on following path:
+.Bd -literal
+  ./Restore/Cryptex/<Cryptex Name>/im4m
+
+.Ed
+This subcommand requires that Apple's trusted signing service
+-- tss.apple.com -- be reachable.
+.Pp
+The cryptex will be personalized for the target device by sending measurements
+of the disk image content
+and the identity of a device to Apple's trusted signing service
+.Pq tss.apple.com .
+.Pp
+In most cases the device identity will be retrieved by
+.Nm cryptexctl personalize
+from either the host, if the host is running a
+.Xr cryptexd 8
+daemon, or from a connected device
+.Po
+See the
+.Fl -udid
+option on the root
+.Xr cryptexctl 1
+command.
+.Pc
+.Pp
+If the device cannot be connected directly the identity can be specified
+either on the command line directly
+or using the
+.Fl -identity-plist
+argument. See
+.Sx DEVICE IDENTIFIERS .
+.Sh OPTIONS
+A list of options with their descriptions. See
+.Sx DEVICE IDENTIFIERS
+for the identity arguments.
+.Pp
+Required:
+.Bl -tag
+.It Fl V | Fl -variant Ar VARIANT
+The name of the cryptex
+.It Ar PATH-TO-CRYPTEX-BUNDLE
+The path to the cryptex bundle directory created from
+.Xr cryptexctl-create 1
+command, or to a mounted restore style bundle directory
+.El
+.Pp
+Optional:
+.Bl -tag
+.It Fl o | Fl -output-directory Ar OUTPUT-DIRECTORY
+The directory to which the cryptex should be written. Upon successful
+completion, this directory will contain a directory named for the given
+.Ar IDENTIFIER ,
+which will contain the cryptex's constituent personalized objects
+.Bq default: the current working directory
+.It Fl r | Fl -replace
+Replace the cryptex in
+.Ar OUTPUT-DIRECTORY
+if it already exists. The old directory will be rename(2)ed into a temporary
+directory rather than being deleted
+outright.
+.It Fl I | Fl -identity-plist Ar IDENTITY-PLIST
+Path to a property list whose root node is a dictionary containing a set of
+key-value pairs for each aspect of device identity. The keys are the same as
+argument names
+.Pq "BORD", "CHIP", etc. 
+and the values are all integers; defaults to the value of the environment
+variable
+.Ev CRYPTEXCTL_CREATE_IDENTITY .
+For an example of such a property list, see
+.Sx EXAMPLES .
+.It Fl H | Fl -host-identity
+Use the host's identity for the personalization; if specified all other
+identifiers are ignored
+.It Fl M | -allow-mix-n-match
+Personalize with the AMNM entitlement. Only useful for Apple internal
+development.
+.It Fl z | -research
+Cryptex will be created as a research cryptex with the cpxd tag.
+.El
+.Sh DEVICE IDENTIFIERS
+These tags can be retrieved from a device with
+.Xr cryptexctl-identity 1
+for offline personalization or retrieved automatically for the host or a
+connected device.
+.Pp
+For convenience the identity can be specified as a property list with
+.Fl -identity-plist .
+The property list's root node is a dictionary containing a set of key-value
+pairs key-value pairs for each aspect of the device identity.
+The keys are the same as the argument names
+.Pq "BORD", "CHIP", etc .
+.Pp
+The following components comprise a host identity for cryptex creation.
+For more information about these tags and the personalization process, see
+.Xr cryptex-image4 7 .
+.Pp
+.Bl -tag -width "CPRO" -compact
+.It Sy ALGO
+The crypto algorithm employed by the target device. Valid values are:
+sha1, sha2-384
+.Bq default: sha2-384
+.It Sy CEPO
+The certificate epoch of the target device
+.It Sy BORD
+The board identifier of the target device
+.It Sy CHIP
+The chip identifier of the target device
+.It Sy ECID
+The unique chip instance identifier of the target device
+.It Sy SDOM
+The security domain of the target device
+.Bq default: 0x1
+.It Sy CPRO
+The certificate production status of the target device
+.Bq default: 0x1
+.It Sy CSEC
+The certificate security mode of the target device
+.Bq default: 0x1
+.It Sy EPRO
+The effective production status of the target device
+.Bq default: 0x1
+.It Sy ESEC
+The effective security mode of the target device
+.Bq default: 0x1
+.It Sy BNCH
+The nonce hash to use for the personalization. Can be retrieved with
+.Xr cryptexctl-nonce 1 .
+.Bq default: all zeros
+.El
+.Sh ENVIRONMENT
+.Bl -tag
+.It Ev CRYPTEXCTL_CREATE_IDENTITY
+Sets the default value for
+.Fl -identity-plist .
+This is useful when personalizing for an offline
+or disconnected device.
+.It Ev CRYPTEXCTL_UDID
+Read by the base
+.Xr cryptexctl 1
+command to select the device on which to operate when the
+.Fl -udid
+option is not specified and there is no
+.Xr cryptexd 8
+daemon on the host. See
+.Xr cryptexctl 1
+for more information about
+.Ev CRYPTEXCTL_UDID .
+.El
+.Sh EXAMPLES
+The following is an example of the content of a property list that might be passed to
+.Fl -identity-plist
+to personalize for an offline device.
+.Bd -literal
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>ALGO</key>
+    <string>sha2-384</string>
+    <key>CEPO</key>
+    <string>0x0</string>
+    <key>BORD</key>
+    <string>0x6</string>
+    <key>CHIP</key>
+    <string>0x8015</string>
+    <key>ECID</key>
+    <string>0x184d610044a83a</string>
+    <key>SDOM</key>
+    <string>0x1</string>
+    <key>CPRO</key>
+    <false/>
+    <key>CSEC</key>
+    <true/>
+    <key>EPRO</key>
+    <false/>
+    <key>ESEC</key>
+    <true/>
+</dict>
+</plist>
+.Ed
+.Sh SEE ALSO
+.Xr cryptexctl 1 ,
+.Xr cryptexctl-create 1 ,
+.Xr cryptexctl-identity 1 ,
+.Xr cryptexctl-install 1 ,
+.Xr cryptexctl-nonce 1 ,
+.Xr cryptex 5
+.Sh HISTORY
+Introduced in macOS 12.0

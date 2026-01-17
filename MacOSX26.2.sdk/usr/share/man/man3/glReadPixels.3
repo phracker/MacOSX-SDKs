@@ -1,0 +1,339 @@
+'\" te  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:46
+.ds Dm 7 May 22 14:
+.ds Xs 11505    13
+.TH GLREADPIXELS 3G
+.SH NAME
+.B "glReadPixels
+\- read a block of pixels from the frame buffer
+
+.SH C SPECIFICATION
+void \f3glReadPixels\fP(
+GLint \fIx\fP,
+.nf
+.ta \w'\f3void \fPglReadPixels( 'u
+	GLint \fIy\fP,
+	GLsizei \fIwidth\fP,
+	GLsizei \fIheight\fP,
+	GLenum \fIformat\fP,
+	GLenum \fItype\fP,
+	GLvoid \fI*pixels\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\f2x\fP\ \f2y\fP\ \ 'u 
+\f2x\fP, \f2y\fP
+Specify the window coordinates of the first pixel
+that is read from the frame buffer.
+This location is the lower left corner of a rectangular block of pixels.
+.TP
+\f2width\fP, \f2height\fP
+Specify the dimensions of the pixel rectangle.
+\f2width\fP and \f2height\fP of one correspond to a single pixel.
+.TP
+\f2format\fP
+Specifies the format of the pixel data.
+The following symbolic values are accepted:
+\%\f3GL_COLOR_INDEX\fP,
+\%\f3GL_STENCIL_INDEX\fP,
+\%\f3GL_DEPTH_COMPONENT\fP,
+\%\f3GL_RED\fP,
+\%\f3GL_GREEN\fP,
+\%\f3GL_BLUE\fP,
+\%\f3GL_ALPHA\fP,
+\%\f3GL_RGB\fP,
+\%\f3GL_BGR\fP,
+\%\f3GL_RGBA\fP,
+\%\f3GL_BGRA\fP,
+\%\f3GL_LUMINANCE\fP, and
+\%\f3GL_LUMINANCE_ALPHA\fP.
+.TP
+\f2type\fP
+Specifies the data type of the pixel data.
+Must be one of
+\%\f3GL_UNSIGNED_BYTE\fP,
+\%\f3GL_BYTE\fP,
+\%\f3GL_BITMAP\fP,
+\%\f3GL_UNSIGNED_SHORT\fP,
+\%\f3GL_SHORT\fP,
+\%\f3GL_UNSIGNED_INT\fP,
+\%\f3GL_INT\fP,
+\%\f3GL_FLOAT\fP,
+\%\f3GL_UNSIGNED_BYTE_3_3_2\fP,
+\%\f3GL_UNSIGNED_BYTE_2_3_3_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_5_5_1\fP,
+\%\f3GL_UNSIGNED_SHORT_1_5_5_5_REV\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8_REV\fP,
+\%\f3GL_UNSIGNED_INT_10_10_10_2\fP, or
+\%\f3GL_UNSIGNED_INT_2_10_10_10_REV\fP.
+.TP
+\f2pixels\fP
+Returns the pixel data.
+.SH DESCRIPTION
+\%\f3glReadPixels\fP returns pixel data from the frame buffer,
+starting with the pixel whose lower left corner
+is at location (\f2x\fP, \f2y\fP),
+into client memory starting at location \f2pixels\fP.
+Several parameters control the processing of the pixel data before
+it is placed into client memory.
+These parameters are set with three commands:
+\%\f3glPixelStore\fP,
+\%\f3glPixelTransfer\fP, and
+\%\f3glPixelMap\fP.
+This reference page describes the effects on \%\f3glReadPixels\fP of most,
+but not all of the parameters specified by these three commands.
+.P
+When the \%\f3GL_ARB_imaging\fP extension is supported, the pixel data may
+be processed by additional operations including color table lookup,
+color matrix tranformations, convolutions, histograms and minimum and
+maximun pixel value computations.
+.P
+\%\f3glReadPixels\fP returns values from each pixel with lower left corner at
+(\f2x\fP + i, \f2y\fP + j) for 0 \(<= i < \f2width\fP and 
+0 \(<= j < \f2height\fP.
+This pixel is said to be the ith pixel in the jth row. 
+Pixels are returned in row order from the lowest to the highest row,
+left to right in each row.
+.P
+\f2format\fP specifies the  for the returned pixel values;
+accepted values are:
+.TP 10
+\%\f3GL_COLOR_INDEX\fP
+Color indices are read from the color buffer
+selected by \%\f3glReadBuffer\fP.
+Each index is converted to fixed point,
+shifted left or right depending on the value and sign of \%\f3GL_INDEX_SHIFT\fP,
+and added to \%\f3GL_INDEX_OFFSET\fP. 
+If \%\f3GL_MAP_COLOR\fP is \%\f3GL_TRUE\fP,
+indices are replaced by their mappings in the table \%\f3GL_PIXEL_MAP_I_TO_I\fP.
+.TP
+\%\f3GL_STENCIL_INDEX\fP
+Stencil values are read from the stencil buffer.
+Each index is converted to fixed point,
+shifted left or right depending on the value and sign of \%\f3GL_INDEX_SHIFT\fP,
+and added to \%\f3GL_INDEX_OFFSET\fP. 
+If \%\f3GL_MAP_STENCIL\fP is \%\f3GL_TRUE\fP,
+indices are replaced by their mappings in the table \%\f3GL_PIXEL_MAP_S_TO_S\fP.
+.TP
+\%\f3GL_DEPTH_COMPONENT\fP
+Depth values are read from the depth buffer.
+Each component is converted to floating point such that the minimum depth
+value maps to 0 and the maximum value maps to 1.
+Each component is then multiplied by \%\f3GL_DEPTH_SCALE\fP,
+added to \%\f3GL_DEPTH_BIAS\fP,
+and finally clamped to the range [0,1].
+.TP
+\%\f3GL_RED\fP
+.TP
+\%\f3GL_GREEN\fP
+.TP
+\%\f3GL_BLUE\fP
+.TP
+\%\f3GL_ALPHA\fP
+.TP
+\%\f3GL_RGB\fP
+.TP
+\%\f3GL_BGR\fP
+.TP
+\%\f3GL_RGBA\fP
+.TP
+\%\f3GL_BGRA\fP
+.TP
+\%\f3GL_LUMINANCE\fP
+.TP
+\%\f3GL_LUMINANCE_ALPHA\fP
+Processing differs depending on whether color buffers store color indices
+or RGBA color components.
+If color indices are stored,
+they are read from the color buffer selected by \%\f3glReadBuffer\fP.
+Each index is converted to fixed point,
+shifted left or right depending on the value and sign of \%\f3GL_INDEX_SHIFT\fP,
+and added to \%\f3GL_INDEX_OFFSET\fP. 
+Indices are then replaced by the red,
+green,
+blue,
+and alpha values obtained by indexing the tables
+\%\f3GL_PIXEL_MAP_I_TO_R\fP,
+\%\f3GL_PIXEL_MAP_I_TO_G\fP,
+\%\f3GL_PIXEL_MAP_I_TO_B\fP, and
+\%\f3GL_PIXEL_MAP_I_TO_A\fP.
+Each table must be of size 2^n, but n may be different for 
+different tables. 
+Before an index is used to look up a value in a table of
+size 2^n, it must be masked against 2^n - 1.
+.IP
+If RGBA color components are stored in the color buffers,
+they are read from the color buffer selected by \%\f3glReadBuffer\fP.
+Each color component is converted to floating point such that zero intensity
+maps to 0.0 and full intensity maps to 1.0.
+Each component is then multiplied by \%\f3GL_c_SCALE\fP and
+added to \%\f3GL_c_BIAS\fP,
+where \f2c\fP is RED, GREEN, BLUE, or ALPHA. 
+Finally,
+if \%\f3GL_MAP_COLOR\fP is \%\f3GL_TRUE\fP,
+each component is clamped to the range [0,\ 1],
+scaled to the size of its corresponding table, and is then 
+replaced by its mapping in the table
+\%\f3GL_PIXEL_MAP_c_TO_c\fP,
+where \f2c\fP is R, G, B, or A.
+.IP
+Unneeded data is then discarded.
+For example,
+\%\f3GL_RED\fP discards the green, blue, and alpha components,
+while \%\f3GL_RGB\fP discards only the alpha component.
+\%\f3GL_LUMINANCE\fP computes a single-component value as the sum of
+the red,
+green,
+and blue components,
+and \%\f3GL_LUMINANCE_ALPHA\fP does the same,
+while keeping alpha as a second value.
+The final values are clamped to the range [0,\ 1].
+.P
+The shift,
+scale,
+bias,
+and lookup factors just described are all specified by 
+.br
+\%\f3glPixelTransfer\fP.
+The lookup table contents themselves are specified by \%\f3glPixelMap\fP.
+.P 
+Finally, the indices or components
+are converted to the proper ,
+as specified by \f2type\fP.
+If \f2format\fP is \%\f3GL_COLOR_INDEX\fP or \%\f3GL_STENCIL_INDEX\fP
+and \f2type\fP is not \%\f3GL_FLOAT\fP,
+each index is masked with the mask value given in the following table.
+If \f2type\fP is \%\f3GL_FLOAT\fP, then each integer index is converted to
+single-precision floating-point .
+.P 
+If \f2format\fP is
+\%\f3GL_RED\fP,
+\%\f3GL_GREEN\fP,
+\%\f3GL_BLUE\fP,
+\%\f3GL_ALPHA\fP,
+\%\f3GL_RGB\fP,
+\%\f3GL_BGR\fP,
+\%\f3GL_RGBA\fP,
+\%\f3GL_BGRA\fP,
+\%\f3GL_LUMINANCE\fP, or
+\%\f3GL_LUMINANCE_ALPHA\fP and \f2type\fP is not \%\f3GL_FLOAT\fP,
+each component is multiplied by the multiplier shown in the following table.
+If type is \%\f3GL_FLOAT\fP, then each component is passed as is
+(or converted to the client's single-precision floating-point  if
+it is different from the one used by the GL).
+.P
+
+.Bd -literal
+ type                      (index mask, component conversion)
+ GL_UNSIGNED_BYTE          (2^8-1, (2^8-1)c)
+ GL_BYTE                   (2^7-1, [(2^8-1)c-1]/2)
+ GL_BITMAP                 (1, 1)
+ GL_UNSIGNED_SHORT         (2^16-1, (2^16-1)c)
+ GL_SHORT                  (2^15-1, [(2^16-1)c-1]/2)
+ GL_UNSIGNED_INT           (2^32-1, (2^32-1)c)
+ GL_INT                    (2^31-1, [(2^32-1)c-1]/2)
+ GL_FLOAT                  (none, c)
+ 
+.Ed
+ 
+.P
+Return values are placed in memory as follows.
+If \f2format\fP is
+\%\f3GL_COLOR_INDEX\fP,
+\%\f3GL_STENCIL_INDEX\fP,
+\%\f3GL_DEPTH_COMPONENT\fP,
+\%\f3GL_RED\fP,
+\%\f3GL_GREEN\fP,
+\%\f3GL_BLUE\fP,
+\%\f3GL_ALPHA\fP, or 
+\%\f3GL_LUMINANCE\fP,
+a single value is returned and the data for the ith pixel in the jth row
+is placed in location (j)*width+i.
+\%\f3GL_RGB\fP and \%\f3GL_BGR\fP return three values,
+\%\f3GL_RGBA\fP and \%\f3GL_BGRA\fP return four values,
+and \%\f3GL_LUMINANCE_ALPHA\fP returns two values for each pixel,
+with all values corresponding to a single pixel occupying contiguous space
+in \f2pixels\fP.
+Storage parameters set by \%\f3glPixelStore\fP,
+such as \%\f3GL_PACK_LSB_FIRST\fP and \%\f3GL_PACK_SWAP_BYTES\fP,
+affect the way that data is written into memory.
+See \%\f3glPixelStore\fP for a description.
+.SH NOTES
+Values for pixels that lie outside the window
+connected to the current GL context are undefined.
+.P
+If an error is generated,
+no change is made to the contents of \f2pixels\fP.
+.SH ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated if \f2format\fP or \f2type\fP is not an
+accepted value.
+.P
+\%\f3GL_INVALID_ENUM\fP is generated if \f2type\fP is \%\f3GL_BITMAP\fP and \f2format\fP is
+not \%\f3GL_COLOR_INDEX\fP or \%\f3GL_STENCIL_INDEX\fP.
+.P
+\%\f3GL_INVALID_VALUE\fP is generated if either \f2width\fP or \f2height\fP is negative.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \f2format\fP is \%\f3GL_COLOR_INDEX\fP
+and the color buffers store RGBA color components.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \f2format\fP is \%\f3GL_STENCIL_INDEX\fP
+and there is no stencil buffer.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \f2format\fP is \%\f3GL_DEPTH_COMPONENT\fP
+and there is no depth buffer.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glReadPixels\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \f2type\fP is one of
+\%\f3GL_UNSIGNED_BYTE_3_3_2\fP,
+\%\f3GL_UNSIGNED_BYTE_2_3_3_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5\fP, or
+\%\f3GL_UNSIGNED_SHORT_5_6_5_REV\fP
+and \f2format\fP is not \%\f3GL_RGB\fP.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \f2type\fP is one of
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_5_5_1\fP,
+\%\f3GL_UNSIGNED_SHORT_1_5_5_5_REV\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8_REV\fP,
+\%\f3GL_UNSIGNED_INT_10_10_10_2\fP, or
+\%\f3GL_UNSIGNED_INT_2_10_10_10_REV\fP
+and \f2format\fP is neither \%\f3GL_RGBA\fP nor \%\f3GL_BGRA\fP.
+.P
+The formats \%\f3GL_BGR\fP, and \%\f3GL_BGRA\fP and types 
+\%\f3GL_UNSIGNED_BYTE_3_3_2\fP,
+\%\f3GL_UNSIGNED_BYTE_2_3_3_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5\fP,
+\%\f3GL_UNSIGNED_SHORT_5_6_5_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4\fP,
+\%\f3GL_UNSIGNED_SHORT_4_4_4_4_REV\fP,
+\%\f3GL_UNSIGNED_SHORT_5_5_5_1\fP,
+\%\f3GL_UNSIGNED_SHORT_1_5_5_5_REV\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8\fP,
+\%\f3GL_UNSIGNED_INT_8_8_8_8_REV\fP,
+\%\f3GL_UNSIGNED_INT_10_10_10_2\fP, and
+\%\f3GL_UNSIGNED_INT_2_10_10_10_REV\fP are available only if the GL version 
+is 1.2 or greater.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_INDEX_MODE\fP
+.SH SEE ALSO
+\%\f3glCopyPixels\fP,
+\%\f3glDrawPixels\fP,
+\%\f3glPixelMap\fP,
+\%\f3glPixelStore\fP,
+\%\f3glPixelTransfer\fP,
+.br
+\%\f3glReadBuffer\fP

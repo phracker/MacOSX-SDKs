@@ -1,0 +1,492 @@
+'\" te  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:46
+.ds Dm 0 May 22 14:
+.ds Xs 12758    17
+.TH GLPIXELSTORE 3G
+.SH NAME
+.B "glPixelStoref, glPixelStorei
+\- set pixel storage modes
+
+.SH C SPECIFICATION
+void \f3glPixelStoref\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglPixelStoref( 'u
+	GLfloat \fIparam\fP )
+.fi
+void \f3glPixelStorei\fP(
+GLenum \fIpname\fP,
+.nf
+.ta \w'\f3void \fPglPixelStorei( 'u
+	GLint \fIparam\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\f2pname\fP\ \ 'u 
+\f2pname\fP
+Specifies the symbolic name of the parameter to be set.
+Six values affect the packing of pixel data into memory:
+\%\f3GL_PACK_SWAP_BYTES\fP,
+\%\f3GL_PACK_LSB_FIRST\fP,
+\%\f3GL_PACK_ROW_LENGTH\fP,
+\%\f3GL_PACK_IMAGE_HEIGHT\fP,
+\%\f3GL_PACK_SKIP_PIXELS\fP, 
+\%\f3GL_PACK_SKIP_ROWS\fP,
+\%\f3GL_PACK_SKIP_IMAGES\fP, and
+\%\f3GL_PACK_ALIGNMENT\fP.
+Six more affect the unpacking of pixel data \f2from\fP memory:
+\%\f3GL_UNPACK_SWAP_BYTES\fP,
+\%\f3GL_UNPACK_LSB_FIRST\fP,
+\%\f3GL_UNPACK_ROW_LENGTH\fP,
+\%\f3GL_UNPACK_IMAGE_HEIGHT\fP,
+\%\f3GL_UNPACK_SKIP_PIXELS\fP, 
+\%\f3GL_UNPACK_SKIP_ROWS\fP, 
+\%\f3GL_UNPACK_SKIP_IMAGES\fP, and
+\%\f3GL_UNPACK_ALIGNMENT\fP.
+.TP
+\f2param\fP
+Specifies the value that \f2pname\fP is set to.
+.SH DESCRIPTION
+
+\%\f3glPixelStore\fP sets pixel storage modes that affect the operation of subsequent
+\%\f3glDrawPixels\fP and \%\f3glReadPixels\fP as well as the unpacking of
+polygon stipple patterns (see \%\f3glPolygonStipple\fP), bitmaps (see
+\%\f3glBitmap\fP), texture patterns (see \%\f3glTexImage1D\fP,
+\%\f3glTexImage2D\fP, \%\f3glTexImage3D\fP, \%\f3glTexSubImage1D\fP,
+\%\f3glTexSubImage2D\fP, \%\f3glTexSubImage3D\fP).
+Additionally, if the \%\f3GL_ARB_imaging\fP extension is supported, pixel
+storage modes affect convolution filters
+(see \%\f3glConvolutionFilter1D\fP, \%\f3glConvolutionFilter2D\fP, and
+\%\f3glSeparableFilter2D\fP, color table (see \%\f3glColorTable\fP, and 
+\%\f3glColorSubTable\fP, and unpacking histogram (See \%\f3glHistogram\fP),
+and minmax (See \%\f3glMinmax\fP) data.
+.P
+\f2pname\fP is a symbolic constant indicating the parameter to be set, and
+\f2param\fP is the new value.  Six of the twelve storage parameters affect
+how pixel data is returned to client memory.
+They are as follows:
+.TP 10
+\%\f3GL_PACK_SWAP_BYTES\fP
+If true,
+byte ordering for multibyte color components,
+depth components,
+color indices,
+or stencil indices
+is reversed.
+That is,
+if a four-byte component consists of bytes
+b0, b1, b2, b2
+it is stored in memory as
+b3, b2, b1, b0
+if \%\f3GL_PACK_SWAP_BYTES\fP is true.
+\%\f3GL_PACK_SWAP_BYTES\fP has no effect on the memory order of components
+within a pixel,
+only on the order of bytes within components or indices.
+For example,
+the three components of a \%\f3GL_RGB\fP  pixel are always stored with
+red first,
+green second,
+and blue third,
+regardless of the value of \%\f3GL_PACK_SWAP_BYTES\fP.
+.TP
+\%\f3GL_PACK_LSB_FIRST\fP
+If true,
+bits are ordered within a byte from least significant to most significant;
+otherwise,
+the first bit in each byte is the most significant one.
+This parameter is significant for bitmap data only.
+.TP
+\%\f3GL_PACK_ROW_LENGTH\fP
+If greater than 0,
+\%\f3GL_PACK_ROW_LENGTH\fP defines the number of pixels in a row.
+If the first pixel of a row is placed at location p in memory,
+then the location of the first pixel of the next row is obtained by skipping
+.sp
+
+.ce
+k = nl for s>=a, (a/s)(snl/a) for s<a
+
+components or indices,
+where n is the number of components or indices in a pixel,
+l is the number of pixels in a row
+(\%\f3GL_PACK_ROW_LENGTH\fP if it is greater than 0,
+the width argument to the pixel routine otherwise),
+a is the value of \%\f3GL_PACK_ALIGNMENT\fP, and
+s is the size, in bytes, of a single component
+(if a < s, then it is as if a = s).
+In the case of 1-bit values,
+the location of the next row is obtained by skipping
+.sp
+
+.ce
+k = 8a (nl/8a)
+
+.sp
+components or indices.
+.IP
+The word \f2component\fP in this description refers to the nonindex values
+red,
+green,
+blue,
+alpha,
+and depth.
+Storage  \%\f3GL_RGB\fP,
+for example,
+has three components per pixel:
+first red,
+then green,
+and finally blue.
+.TP
+\%\f3GL_PACK_IMAGE_HEIGHT\fP
+If greater than 0,
+\%\f3GL_PACK_IMAGE_HEIGHT\fP defines the number of pixels in an image
+three-dimensional texture volume.
+Where ``image'' is defined by all pixels sharing the same third
+dimension index.
+If the first pixel of a row is placed at location p in memory,
+then the location of the first pixel of the next row is obtained by skipping
+.sp
+
+.ce
+k = nlh for s>=a, (a/s)(snlh/a) for s<a
+
+.sp
+components or indices, where n is the number of components or indices
+in a pixel, l is the number of pixels in a row
+(\%\f3GL_PACK_ROW_LENGTH\fP if it is greater than 0,  the
+width argument to \%\f3glTexImage3d\fP otherwise), h is the number of
+rows in a pixel image (\%\f3GL_PACK_IMAGE_HEIGHT\fP if it is greater than
+0, the height arguemnt to the \%\f3glTexImage3D\fP routine otherwise),
+a is the value of
+\%\f3GL_PACK_ALIGNMENT\fP, and s is the size, in bytes, of a single
+component (if  a < s, then it is as if a = s).
+.IP
+The word \f2component\fP in this description refers to the nonindex values
+red,
+green,
+blue,
+alpha,
+and depth.
+Storage  \%\f3GL_RGB\fP,
+for example,
+has three components per pixel:
+first red,
+then green,
+and finally blue.
+.TP
+\%\f3GL_PACK_SKIP_PIXELS\fP, \%\f3GL_PACK_SKIP_ROWS\fP, and \%\f3GL_PACK_SKIP_IMAGES\fP
+These values are provided as a convenience to the programmer;
+they provide no functionality that cannot be duplicated simply by
+incrementing the pointer passed to \%\f3glReadPixels\fP.
+Setting \%\f3GL_PACK_SKIP_PIXELS\fP to i is equivalent to incrementing
+the pointer by i n components or indices,
+where n is the number of components or indices in each pixel.
+Setting \%\f3GL_PACK_SKIP_ROWS\fP to j is equivalent to incrementing
+the pointer by j m components or indices,
+where m is the number of components or indices per row,
+as just computed in the \%\f3GL_PACK_ROW_LENGTH\fP section.
+Setting \%\f3GL_PACK_SKIP_IMAGES\fP to k is equivalent to incrementing
+the pointer by k p, where p is the number of components or indices
+per image, as computed in the \%\f3GL_PACK_IMAGE_HEIGHT\fP section.
+.TP
+\%\f3GL_PACK_ALIGNMENT\fP
+Specifies the alignment requirements for the start of each pixel row in memory.
+The allowable values are 
+1 (byte-alignment),
+2 (rows aligned to even-numbered bytes),
+4 (word-alignment), and
+8 (rows start on double-word boundaries).
+.P
+The other six of the twelve storage parameters affect how pixel data is
+read from client memory.
+These values are significant for \%\f3glDrawPixels\fP,
+\%\f3glTexImage1D\fP,
+\%\f3glTexImage2D\fP,
+\%\f3glTexImage3D\fP,
+\%\f3glTexSubImage1D\fP,
+\%\f3glTexSubImage2D\fP,
+\%\f3glTexSubImage3D\fP,
+\%\f3glBitmap\fP, and
+\%\f3glPolygonStipple\fP.
+.P
+Additionally, if the \%\f3GL_ARB_imaging\fP extension is supported,
+\%\f3glColorTable\fP,
+\%\f3glColorSubTable\fP,
+\%\f3glConvolutionFilter1D\fP,
+\%\f3glConvolutionFilter2D\fP, and
+\%\f3glSeparableFilter2D\fP.
+They are as follows:
+.TP
+\%\f3GL_UNPACK_SWAP_BYTES\fP
+If true,
+byte ordering for multibyte color components,
+depth components,
+color indices,
+or stencil indices
+is reversed.
+That is,
+if a four-byte component consists of bytes
+b0, b1, b2, b3,
+it is taken from memory as
+b3, b2, b1, b0
+if \%\f3GL_UNPACK_SWAP_BYTES\fP is true.
+\%\f3GL_UNPACK_SWAP_BYTES\fP has no effect on the memory order of components
+within a pixel,
+only on the order of bytes within components or indices.
+For example,
+the three components of a \%\f3GL_RGB\fP  pixel are always stored with
+red first,
+green second,
+and blue third,
+regardless of the value of \%\f3GL_UNPACK_SWAP_BYTES\fP.
+.TP
+\%\f3GL_UNPACK_LSB_FIRST\fP
+If true,
+bits are ordered within a byte from least significant to most significant;
+otherwise,
+the first bit in each byte is the most significant one.
+This is relevant only for bitmap data.
+.TP
+\%\f3GL_UNPACK_ROW_LENGTH\fP
+If greater than 0,
+\%\f3GL_UNPACK_ROW_LENGTH\fP defines the number of pixels in a row.
+If the first pixel of a row is placed at location p in memory,
+then the location of the first pixel of the next row is obtained by skipping
+.sp
+
+.ce
+k = nl for s>=a, (a/s)(snl/a) for s<a
+
+.sp
+components or indices,
+where n is the number of components or indices in a pixel,
+l is the number of pixels in a row
+(\%\f3GL_UNPACK_ROW_LENGTH\fP if it is greater than 0,
+the width argument to the pixel routine otherwise),
+a is the value of \%\f3GL_UNPACK_ALIGNMENT\fP, and
+s is the size, in bytes, of a single component
+(if  a < s, then it is as if a = s).
+In the case of 1-bit values,
+the location of the next row is obtained by skipping
+.sp
+
+.ce
+k = 8a (nl/8a)
+
+.sp
+components or indices.
+.IP
+The word \f2component\fP in this description refers to the nonindex values
+red,
+green,
+blue,
+alpha,
+and depth.
+Storage  \%\f3GL_RGB\fP,
+for example,
+has three components per pixel:
+first red,
+then green,
+and finally blue.
+.TP
+\%\f3GL_UNPACK_IMAGE_HEIGHT\fP
+If greater than 0,
+\%\f3GL_UNPACK_IMAGE_HEIGHT\fP defines the number of pixels in an image of
+a three-dimensional texture volume.  Where ``image'' is defined by all
+pixel sharing the same third dimension index.
+If the first pixel of a row is placed at location p in memory,
+then the location of the first pixel of the next row is obtained by skipping
+.sp
+
+.ce
+k = nlh for s>=a, (a/s)(snlh/a) for s<a
+
+.sp
+components or indices,
+where n is the number of components or indices in a pixel,
+l is the number of pixels in a row
+(\%\f3GL_UNPACK_ROW_LENGTH\fP if it is greater than 0,
+the width argument to \%\f3glTexImage3D\fP otherwise),
+h is the number of rows in an image (\%\f3GL_UNPACK_IMAGE_HEIGHT\fP if
+it is greater than 0, the height argument to \%\f3glTexImage3D\fP otherwise),
+a is the value of \%\f3GL_UNPACK_ALIGNMENT\fP, and
+s is the size, in bytes, of a single component
+(if  a < s, then it is as if a = s).
+.IP
+The word \f2component\fP in this description refers to the nonindex values
+red,
+green,
+blue,
+alpha,
+and depth.
+Storage  \%\f3GL_RGB\fP,
+for example,
+has three components per pixel:
+first red,
+then green,
+and finally blue.
+.TP
+\%\f3GL_UNPACK_SKIP_PIXELS\fP and \%\f3GL_UNPACK_SKIP_ROWS\fP
+These values are provided as a convenience to the programmer;
+they provide no functionality that cannot be duplicated by
+incrementing the pointer passed to
+\%\f3glDrawPixels\fP,
+\%\f3glTexImage1D\fP,
+\%\f3glTexImage2D\fP,
+\%\f3glTexSubImage1D\fP,
+\%\f3glTexSubImage2D\fP,
+\%\f3glBitmap\fP, or
+\%\f3glPolygonStipple\fP.
+Setting \%\f3GL_UNPACK_SKIP_PIXELS\fP to i is equivalent to incrementing
+the pointer by i n components or indices,
+where n is the number of components or indices in each pixel.
+Setting \%\f3GL_UNPACK_SKIP_ROWS\fP to j is equivalent to incrementing
+the pointer by j k components or indices,
+where k is the number of components or indices per row,
+as just computed in the \%\f3GL_UNPACK_ROW_LENGTH\fP section.
+.TP
+\%\f3GL_UNPACK_ALIGNMENT\fP
+Specifies the alignment requirements for the start of each pixel row in memory.
+The allowable values are
+1 (byte-alignment),
+2 (rows aligned to even-numbered bytes),
+4 (word-alignment), and
+8 (rows start on double-word boundaries).
+.P
+The following table gives the type,
+initial value,
+and range of valid values for each storage parameter
+that can be set with \%\f3glPixelStore\fP.
+.sp
+
+.Bd -literal
+ pname                  Type    Initial Valid 
+                                 Value  Range
+ GL_PACK_SWAP_BYTES     boolean false   true or false
+ GL_PACK_LSB_FIRST      boolean false   true or false
+ GL_PACK_ROW_LENGTH     integer 0       [0,inf]
+ GL_PACK_IMAGE_HEIGHT   integer 0       [0,inf]
+ GL_PACK_SKIP_ROWS      integer 0       [0,inf]
+ GL_PACK_SKIP_PIXELS    integer 0       [0,inf]
+ GL_PACK_SKIP_IMAGES    integer 0       [0,inf]
+ GL_PACK_ALIGNMENT\fP   integer 4       1, 2, 4, or 8
+
+ GL_UNPACK_SWAP_BYTES   boolean false   true or false
+ GL_UNPACK_LSB_FIRST    boolean false   true or false
+ GL_UNPACK_ROW_LENGTH   integer 0       [0,inf]
+ GL_UNPACK_IMAGE_HEIGHT integer 0       [0,inf]
+ GL_UNPACK_SKIP_ROWS    integer 0       [0,inf]
+ GL_UNPACK_SKIP_PIXELS  integer 0       [0,inf]
+ GL_UNPACK_SKIP_IMAGES  integer 0       [0,inf]
+ GL_UNPACK_ALIGNMENT    integer 4       1, 2, 4, or 8
+.Ed
+
+.sp
+\%\f3glPixelStoref\fP can be used to set any pixel store parameter.
+If the parameter type is boolean,
+then if \f2param\fP is 0,
+the parameter is false;
+otherwise it is set to true.
+If \f2pname\fP is a integer type parameter,
+\f2param\fP is rounded to the nearest integer.
+.P
+Likewise, \%\f3glPixelStorei\fP can also be used to set any of the
+pixel store parameters.
+Boolean parameters are set to false if \f2param\fP is 0 and true otherwise.
+.SH NOTES
+The pixel storage modes in effect when
+\%\f3glDrawPixels\fP,
+\%\f3glReadPixels\fP,
+\%\f3glTexImage1D\fP,
+\%\f3glTexImage2D\fP,
+\%\f3glTexImage3D\fP,
+\%\f3glTexSubImage1D\fP,
+\%\f3glTexSubImage2D\fP,
+\%\f3glTexSubImage3D\fP,
+\%\f3glBitmap\fP,
+or \%\f3glPolygonStipple\fP is placed in a display list control the interpretation
+of memory data.
+Likewise, if the \%\f3GL_ARB_imaging\fP extension is supported, the pixel
+storage modes in effect when
+\%\f3glColorTable\fP,
+\%\f3glColorSubTable\fP,
+\%\f3glConvolutionFilter1D\fP,
+\%\f3glConvolutionFilter2D\fP, of
+\%\f3glSeparableFilter2D\fP is placed in a display list control the
+intrepretation of memory data.
+The pixel storage modes in effect when a display list is executed are
+not significant.
+.P
+Pixel storage modes are client state and must be pushed and restored
+using 
+.br
+\%\f3glPushClientAttrib\fP and \%\f3glPopClientAttrib\fP.
+.SH ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated if \f2pname\fP is not an accepted value.
+.P
+\%\f3GL_INVALID_VALUE\fP is generated if a negative row length,
+pixel skip,
+or row skip value is specified,
+or if alignment is specified as other than 1, 2, 4, or 8.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glPixelStore\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_PACK_SWAP_BYTES\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_PACK_LSB_FIRST\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_PACK_ROW_LENGTH\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_PACK_IMAGE_HEIGHT\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_PACK_SKIP_ROWS\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_PACK_SKIP_PIXELS\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_PACK_SKIP_IMAGES\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_PACK_ALIGNMENT\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_UNPACK_SWAP_BYTES\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_UNPACK_LSB_FIRST\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_UNPACK_ROW_LENGTH\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_UNPACK_IMAGE_HEIGHT\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_UNPACK_SKIP_ROWS\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_UNPACK_SKIP_PIXELS\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_UNPACK_SKIP_IMAGES\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_UNPACK_ALIGNMENT\fP
+.SH SEE ALSO
+\%\f3glBitmap\fP,
+\%\f3glColorTable\fP,
+\%\f3glColorSubTable\fP,
+\%\f3glConvolutionFilter1D\fP,
+\%\f3glConvolutionFilter2D\fP,
+\%\f3glSeparableFilter2D\fP,
+\%\f3glDrawPixels\fP,
+\%\f3glHistogram\fP,
+\%\f3glMinmax\fP,
+\%\f3glPixelMap\fP,
+\%\f3glPixelTransfer\fP,
+\%\f3glPixelZoom\fP,
+\%\f3glPolygonStipple\fP,
+\%\f3glPushClientAttrib\fP,
+\%\f3glReadPixels\fP,
+\%\f3glTexImage1D\fP,
+\%\f3glTexImage2D\fP,
+\%\f3glTexImage3D\fP,
+\%\f3glTexSubImage1D\fP,
+\%\f3glTexSubImage2D\fP,
+\%\f3glTexSubImage3D\fP

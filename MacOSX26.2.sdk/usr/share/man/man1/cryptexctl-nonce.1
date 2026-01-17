@@ -1,0 +1,81 @@
+.Dd August 7, 2020
+.Dt CRYPTEXCTL-NONCE 1
+.Os Darwin
+.Sh NAME
+.Nm cryptexctl nonce
+.Nd retrieve or manipulate cryptex personalization nonces
+.Sh SYNOPSIS
+.Nm
+nonce
+.Op Fl r | -roll
+.Op Fl g | -global
+.Ar CRYPTEX-NAME
+.Sh DESCRIPTION
+Retrieve or manipulate personalization nonces for cryptexes. In the current
+implementation, all cryptexes are personalized with a single nonce which is
+rolled when the host performs a software
+update. In the future, each cryptex will have an individual nonce.
+.Pp
+This nonce can be used with
+.Xr cryptexctl-create 1
+to personalize a cryptex for a device when the device is not present.
+.Sh OPTIONS
+A list of options with descriptions:
+.Bl -tag -width global
+.It Op Fl r | -roll
+Roll the cryptex's personalization nonce. This will invalidate the existing
+personalization for the cryptex such it will not be accepted at the next
+validation (usually at the next boot). This is not a live revocation and does
+not affect the state of the already-active cryptex. Once rolled, a new nonce
+is generated at the next boot, and thus the cryptex nonce will not be queryable
+until then.
+.It Op Fl g | -global
+Operate on the global cryptex nonce. Currently, all cryptexes are personalized
+with this nonce, but in the future, each will have its own nonce.
+.It Ar CRYPTEX-NAME
+The cryptex whose nonce is to be manipulated. Currently, all cryptexes are
+personalized with the same nonce, but in the future, each will have its own
+nonce. This option must be provided if the
+.Fl -global
+option is not given.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width CRYPTEX_UDID
+.It Ev CRYPTEXCTL_UDID
+Read by
+.Nm
+to set the
+.Op --udid
+option on the base
+.Xr cryptexctl 1
+command. This UDID value can be retrieved from the
+.Xr cryptexctl-device 1
+command's
+.Em list
+or
+.Em print
+actions and provides a convenient way to operate on a
+single device when multiple devices are connected.
+.Pp
+The magic value
+.Qq first
+will select the first discovered device.
+.El
+.Sh TROUBLESHOOTING
+This command will communicate with the local cryptex subsystem if
+.Op -udid
+or
+.Ev CRYPTEXTCTL_UDID
+is not specified. When manually personalizing a cryptex with
+.Xr cryptexctl-create 1
+ensure you are communicating with the device you expect by confirming the
+.Dv UDID
+matches with the output from
+.Xr cryptexctl-device 1 .
+.Sh SEE ALSO
+.Xr cryptexctl 1 ,
+.Xr cryptexctl-create 1 ,
+.Xr cryptexctl-list 1
+.Sh HISTORY
+Introduced in macOS 11.0
+.\" .Sh BUGS            \" Document known, unremedied bugs

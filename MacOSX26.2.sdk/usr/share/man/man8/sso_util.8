@@ -1,0 +1,137 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.\" test with     groff -man sso_util.8 -T ascii | more
+.Dd Tue Mar 11 2003               \" DATE 
+.Dt sso_util 8      \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm sso_util
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Kerberos 
+.Nd Open Directory Single Sign On 
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+command
+.Op Fl args              \" [-abcd]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is a tool for setting up, interrogating and removing Kerberos configurations
+within the Apple Single Sign On environment. This tool can configure services,
+create and consume encrypted config records and tear down Kerberos installations
+.Pp                      \" Inserts a space
+Commands for 
+.Nm
+:
+.Bl -tag -width -indent  \" Begins a tagged list 
+.It info  [-p] [-g | -l | -L | -r dir_node_path [dir_node_path] ]             \" Each item preceded by .It macro
+Returns information about the current Single Sign On environment
+.Pp
+info command arguments:
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl p                 \"-a flag as a list item
+Returns the data in XML format
+.It Fl g
+Returns the default Kerberos realm name
+.It Fl l
+Returns a list of the services sso_util knows how to Kerberize
+.It Fl L
+Returns the default Kerberos log file paths
+.It Fl r Ar dir_node_path
+Returns whether or not the given node has a Kerberos record 
+associated with it. If it does, it returns the default realm name.
+If dir_node_path is '.' (default) it also returns all the realm names available on the search path
+.It Ar dir_node_path
+specifies the directory node in which to search for the computer record
+.El                      \" Ends the list
+.It configure -r REALM  -a admin_name [-p password] service
+Configures Kerberized services on the local machine for the given realm
+.Pp
+configure command arguments:
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl r Ar REALM                 \"-a flag as a list item
+Kerberos realm for the service principals
+.It Fl a Ar admin_name
+Account name of an administrator authorized to make changes in the Kerberos database
+.It Fl p Ar password
+Password for the above administrator. The password can also be stored in a file and the path to the file can be passed as an environment variable - SSO_PASSWD_PATH.
+.It Ar service
+Service can be any number of afp, ftp, imap, pop, smtp, ssh, fcsvr, DNS, or all 
+.El                      \" Ends the list
+.It useconfig [-u] [-R record_name]  [-f dir_node_path]  -a admin_name [-p password]
+Uses a secure config record to configure a server for Kerberos
+.Pp
+configure command arguments:
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl u                 
+Forces the update, ignoring that the update may already have been installed
+.It Fl R Ar record_name              
+Name of the Computer record containing the secure config record
+.It Fl f Ar dir_node_path                 
+Specifies the directory node in which to find the given computer record
+.It Fl a Ar admin_name
+Account name of an user authorized to use the secure config record (see
+.Ar generateconfig )
+.It Fl p Ar password
+Password for the above user. The password can also be stored in a file and the path to the file can be passed as an environment variable - SSO_PASSWD_PATH.
+.El                      \" Ends the list
+.El
+.Pp
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.Sh EXAMPLES
+To configure a server in realm FOO.COM when you have the Kerberos administrator's password. Store the password in a file and 
+set env var SSO_PASSWD_PATH to the file path
+.Pp
+sso_util configure -r FOO.COM -a kerberos_admin all
+.Pp
+.Pp
+To create a secure config record to allow the delegated administrators, Fred and Barney, to configure a server named
+fred.foo.com in realm FOO.COM (using an existing computer record). The Open Directory Master
+for foo.com is odmaster.foo.com. This can be run on any server and neither Fred nor Barney need to 
+have the Kerberos administrator's password. Store the password in a file and set env var SSO_PASSWD_PATH to the file path.
+.Pp
+sso_util generateconfig -r FOO.COM -R fred.foo.com -f /LDAPv3/odmaster.foo.com  -U Fred,Barney -a kerberos_admin all
+.Pp
+.Pp
+To use the secure config record to allow Barney to configure the server named
+fred.foo.com. Store the password in a file and set env var SSO_PASSWD_PATH to the file path. 
+.Pp
+sso_util useconfig -R fred.foo.com -f /LDAPv3/odmaster.foo.com -a Barney 
+.Pp
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "/etc/krb5.keytab" -compact
+.It Pa /etc/krb5.keytab
+The configure and useconfig commands create or modify the
+.Ar krb5.keytab
+file.
+.El
+.Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+You can add -v debug_level to any of the 
+.Nm
+commands. Debug level 1 provides status information, higher levels add progressively more
+levels of detail. The maximum is level 7.
+.Sh NOTES
+The
+.Nm
+tool is used by the Apple Single Sign On system to set up Kerberized services integrated with the rest
+of the Single Sign On components.
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr kdc 8 ,
+.Xr kdcsetup 8 ,
+.Xr kerberos 8 ,
+.Xr krbservicesetup 8
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

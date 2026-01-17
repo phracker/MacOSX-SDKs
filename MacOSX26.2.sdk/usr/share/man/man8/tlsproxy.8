@@ -1,0 +1,223 @@
+.TH TLSPROXY 8 
+.ad
+.fi
+.SH NAME
+tlsproxy
+\-
+Postfix TLS proxy
+.SH "SYNOPSIS"
+.na
+.nf
+\fBtlsproxy\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBtlsproxy\fR(8) server implements a server\-side TLS
+proxy. It is used by \fBpostscreen\fR(8) to talk SMTP\-over\-TLS
+with remote SMTP clients that are not whitelisted (including
+clients whose whitelist status has expired),
+but it should also work for non\-SMTP protocols.
+
+Although one \fBtlsproxy\fR(8) process can serve multiple
+sessions at the same time, it is a good idea to allow the
+number of processes to increase with load, so that the
+service remains responsive.
+.SH "PROTOCOL EXAMPLE"
+.na
+.nf
+.ad
+.fi
+The example below concerns \fBpostscreen\fR(8). However,
+the \fBtlsproxy\fR(8) server is agnostic of the application
+protocol, and the example is easily adapted to other
+applications.
+
+After receiving a valid remote SMTP client STARTTLS command,
+the \fBpostscreen\fR(8) server sends the remote SMTP client
+endpoint string, the requested role (server), and the
+requested timeout to \fBtlsproxy\fR(8).  \fBpostscreen\fR(8)
+then receives a "TLS available" indication from \fBtlsproxy\fR(8).
+If the TLS service is available, \fBpostscreen\fR(8) sends
+the remote SMTP client file descriptor to \fBtlsproxy\fR(8),
+and sends the plaintext 220 greeting to the remote SMTP
+client.  This triggers TLS negotiations between the remote
+SMTP client and \fBtlsproxy\fR(8).  Upon completion of the
+TLS\-level handshake, \fBtlsproxy\fR(8) translates between
+plaintext from/to \fBpostscreen\fR(8) and ciphertext to/from
+the remote SMTP client.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBtlsproxy\fR(8) server is moderately security\-sensitive.
+It talks to untrusted clients on the network. The process
+can be run chrooted at fixed low privilege.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are not picked up automatically,
+as \fBtlsproxy\fR(8) processes may run for a long time
+depending on mail server load.  Use the command "\fBpostfix
+reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.SH "STARTTLS SUPPORT CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBtlsproxy_tls_CAfile ($smtpd_tls_CAfile)\fR"
+A file containing (PEM format) CA certificates of root CAs
+trusted to sign either remote SMTP client certificates or intermediate
+CA certificates.
+.IP "\fBtlsproxy_tls_CApath ($smtpd_tls_CApath)\fR"
+A directory containing (PEM format) CA certificates of root CAs
+trusted to sign either remote SMTP client certificates or intermediate
+CA certificates.
+.IP "\fBtlsproxy_tls_always_issue_session_ids ($smtpd_tls_always_issue_session_ids)\fR"
+Force the Postfix \fBtlsproxy\fR(8) server to issue a TLS session id,
+even when TLS session caching is turned off.
+.IP "\fBtlsproxy_tls_ask_ccert ($smtpd_tls_ask_ccert)\fR"
+Ask a remote SMTP client for a client certificate.
+.IP "\fBtlsproxy_tls_ccert_verifydepth ($smtpd_tls_ccert_verifydepth)\fR"
+The verification depth for remote SMTP client certificates.
+.IP "\fBtlsproxy_tls_cert_file ($smtpd_tls_cert_file)\fR"
+File with the Postfix \fBtlsproxy\fR(8) server RSA certificate in PEM
+format.
+.IP "\fBtlsproxy_tls_ciphers ($smtpd_tls_ciphers)\fR"
+The minimum TLS cipher grade that the Postfix \fBtlsproxy\fR(8) server
+will use with opportunistic TLS encryption.
+.IP "\fBtlsproxy_tls_dcert_file ($smtpd_tls_dcert_file)\fR"
+File with the Postfix \fBtlsproxy\fR(8) server DSA certificate in PEM
+format.
+.IP "\fBtlsproxy_tls_dh1024_param_file ($smtpd_tls_dh1024_param_file)\fR"
+File with DH parameters that the Postfix \fBtlsproxy\fR(8) server
+should use with non\-export EDH ciphers.
+.IP "\fBtlsproxy_tls_dh512_param_file ($smtpd_tls_dh512_param_file)\fR"
+File with DH parameters that the Postfix \fBtlsproxy\fR(8) server
+should use with export\-grade EDH ciphers.
+.IP "\fBtlsproxy_tls_dkey_file ($smtpd_tls_dkey_file)\fR"
+File with the Postfix \fBtlsproxy\fR(8) server DSA private key in PEM
+format.
+.IP "\fBtlsproxy_tls_eccert_file ($smtpd_tls_eccert_file)\fR"
+File with the Postfix \fBtlsproxy\fR(8) server ECDSA certificate in
+PEM format.
+.IP "\fBtlsproxy_tls_eckey_file ($smtpd_tls_eckey_file)\fR"
+File with the Postfix \fBtlsproxy\fR(8) server ECDSA private key in
+PEM format.
+.IP "\fBtlsproxy_tls_eecdh_grade ($smtpd_tls_eecdh_grade)\fR"
+The Postfix \fBtlsproxy\fR(8) server security grade for ephemeral
+elliptic\-curve Diffie\-Hellman (EECDH) key exchange.
+.IP "\fBtlsproxy_tls_exclude_ciphers ($smtpd_tls_exclude_ciphers)\fR"
+List of ciphers or cipher types to exclude from the \fBtlsproxy\fR(8)
+server cipher list at all TLS security levels.
+.IP "\fBtlsproxy_tls_fingerprint_digest ($smtpd_tls_fingerprint_digest)\fR"
+The message digest algorithm to construct remote SMTP
+client\-certificate
+fingerprints.
+.IP "\fBtlsproxy_tls_key_file ($smtpd_tls_key_file)\fR"
+File with the Postfix \fBtlsproxy\fR(8) server RSA private key in PEM
+format.
+.IP "\fBtlsproxy_tls_loglevel ($smtpd_tls_loglevel)\fR"
+Enable additional Postfix \fBtlsproxy\fR(8) server logging of TLS
+activity.
+.IP "\fBtlsproxy_tls_mandatory_ciphers ($smtpd_tls_mandatory_ciphers)\fR"
+The minimum TLS cipher grade that the Postfix \fBtlsproxy\fR(8) server
+will use with mandatory TLS encryption.
+.IP "\fBtlsproxy_tls_mandatory_exclude_ciphers ($smtpd_tls_mandatory_exclude_ciphers)\fR"
+Additional list of ciphers or cipher types to exclude from the
+\fBtlsproxy\fR(8) server cipher list at mandatory TLS security levels.
+.IP "\fBtlsproxy_tls_mandatory_protocols ($smtpd_tls_mandatory_protocols)\fR"
+The SSL/TLS protocols accepted by the Postfix \fBtlsproxy\fR(8) server
+with mandatory TLS encryption.
+.IP "\fBtlsproxy_tls_protocols ($smtpd_tls_protocols)\fR"
+List of TLS protocols that the Postfix \fBtlsproxy\fR(8) server will
+exclude or include with opportunistic TLS encryption.
+.IP "\fBtlsproxy_tls_req_ccert ($smtpd_tls_req_ccert)\fR"
+With mandatory TLS encryption, require a trusted remote SMTP
+client certificate in order to allow TLS connections to proceed.
+.IP "\fBtlsproxy_tls_security_level ($smtpd_tls_security_level)\fR"
+The SMTP TLS security level for the Postfix \fBtlsproxy\fR(8) server;
+when a non\-empty value is specified, this overrides the obsolete
+parameters smtpd_use_tls and smtpd_enforce_tls.
+.PP
+Available in Postfix version 2.11 and later:
+.IP "\fBtlsmgr_service_name (tlsmgr)\fR"
+The name of the \fBtlsmgr\fR(8) service entry in master.cf.
+.SH "OBSOLETE STARTTLS SUPPORT CONTROLS"
+.na
+.nf
+.ad
+.fi
+These parameters are supported for compatibility with
+\fBsmtpd\fR(8) legacy parameters.
+.IP "\fBtlsproxy_use_tls ($smtpd_use_tls)\fR"
+Opportunistic TLS: announce STARTTLS support to remote SMTP clients,
+but do not require that clients use TLS encryption.
+.IP "\fBtlsproxy_enforce_tls ($smtpd_enforce_tls)\fR"
+Mandatory TLS: announce STARTTLS support to remote SMTP clients, and
+require that clients use TLS encryption.
+.SH "RESOURCE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBtlsproxy_watchdog_timeout (10s)\fR"
+How much time a \fBtlsproxy\fR(8) process may take to process local
+or remote I/O before it is terminated by a built\-in watchdog timer.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "SEE ALSO"
+.na
+.nf
+postscreen(8), Postfix zombie blocker
+smtpd(8), Postfix SMTP server
+postconf(5), configuration parameters
+syslogd(5), system logging
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+.ad
+.fi
+This service was introduced with Postfix version 2.8.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

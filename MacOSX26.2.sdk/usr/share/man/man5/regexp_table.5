@@ -1,0 +1,203 @@
+.TH REGEXP_TABLE 5 
+.ad
+.fi
+.SH NAME
+regexp_table
+\-
+format of Postfix regular expression tables
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap \-q "\fIstring\fB" regexp:/etc/postfix/\fIfilename\fR
+
+\fBpostmap \-q \- regexp:/etc/postfix/\fIfilename\fB <\fIinputfile\fR
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix mail system uses optional tables for address
+rewriting, mail routing, or access control. These tables
+are usually in \fBdbm\fR or \fBdb\fR format.
+
+Alternatively, lookup tables can be specified in POSIX regular
+expression form. In this case, each input is compared against a
+list of patterns. When a match is found, the corresponding
+result is returned and the search is terminated.
+
+To find out what types of lookup tables your Postfix system
+supports use the "\fBpostconf \-m\fR" command.
+
+To test lookup tables, use the "\fBpostmap \-q\fR" command
+as described in the SYNOPSIS above. Use "\fBpostmap \-hmq
+\-\fR <\fIfile\fR" for header_checks(5) patterns, and
+"\fBpostmap \-bmq \-\fR <\fIfile\fR" for body_checks(5)
+(Postfix 2.6 and later).
+.SH "COMPATIBILITY"
+.na
+.nf
+.ad
+.fi
+With Postfix version 2.2 and earlier specify "\fBpostmap
+\-fq\fR" to query a table that contains case sensitive
+patterns. Patterns are case insensitive by default.
+.SH "TABLE FORMAT"
+.na
+.nf
+.ad
+.fi
+The general form of a Postfix regular expression table is:
+.IP "\fB/\fIpattern\fB/\fIflags result\fR"
+When \fIpattern\fR matches the input string,
+use the corresponding \fIresult\fR value.
+.IP "\fB!/\fIpattern\fB/\fIflags result\fR"
+When \fIpattern\fR does \fBnot\fR match the input string,
+use the corresponding \fIresult\fR value.
+.IP "\fBif /\fIpattern\fB/\fIflags\fR"
+.IP "\fBendif\fR"
+If the input string matches /\fIpattern\fR/, then match that
+input string against the patterns between \fBif\fR and
+\fBendif\fR.  The \fBif\fR..\fBendif\fR can nest.
+.sp
+Note: do not prepend whitespace to patterns inside
+\fBif\fR..\fBendif\fR.
+.sp
+This feature is available in Postfix 2.1 and later.
+.IP "\fBif !/\fIpattern\fB/\fIflags\fR"
+.IP "\fBendif\fR"
+If the input string does not match /\fIpattern\fR/, then
+match that input string against the patterns between \fBif\fR
+and \fBendif\fR. The \fBif\fR..\fBendif\fR can nest.
+.sp
+Note: do not prepend whitespace to patterns inside
+\fBif\fR..\fBendif\fR.
+.sp
+This feature is available in Postfix 2.1 and later.
+.IP "blank lines and comments"
+Empty lines and whitespace\-only lines are ignored, as
+are lines whose first non\-whitespace character is a `#'.
+.IP "multi\-line text"
+A logical line starts with non\-whitespace text. A line that
+starts with whitespace continues a logical line.
+.PP
+Each pattern is a POSIX regular expression enclosed by a pair of
+delimiters. The regular expression syntax is documented in
+\fBre_format\fR(7) with 4.4BSD, in \fBregex\fR(5) with Solaris, and in
+\fBregex\fR(7) with Linux. Other systems may use other document names.
+
+The expression delimiter can be any non\-alphanumerical
+character, except whitespace
+or characters that have special meaning (traditionally the forward
+slash is used). The regular expression can contain whitespace.
+
+By default, matching is case\-insensitive, and newlines are not
+treated as special characters. The behavior is controlled by flags,
+which are toggled by appending one or more of the following
+characters after the pattern:
+.IP "\fBi\fR (default: on)"
+Toggles the case sensitivity flag. By default, matching is case
+insensitive.
+.IP "\fBm\fR (default: off)"
+Toggle the multi\-line mode flag. When this flag is on, the \fB^\fR
+and \fB$\fR metacharacters match immediately after and immediately
+before a newline character, respectively, in addition to
+matching at the start and end of the input string.
+.IP "\fBx\fR (default: on)"
+Toggles the extended expression syntax flag. By default, support
+for extended expression syntax is enabled.
+.SH "TABLE SEARCH ORDER"
+.na
+.nf
+.ad
+.fi
+Patterns are applied in the order as specified in the table, until a
+pattern is found that matches the input string.
+
+Each pattern is applied to the entire input string.
+Depending on the application, that string is an entire client
+hostname, an entire client IP address, or an entire mail address.
+Thus, no parent domain or parent network search is done, and
+\fIuser@domain\fR mail addresses are not broken up into their
+\fIuser\fR and \fIdomain\fR constituent parts, nor is \fIuser+foo\fR
+broken up into \fIuser\fR and \fIfoo\fR.
+.SH "TEXT SUBSTITUTION"
+.na
+.nf
+.ad
+.fi
+Substitution of substrings (text that matches patterns
+inside "()") from the matched expression into the result
+string is requested with $1, $2, etc.; specify $$ to produce
+a $ character as output.
+The macros in the result string may need to be written as
+${n} or $(n) if they aren't followed by whitespace.
+
+Note: since negated patterns (those preceded by \fB!\fR) return a
+result when the expression does not match, substitutions are not
+available for negated patterns.
+.SH "EXAMPLE SMTPD ACCESS MAP"
+.na
+.nf
+# Disallow sender\-specified routing. This is a must if you relay mail
+# for other domains.
+/[%!@].*[%!@]/       550 Sender\-specified routing rejected
+
+# Postmaster is OK, that way they can talk to us about how to fix
+# their problem.
+/^postmaster@/       OK
+
+# Protect your outgoing majordomo exploders
+if !/^owner\-/
+/^(.*)\-outgoing@(.*)$/  550 Use ${1}@${2} instead
+endif
+.SH "EXAMPLE HEADER FILTER MAP"
+.na
+.nf
+# These were once common in junk mail.
+/^Subject: make money fast/     REJECT
+/^To: friend@public\\.com/       REJECT
+.SH "EXAMPLE BODY FILTER MAP"
+.na
+.nf
+# First skip over base 64 encoded text to save CPU cycles.
+~^[[:alnum:]+/]{60,}$~          OK
+
+# Put your own body patterns here.
+.SH "SEE ALSO"
+.na
+.nf
+postmap(1), Postfix lookup table manager
+pcre_table(5), format of PCRE tables
+cidr_table(5), format of CIDR tables
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+.SH "AUTHOR(S)"
+.na
+.nf
+The regexp table lookup code was originally written by:
+LaMont Jones
+lamont@hp.com
+
+That code was based on the PCRE dictionary contributed by:
+Andrew McNamara
+andrewm@connect.com.au
+connect.com.au Pty. Ltd.
+Level 3, 213 Miller St
+North Sydney, NSW, Australia
+
+Adopted and adapted by:
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

@@ -1,0 +1,315 @@
+.TH POSTMAP 1 
+.ad
+.fi
+.SH NAME
+postmap
+\-
+Postfix lookup table management
+.SH "SYNOPSIS"
+.na
+.nf
+.fi
+\fBpostmap\fR [\fB\-NbfhimnoprsuUvw\fR] [\fB\-c \fIconfig_dir\fR]
+[\fB\-d \fIkey\fR] [\fB\-q \fIkey\fR]
+        [\fIfile_type\fR:]\fIfile_name\fR ...
+.SH DESCRIPTION
+.ad
+.fi
+The \fBpostmap\fR(1) command creates or queries one or more Postfix
+lookup tables, or updates an existing one. The input and output
+file formats are expected to be compatible with:
+
+.nf
+    \fBmakemap \fIfile_type\fR \fIfile_name\fR < \fIfile_name\fR
+.fi
+
+If the result files do not exist they will be created with the
+same group and other read permissions as their source file.
+
+While the table update is in progress, signal delivery is
+postponed, and an exclusive, advisory, lock is placed on the
+entire table, in order to avoid surprises in spectator
+processes.
+.SH "INPUT FILE FORMAT"
+.na
+.nf
+.ad
+.fi
+The format of a lookup table input file is as follows:
+.IP \(bu
+A table entry has the form
+.sp
+.nf
+     \fIkey\fR whitespace \fIvalue\fR
+.fi
+.IP \(bu
+Empty lines and whitespace\-only lines are ignored, as
+are lines whose first non\-whitespace character is a `#'.
+.IP \(bu
+A logical line starts with non\-whitespace text. A line that
+starts with whitespace continues a logical line.
+.PP
+The \fIkey\fR and \fIvalue\fR are processed as is, except that
+surrounding white space is stripped off. Whitespace in lookup
+keys is supported as of Postfix 3.2.
+
+When the \fIkey\fR specifies email address information, the
+localpart should be enclosed with double quotes if required
+by RFC 5322. For example, an address localpart that contains
+";", or a localpart that starts or ends with ".".
+
+By default the lookup key is mapped to lowercase to make
+the lookups case insensitive; as of Postfix 2.3 this case
+folding happens only with tables whose lookup keys are
+fixed\-case strings such as btree:, dbm: or hash:. With
+earlier versions, the lookup key is folded even with tables
+where a lookup field can match both upper and lower case
+text, such as regexp: and pcre:. This resulted in loss of
+information with $\fInumber\fR substitutions.
+.SH "COMMAND-LINE ARGUMENTS"
+.na
+.nf
+.ad
+.fi
+.IP \fB\-b\fR
+Enable message body query mode. When reading lookup keys
+from standard input with "\fB\-q \-\fR", process the input
+as if it is an email message in RFC 5322 format.  Each line
+of body content becomes one lookup key.
+.sp
+By default, the \fB\-b\fR option starts generating lookup
+keys at the first non\-header line, and stops when the end
+of the message is reached.
+To simulate \fBbody_checks\fR(5) processing, enable MIME
+parsing with \fB\-m\fR. With this, the \fB\-b\fR option
+generates no body\-style lookup keys for attachment MIME
+headers and for attached message/* headers.
+.sp
+NOTE: with "smtputf8_enable = yes", the \fB\-b\fR option
+option disables UTF\-8 syntax checks on query keys and
+lookup results. Specify the \fB\-U\fR option to force UTF\-8
+syntax checks anyway.
+.sp
+This feature is available in Postfix version 2.6 and later.
+.IP "\fB\-c \fIconfig_dir\fR"
+Read the \fBmain.cf\fR configuration file in the named directory
+instead of the default configuration directory.
+.IP "\fB\-d \fIkey\fR"
+Search the specified maps for \fIkey\fR and remove one entry per map.
+The exit status is zero when the requested information was found.
+
+If a key value of \fB\-\fR is specified, the program reads key
+values from the standard input stream. The exit status is zero
+when at least one of the requested keys was found.
+.IP \fB\-f\fR
+Do not fold the lookup key to lower case while creating or querying
+a table.
+
+With Postfix version 2.3 and later, this option has no
+effect for regular expression tables. There, case folding
+is controlled by appending a flag to a pattern.
+.IP \fB\-h\fR
+Enable message header query mode. When reading lookup keys
+from standard input with "\fB\-q \-\fR", process the input
+as if it is an email message in RFC 5322 format.  Each
+logical header line becomes one lookup key. A multi\-line
+header becomes one lookup key with one or more embedded
+newline characters.
+.sp
+By default, the \fB\-h\fR option generates lookup keys until
+the first non\-header line is reached.
+To simulate \fBheader_checks\fR(5) processing, enable MIME
+parsing with \fB\-m\fR. With this, the \fB\-h\fR option also
+generates header\-style lookup keys for attachment MIME
+headers and for attached message/* headers.
+.sp
+NOTE: with "smtputf8_enable = yes", the \fB\-b\fR option
+option disables UTF\-8 syntax checks on query keys and
+lookup results. Specify the \fB\-U\fR option to force UTF\-8
+syntax checks anyway.
+.sp
+This feature is available in Postfix version 2.6 and later.
+.IP \fB\-i\fR
+Incremental mode. Read entries from standard input and do not
+truncate an existing database. By default, \fBpostmap\fR(1) creates
+a new database from the entries in \fBfile_name\fR.
+.IP \fB\-m\fR
+Enable MIME parsing with "\fB\-b\fR" and "\fB\-h\fR".
+.sp
+This feature is available in Postfix version 2.6 and later.
+.IP \fB\-N\fR
+Include the terminating null character that terminates lookup keys
+and values. By default, \fBpostmap\fR(1) does whatever is
+the default for
+the host operating system.
+.IP \fB\-n\fR
+Don't include the terminating null character that terminates lookup
+keys and values. By default, \fBpostmap\fR(1) does whatever
+is the default for
+the host operating system.
+.IP \fB\-o\fR
+Do not release root privileges when processing a non\-root
+input file. By default, \fBpostmap\fR(1) drops root privileges
+and runs as the source file owner instead.
+.IP \fB\-p\fR
+Do not inherit the file access permissions from the input file
+when creating a new file.  Instead, create a new file with default
+access permissions (mode 0644).
+.IP "\fB\-q \fIkey\fR"
+Search the specified maps for \fIkey\fR and write the first value
+found to the standard output stream. The exit status is zero
+when the requested information was found.
+
+If a key value of \fB\-\fR is specified, the program reads key
+values from the standard input stream and writes one line of
+\fIkey value\fR output for each key that was found. The exit
+status is zero when at least one of the requested keys was found.
+.IP \fB\-r\fR
+When updating a table, do not complain about attempts to update
+existing entries, and make those updates anyway.
+.IP \fB\-s\fR
+Retrieve all database elements, and write one line of
+\fIkey value\fR output for each element. The elements are
+printed in database order, which is not necessarily the same
+as the original input order.
+.sp
+This feature is available in Postfix version 2.2 and later,
+and is not available for all database types.
+.IP \fB\-u\fR
+Disable UTF\-8 support. UTF\-8 support is enabled by default
+when "smtputf8_enable = yes". It requires that keys and
+values are valid UTF\-8 strings.
+.IP \fB\-U\fR
+With "smtputf8_enable = yes", force UTF\-8 syntax checks
+with the \fB\-b\fR and \fB\-h\fR options.
+.IP \fB\-v\fR
+Enable verbose logging for debugging purposes. Multiple \fB\-v\fR
+options make the software increasingly verbose.
+.IP \fB\-w\fR
+When updating a table, do not complain about attempts to update
+existing entries, and ignore those attempts.
+.PP
+Arguments:
+.IP \fIfile_type\fR
+The database type. To find out what types are supported, use
+the "\fBpostconf \-m\fR" command.
+
+The \fBpostmap\fR(1) command can query any supported file type,
+but it can create only the following file types:
+.RS
+.IP \fBbtree\fR
+The output file is a btree file, named \fIfile_name\fB.db\fR.
+This is available on systems with support for \fBdb\fR databases.
+.IP \fBcdb\fR
+The output consists of one file, named \fIfile_name\fB.cdb\fR.
+This is available on systems with support for \fBcdb\fR databases.
+.IP \fBdbm\fR
+The output consists of two files, named \fIfile_name\fB.pag\fR and
+\fIfile_name\fB.dir\fR.
+This is available on systems with support for \fBdbm\fR databases.
+.IP \fBhash\fR
+The output file is a hashed file, named \fIfile_name\fB.db\fR.
+This is available on systems with support for \fBdb\fR databases.
+.IP \fBfail\fR
+A table that reliably fails all requests. The lookup table
+name is used for logging only. This table exists to simplify
+Postfix error tests.
+.IP \fBsdbm\fR
+The output consists of two files, named \fIfile_name\fB.pag\fR and
+\fIfile_name\fB.dir\fR.
+This is available on systems with support for \fBsdbm\fR databases.
+.PP
+When no \fIfile_type\fR is specified, the software uses the database
+type specified via the \fBdefault_database_type\fR configuration
+parameter.
+.RE
+.IP \fIfile_name\fR
+The name of the lookup table source file when rebuilding a database.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems are logged to the standard error stream and to
+\fBsyslogd\fR(8).
+No output means that no problems were detected. Duplicate entries are
+skipped and are flagged with a warning.
+
+\fBpostmap\fR(1) terminates with zero exit status in case of success
+(including successful "\fBpostmap \-q\fR" lookup) and terminates
+with non\-zero exit status in case of failure.
+.SH "ENVIRONMENT"
+.na
+.nf
+.ad
+.fi
+.IP \fBMAIL_CONFIG\fR
+Directory with Postfix configuration files.
+.IP \fBMAIL_VERBOSE\fR
+Enable verbose logging for debugging purposes.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+The following \fBmain.cf\fR parameters are especially relevant to
+this program.
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.IP "\fBberkeley_db_create_buffer_size (16777216)\fR"
+The per\-table I/O buffer size for programs that create Berkeley DB
+hash or btree tables.
+.IP "\fBberkeley_db_read_buffer_size (131072)\fR"
+The per\-table I/O buffer size for programs that read Berkeley DB
+hash or btree tables.
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdefault_database_type (see 'postconf -d' output)\fR"
+The default database type for use in \fBnewaliases\fR(1), \fBpostalias\fR(1)
+and \fBpostmap\fR(1) commands.
+.IP "\fBimport_environment (see 'postconf -d' output)\fR"
+The list of environment parameters that a privileged Postfix
+process will import from a non\-Postfix parent process, or name=value
+environment overrides.
+.IP "\fBsmtputf8_enable (yes)\fR"
+Enable preliminary SMTPUTF8 support for the protocols described
+in RFC 6531..6533.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "SEE ALSO"
+.na
+.nf
+postalias(1), create/update/query alias database
+postconf(1), supported database types
+postconf(5), configuration parameters
+syslogd(8), system logging
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

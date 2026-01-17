@@ -1,0 +1,563 @@
+'\"
+'\" Copyright (c) 2004-2010 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: tm.n,v 1.14.2.4 2010/09/08 16:53:32 andreas_kupries Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH tm n 8.5 Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+tm \- Facilities for locating and loading of Tcl Modules
+.SH SYNOPSIS
+.nf
+\fB::tcl::tm::path add \fR?\fIpath\fR...?
+\fB::tcl::tm::path remove \fR?\fIpath\fR...?
+\fB::tcl::tm::path list\fR
+\fB::tcl::tm::roots \fR?\fIpath\fR...?
+.fi
+.BE
+.SH DESCRIPTION
+This document describes the facilities for locating and loading Tcl
+Modules (see \fBMODULE DEFINITION\fR for the definition of a Tcl Module).
+The following commands are supported:
+.TP
+\fB::tcl::tm::path add \fR?\fIpath\fR...?
+.
+The paths are added at the head to the list of module paths, in order
+of appearance. This means that the last argument ends up as the new
+head of the list.
+.RS
+.PP
+The command enforces the restriction that no path may be an ancestor
+directory of any other path on the list. If any of the new paths
+violates this restriction an error will be raised, before any of the
+paths have been added. In other words, if only one path argument
+violates the restriction then none will be added.
+.PP
+If a path is already present as is, no error will be raised and no
+action will be taken.
+.PP
+Paths are searched later in the order of their appearance in the
+list. As they are added to the front of the list they are searched in
+reverse order of addition. In other words, the paths added last are
+looked at first.
+.RE
+.TP
+\fB::tcl::tm::path remove \fR?\fIpath\fR...?
+.
+Removes the paths from the list of module paths. The command silently
+ignores all paths which are not on the list.
+.TP
+\fB::tcl::tm::path list\fR
+.
+Returns a list containing all registered module paths, in the order
+that they are searched for modules.
+.TP
+\fB::tcl::tm::roots \fR?\fIpath\fR...?
+.
+Similar to \fBpath add\fR, and layered on top of it. This command
+takes a list of paths, extends each with
+.QW "\fBtcl\fIX\fB/site-tcl\fR" ,
+and
+.QW "\fBtcl\fIX\fB/\fIX\fB.\fIy\fR" ,
+for major version \fIX\fR of the
+Tcl interpreter and minor version \fIy\fR less than or equal to the
+minor version of the interpreter, and adds the resulting set of paths
+to the list of paths to search.
+.RS
+.PP
+This command is used internally by the system to set up the
+system-specific default paths.
+.PP
+The command has been exposed to allow a build system to define
+additional root paths beyond those described by this document.
+.RE
+.SH "MODULE DEFINITION"
+A Tcl Module is a Tcl Package contained in a single file, and no other
+files required by it. This file has to be \fBsource\fRable. In other
+words, a Tcl Module is always imported via:
+.CS
+source module_file
+.CE
+.PP
+The \fBload\fR command is not directly used. This restriction is not
+an actual limitation, as some may believe.
+Ever since 8.4 the Tcl \fBsource\fR command reads only until the first
+^Z character. This allows us to combine an arbitrary Tcl script with
+arbitrary binary data into one file, where the script processes the
+attached data in any it chooses to fully import and activate the
+package.
+.PP
+The name of a module file has to match the regular expression:
+.CS
+([_[:alpha:]][:_[:alnum:]]*)-([[:digit:]].*)\e.tm
+.CE
+.PP
+The first capturing parentheses provides the name of the package, the
+second clause its version. In addition to matching the pattern, the
+extracted version number must not raise an error when used in the
+command:
+.CS
+package vcompare $version 0
+.CE
+.PP
+.SH "FINDING MODULES"
+The directory tree for storing Tcl modules is separate from other
+parts of the filesystem and independent of \fBauto_path\fR.
+.PP
+Tcl Modules are searched for in all directories listed in the result
+of the command \fB::tcl::tm::path list\fR.
+This is called the \fIModule path\fR. Neither the \fBauto_path\fR nor
+the \fBtcl_pkgPath\fR variables are used.
+All directories on the module path have to obey one restriction:
+.RS
+.PP
+For any two directories, neither is an ancestor directory of the
+other.
+.RE
+.PP
+This is required to avoid ambiguities in package naming. If for
+example the two directories
+.QW "\fIfoo/\fR"
+and
+.QW "\fIfoo/cool\fR"
+were on
+the path a package named \fBcool::ice\fR could be found via the
+names \fBcool::ice\fR or \fBice\fR, the latter potentially
+obscuring a package named \fBice\fR, unqualified.
+.PP
+Before the search is started, the name of the requested package is
+translated into a partial path, using the following algorithm:
+.RS
+.PP
+All occurrences of
+.QW "\fB::\fR"
+in the package name are replaced by
+the appropriate directory separator character for the platform we are
+on. On Unix, for example, this is
+.QW "\fB/\fR" .
+.RE
+.PP
+Example:
+.RS
+.PP
+The requested package is \fBencoding::base64\fR. The generated
+partial path is
+.QW "\fIencoding/base64\fR" .
+.RE
+.PP
+After this translation the package is looked for in all module paths,
+by combining them one-by-one, first to last with the partial path to
+form a complete search pattern. Note that the search algorithm rejects
+all files where the filename does not match the regular expression
+given in the section \fBMODULE DEFINITION\fR. For the remaining
+files \fIprovide scripts\fR are generated and added to the package
+ifneeded database.
+.PP
+The algorithm falls back to the previous unknown handler when none of
+the found module files satisfy the request. If the request was
+satisfied the fall-back is ignored.
+.PP
+Note that packages in module form have \fIno\fR control over the
+\fIindex\fR and \fIprovide script\fRs entered into the package
+database for them.
+For a module file \fBMF\fR the \fIindex script\fR is always:
+.CS
+package ifneeded \fBPNAME PVERSION\fR [list source \fBMF\fR]
+.CE
+and the \fIprovide script\fR embedded in the above is:
+.CS
+source \fBMF\fR
+.CE
+.PP
+Both package name \fBPNAME\fR and package version \fBPVERSION\fR are
+extracted from the filename \fBMF\fR according to the definition
+below:
+.CS
+\fBMF\fR = /module_path/\fBPNAME\(fm\fR-\fBPVERSION\fR.tm
+.CE
+.PP
+Where \fBPNAME\(fm\fR is the partial path of the module as defined in
+section \fBFINDING MODULES\fR, and translated into \fBPNAME\fR by
+changing all directory separators to
+.QW "\fB::\fR" ,
+and \fBmodule_path\fR is the path (from the list of paths to search)
+that we found the module file under.
+.PP
+Note also that we are here creating a connection between package names
+and paths. Tcl is case-sensitive when it comes to comparing package
+names, but there are filesystems which are not, like NTFS. Luckily
+these filesystems do store the case of the name, despite not using the
+information when comparing.
+.PP
+Given the above we allow the names for packages in Tcl modules to have
+mixed-case, but also require that there are no collisions when
+comparing names in a case-insensitive manner. In other words, if a
+package \fBFoo\fR is deployed in the form of a Tcl Module,
+packages like \fBfoo\fR, \fBfOo\fR, etc. are not allowed
+anymore.
+.SH "DEFAULT PATHS"
+The default list of paths on the module path is computed by a
+\fBtclsh\fR as follows, where \fIX\fR is the major version of the Tcl
+interpreter and \fIy\fR is less than or equal to the minor version of
+the Tcl interpreter.
+.PP
+All the default paths are added to the module path, even those paths
+which do not exist. Non-existent paths are filtered out during actual
+searches. This enables a user to create one of the paths searched when
+needed and all running applications will automatically pick up any
+modules placed in them.
+.PP
+The paths are added in the order as they are listed below, and for
+lists of paths defined by an environment variable in the order they
+are found in the variable.
+.SS "SYSTEM SPECIFIC PATHS"
+.TP
+\fBfile normalize [info library]/../tcl\fIX\fB/\fIX\fB.\fIy\fR
+.
+In other words, the interpreter will look into a directory specified
+by its major version and whose minor versions are less than or equal
+to the minor version of the interpreter.
+.RS
+.PP
+For example for Tcl 8.4 the paths searched are:
+.CS
+\fB[info library]/../tcl8/8.4\fR
+\fB[info library]/../tcl8/8.3\fR
+\fB[info library]/../tcl8/8.2\fR
+\fB[info library]/../tcl8/8.1\fR
+\fB[info library]/../tcl8/8.0\fR
+.CE
+.PP
+This definition assumes that a package defined for Tcl \fIX\fB.\fIy\fR
+can also be used by all interpreters which have the same major number
+\fIX\fR and a minor number greater than \fIy\fR.
+.RE
+.TP
+\fBfile normalize EXEC/tcl\fIX\fB/\fIX\fB.\fIy\fR
+.
+Where \fBEXEC\fR is \fBfile normalize [info nameofexecutable]/../lib\fR
+or \fBfile normalize [::tcl::pkgconfig get libdir,runtime]\fR
+.RS
+.PP
+This sets of paths is handled equivalently to the set coming before,
+except that it is anchored in \fBEXEC_PREFIX\fR.
+For a build with \fBPREFIX\fR = \fBEXEC_PREFIX\fR the two sets are
+identical.
+.RE
+.SS "SITE SPECIFIC PATHS"
+.TP
+\fBfile normalize [info library]/../tcl\fIX\fB/site-tcl\fR
+.
+Note that this is always a single entry because \fIX\fR is always a
+specific value (the current major version of Tcl).
+.SS "USER SPECIFIC PATHS"
+.TP
+\fB$::env(TCL\fIX\fB_\fIy\fB_TM_PATH)\fR
+.
+A list of paths, separated by either \fB:\fR (Unix) or \fB;\fR
+(Windows). This is user and site specific as this environment variable
+can be set not only by the user's profile, but by system configuration
+scripts as well.
+.TP
+\fB$::env(TCL\fIX\fB.\fIy\fB_TM_PATH)\fR
+.
+Same meaning and content as the previous variable. However the use of
+dot '.' to separate major and minor version number makes this name
+less to non-portable and its use is discouraged. Support of this
+variable has been kept only for backward compatibility with the
+original specification, i.e. TIP 189.
+.PP
+These paths are seen and therefore shared by all Tcl shells in the
+\fB$::env(PATH)\fR of the user.
+.PP
+Note that \fIX\fR and \fIy\fR follow the general rules set out
+above. In other words, Tcl 8.4, for example, will look at these 5
+environment variables:
+.CS
+\fB$::env(TCL8.4_TM_PATH)\fR  \fB$::env(TCL8_4_TM_PATH)\fR
+\fB$::env(TCL8.3_TM_PATH)\fR  \fB$::env(TCL8_3_TM_PATH)\fR
+\fB$::env(TCL8.2_TM_PATH)\fR  \fB$::env(TCL8_2_TM_PATH)\fR
+\fB$::env(TCL8.1_TM_PATH)\fR  \fB$::env(TCL8_1_TM_PATH)\fR
+\fB$::env(TCL8.0_TM_PATH)\fR  \fB$::env(TCL8_0_TM_PATH)\fR
+.CE
+.SH "SEE ALSO"
+package(n), Tcl Improvement Proposal #189
+.QW "\fITcl Modules\fR"
+(online at http://tip.tcl.tk/189.html), Tcl Improvement Proposal #190
+.QW "\fIImplementation Choices for Tcl Modules\fR"
+(online at http://tip.tcl.tk/190.html)
+.SH "KEYWORDS"
+modules, package

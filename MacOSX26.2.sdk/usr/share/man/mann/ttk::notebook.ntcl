@@ -1,0 +1,483 @@
+'\"
+'\" Copyright (c) 2004 Joe English
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH ttk::notebook n 8.5 Tk "Tk Themed Widget"
+.BS
+.SH NAME
+ttk::notebook \- Multi-paned container widget
+.SH SYNOPSIS
+.nf
+\fBttk::notebook\fR \fIpathname \fR?\fIoptions...\fR?
+.br
+\fIpathname \fBadd\fR \fIwindow\fR ?\fIoptions...\fR?
+\fIpathname \fBinsert\fR \fIindex\fR \fIwindow\fR ?\fIoptions...\fR?
+.fi
+.BE
+.SH DESCRIPTION
+A \fBttk::notebook\fR widget manages a collection of windows 
+and displays a single one at a time.
+Each slave window is associated with a \fItab\fR,
+which the user may select to change the currently-displayed window.
+.SO ttk_widget
+\-class	\-cursor	\-takefocus
+\-style
+.SE
+.SH "WIDGET-SPECIFIC OPTIONS"
+.OP \-height height Height
+If present and greater than zero, 
+specifies the desired height of the pane area
+(not including internal padding or tabs).
+Otherwise, the maximum height of all panes is used.
+.OP \-padding padding Padding
+Specifies the amount of extra space to add around the outside
+of the notebook.
+The padding is a list of up to four length specifications 
+\fIleft top right bottom\fR.
+If fewer than four elements are specified, 
+\fIbottom\fR defaults to \fItop\fR,
+\fIright\fR defaults to \fIleft\fR, and 
+\fItop\fR defaults to \fIleft\fR.
+.OP \-width width Width
+If present and greater than zero, 
+specifies the desired width of the pane area
+(not including internal padding).
+Otherwise, the maximum width of all panes is used.
+.SH "TAB OPTIONS"
+The following options may be specified for individual notebook panes:
+.OP \-state state State
+Either \fBnormal\fR, \fBdisabled\fR or \fBhidden\fR.  
+If \fBdisabled\fR, then the tab is not selectable.
+If \fBhidden\fR, then the tab is not shown.
+.OP \-sticky sticky Sticky
+Specifies how the slave window is positioned within the pane area.
+Value is a string containing zero or more of the characters
+\fBn, s, e,\fR or \fBw\fR.
+Each letter refers to a side (north, south, east, or west) 
+that the slave window will
+.QW stick
+to, as per the \fBgrid\fR geometry manager.
+.OP \-padding padding Padding
+Specifies the amount of extra space to add between the notebook and this pane.
+Syntax is the same as for the widget \fB\-padding\fR option.
+.OP \-text text Text
+Specifies a string to be displayed in the tab.
+.OP \-image image Image
+Specifies an image to display in the tab.
+See \fIttk_widget(n)\fR for details.
+.OP \-compound compound Compound
+Specifies how to display the image relative to the text,
+in the case both \fB\-text\fR and \fB\-image\fR are present.
+See \fIlabel(n)\fR for legal values.
+.OP \-underline underline Underline
+Specifies the integer index (0-based) of a character to underline 
+in the text string.
+The underlined character is used for mnemonic activation
+if \fBttk::notebook::enableTraversal\fR is called.
+.SH "TAB IDENTIFIERS"
+The \fItabid\fR argument to the following commands may take
+any of the following forms:
+.IP \(bu
+An integer between zero and the number of tabs;
+.IP \(bu
+The name of a slave window;
+.IP \(bu
+A positional specification of the form
+.QW @\fIx\fR,\fIy\fR ,
+which identifies the tab 
+.IP \(bu
+The literal string
+.QW \fBcurrent\fR ,
+which identifies the currently-selected tab; or:
+.IP \(bu
+The literal string
+.QW \fBend\fR ,
+which returns the number of tabs 
+(only valid for
+.QW "\fIpathname \fBindex\fR" ).
+.SH "WIDGET COMMAND"
+.TP
+\fIpathname \fBadd\fR \fIwindow\fR ?\fIoptions...\fR?
+Adds a new tab to the notebook.
+See \fBTAB OPTIONS\fR for the list of available \fIoptions\fR.
+If \fIwindow\fR is currently managed by the notebook but hidden,
+it is restored to its previous position.
+.TP
+\fIpathname \fBconfigure\fR ?\fIoptions\fR?
+See \fIttk::widget(n)\fR.
+.TP
+\fIpathname \fBcget\fR \fIoption\fR
+See \fIttk::widget(n)\fR.
+.TP
+\fIpathname \fBforget\fR \fItabid\fR
+Removes the tab specified by \fItabid\fR,
+unmaps and unmanages the associated window.
+.TP
+\fIpathname \fBhide\fR \fItabid\fR
+Hides the tab specified by \fItabid\fR.
+The tab will not be displayed, but the associated window
+remains managed by the notebook and its configuration remembered.
+Hidden tabs may be restored with the \fBadd\fR command.
+.TP
+\fIpathname \fBidentify\fR \fIcomponent\fR \fIx\fR \fIy\fR
+Returns the name of the element under the point given by \fIx\fR and \fIy\fR,
+or the empty string if no component is present at that location.
+The following subcommands are supported:
+.RS
+.TP
+\fIpathname \fBidentify\fR \fBelement\fR \fIx\fR \fIy\fR
+Returns the name of the element at the specified location.
+.TP
+\fIpathname \fBidentify\fR \fBtab\fR \fIx\fR \fIy\fR
+Returns the index of the tab at the specified location.
+.RE
+.TP
+\fIpathname \fBindex\fR \fItabid\fR
+Returns the numeric index of the tab specified by \fItabid\fR,
+or the total number of tabs if \fItabid\fR is the string
+.QW \fBend\fR .
+.TP
+\fIpathname \fBinsert\fR \fIpos\fR \fIsubwindow\fR \fIoptions...\fR
+Inserts a pane at the specified position.
+\fIpos\fR is either the string \fBend\fR, an integer index, 
+or the name of a managed subwindow.
+If \fIsubwindow\fR is already managed by the notebook, 
+moves it to the specified position.
+See \fBTAB OPTIONS\fR for the list of available options.
+.TP
+\fIpathname \fBinstate\fR \fIstatespec \fR?\fIscript...\fR?
+See \fIttk::widget(n)\fR.
+.TP
+\fIpathname \fBselect\fR ?\fItabid\fR?
+Selects the specified tab.
+The associated slave window will be displayed,
+and the previously-selected window (if different) is unmapped.
+If \fItabid\fR is omitted, returns the widget name of the
+currently selected pane.
+.TP
+\fIpathname \fBstate\fR ?\fIstatespec\fR?
+See \fIttk::widget(n)\fR.
+.TP
+\fIpathname \fBtab\fR \fItabid\fR ?\fI\-option \fR?\fIvalue ...\fR
+Query or modify the options of the specific tab.
+If no \fI\-option\fR is specified,
+returns a dictionary of the tab option values.
+If one \fI\-option\fR is specified,
+returns the value of that \fIoption\fR.
+Otherwise, sets the \fI\-option\fRs to the corresponding \fIvalue\fRs.
+See \fBTAB OPTIONS\fR for the available options.
+.TP
+\fIpathname \fBtabs\fR
+Returns the list of windows managed by the notebook.
+.SH "KEYBOARD TRAVERSAL"
+To enable keyboard traversal for a toplevel window
+containing a notebook widget \fI$nb\fR, call:
+.CS
+ttk::notebook::enableTraversal $nb
+.CE
+.PP
+This will extend the bindings for the toplevel window
+containing the notebook as follows:
+.IP \(bu
+\fBControl-Tab\fR selects the tab following the currently selected one.
+.IP \(bu
+\fBShift-Control-Tab\fR selects the tab preceding the currently selected one.
+.IP \(bu
+\fBAlt-K\fR, where \fBK\fR is the mnemonic (underlined) character
+of any tab, will select that tab.
+.PP
+Multiple notebooks in a single toplevel may be enabled for traversal,
+including nested notebooks.  
+However, notebook traversal only works properly if all panes
+are direct children of the notebook.
+.SH "VIRTUAL EVENTS"
+The notebook widget generates a \fB<<NotebookTabChanged>>\fR
+virtual event after a new tab is selected.
+.SH "EXAMPLE"
+.CS
+pack [\fBttk::notebook\fR .nb]
+\.nb add [frame .nb.f1] \-text "First tab"
+\.nb add [frame .nb.f2] \-text "Second tab"
+\.nb select .nb.f2
+ttk::notebook::enableTraversal .nb
+.CE
+.SH "SEE ALSO"
+ttk::widget(n), grid(n)
+.SH "KEYWORDS"
+pane, tab
+'\" Local Variables:
+'\" mode: nroff
+'\" End:

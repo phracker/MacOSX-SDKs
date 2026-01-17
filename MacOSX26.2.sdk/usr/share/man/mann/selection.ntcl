@@ -1,0 +1,446 @@
+'\"
+'\" Copyright (c) 1990-1994 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH selection n 8.1 Tk "Tk Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+selection \- Manipulate the X selection
+.SH SYNOPSIS
+\fBselection \fIoption\fR ?\fIarg arg ...\fR?
+.BE
+
+.SH DESCRIPTION
+.PP
+This command provides a Tcl interface to the X selection mechanism and
+implements the full selection functionality described in the
+X Inter-Client Communication Conventions Manual (ICCCM).
+.PP
+Note that for management of the CLIPBOARD selection (see below), the
+\fBclipboard\fR command may also be used.
+.PP
+The first argument to \fBselection\fR determines the format of the
+rest of the arguments and the behavior of the command.  The following
+forms are currently supported:
+.PP
+.TP
+\fBselection clear\fR ?\fB\-displayof\fR \fIwindow\fR? ?\fB\-selection\fR \fIselection\fR?
+If \fIselection\fR exists anywhere on \fIwindow\fR's display, clear it
+so that no window owns the selection anymore.  \fISelection\fR
+specifies the X selection that should be cleared, and should be an
+atom name such as PRIMARY or CLIPBOARD; see the Inter-Client
+Communication Conventions Manual for complete details.
+\fISelection\fR defaults to PRIMARY and \fIwindow\fR defaults to
+.QW . .
+Returns an empty string. 
+.TP
+\fBselection get\fR ?\fB\-displayof\fR \fIwindow\fR? ?\fB\-selection\fR \fIselection\fR? ?\fB\-type\fR \fItype\fR?
+Retrieves the value of \fIselection\fR from \fIwindow\fR's display and
+returns it as a result.  \fISelection\fR defaults to PRIMARY and
+\fIwindow\fR defaults to
+.QW . .
+\fIType\fR specifies the form in which the selection is to be returned
+(the desired
+.QW target
+for conversion, in ICCCM terminology), and
+should be an atom name such as STRING or FILE_NAME; see the
+Inter-Client Communication Conventions Manual for complete details.
+\fIType\fR defaults to STRING.  The selection owner may choose to
+return the selection in any of several different representation
+formats, such as STRING, UTF8_STRING, ATOM, INTEGER, etc. (this format
+is different
+than the selection type; see the ICCCM for all the confusing details).
+If the selection is returned in a non-string format, such as INTEGER
+or ATOM, the \fBselection\fR command converts it to string format as a
+collection of fields separated by spaces: atoms are converted to their
+textual names, and anything else is converted to hexadecimal integers.
+Note that \fBselection get\fR does not retrieve the selection in the
+UTF8_STRING format unless told to.
+.TP
+\fBselection handle\fR ?\fB\-selection\fR \fIs\fR? ?\fB\-type\fR \fIt\fR? ?\fB\-format\fR \fIf\fR? \fIwindow command\fR
+Creates a handler for selection requests, such that \fIcommand\fR will
+be executed whenever selection \fIs\fR is owned by \fIwindow\fR and
+someone attempts to retrieve it in the form given by type \fIt\fR
+(e.g. \fIt\fR is specified in the \fBselection get\fR command).
+\fIS\fR defaults to PRIMARY, \fIt\fR defaults to STRING, and
+\fIf\fR defaults to STRING.  If \fIcommand\fR is an empty string
+then any existing handler for \fIwindow\fR, \fIt\fR, and
+\fIs\fR is removed.
+Note that when the selection is handled as type STRING it is also
+automatically handled as type UTF8_STRING as well.
+.RS
+.PP
+When \fIselection\fR is requested, \fIwindow\fR is the selection owner,
+and \fItype\fR is the requested type, \fIcommand\fR will be executed
+as a Tcl command with two additional numbers appended to it
+(with space separators).  
+The two additional numbers
+are \fIoffset\fR and \fImaxChars\fR:  \fIoffset\fR specifies a starting
+character position in the selection and \fImaxChars\fR gives the maximum
+number of characters to retrieve.  The command should return a value consisting
+of at most \fImaxChars\fR of the selection, starting at position
+\fIoffset\fR.  For very large selections (larger than \fImaxChars\fR)
+the selection will be retrieved using several invocations of \fIcommand\fR
+with increasing \fIoffset\fR values.  If \fIcommand\fR returns a string
+whose length is less than \fImaxChars\fR, the return value is assumed to
+include all of the remainder of the selection;  if the length of
+\fIcommand\fR's result is equal to \fImaxChars\fR then
+\fIcommand\fR will be invoked again, until it eventually
+returns a result shorter than \fImaxChars\fR.  The value of \fImaxChars\fR
+will always be relatively large (thousands of characters).
+.PP
+If \fIcommand\fR returns an error then the selection retrieval is rejected
+just as if the selection did not exist at all.
+.PP
+The \fIformat\fR argument specifies the representation that should be
+used to transmit the selection to the requester (the second column of
+Table 2 of the ICCCM), and defaults to STRING.  If \fIformat\fR is
+STRING, the selection is transmitted as 8-bit ASCII characters (i.e.
+just in the form returned by \fIcommand\fR, in the system \fBencoding\fR;
+the UTF8_STRING format always uses UTF-8 as its encoding).
+If \fIformat\fR is
+ATOM, then the return value from \fIcommand\fR is divided into fields
+separated by white space;  each field is converted to its atom value,
+and the 32-bit atom value is transmitted instead of the atom name.
+For any other \fIformat\fR, the return value from \fIcommand\fR is
+divided into fields separated by white space and each field is
+converted to a 32-bit integer;  an array of integers is transmitted
+to the selection requester.
+.PP
+The \fIformat\fR argument is needed only for compatibility with
+selection requesters that do not use Tk.  If Tk is being
+used to retrieve the selection then the value is converted back to
+a string at the requesting end, so \fIformat\fR is
+irrelevant.
+.RE
+.TP
+\fBselection own\fR ?\fB\-displayof\fR \fIwindow\fR? ?\fB\-selection\fR \fIselection\fR?
+.TP
+\fBselection own\fR ?\fB\-command\fR \fIcommand\fR? ?\fB\-selection\fR \fIselection\fR? \fIwindow\fR
+The first form of \fBselection own\fR returns the path name of the
+window in this application that owns \fIselection\fR on the display
+containing \fIwindow\fR, or an empty string if no window in this
+application owns the selection.  \fISelection\fR defaults to PRIMARY and
+\fIwindow\fR defaults to
+.QW . .
+.PP
+The second form of \fBselection own\fR causes \fIwindow\fR to become
+the new owner of \fIselection\fR on \fIwindow\fR's display, returning
+an empty string as result. The existing owner, if any, is notified
+that it has lost the selection.
+If \fIcommand\fR is specified, it is a Tcl script to execute when
+some other window claims ownership of the selection away from
+\fIwindow\fR.  \fISelection\fR defaults to PRIMARY.
+.SH EXAMPLES
+On X11 platforms, one of the standard selections available is the
+SECONDARY selection. Hardly anything uses it, but here is how to read
+it using Tk:
+.CS
+set selContents [\fBselection get\fR \-selection SECONDARY]
+.CE
+.PP
+Many different types of data may be available for a selection; the
+special type TARGETS allows you to get a list of available types:
+.CS
+foreach type [\fBselection get\fR \-type TARGETS] {
+   puts "Selection PRIMARY supports type $type"
+}
+.CE
+.PP
+To claim the selection, you must first set up a handler to supply the
+data for the selection.  Then you have to claim the selection...
+.CS
+# Set up the data handler ready for incoming requests
+set foo "This is a string with some data in it... blah blah"
+\fBselection handle\fR \-selection SECONDARY . getData
+proc getData {offset maxChars} {
+   puts "Retrieving selection starting at $offset"
+   return [string range $::foo $offset [expr {$offset+$maxChars}]]
+}
+
+# Now we grab the selection itself
+puts "Claiming selection"
+\fBselection own\fR \-command lost \-selection SECONDARY .
+proc lost {} {
+   puts "Lost selection"
+}
+.CE
+.SH "SEE ALSO"
+clipboard(n)
+.SH KEYWORDS
+clear, format, handler, ICCCM, own, selection, target, type

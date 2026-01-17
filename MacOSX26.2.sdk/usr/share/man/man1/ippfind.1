@@ -1,0 +1,258 @@
+.\"
+.\" ippfind man page.
+.\"
+.\" Copyright © 2013-2019 by Apple Inc.
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH ippfind 1 "ippsample" "26 April 2019" "Apple Inc."
+.SH NAME
+ippfind \- find internet printing protocol printers
+.SH SYNOPSIS
+.B ippfind
+[
+.I options
+] \fIregtype\fR[\fB,\fIsubtype\fR][\fB.\fIdomain\fB.\fR] ... [
+.I expression
+ ... ]
+.br
+.B ippfind
+[
+.I options
+] \fIname\fR[\fB.\fIregtype\fR[\fB.\fIdomain\fB.\fR]] ... [
+.I expression
+ ... ]
+.br
+.B ippfind
+.B \-\-help
+.br
+.B ippfind
+.B \-\-version
+.SH DESCRIPTION
+\fBippfind\fR finds services registered with a DNS server or available through local devices.
+Its primary purpose is to find IPP printers and show their URIs, show their current status, or run commands.
+.SS REGISTRATION TYPES
+\fBippfind\fR supports the following registration types:
+.TP 5
+_http._tcp
+HyperText Transport Protocol (HTTP, RFC 2616)
+.TP 5
+_https._tcp
+Secure HyperText Transport Protocol (HTTPS, RFC 2818)
+.TP 5
+_ipp._tcp
+Internet Printing Protocol (IPP, RFC 2911)
+.TP 5
+_ipps._tcp
+Secure Internet Printing Protocol (IPPS, draft)
+.TP 5
+_printer._tcp
+Line Printer Daemon (LPD, RFC 1179)
+.SS EXPRESSIONS
+\fBippfind\fR supports expressions much like the
+.BR find (1)
+utility.
+However, unlike
+.BR find (1),
+\fBippfind\fR uses POSIX regular expressions instead of shell filename matching patterns.
+If \fI\-\-exec\fR, \fI\-l\fR, \fI\-\-ls\fR, \fI\-p\fR, \fI\-\-print\fR, \fI\-\-print\-name\fR, \fI\-q\fR, \fI\-\-quiet\fR, \fI\-s\fR, or \fI\-x\fR is not specified, \fBippfind\fR adds \fI\-\-print\fR to print the service URI of anything it finds.
+The following expressions are supported:
+.TP 5
+\fB\-d \fIregex\fR
+.TP 5
+\fB\-\-domain \fIregex\fR
+True if the domain matches the given regular expression.
+.TP 5
+.B \-\-false
+Always false.
+.TP 5
+\fB\-h \fIregex\fR
+.TP 5
+\fB\-\-host \fIregex\fR
+True is the hostname matches the given regular expression.
+.TP 5
+.B \-l
+.TP 5
+.B \-\-ls
+Lists attributes returned by Get-Printer-Attributes for IPP printers and traditional \fIfind\fR "-ls" output for HTTP URLs.
+The result is true if the URI is accessible, false otherwise.
+.TP 5
+.B \-\-local
+True if the service is local to this computer.
+.TP 5
+\fB\-N \fIname\fR
+.TP 5
+\fB\-\-literal\-name \fIname\fR
+True if the service instance name matches the given name.
+.TP 5
+\fB\-n \fIregex\fR
+.TP 5
+\fB\-\-name \fIregex\fR
+True if the service instance name matches the given regular expression.
+.TP 5
+\fB\-\-path \fIregex\fR
+True if the URI resource path matches the given regular expression.
+.TP 5
+\fB\-P \fInumber\fR[\fB-\fInumber\fR]
+.TP 5
+\fB\-\-port \fInumber\fR[\fB-\fInumber\fR]
+True if the port matches the given number or range.
+.TP 5
+.B \-p
+.TP 5
+.B \-\-print
+Prints the URI if the result of previous expressions is true.
+The result is always true.
+.TP 5
+.B \-q
+.TP 5
+.B \-\-quiet
+Quiet mode - just returns the exit codes below.
+.TP 5
+.B \-r
+.TP 5
+.B \-\-remote
+True if the service is not local to this computer.
+.TP 5
+.B \-s
+.TP 5
+.B \-\-print\-name
+Prints the service instance name if the result of previous expressions is true.
+The result is always true.
+.TP 5
+.B \-\-true
+Always true.
+.TP 5
+\fB\-t \fIkey\fR
+.TP 5
+\fB\-\-txt \fIkey\fR
+True if the TXT record contains the named key.
+.TP 5
+\fB\-\-txt\-\fIkey regex\fR
+True if the TXT record contains the named key and matches the given regular expression.
+.TP 5
+\fB\-u \fIregex\fR
+.TP 5
+\fB\-\-uri \fIregex\fR
+True if the URI matches the given regular expression.
+.TP 5
+\fB\-x \fIutility \fR[ \fIargument \fR... ] \fB;\fR
+.TP 5
+\fB\-\-exec \fIutility \fR[ \fIargument \fR... ] \fB;\fR
+Executes the specified program if the current result is true.
+"{foo}" arguments are replaced with the corresponding value - see SUBSTITUTIONS below.
+.PP
+Expressions may also contain modifiers:
+.TP 5
+\fB( \fIexpression \fB)\fR
+Group the result of expressions.
+.TP 5
+\fB! \fIexpression\fR
+.TP 5
+\fB\-\-not \fIexpression\fR
+Unary NOT of the expression.
+.TP 5
+\fIexpression expression\fR
+.TP 5
+\fIexpression \fB\-\-and \fIexpression\fR
+Logical AND of expressions.
+.TP 5
+\fIexpression \fB\-\-or \fIexpression\fR
+Logical OR of expressions.
+.SS SUBSTITUTIONS
+The substitutions for "{foo}" in \fI\-e\fR and \fI\-\-exec\fR are:
+.TP 5
+.B {service_domain}
+Domain name, e.g., "example.com.", "local.", etc.
+.TP 5
+.B {service_hostname}
+Fully-qualified domain name, e.g., "printer.example.com.", "printer.local.", etc.
+.TP 5
+.B {service_name}
+Service instance name, e.g., "My Fine Printer".
+.TP 5
+.B {service_port}
+Port number for server, typically 631 for IPP and 80 for HTTP.
+.TP 5
+.B {service_regtype}
+DNS-SD registration type, e.g., "_ipp._tcp", "_http._tcp", etc.
+.TP 5
+.B {service_scheme}
+URI scheme for DNS-SD registration type, e.g., "ipp", "http", etc.
+.TP 5
+.B {}
+.TP 5
+.B {service_uri}
+URI for service, e.g., "ipp://printer.local./ipp/print", "http://printer.local./", etc.
+.TP 5
+\fB{txt_\fIkey\fB}\fR
+Value of TXT record \fIkey\fR (lowercase).
+.SH OPTIONS
+\fBippfind\fR supports the following options:
+.TP 5
+.B \-\-help
+Show program help.
+.TP 5
+.B \-\-version
+Show program version.
+.TP 5
+.B \-4
+Use IPv4 when listing.
+.TP 5
+.B \-6
+Use IPv6 when listing.
+.TP 5
+\fB\-T \fIseconds\fR
+Specify find timeout in seconds.
+If 1 or less, \fBippfind\fR stops as soon as it thinks it has found everything.
+The default timeout is 1 second.
+.TP 5
+\fB\-V \fIversion\fR
+Specifies the IPP version when listing.
+Supported values are "1.1", "2.0", "2.1", and "2.2".
+.SH EXIT STATUS
+\fBippfind\fR returns 0 if the result for all processed expressions is true, 1 if the result of any processed expression is false, 2 if browsing or any query or resolution failed, 3 if an undefined option or invalid expression was specified, and 4 if it ran out of memory.
+.SH ENVIRONMENT
+When executing a program, \fBippfind\fR sets the following environment variables for the matching service registration:
+.TP 5
+.B IPPFIND_SERVICE_DOMAIN
+Domain name, e.g., "example.com.", "local.", etc.
+.TP 5
+.B IPPFIND_SERVICE_HOSTNAME
+Fully-qualified domain name, e.g., "printer.example.com.", "printer.local.", etc.
+.TP 5
+.B IPPFIND_SERVICE_NAME
+Service instance name, e.g., "My Fine Printer".
+.TP 5
+.B IPPFIND_SERVICE_PORT
+Port number for server, typically 631 for IPP and 80 for HTTP.
+.TP 5
+.B IPPFIND_SERVICE_REGTYPE
+DNS-SD registration type, e.g., "_ipp._tcp", "_http._tcp", etc.
+.TP 5
+.B IPPFIND_SERVICE_SCHEME
+URI scheme for DNS-SD registration type, e.g., "ipp", "http", etc.
+.TP 5
+.B IPPFIND_SERVICE_URI
+URI for service, e.g., "ipp://printer.local./ipp/print", "http://printer.local./", etc.
+.TP 5
+.B IPPFIND_TXT_\fIKEY\fR
+Values of TXT record \fIKEY\fR (uppercase).
+.SH EXAMPLES
+To show the status of all registered IPP printers on your network, run:
+.nf
+
+    ippfind \-\-ls
+
+.fi
+Similarly, to send a PostScript test page to every PostScript printer, run:
+.nf
+
+    ippfind \-\-txt\-pdl application/postscript \-\-exec ipptool
+      \-f onepage\-letter.ps '{}' print\-job.test \\;
+.fi
+.SH SEE ALSO
+.BR ipptool (1)
+.SH COPYRIGHT
+Copyright \[co] 2013-2019 by Apple Inc.

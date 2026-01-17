@@ -1,0 +1,381 @@
+'\"
+'\" Copyright (c) 1996 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) Hyperhelp.n
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::hyperhelp iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::hyperhelp \- Create and manipulate a hyperhelp widget
+.SH SYNOPSIS
+\fBiwidgets::hyperhelp\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Toplevel <- iwidgets::Shell <- iwidgets::Hyperhelp
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5c 10c
+\fBactiveBackground\fR	\fBbackground\fR	\fBborderWidth\fR
+\fBclosecmd\fR	\fBcursor\fR	\fBexportSelection\fR	
+\fBforeground\fR	\fBhighlightColor\fR	\fBhighlightThickness\fR
+\fBinsertBackground\fR	\fBinsertBorderWidth	\fBinsertOffTime\fR
+\fBinsertOnTime\fR	\fBinsertWidth\fR	\fBpadX\fR
+\fBpadY\fR	\fBrelief\fR	\fBrepeatDelay\fR
+\fBrepeatInterval\fR	\fBselectBackground\fR	\fBselectBorderWidth\fR
+\fBselectForeground\fR	\fBsetGrid\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "ASSOCIATED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBhscrollmode\fR	\fBvscrollmode\fR	\fBtextbackground\fR	\fBfontname\fR
+\fBfontsize\fR	\fBfixedfont\fR	\fBlink\fR	\fBlinkhighlight\fR
+\fBwidth\fR	\fBheight\fR	\fBstate\fR	\fBwrap\fR
+\fBunknownimage\fR
+.fi
+.LP
+See the "scrolledhtml" widget manual entry for details on the above
+associated options.
+.SH "INHERITED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBmodality\fR	\fBtitle\fR 
+.fi
+.LP
+See the "shell" manual entry for details on the above inherited options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:   \fBtopics\fR
+Class:  \fBTopics\fR
+Command-Line Switch:    \fB-topics\fR
+.fi
+.IP
+Specifies a list of help topics in the form {?\fItopic\fR? ... }. \fITopic\fR 
+may either be a topic name, in which case the 
+document associated with the topic should be in the file 
+\fBhelpdir\fR/\fItopic\fR.html, or it may be of the form 
+{\fIname\fR \fIfile\fR}. In the latter case, \fIname\fR is displayed in the
+topic menu, and selecting the name loads \fIfile\fR. If file has a relative
+path, it is assumed to be relative to helpdir.
+.LP
+.nf
+Name:   \fBhelpdir\fR
+Class:  \fBDirectory\fR
+Command-Line Switch:    \fB-helpdir\fR
+.fi
+.IP
+Specifies the directory where help files are located.
+.LP
+.nf
+Name:   \fBcloseCmd\fR
+Class:  \fBCloseCmd\fR
+Command-Line Switch:    \fB-closecmd\fR
+.fi
+.IP
+Specifies the tcl command to be executed when the close option is selected
+from the topics menu.
+.LP
+.nf
+Name:   \fBmaxHistory\fR
+Class:  \fBMaxHistory\fR
+Command-Line Switch:    \fB-maxhistory\fR
+.fi
+.IP
+Specifies the maximum number of entries stored in the history list
+.LP
+.nf
+Name:   \fBbeforelink\fR
+Class:  \fBBeforeLink\fR
+Command-Line Switch:    \fB-beforelink\fR
+.fi
+.IP
+Specifies a command to be eval'ed before a new link is displayed. The path
+of the link to be displayed is appended before evaling the command. A suggested
+use might be to busy the widget while a new page is being displayed.
+.LP
+.nf
+Name:   \fBafterlink\fR
+Class:  \fBAfterLink\fR
+Command-Line Switch:    \fB-afterlink\fR
+.fi
+.IP
+Specifies a command to be eval'ed after a new link is completely displayed. 
+The path of the link that was displayed is appended before evaling the command.
+.LP
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::hyperhelp\fR command creates a shell window with a pulldown menu
+showing a list of topics. The topics are displayed by importing a HTML
+formatted file named \fBhelpdir\fR/\fItopic\fR.html. For a list of 
+supported HTML tags, see \fBscrolledhtml(n)\fR.
+
+.SH "METHODS"
+.PP
+The \fBiwidgets::hyperhelp\fR command creates a new Tcl command whose
+name is \fIpathName\fR.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command.  The following
+commands are possible for dialog widgets:
+.SH "INHERITED METHODS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBactivate\fR	\fBcenter\fR	\fBchildsite\fR	\fBdeactivate\fR
+.fi
+.LP
+See the "shell" manual entry for details on the above inherited methods.
+
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::hyperhelp\fR
+command.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::hyperhelp\fR
+command.
+.TP
+\fIpathName\fR \fBshowtopic\fR \fItopic\fR
+Display html file \fBhelpdir\fR/\fItopic\fR.html. \fITopic\fR may
+optionally be of the form \fItopicname\fR#\fIanchorname\fR. In
+this form, either \fItopicname\fR or \fIanchorname\fR or both may be empty. If
+\fItopicname\fR is empty, the current topic is assumed. If \fIanchorname\fR
+is empty, the top of the document is assumed
+.TP
+\fIpathName\fR \fBfollowlink\fR \fIhref\fR
+Display html file \fIhref\fR. \fIHref\fR may
+be optionally be of the form \fIfilename\fR#\fIanchorname\fR. In
+this form, either \fIfilename\fR or \fIanchorname\fR or both may be empty. If
+\fIfilename\fR is empty, the current document is assumed. If \fIanchorname\fR
+is empty, the top of the document is assumed.
+.TP
+\fIpathName\fR \fBforward\fR
+Display html file one forward in history list, if applicable.
+.TP
+\fIpathName\fR \fBback\fR
+Display html file one back in history list, if applicable.
+
+.SH EXAMPLE
+.DS
+ package require Iwidgets 4.0
+ iwidgets::hyperhelp .h -topics { Intro Help } -helpdir ~/help
+ .h showtopic Intro
+ 
+.DE
+.SH AUTHOR
+Kris Raney
+.SH KEYWORDS
+hyperhelp, html, help, shell, widget

@@ -1,0 +1,154 @@
+.TH SPAWN 8 
+.ad
+.fi
+.SH NAME
+spawn
+\-
+Postfix external command spawner
+.SH "SYNOPSIS"
+.na
+.nf
+\fBspawn\fR [generic Postfix daemon options] command_attributes...
+.SH DESCRIPTION
+.ad
+.fi
+The \fBspawn\fR(8) daemon provides the Postfix equivalent
+of \fBinetd\fR.
+It listens on a port as specified in the Postfix \fBmaster.cf\fR file
+and spawns an external command whenever a connection is established.
+The connection can be made over local IPC (such as UNIX\-domain
+sockets) or over non\-local IPC (such as TCP sockets).
+The command\'s standard input, output and error streams are connected
+directly to the communication endpoint.
+
+This daemon expects to be run from the \fBmaster\fR(8) process
+manager.
+.SH "COMMAND ATTRIBUTE SYNTAX"
+.na
+.nf
+.ad
+.fi
+The external command attributes are given in the \fBmaster.cf\fR
+file at the end of a service definition.  The syntax is as follows:
+.IP "\fBuser\fR=\fIusername\fR (required)"
+.IP "\fBuser\fR=\fIusername\fR:\fIgroupname\fR"
+The external command is executed with the rights of the
+specified \fIusername\fR.  The software refuses to execute
+commands with root privileges, or with the privileges of the
+mail system owner. If \fIgroupname\fR is specified, the
+corresponding group ID is used instead of the group ID
+of \fIusername\fR.
+.IP "\fBargv\fR=\fIcommand\fR... (required)"
+The command to be executed. This must be specified as the
+last command attribute.
+The command is executed directly, i.e. without interpretation of
+shell meta characters by a shell command interpreter.
+.SH BUGS
+.ad
+.fi
+In order to enforce standard Postfix process resource controls,
+the \fBspawn\fR(8) daemon runs only one external command at a time.
+As such, it presents a noticeable overhead by wasting precious
+process resources. The \fBspawn\fR(8) daemon is expected to be
+replaced by a more structural solution.
+.SH DIAGNOSTICS
+.ad
+.fi
+The \fBspawn\fR(8) daemon reports abnormal child exits.
+Problems are logged to \fBsyslogd\fR(8).
+.SH "SECURITY"
+.na
+.nf
+.fi
+.ad
+This program needs root privilege in order to execute external
+commands as the specified user. It is therefore security sensitive.
+However the \fBspawn\fR(8) daemon does not talk to the external command
+and thus is not vulnerable to data\-driven attacks.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are picked up automatically as \fBspawn\fR(8)
+processes run for only a limited amount of time. Use the command
+"\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+
+In the text below, \fItransport\fR is the first field of the entry
+in the \fBmaster.cf\fR file.
+.SH "RESOURCE AND RATE CONTROL"
+.na
+.nf
+.ad
+.fi
+.IP "\fItransport\fB_time_limit ($command_time_limit)\fR"
+The amount of time the command is allowed to run before it is
+terminated.
+
+Postfix 2.4 and later support a suffix that specifies the
+time unit: s (seconds), m (minutes), h (hours), d (days),
+w (weeks). The default time unit is seconds.
+.SH "MISCELLANEOUS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBexport_environment (see 'postconf -d' output)\fR"
+The list of environment variables that a Postfix process will export
+to non\-Postfix processes.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBmail_owner (postfix)\fR"
+The UNIX system account that owns the Postfix queue and most Postfix
+daemon processes.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "SEE ALSO"
+.na
+.nf
+postconf(5), configuration parameters
+master(8), process manager
+syslogd(8), system logging
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

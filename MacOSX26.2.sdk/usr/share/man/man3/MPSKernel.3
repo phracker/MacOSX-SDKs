@@ -1,0 +1,279 @@
+.TH "MPSKernel" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSKernel
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSKernel\&.h>\fP
+.PP
+Inherits NSObject, <NSCopying>, and <NSSecureCoding>\&.
+.PP
+Inherited by \fBMPSAccelerationStructure\fP, \fBMPSBinaryImageKernel\fP, \fBMPSCNNBinaryKernel\fP, \fBMPSCNNKernel\fP, \fBMPSImageCopyToMatrix\fP, \fBMPSImageFindKeypoints\fP, \fBMPSImageGuidedFilter\fP, \fBMPSImageHistogram\fP, \fBMPSImageNormalizedHistogram\fP, \fBMPSMatrixBinaryKernel\fP, \fBMPSMatrixCopy\fP, \fBMPSMatrixCopyToImage\fP, \fBMPSMatrixMultiplication\fP, \fBMPSMatrixSum\fP, \fBMPSMatrixUnaryKernel\fP, \fBMPSNNGraph\fP, \fBMPSNNOptimizer\fP, \fBMPSRayIntersector\fP, \fBMPSRNNMatrixInferenceLayer\fP, \fBMPSRNNMatrixTrainingLayer\fP, and \fBMPSUnaryImageKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "() \- \fBMPSCopyAllocator\fP"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "const MTLRegion \fBMPSRectNoClip\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "\fBMPSKernelOptions\fP \fBoptions\fP"
+.br
+.ti -1c
+.RI "id< MTLDevice > \fBdevice\fP"
+.br
+.ti -1c
+.RI "NSString * \fBlabel\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+\fBMPSKernel\&.h\fP  MPSCore\&.framework 
+.PP
+\fBCopyright:\fP
+.RS 4
+Copyright (c) 2015-2017 Apple Inc\&. All rights reserved\&.
+.RE
+.PP
+\fBMPSKernel\fP objects encode tuned image processing operations into a MTLCommandBuffer\&.
+.PP
+This depends on Metal\&.framework  The \fBMPSKernel\fP class is the base class for all MPS objects\&. It defines a standard interface for MPS kernels\&. You should not use the \fBMPSKernel\fP class directly\&. Instead, a number of \fBMPSKernel\fP subclasses are available in MetalPerformanceShaders\&.framework that define specific high-performance image processing operations\&.
+.PP
+The basic sequence for applying a \fBMPSKernel\fP to an image is as follows:
+.PP
+.IP "1." 4
+Create a \fBMPSKernel\fP corresponding to the operation you wish to perform: 
+.PP
+.nf
+MPSImageSobel *sobel = [[MPSImageSobel alloc] initWithDevice: mtlDevice];
+
+.fi
+.PP
+
+.IP "2." 4
+Encode the filter into a command buffer: 
+.PP
+.nf
+sobel\&.offset = \&.\&.\&.;
+sobel\&.clipRect = \&.\&.\&.;
+sobel\&.options = \&.\&.\&.;
+[sobel encodeToCommandBuffer: commandBuffer
+               sourceTexture: inputImage
+          destinationTexture: resultImage ];
+
+.fi
+.PP
+ Encoding the kernel merely encodes the operation into a MTLCommandBuffer\&. It does not modify any pixels, yet\&. All \fBMPSKernel\fP state has been copied to the command buffer\&. MPSKernels may be reused\&. If the texture was previously operated on by another command encoder (e\&.g\&. MTLRenderCommandEncoder), you should call -endEncoding on the other encoder before encoding the filter\&.
+.PP
+Some MPS filters work in place (inputImage = resultImage) even in situations where Metal might not normally allow in place operation on textures\&. If in-place operation is desired, you may attempt to call [\fBMPSKernel\fP encodeKernelInPlace\&.\&.\&.]\&. If the operation can not be completed in place, then NO will be returned and you will have to create a new result texture and try again\&. To make an in-place image filter reliable, pass a fallback MPSCopyAllocator to the method to create a new texture to write to in the event that a filter can not operate in place\&.
+.PP
+(Repeat steps 2 for more filters, as desired\&.) 
+.PP
+.nf
+It should be self evident that step 2 may not be thread safe. That is, you can not have
+multiple threads manipulating the same properties on the same MPSKernel object at the
+same time and achieve coherent output. In common usage, the MPSKernel properties don't
+often need to be changed from their default values, but if you need to apply the same
+filter to multiple images on multiple threads with cropping / tiling, make additional
+MPSKernel objects per thread. They are cheap. You can use multiple MPSKernel objects on
+multiple threads, as long as only one thread is operating on any particular MPSKernel
+object at a time.
+
+.fi
+.PP
+
+.IP "3." 4
+After encoding any additional work to the command buffer using other encoders, submit the MTLCommandBuffer to your MTLCommandQueue, using: 
+.PP
+.nf
+[mtlCommandBuffer commit];
+
+.fi
+.PP
+
+.PP
+.PP
+\fBA\fP \fBMPSKernel\fP can be saved to disk / network using NSCoders such as NSKeyedArchiver\&. When decoding, the system default MTLDevice will be chosen unless the NSCoder adopts the <MPSDeviceProvider> protocol\&. To accomplish this, subclass or extend your unarchiver to add this method\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device"
+Make a copy of this \fBMPSKernel\fP for a new device  -copyWithZone: will call this API to make a copy of the \fBMPSKernel\fP on the same device\&. This interface may also be called directly to make a copy of the \fBMPSKernel\fP on a new device\&. Typically, the same MPSKernels should not be used to encode kernels on multiple command buffers from multiple threads\&. Many MPSKernels have mutable properties that might be changed by the other thread while this one is trying to encode\&. If you need to use a \fBMPSKernel\fP from multiple threads make a copy of it for each additional thread using -copyWithZone: or -copyWithZone:device: 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP The NSZone in which to allocate the object 
+.br
+\fIdevice\fP The device for the new \fBMPSKernel\fP\&. If nil, then use self\&.device\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to a copy of this \fBMPSKernel\fP\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSRNNMatrixTrainingLayer\fP, \fBMPSRNNMatrixInferenceLayer\fP, \fBMPSRayIntersector\fP, \fBMPSRNNImageInferenceLayer\fP, \fBMPSAccelerationStructure\fP, \fBMPSMatrixFullyConnectedGradient\fP, \fBMPSMatrixNeuronGradient\fP, \fBMPSMatrixBatchNormalizationGradient\fP, \fBMPSMatrixSoftMaxGradient\fP, \fBMPSMatrixFindTopK\fP, \fBMPSMatrixFullyConnected\fP, \fBMPSMatrixBatchNormalization\fP, \fBMPSMatrixNeuron\fP, and \fBMPSMatrixSoftMax\fP\&.
+.SS "\- (nullable instancetype) initWithCoder: (NSCoder *__nonnull) aDecoder"
+Called by NSCoder to decode MPSKernels  This isn't the right interface to decode a \fBMPSKernel\fP, but it is the one that NSCoder uses\&. To enable your NSCoder (e\&.g\&. NSKeyedUnarchiver) to set which device to use extend the object to adopt the \fBMPSDeviceProvider\fP protocol\&. Otherwise, the Metal system default device will be used\&. 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use initWithCoder:device instead\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSKernel\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNBinaryConvolution\fP, \fBMPSCNNBinaryFullyConnected\fP, \fBMPSCNNConvolutionTranspose\fP, \fBMPSRNNMatrixTrainingLayer\fP, \fBMPSCNNConvolutionGradient\fP, \fBMPSCNNFullyConnected\fP, \fBMPSCNNFullyConnectedGradient\fP, \fBMPSCNNBinaryKernel\fP, \fBMPSCNNGradientKernel\fP, \fBMPSRNNMatrixInferenceLayer\fP, \fBMPSCNNConvolution\fP, \fBMPSCNNYOLOLoss\fP, \fBMPSRayIntersector\fP, \fBMPSRNNImageInferenceLayer\fP, \fBMPSCNNPoolingAverageGradient\fP, \fBMPSCNNPoolingMaxGradient\fP, \fBMPSCNNPoolingL2NormGradient\fP, \fBMPSCNNDilatedPoolingMaxGradient\fP, \fBMPSCNNSoftMaxGradient\fP, \fBMPSCNNLogSoftMaxGradient\fP, \fBMPSCNNCrossChannelNormalizationGradient\fP, \fBMPSCNNLoss\fP, \fBMPSCNNPoolingGradient\fP, \fBMPSImagePyramid\fP, \fBMPSCNNCrossChannelNormalization\fP, \fBMPSBinaryImageKernel\fP, \fBMPSImageHistogramSpecification\fP, \fBMPSCNNDilatedPoolingMax\fP, \fBMPSCNNLocalContrastNormalizationGradient\fP, \fBMPSAccelerationStructure\fP, \fBMPSCNNBatchNormalization\fP, \fBMPSCNNBatchNormalizationStatistics\fP, \fBMPSCNNBatchNormalizationGradient\fP, \fBMPSCNNBatchNormalizationStatisticsGradient\fP, \fBMPSImageHistogramEqualization\fP, \fBMPSImageSobel\fP, \fBMPSCNNNeuronGradient\fP, \fBMPSCNNPoolingAverage\fP, \fBMPSCNNPoolingL2Norm\fP, \fBMPSMatrixFullyConnectedGradient\fP, \fBMPSCNNKernel\fP, \fBMPSImageThresholdToZeroInverse\fP, \fBMPSMatrixNeuronGradient\fP, \fBMPSMatrixBatchNormalizationGradient\fP, \fBMPSCNNLocalContrastNormalization\fP, \fBMPSMatrixSoftMaxGradient\fP, \fBMPSCNNInstanceNormalization\fP, \fBMPSCNNNeuron\fP, \fBMPSImageThresholdToZero\fP, \fBMPSImageNormalizedHistogram\fP, \fBMPSCNNDropoutGradient\fP, \fBMPSUnaryImageKernel\fP, \fBMPSMatrixCopyToImage\fP, \fBMPSImageEuclideanDistanceTransform\fP, \fBMPSImageBox\fP, \fBMPSImageGaussianBlur\fP, \fBMPSMatrixCopy\fP, \fBMPSImageStatisticsMean\fP, \fBMPSImageThresholdBinary\fP, \fBMPSCNNSpatialNormalizationGradient\fP, \fBMPSImageThresholdTruncate\fP, \fBMPSNNCropAndResizeBilinear\fP, \fBMPSMatrixSum\fP, \fBMPSMatrixFindTopK\fP, \fBMPSImageDilate\fP, \fBMPSCNNDropout\fP, \fBMPSMatrixFullyConnected\fP, \fBMPSImageScale\fP, \fBMPSImageLanczosScale\fP, \fBMPSImageBilinearScale\fP, \fBMPSImageStatisticsMeanAndVariance\fP, \fBMPSMatrixBatchNormalization\fP, \fBMPSMatrixNeuron\fP, \fBMPSImageConvolution\fP, \fBMPSMatrixSoftMax\fP, \fBMPSImageThresholdBinaryInverse\fP, \fBMPSImageHistogram\fP, \fBMPSImageGuidedFilter\fP, \fBMPSImageCopyToMatrix\fP, \fBMPSCNNSpatialNormalization\fP, \fBMPSImageFindKeypoints\fP, \fBMPSNNResizeBilinear\fP, \fBMPSImageStatisticsMinAndMax\fP, \fBMPSCNNPooling\fP, \fBMPSCNNPoolingMax\fP, \fBMPSImageMedian\fP, \fBMPSImageAreaMax\fP, and \fBMPSNNGraph\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented in \fBMPSCNNBinaryConvolution\fP, \fBMPSCNNBinaryFullyConnected\fP, \fBMPSCNNConvolutionTranspose\fP, \fBMPSRNNMatrixTrainingLayer\fP, \fBMPSCNNConvolutionGradient\fP, \fBMPSCNNFullyConnected\fP, \fBMPSCNNFullyConnectedGradient\fP, \fBMPSCNNGradientKernel\fP, \fBMPSRNNMatrixInferenceLayer\fP, \fBMPSCNNConvolution\fP, \fBMPSNNOptimizerAdam\fP, \fBMPSCNNYOLOLoss\fP, \fBMPSRayIntersector\fP, \fBMPSRNNImageInferenceLayer\fP, \fBMPSCNNSoftMaxGradient\fP, \fBMPSCNNLogSoftMaxGradient\fP, \fBMPSNNOptimizerRMSProp\fP, \fBMPSCNNLoss\fP, \fBMPSCNNPoolingGradient\fP, \fBMPSCNNCrossChannelNormalization\fP, \fBMPSBinaryImageKernel\fP, \fBMPSNNReduceFeatureChannelsAndWeightsSum\fP, \fBMPSNNReshape\fP, \fBMPSCNNArithmeticGradient\fP, \fBMPSNNReduceBinary\fP, \fBMPSNNReduceFeatureChannelsAndWeightsMean\fP, \fBMPSImagePyramid\fP, \fBMPSAccelerationStructure\fP, \fBMPSCNNBatchNormalization\fP, \fBMPSCNNBatchNormalizationStatistics\fP, \fBMPSNNOptimizerStochasticGradientDescent\fP, \fBMPSNNReduceFeatureChannelsSum\fP, \fBMPSImageSobel\fP, \fBMPSCNNNeuronGradient\fP, \fBMPSCNNNeuronLinear\fP, \fBMPSCNNNeuronReLU\fP, \fBMPSCNNNeuronPReLU\fP, \fBMPSCNNNeuronSigmoid\fP, \fBMPSCNNNeuronHardSigmoid\fP, \fBMPSCNNNeuronTanH\fP, \fBMPSCNNNeuronAbsolute\fP, \fBMPSCNNNeuronSoftPlus\fP, \fBMPSCNNNeuronSoftSign\fP, \fBMPSCNNNeuronELU\fP, \fBMPSCNNNeuronReLUN\fP, \fBMPSCNNNeuronPower\fP, \fBMPSCNNNeuronExponential\fP, \fBMPSCNNNeuronLogarithm\fP, \fBMPSMatrixFullyConnectedGradient\fP, \fBMPSCNNBinaryKernel\fP, \fBMPSNNOptimizer\fP, \fBMPSImageThresholdToZeroInverse\fP, \fBMPSMatrixNeuronGradient\fP, \fBMPSMatrixSum\fP, \fBMPSMatrixBatchNormalizationGradient\fP, \fBMPSCNNLocalContrastNormalization\fP, \fBMPSMatrixSoftMaxGradient\fP, \fBMPSCNNInstanceNormalization\fP, \fBMPSCNNKernel\fP, \fBMPSCNNNeuron\fP, \fBMPSCNNUpsamplingGradient\fP, \fBMPSImageThresholdToZero\fP, \fBMPSCNNDropoutGradient\fP, \fBMPSUnaryImageKernel\fP, \fBMPSImageEuclideanDistanceTransform\fP, \fBMPSImageBox\fP, \fBMPSImageGaussianBlur\fP, \fBMPSImageStatisticsMean\fP, \fBMPSImageThresholdBinary\fP, \fBMPSImageThresholdTruncate\fP, \fBMPSCNNArithmetic\fP, \fBMPSCNNAdd\fP, \fBMPSCNNSubtract\fP, \fBMPSCNNMultiply\fP, \fBMPSCNNDivide\fP, \fBMPSNNCropAndResizeBilinear\fP, \fBMPSNNSlice\fP, \fBMPSMatrixFindTopK\fP, \fBMPSImageDilate\fP, \fBMPSCNNDropout\fP, \fBMPSMatrixFullyConnected\fP, \fBMPSImageLanczosScale\fP, \fBMPSImageBilinearScale\fP, \fBMPSImageArithmetic\fP, \fBMPSImageAdd\fP, \fBMPSImageSubtract\fP, \fBMPSImageMultiply\fP, \fBMPSImageDivide\fP, \fBMPSImageStatisticsMeanAndVariance\fP, \fBMPSMatrixMultiplication\fP, \fBMPSMatrixVectorMultiplication\fP, \fBMPSMatrixBatchNormalization\fP, \fBMPSMatrixNeuron\fP, \fBMPSMatrixSoftMax\fP, \fBMPSImageThresholdBinaryInverse\fP, \fBMPSImageGuidedFilter\fP, \fBMPSCNNUpsampling\fP, \fBMPSCNNSpatialNormalization\fP, \fBMPSImageFindKeypoints\fP, \fBMPSNNReduceUnary\fP, \fBMPSNNReduceRowMin\fP, \fBMPSNNReduceColumnMin\fP, \fBMPSNNReduceFeatureChannelsMin\fP, \fBMPSNNReduceFeatureChannelsArgumentMin\fP, \fBMPSNNReduceRowMax\fP, \fBMPSNNReduceColumnMax\fP, \fBMPSNNReduceFeatureChannelsMax\fP, \fBMPSNNReduceFeatureChannelsArgumentMax\fP, \fBMPSNNReduceRowMean\fP, \fBMPSNNReduceColumnMean\fP, \fBMPSNNReduceFeatureChannelsMean\fP, \fBMPSNNReduceRowSum\fP, \fBMPSNNReduceColumnSum\fP, \fBMPSNNResizeBilinear\fP, \fBMPSImageReduceUnary\fP, \fBMPSImageReduceRowMin\fP, \fBMPSImageReduceColumnMin\fP, \fBMPSImageReduceRowMax\fP, \fBMPSImageReduceColumnMax\fP, \fBMPSImageReduceRowMean\fP, \fBMPSImageReduceColumnMean\fP, \fBMPSImageReduceRowSum\fP, \fBMPSImageReduceColumnSum\fP, \fBMPSImageScale\fP, \fBMPSImageStatisticsMinAndMax\fP, \fBMPSCNNPooling\fP, \fBMPSImageMedian\fP, \fBMPSImageAreaMax\fP, and \fBMPSMatrixCopy\fP\&.
+.SS "\- MPSCopyAllocator"
+\fBMPSImageKernel\&.h\fP  MetalPerformanceShaders\&.framework
+.PP
+\fBCopyright:\fP
+.RS 4
+Copyright (c) 2015 Apple Inc\&. All rights reserved\&.  MetalPerformanceShaders filter base classes
+.RE
+.PP
+\fBA\fP block to make a copy of sourceTexture for MPSKernels that can only execute out of place\&.  Some \fBMPSKernel\fP objects may not be able to operate in place\&. When that occurs, and in-place operation is requested, MPS will call back to this block to get a new texture to return instead\&. To avoid spending long periods of time allocating pages to back the MTLTexture, the block should attempt to reuse textures\&. The texture returned from the MPSCopyAllocator will be returned instead of the sourceTexture from the \fBMPSKernel\fP method on return\&. 
+.PP
+.nf
+// A MPSCopyAllocator to handle cases where in-place operation fails\&.
+MPSCopyAllocator myAllocator = ^id <MTLTexture>( MPSKernel * __nonnull filter,
+                                                __nonnull id <MTLCommandBuffer> cmdBuf,
+                                                __nonnull id <MTLTexture> sourceTexture)
+{
+    MTLPixelFormat format = sourceTexture\&.pixelFormat;  // FIXME: is this format writable?
+    MTLTextureDescriptor *d = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: format
+                                 width: sourceTexture\&.width
+                                height: sourceTexture\&.height
+                             mipmapped: NO];
+    d\&.usage = MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite;
+
+    //FIXME: Allocating a new texture each time is slow\&. They take up to 1 ms each\&.
+    //       There are not too many milliseconds in a video frame! You can recycle
+    //       old textures (or MTLBuffers and make textures from them) and reuse
+    //       the memory here\&.
+    id <MTLTexture> result = [cmdBuf\&.device newTextureWithDescriptor: d];
+
+    // FIXME: If there is any metadata associated with sourceTexture such as colorspace
+    //        information, MTLResource\&.label, MTLResource\&.cpuCacheMode mode,
+    //        MTLResource\&.MTLPurgeableState, etc\&., it may need to be similarly associated
+    //        with the new texture to avoid losing your metadata\&.
+
+    // FIXME: If filter\&.clipRect doesn't cover the entire image, you may need to copy
+    //        pixels from sourceTexture to the new texture or regions of the new texture
+    //        will be uninitialized\&. You can make a MTLCommandEncoder to encode work on
+    //        the MTLCommandBuffer here to do that work, if necessary\&. It will be
+    //        scheduled to run immediately before the MPSKernel work\&. Do not call
+    //        [MTLCommandBuffer enqueue/commit/waitUntilCompleted/waitUntilScheduled]
+    //        in the MPSCopyAllocator block\&. Make sure to call -endEncoding on the
+    //        MTLCommandEncoder so that the MTLCommandBuffer has no active encoder
+    //        before returning\&.
+
+    // CAUTION: The next command placed on the MTLCommandBuffer after the MPSCopyAllocator
+    //          returns is almost assuredly going to be encoded with a MTLComputeCommandEncoder\&.
+    //          Creating any other type of encoder in the MPSCopyAllocator will probably cost
+    //          an additional 0\&.5 ms of both CPU _AND_ GPU time (or more!) due to a double
+    //          mode switch penalty\&.
+
+    // CAUTION: If other objects (in addition to the caller of -encodeToCommandBuffer:inPlaceTexture:\&.\&.\&.)
+    //          own a reference to sourceTexture, they may need to be notified that
+    //          sourceTexture has been replaced so that they can release that resource
+    //          and adopt the new texture\&.
+
+    //          The reference to sourceTexture owned by the caller of
+    //          -encodeToCommandBuffer:inPlaceTexture\&.\&.\&. will be released by
+    //          -encodeToCommandBuffer:inPlaceTexture:\&.\&.\&. after the kernel is encoded if
+    //          and only if the MPSCopyAllocator is called, and the operation is successfully
+    //          encoded out of place\&.
+
+    return result;
+    // d is autoreleased
+};
+
+.fi
+.PP
+ If nil is returned by the allocator, NO will be returned by the calling function\&.
+.PP
+When the MPSCopyAllocator is called, no MTLCommandEncoder is active on the commandBuffer\&. You may create a MTLCommandEncoder in the block to initialize the texture\&. Make sure to call -endEncoding on it before returning, if you do\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfilter\fP \fBA\fP valid pointer to the \fBMPSKernel\fP that is calling the MPSCopyAllocator\&. From it you can get the clipRect of the intended operation\&. 
+.br
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer\&. It can be used to obtain the device against which to allocate the new texture\&. You may also enqueue operations on the commandBuffer to initialize the texture on a encoder allocated in the block\&. You may not submit, enqueue or wait for scheduling/completion of the command buffer\&. 
+.br
+\fIsourceTexture\fP The texture that is providing the source image for the filter\&. You may wish to use its size and MTLPixelFormat for the new texture, but it is not requred\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new valid MTLTexture to use as the destination for the \fBMPSKernel\fP\&. If the calling function succeeds, its texture parameter will be overwritten with a pointer to this texture\&. If the calling function fails (highly unlikely, except for user error) then the texture will be released before the calling function returns\&. 
+.RE
+.PP
+
+.SH "Member Data Documentation"
+.PP 
+.SS "\- (const MTLRegion) MPSRectNoClip"
+MPSRectNoClip  This is a special constant to indicate no clipping is to be done\&. The entire image will be used\&. This is the default clipping rectangle or the input extent for MPSKernels\&. 
+.SH "Property Documentation"
+.PP 
+.SS "\- device\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The device on which the kernel will be used 
+.SS "\- label\fC [read]\fP, \fC [write]\fP, \fC [atomic]\fP, \fC [copy]\fP"
+\fBA\fP string to help identify this object\&. 
+.SS "\- options\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The set of options used to run the kernel\&. \fBMPSKernelOptions\fP 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

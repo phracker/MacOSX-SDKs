@@ -1,0 +1,211 @@
+.\" Copyright (c) 2015 Apple Computer, Inc. All rights reserved.
+.\" 
+.\" The contents of this file constitute Original Code as defined in and
+.\" are subject to the Apple Public Source License Version 1.1 (the
+.\" "License").  You may not use this file except in compliance with the
+.\" License.  Please obtain a copy of the License at
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\" 
+.\" This Original Code and all software distributed under the License are
+.\" distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+.\" License for the specific language governing rights and limitations
+.\" under the License.
+.\" 
+.
+.Dd December 22, 2015
+.Dt sysdir 3
+.Os Darwin
+.
+.
+.Sh NAME
+.Nm sysdir_start_search_path_enumeration , sysdir_get_next_search_path_enumeration
+.Nd Enumeration of the filesystem paths for the various standard system directories where apps,
+resources, etc. get installed.
+.
+.
+.Sh SYNOPSIS
+.Fd #include <sysdir.h>
+.Pp
+.Ft sysdir_search_path_enumeration_state
+.Fo sysdir_start_search_path_enumeration
+.Fa "sysdir_search_path_directory_t dir"
+.Fa "sysdir_search_path_domain_mask_t domainMask"
+.Fc
+.Pp
+.Ft sysdir_search_path_enumeration_state
+.Fo sysdir_get_next_search_path_enumeration
+.Fa "sysdir_search_path_enumeration_state state"
+.Fa "char *path"
+.Fc
+.
+.
+.Sh DESCRIPTION
+The
+.Nm sysdir
+API returns the various standard system directories where apps, resources,
+etc. get installed. Because queries can return multiple directories, the API is
+in the form of an enumeration. The directories are returned in search path
+order: that is, the first place to look is returned first.
+.Pp
+.Fn sysdir_start_search_path_enumeration
+begins enumeration of the filesystem paths for the specified directory and domain(s).
+The return value should be passed to one or more calls to
+.Fn sysdir_get_next_search_path_enumeration
+to obtain the filesystem path and continue the enumeration.
+.Pp
+.Fn sysdir_get_next_search_path_enumeration
+returns a filesystem path for the directory and domain(s) specified by the state value returned by
+.Fn sysdir_start_search_path_enumeration .
+Subsequent calls to
+.Fn sysdir_get_next_search_path_enumeration
+should pass the state value returned by the previous call to continue the
+enumeration in each domain. A state value of zero will be returned when all
+domains have been enumerated.
+.Pp
+The path buffer that is passed to
+.Fn sysdir_get_next_search_path_enumeration
+will be filled with a null-terminated
+string, possibly containing as many as PATH_MAX-1 characters.
+.Pp
+Some directory paths returned may not exist on the filesystem.
+.Pp
+Some combinations of
+.Fa dir
+and
+.Fa domainMask
+may return no directory paths.
+.Pp
+Directory paths returned in the user domain will contain "~" to refer to the user's directory.
+.Pp
+The environment variable
+.Ev NEXT_ROOT
+is prepended as necessary to the returned directory paths.
+.Ev NEXT_ROOT
+is ignored if the process is setuid or is code signed with entitlements.
+.Pp
+.
+.
+.Sh DIRECTORY CONSTANTS
+The following
+.Fa sysdir_search_path_directory
+constants are defined:
+.
+.Bl -tag -width 1234567890123456789012345678901
+.
+.It SYSDIR_DIRECTORY_APPLICATION
+Supported applications (Applications)
+.It SYSDIR_DIRECTORY_DEMO_APPLICATION
+Unsupported applications and demonstration versions (Applications/Demos)
+.It SYSDIR_DIRECTORY_DEVELOPER_APPLICATION
+Developer applications (Developer/Applications)
+Deprecated: As of Xcode 4.3, there is no longer a Developer Application directory directory;
+instead, Xcode.app is a self-contained application that gets installed in the user's
+Applications directory, by default, although it can be put anywhere.
+.It SYSDIR_DIRECTORY_ADMIN_APPLICATION
+System and network administration applications (Applications/Utilities)
+.It SYSDIR_DIRECTORY_LIBRARY
+Various user-visible documentation, support, and configuration files, resources (Library)
+.It SYSDIR_DIRECTORY_DEVELOPER
+Developer resources (Developer)
+Deprecated: As of Xcode 4.3, there is no longer a Developer directory; instead, Xcode.app
+is a self-contained application that gets installed in the user's Applications directory,
+by default, although it can be put anywhere.
+.It SYSDIR_DIRECTORY_USER
+User home directories (Users)
+.It SYSDIR_DIRECTORY_DOCUMENTATION
+Location of documentation (Library/Documentation)
+.It SYSDIR_DIRECTORY_DOCUMENT
+Location of documents (Documents)
+.It SYSDIR_DIRECTORY_CORESERVICE
+Location of core services (Library/CoreServices)
+.It SYSDIR_DIRECTORY_AUTOSAVED_INFORMATION
+Location of user's autosaved documents (Library/Autosave Information)
+.It SYSDIR_DIRECTORY_DESKTOP
+Location of user's desktop directory (Desktop)
+.It SYSDIR_DIRECTORY_CACHES
+Location of discardable cache files (Library/Caches)
+.It SYSDIR_DIRECTORY_APPLICATION_SUPPORT
+Location of application support files (Library/Application Support)
+.It SYSDIR_DIRECTORY_DOWNLOADS
+Location of user's downloads directory (Downloads)
+.It SYSDIR_DIRECTORY_INPUT_METHODS
+Location of input methods (Library/Input Methods)
+.It SYSDIR_DIRECTORY_MOVIES
+Location of user's Movies directory (Movies)
+.It SYSDIR_DIRECTORY_MUSIC
+Location of user's Music directory (Music)
+.It SYSDIR_DIRECTORY_PICTURES
+Location of user's Pictures directory (Pictures)
+.It SYSDIR_DIRECTORY_PRINTER_DESCRIPTION
+Location of system's PPDs directory (Library/Printers/PPDs)
+.It SYSDIR_DIRECTORY_SHARED_PUBLIC
+Location of user's Public sharing directory (Public)
+.It SYSDIR_DIRECTORY_PREFERENCE_PANES
+Location of the PreferencePanes directory for use with System Preferences (Library/PreferencePanes)
+.It SYSDIR_DIRECTORY_ALL_APPLICATIONS
+All directories where applications can occur (/Applications, ~/Applications, /Applications/Utilities, etc)
+.It SYSDIR_DIRECTORY_ALL_LIBRARIES
+All directories where resources can occur (/Library, ~/Library, /Network/Library, etc)
+.
+.El
+.
+.
+.Sh DOMAIN CONSTANTS
+The following
+.Fa sysdir_search_path_domain_mask
+constants are defined:
+.
+.Bl -tag -width 1234567890123456789012345678901
+.
+.It SYSDIR_DOMAIN_MASK_USER
+The user's home directory -- the place to install user's personal items (~)
+.It SYSDIR_DOMAIN_MASK_LOCAL
+Local to the current machine -- the place to install items available to everyone on this machine
+.It SYSDIR_DOMAIN_MASK_NETWORK
+Publically available location in the local area network -- the place to install items available on the network
+.It SYSDIR_DOMAIN_MASK_SYSTEM
+Provided by Apple -- can't be modified
+.It SYSDIR_DOMAIN_MASK_ALL
+All domains -- all of the above and future domains
+.
+.El
+.Pp
+.
+.
+.Sh ENVIRONMENT
+The following environment variable affects the execution of
+.Nm sysdir_get_next_search_path_enumeration :
+.Bl -tag -width NEXT_ROOT
+.It Ev NEXT_ROOT
+If the
+.Ev NEXT_ROOT
+environment variable is set and the current process is not tainted by uid or gid changes,
+.Ev NEXT_ROOT
+is prepended as necessary to the returned directory paths.
+.Ev NEXT_ROOT
+is ignored if the process is setuid or is code signed with entitlements.
+.El
+.
+.
+.Sh EXAMPLES
+.Bd -literal
+#include <limits.h>
+#include <sysdir.h>
+
+char path[PATH_MAX];
+sysdir_search_path_enumeration_state state = sysdir_start_search_path_enumeration(dir, domainMask);
+while ( (state = sysdir_get_next_search_path_enumeration(state, path)) != 0 ) {
+    // Handle directory path
+}
+.Ed
+.
+.
+.Sh HISTORY
+The
+.Nm sysdir
+API first appeared in OS X 10.12, iOS 10, watchOS 3 and tvOS 10 replacing the deprecated
+.Xr NSSystemDirectories 3
+API.

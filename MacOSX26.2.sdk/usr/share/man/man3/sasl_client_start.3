@@ -1,0 +1,112 @@
+.\" -*- nroff -*-
+.\" 
+.\" Copyright (c) 2001 Carnegie Mellon University.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer. 
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in
+.\"    the documentation and/or other materials provided with the
+.\"    distribution.
+.\"
+.\" 3. The name "Carnegie Mellon University" must not be used to
+.\"    endorse or promote products derived from this software without
+.\"    prior written permission. For permission or any other legal
+.\"    details, please contact  
+.\"      Office of Technology Transfer
+.\"      Carnegie Mellon University
+.\"      5000 Forbes Avenue
+.\"      Pittsburgh, PA  15213-3890
+.\"      (412) 268-4387, fax: (412) 268-7395
+.\"      tech-transfer@andrew.cmu.edu
+.\"
+.\" 4. Redistributions of any form whatsoever must retain the following
+.\"    acknowledgment:
+.\"    "This product includes software developed by Computing Services
+.\"     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+.\"
+.\" CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+.\" THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+.\" AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+.\" FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+.\" AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+.\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\" 
+.TH sasl_client_start 3 "10 July 2001" SASL "SASL man pages"
+.SH NAME
+sasl_client_start \- Begin an authentication negotiation
+.SH SYNOPSIS
+.nf
+.B #include <sasl/sasl.h>
+.sp
+.BI "int sasl_client_start(sasl_conn_t * " conn ", "
+.BI "		      const char * " mechlist ", "
+.BI "		      sasl_interact_t ** " prompt_need ", "
+.BI "		      const char ** " clientout ", "
+.BI "		      unsigned * " clientoutlen ", "
+.BI "		      const char ** " mech ");"
+
+.fi
+.SH DESCRIPTION
+
+.B sasl_client_start()
+selects a mechanism for authentication and starts the authentication
+session. The mechlist is the list of mechanisms the client might like
+to use. The mechanisms in the list are not necessarily supported by
+the client or even valid. SASL determines which of these to use based
+upon the security preferences specified earlier. The list of
+mechanisms is typically a list of mechanisms the server supports
+acquired from a capability request.
+
+If SASL_INTERACT is returned the library needs some values to be
+filled in before it can proceed. The prompt_need structure will be
+filled in with requests. The application should fulfill these requests
+and call sasl_client_start again with identical parameters (the
+prompt_need parameter will be the same pointer as before but filled in
+by the application).
+
+.PP
+.I mechlist
+is a list of mechanisms the server has available. Punctuation is ignored.
+.PP
+.I prompt_need
+is filled in with a list of prompts needed to continue (if necessary).
+.PP
+.I clientout
+and
+.I clientoutlen
+is created. It is the initial client response to send to the
+server. It is the job of the
+client to send it over the network to the server.
+Any protocol specific encoding (such as base64
+encoding) necessary needs to be done by the client.
+
+If the protocol lacks client-send-first capability, then set
+.I clientout
+to NULL.
+
+If there is no initial client-send, then
+.I *clientout
+will be set to NULL on return.
+
+.I mech
+contains the name of the chosen SASL mechanism (on success)
+
+.SH "RETURN VALUE"
+
+sasl_client_start returns an integer which corresponds to one of the
+following codes. SASL_CONTINUE indicates success and that there are
+more steps needed in the authentication. All other return codes
+indicate errors and should either be handled or the authentication
+session should be quit.
+
+.SH "CONFORMING TO"
+RFC 4422
+.SH "SEE ALSO"
+sasl(3), sasl_callbacks(3), sasl_errors(3), sasl_client_init(3), sasl_client_new(3), sasl_client_step(3)

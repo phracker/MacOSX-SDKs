@@ -1,0 +1,96 @@
+.de EX
+.nf
+.ft CW
+.RS
+
+..
+.de EE
+.br
+.fi
+.ft 1
+.RE
+.Pp
+..
+.de BL
+.TP
+\(bu
+..
+.TH CRLREFRESH 1 "April 13, 2004" "Apple Computer, Inc."
+.SH NAME
+crlrefresh \- update and maintain system-wide CRL cache
+.SH SYNOPSIS
+.B crlrefresh
+command [command-args] [options]
+.Pp
+.B crlrefresh
+r [options]
+.Pp
+.B crlrefresh
+f URL [options]
+.Pp
+.B crlrefresh
+F URI [options]
+.Pp
+.SH CRLREFRESH COMMAND SUMMARY
+.Pp
+.B r
+Refresh the entire CRL cache
+.Pp
+.B f
+Fetch a CRL from specified URL
+.Pp
+.B F
+Fetch a Certificate from specified URL
+.Pp
+.SH "DESCRIPTION"
+.B Crlrefresh
+is a UNIX command-line program which is used to refresh and update the contents of the system-wide cache of Certificate Revocation Lists (CRLs). CRLs, which are optionally used as part of the procedure for verifying X.509 certificates, are typically fetched from the network using a URL which appears in (some) certificates. Caching CRLs is an optimization to avoid costs of network latency and/or unavailability. Each CRL has a finite validity time which is specified in the CRL itself. This validity time may be as short as one day, or it may be much longer. Crlrefresh examines the contents of the CRL cache and updates - via network fetch - all CRLs which are currently, or will soon be, invalid. 
+.Pp
+Crlrefresh is also use to fetch specific CRLs and certificates from the network; CRLs fetched via 
+.B crlrefresh
+will be added to the CRL cache as well as provided to the specified output file (or to stdout if no output file is provided). The URL specified in the 
+.B f
+and 
+.B F
+commands must have schema "http:" or "ldap:".
+.Pp
+Typically,
+.B crlrefresh
+would be run on a regular basis via one of the configuration files used by the 
+.B cron(8)
+program.
+.Pp
+.SH "CRLREFRESH OPTION SUMMARY"
+.TP
+.B s=stale_period
+Specify the time in days which, having elapsed after a CRL is expired, that the CRL is deleted fromt he CRL cache. The default is 10 days.
+.TP
+.B o=expire_overlap
+Specify the time in seconds prior to a CRL's expiration when a refresh action will attempt to replace the CRL with a fresh copy.
+.TP
+.B p
+Purge all entries from the CRL cache, ensuring refresh with fresh CRLs. Normally, CRLs whose expiration date is more than expire_overlap past the current time are not refreshed.
+.TP
+.B f
+Perform full cryptographic verification of all CRLs in the CRL cache. Normally this step is only performed when a CRL is actually used to validate a certificate.
+.TP
+.B k=keychain_name
+The full path to the CRL cache (which is always a keychain). The default is /var/db/crls/crlcache.db.
+.TP
+.B v
+Provide verbose output during operation. 
+.TP
+.B F=output_file_name
+When fetching a CRL or certificate, specifies the destination to which the fetched entity will be written. If this is not specified then the fetched entity is sent to stdout.
+.TP
+.B n
+When fetching a CRL, this inhibits the addition of the fetched CRL to the system CRL cache.
+.TP
+.B v
+Execute in verbose mode.
+.Pp
+.SH FILES
+.B /var/db/crls/crlcache.db
+System CRL cache database
+.SH SEE ALSO 
+.BR cron ( 8 )

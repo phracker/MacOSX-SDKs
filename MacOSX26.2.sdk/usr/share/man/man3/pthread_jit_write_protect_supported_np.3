@@ -1,0 +1,161 @@
+.\" Copyright (c) 2020 Apple Inc. All rights reserved.
+.\"
+.\" @APPLE_LICENSE_HEADER_START@
+.\"
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\"
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\"
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.Dd May 1, 2020
+.Dt PTHREAD_JIT_WRITE_PROTECT_NP 3
+.Os
+.Sh NAME
+.Nm pthread_jit_write_protect_supported_np ,
+.Nm pthread_jit_write_protect_np ,
+.Nm pthread_jit_write_with_callback_np ,
+.Nm pthread_jit_write_freeze_callbacks_np
+.Nd thread JIT region write protection settings
+.Sh SYNOPSIS
+.In pthread.h
+.Ft int
+.Fn pthread_jit_write_protect_supported_np "void"
+.Ft void
+.Fn pthread_jit_write_protect_np "int enabled"
+.Ft typedef "int \*(lp*pthread_jit_write_callback_t\*(rp\*(lpvoid *\*(rp" ;
+.Ft int
+.Fn pthread_jit_write_with_callback_np "pthread_jit_write_callback_t callback" "void *ctx"
+.Ft void
+.Fn pthread_jit_write_freeze_callbacks_np "void"
+.Sh DESCRIPTION
+The
+.Fn pthread_jit_write_protect_supported_np
+function returns whether per-thread write protection on the MAP_JIT region is supported on this platform.
+.Pp
+On platforms where
+.Fn pthread_jit_write_protect_supported_np
+is true, MAP_JIT regions are never writeable and executable simultaneously.
+When write protection is enabled for the thread, writes by the thread to the MAP_JIT region are denied and the MAP_JIT region is executable.
+When write protection is disabled for the thread, writes by the thread to the MAP_JIT region are allowed and the MAP_JIT region is not executable.
+.Pp
+The
+.Fn pthread_jit_write_protect_np
+function sets whether MAP_JIT region write protection is enabled for this thread.
+Pass a non-zero value for the
+.Fa enabled
+parameter to enable thread JIT region write protection and allow execution. Pass a zero value for the
+.Fa enabled
+parameter to disable thread JIT write protection and deny execution.
+.Pp
+The
+.Fn pthread_jit_write_with_callback_np
+function disables write protection, calls the supplied
+.Fa callback
+with
+.Fa ctx
+to write to the JIT region after validating its input for safety according to application logic, and then re-enables write protection.
+That is, it's roughly equivalent to:
+.Bd -literal -offset indent
+pthread_jit_write_protect_np(false);
+int rc = callback(ctx);
+pthread_jit_write_protect_np(true);
+return rc;
+.Ed
+.Pp
+However,
+.Fn pthread_jit_write_with_callback_np
+enforces that the
+.Fa callback
+function must have been previously enumerated in a static list of allowed JIT write callbacks declared using the \fBPTHREAD_JIT_WRITE_ALLOW_CALLBACKS_NP\fR macro.
+Note that each image (i.e. main executable or framework/dylib) can specify its own list, and each image may specify at most one list.
+For example, an invocation of \fBPTHREAD_JIT_WRITE_ALLOW_CALLBACKS_NP\fR to allow a JIT write callback \fBjit_write_cb()\fR would be:
+.Bd -literal -offset indent
+static void *jit_region;
+
+int
+jit_write_cb(void *ctx)
+{
+	size_t len = 0;
+	void *insns = validate_instructions(ctx, &len);
+	if (!insns) {
+		__builtin_trap();
+	}
+
+	memcpy(jit_region, insns, len);
+	return 0;
+}
+
+PTHREAD_JIT_WRITE_ALLOW_CALLBACKS_NP(jit_write_cb);
+.Ed
+.Pp
+By default, JIT write callbacks are not allowed in frameworks/dylibs dynamically loaded at runtime via
+.Xr dlopen 3 .
+However, applications that need JIT write callbacks in dynamically loaded code can take an additional entitlement (see
+.Sx ENTITLEMENTS )
+to allow them in any code loaded up until the
+.Fn pthread_jit_write_freeze_callbacks_np
+function is called.
+.Pp
+On platforms where
+.Fn pthread_jit_write_protect_supported_np
+is false, MAP_JIT regions are simultaenously writeable and executable. Calls to
+.Fn pthread_jit_write_protect_np
+are no-ops on unsupported platforms. Calls to
+.Fn pthread_jit_write_with_callback_np
+result in a direct call to
+.Fa callback
+on unsupported platforms.
+.Sh RETURN VALUES
+If supported, the
+.Fn pthread_jit_write_protect_supported_np
+function will return one. Otherwise the function will return zero.
+.Pp
+.Fn pthread_jit_write_with_callback_np
+returns the result returned by the
+.Fa callback
+function.
+.Sh SECURITY CONSIDERATIONS
+The purpose of per-thread JIT region write protection is to serve as a hardening measure against attacks that attempt to gain code execution by exploiting vulnerabilities to write unintended code into the JIT region.
+.Pp
+Some attacks may attempt to defeat JIT write protection by inducing unexpected/unintended calls to
+.Fn pthread_jit_write_protect_np ,
+e.g. dynamically via
+.Fn dlsym .
+To further harden against such attacks, the
+.Fn pthread_jit_write_with_callback_np
+interface is intended to allow even tighter control over code permitted to write to the JIT region; in applications that adopt the \fBcom.apple.security.cs.jit-write-allowlist\fR entitlement, only callbacks specifically enumerated in an invocation of \fBPTHREAD_JIT_WRITE_ALLOW_CALLBACKS_NP\fR can do so, and
+.Fn pthread_jit_write_protect_np
+is disabled.
+.Pp
+Applications and frameworks should prefer to use
+.Fn pthread_jit_write_with_callback_np
+as a defense-in-depth hardening if relevant for their threat model.
+.Pp
+Allowed callbacks should assume that their input is attacker-controlled and make an effort to validate that the instructions to be written should be permitted.
+.Sh ENTITLEMENTS
+.Bl -tag -width Er
+.It Dv com.apple.security.cs.jit-write-allowlist
+A Boolean value that indicates whether
+.Fn pthread_jit_write_protect_np
+should be disabled and
+.Fn pthread_jit_write_with_callback_np
+must be used instead to write to the JIT region.
+.It Dv com.apple.security.cs.jit-write-allowlist-freeze-late
+A Boolean value that indicates whether the runtime should wait for an explicit call to
+.Fn pthread_jit_write_freeze_callbacks_np
+before "freezing" the set of allowed JIT write callbacks, to allow the application to dynamically load code containing JIT write callbacks that should be allowed.
+.El
+.Sh SEE ALSO
+.Xr mmap 2

@@ -1,0 +1,320 @@
+.TH TRIVIAL-REWRITE 8 
+.ad
+.fi
+.SH NAME
+trivial-rewrite
+\-
+Postfix address rewriting and resolving daemon
+.SH "SYNOPSIS"
+.na
+.nf
+\fBtrivial\-rewrite\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBtrivial\-rewrite\fR(8) daemon processes three types of client
+service requests:
+.IP "\fBrewrite \fIcontext address\fR"
+Rewrite an address to standard form, according to the
+address rewriting context:
+.RS
+.IP \fBlocal\fR
+Append the domain names specified with \fB$myorigin\fR or
+\fB$mydomain\fR to incomplete addresses; do \fBswap_bangpath\fR
+and \fBallow_percent_hack\fR processing as described below, and
+strip source routed addresses (\fI@site,@site:user@domain\fR)
+to \fIuser@domain\fR form.
+.IP \fBremote\fR
+Append the domain name specified with
+\fB$remote_header_rewrite_domain\fR to incomplete
+addresses. Otherwise the result is identical to that of
+the \fBlocal\fR address rewriting context. This prevents
+Postfix from appending the local domain to spam from poorly
+written remote clients.
+.RE
+.IP "\fBresolve \fIsender\fR \fIaddress\fR"
+Resolve the address to a (\fItransport\fR, \fInexthop\fR,
+\fIrecipient\fR, \fIflags\fR) quadruple. The meaning of
+the results is as follows:
+.RS
+.IP \fItransport\fR
+The delivery agent to use. This is the first field of an entry
+in the \fBmaster.cf\fR file.
+.IP \fInexthop\fR
+The host to send to and optional delivery method information.
+.IP \fIrecipient\fR
+The envelope recipient address that is passed on to \fInexthop\fR.
+.IP \fIflags\fR
+The address class, whether the address requires relaying,
+whether the address has problems, and whether the request failed.
+.RE
+.IP "\fBverify \fIsender\fR \fIaddress\fR"
+Resolve the address for address verification purposes.
+.SH "SERVER PROCESS MANAGEMENT"
+.na
+.nf
+.ad
+.fi
+The \fBtrivial\-rewrite\fR(8) servers run under control by
+the Postfix master
+server.  Each server can handle multiple simultaneous connections.
+When all servers are busy while a client connects, the master
+creates a new server process, provided that the trivial\-rewrite
+server process limit is not exceeded.
+Each trivial\-rewrite server terminates after
+serving at least \fB$max_use\fR clients of after \fB$max_idle\fR
+seconds of idle time.
+.SH "STANDARDS"
+.na
+.nf
+.ad
+.fi
+None. The command does not interact with the outside world.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBtrivial\-rewrite\fR(8) daemon is not security sensitive.
+By default, this daemon does not talk to remote or local users.
+It can run at a fixed low privilege in a chrooted environment.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+On busy mail systems a long time may pass before a \fBmain.cf\fR
+change affecting \fBtrivial\-rewrite\fR(8) is picked up. Use the command
+"\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.SH "COMPATIBILITY CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBresolve_dequoted_address (yes)\fR"
+Resolve a recipient address safely instead of correctly, by
+looking inside quotes.
+.PP
+Available with Postfix version 2.1 and later:
+.IP "\fBresolve_null_domain (no)\fR"
+Resolve an address that ends in the "@" null domain as if the
+local hostname were specified, instead of rejecting the address as
+invalid.
+.PP
+Available with Postfix version 2.3 and later:
+.IP "\fBresolve_numeric_domain (no)\fR"
+Resolve "user@ipaddress" as "user@[ipaddress]", instead of
+rejecting the address as invalid.
+.PP
+Available with Postfix version 2.5 and later:
+.IP "\fBallow_min_user (no)\fR"
+Allow a sender or recipient address to have `\-' as the first
+character.
+.SH "ADDRESS REWRITING CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBmyorigin ($myhostname)\fR"
+The domain name that locally\-posted mail appears to come
+from, and that locally posted mail is delivered to.
+.IP "\fBallow_percent_hack (yes)\fR"
+Enable the rewriting of the form "user%domain" to "user@domain".
+.IP "\fBappend_at_myorigin (yes)\fR"
+With locally submitted mail, append the string "@$myorigin" to mail
+addresses without domain information.
+.IP "\fBappend_dot_mydomain (Postfix >= 3.0: no, Postfix < 3.0: yes)\fR"
+With locally submitted mail, append the string ".$mydomain" to
+addresses that have no ".domain" information.
+.IP "\fBrecipient_delimiter (empty)\fR"
+The set of characters that can separate a user name from its
+extension (example: user+foo), or a .forward file name from its
+extension (example: .forward+foo).
+.IP "\fBswap_bangpath (yes)\fR"
+Enable the rewriting of "site!user" into "user@site".
+.PP
+Available in Postfix 2.2 and later:
+.IP "\fBremote_header_rewrite_domain (empty)\fR"
+Don't rewrite message headers from remote clients at all when
+this parameter is empty; otherwise, rewrite message headers and
+append the specified domain name to incomplete addresses.
+.SH "ROUTING CONTROLS"
+.na
+.nf
+.ad
+.fi
+The following is applicable to Postfix version 2.0 and later.
+Earlier versions do not have support for: virtual_transport,
+relay_transport, virtual_alias_domains, virtual_mailbox_domains
+or proxy_interfaces.
+.IP "\fBlocal_transport (local:$myhostname)\fR"
+The default mail delivery transport and next\-hop destination
+for final delivery to domains listed with mydestination, and for
+[ipaddress] destinations that match $inet_interfaces or $proxy_interfaces.
+.IP "\fBvirtual_transport (virtual)\fR"
+The default mail delivery transport and next\-hop destination for
+final delivery to domains listed with $virtual_mailbox_domains.
+.IP "\fBrelay_transport (relay)\fR"
+The default mail delivery transport and next\-hop destination for
+remote delivery to domains listed with $relay_domains.
+.IP "\fBdefault_transport (smtp)\fR"
+The default mail delivery transport and next\-hop destination for
+destinations that do not match $mydestination, $inet_interfaces,
+$proxy_interfaces, $virtual_alias_domains, $virtual_mailbox_domains,
+or $relay_domains.
+.IP "\fBparent_domain_matches_subdomains (see 'postconf -d' output)\fR"
+A list of Postfix features where the pattern "example.com" also
+matches subdomains of example.com,
+instead of requiring an explicit ".example.com" pattern.
+.IP "\fBrelayhost (empty)\fR"
+The next\-hop destination of non\-local mail; overrides non\-local
+domains in recipient addresses.
+.IP "\fBtransport_maps (empty)\fR"
+Optional lookup tables with mappings from recipient address to
+(message delivery transport, next\-hop destination).
+.PP
+Available in Postfix version 2.3 and later:
+.IP "\fBsender_dependent_relayhost_maps (empty)\fR"
+A sender\-dependent override for the global relayhost parameter
+setting.
+.PP
+Available in Postfix version 2.5 and later:
+.IP "\fBempty_address_relayhost_maps_lookup_key (<>)\fR"
+The sender_dependent_relayhost_maps search string that will be
+used instead of the null sender address.
+.PP
+Available in Postfix version 2.7 and later:
+.IP "\fBempty_address_default_transport_maps_lookup_key (<>)\fR"
+The sender_dependent_default_transport_maps search string that
+will be used instead of the null sender address.
+.IP "\fBsender_dependent_default_transport_maps (empty)\fR"
+A sender\-dependent override for the global default_transport
+parameter setting.
+.SH "ADDRESS VERIFICATION CONTROLS"
+.na
+.nf
+.ad
+.fi
+Postfix version 2.1 introduces sender and recipient address verification.
+This feature is implemented by sending probe email messages that
+are not actually delivered.
+By default, address verification probes use the same route
+as regular mail. To override specific aspects of message
+routing for address verification probes, specify one or more
+of the following:
+.IP "\fBaddress_verify_local_transport ($local_transport)\fR"
+Overrides the local_transport parameter setting for address
+verification probes.
+.IP "\fBaddress_verify_virtual_transport ($virtual_transport)\fR"
+Overrides the virtual_transport parameter setting for address
+verification probes.
+.IP "\fBaddress_verify_relay_transport ($relay_transport)\fR"
+Overrides the relay_transport parameter setting for address
+verification probes.
+.IP "\fBaddress_verify_default_transport ($default_transport)\fR"
+Overrides the default_transport parameter setting for address
+verification probes.
+.IP "\fBaddress_verify_relayhost ($relayhost)\fR"
+Overrides the relayhost parameter setting for address verification
+probes.
+.IP "\fBaddress_verify_transport_maps ($transport_maps)\fR"
+Overrides the transport_maps parameter setting for address verification
+probes.
+.PP
+Available in Postfix version 2.3 and later:
+.IP "\fBaddress_verify_sender_dependent_relayhost_maps ($sender_dependent_relayhost_maps)\fR"
+Overrides the sender_dependent_relayhost_maps parameter setting for address
+verification probes.
+.PP
+Available in Postfix version 2.7 and later:
+.IP "\fBaddress_verify_sender_dependent_default_transport_maps ($sender_dependent_default_transport_maps)\fR"
+Overrides the sender_dependent_default_transport_maps parameter
+setting for address verification probes.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBempty_address_recipient (MAILER\-DAEMON)\fR"
+The recipient of mail addressed to the null address.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBmax_use (100)\fR"
+The maximal number of incoming connections that a Postfix daemon
+process will service before terminating voluntarily.
+.IP "\fBrelocated_maps (empty)\fR"
+Optional lookup tables with new contact information for users or
+domains that no longer exist.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBqueue_directory (see 'postconf -d' output)\fR"
+The location of the Postfix top\-level queue directory.
+.IP "\fBshow_user_unknown_table_name (yes)\fR"
+Display the name of the recipient table in the "User unknown"
+responses.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.PP
+Available in Postfix version 2.0 and later:
+.IP "\fBhelpful_warnings (yes)\fR"
+Log warnings about problematic configuration settings, and provide
+helpful suggestions.
+.SH "SEE ALSO"
+.na
+.nf
+postconf(5), configuration parameters
+transport(5), transport table format
+relocated(5), format of the "user has moved" table
+master(8), process manager
+syslogd(8), system logging
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+ADDRESS_CLASS_README, Postfix address classes howto
+ADDRESS_VERIFICATION_README, Postfix address verification
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

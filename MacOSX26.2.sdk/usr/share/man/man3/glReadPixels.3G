@@ -1,0 +1,841 @@
+'\" t
+.\"     Title: glReadPixels
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 03/08/2011
+.\"    Manual: OpenGL 3.3
+.\"    Source: OpenGL 3.3
+.\"  Language: English
+.\"
+.TH "GLREADPIXELS" "3G" "03/08/2011" "OpenGL 3.3" "OpenGL 3\&.3"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+glReadPixels \- read a block of pixels from the frame buffer
+.SH "C SPECIFICATION"
+.HP \w'void\ glReadPixels('u
+.BI "void glReadPixels(GLint\ " "x" ", GLint\ " "y" ", GLsizei\ " "width" ", GLsizei\ " "height" ", GLenum\ " "format" ", GLenum\ " "type" ", GLvoid\ *\ " "data" ");"
+.SH "PARAMETERS"
+.PP
+\fIx\fR, \fIy\fR
+.RS 4
+Specify the window coordinates of the first pixel that is read from the frame buffer\&. This location is the lower left corner of a rectangular block of pixels\&.
+.RE
+.PP
+\fIwidth\fR, \fIheight\fR
+.RS 4
+Specify the dimensions of the pixel rectangle\&.
+\fIwidth\fR
+and
+\fIheight\fR
+of one correspond to a single pixel\&.
+.RE
+.PP
+\fIformat\fR
+.RS 4
+Specifies the format of the pixel data\&. The following symbolic values are accepted:
+\fBGL_STENCIL_INDEX\fR,
+\fBGL_DEPTH_COMPONENT\fR,
+\fBGL_DEPTH_STENCIL\fR,
+\fBGL_RED\fR,
+\fBGL_GREEN\fR,
+\fBGL_BLUE\fR,
+\fBGL_RGB\fR,
+\fBGL_BGR\fR,
+\fBGL_RGBA\fR, and
+\fBGL_BGRA\fR\&.
+.RE
+.PP
+\fItype\fR
+.RS 4
+Specifies the data type of the pixel data\&. Must be one of
+\fBGL_UNSIGNED_BYTE\fR,
+\fBGL_BYTE\fR,
+\fBGL_UNSIGNED_SHORT\fR,
+\fBGL_SHORT\fR,
+\fBGL_UNSIGNED_INT\fR,
+\fBGL_INT\fR,
+\fBGL_HALF_FLOAT\fR,
+\fBGL_FLOAT\fR,
+\fBGL_UNSIGNED_BYTE_3_3_2\fR,
+\fBGL_UNSIGNED_BYTE_2_3_3_REV\fR,
+\fBGL_UNSIGNED_SHORT_5_6_5\fR,
+\fBGL_UNSIGNED_SHORT_5_6_5_REV\fR,
+\fBGL_UNSIGNED_SHORT_4_4_4_4\fR,
+\fBGL_UNSIGNED_SHORT_4_4_4_4_REV\fR,
+\fBGL_UNSIGNED_SHORT_5_5_5_1\fR,
+\fBGL_UNSIGNED_SHORT_1_5_5_5_REV\fR,
+\fBGL_UNSIGNED_INT_8_8_8_8\fR,
+\fBGL_UNSIGNED_INT_8_8_8_8_REV\fR,
+\fBGL_UNSIGNED_INT_10_10_10_2\fR,
+\fBGL_UNSIGNED_INT_2_10_10_10_REV\fR,
+\fBGL_UNSIGNED_INT_24_8\fR,
+\fBGL_UNSIGNED_INT_10F_11F_11F_REV\fR,
+\fBGL_UNSIGNED_INT_5_9_9_9_REV\fR, or
+\fBGL_FLOAT_32_UNSIGNED_INT_24_8_REV\fR\&.
+.RE
+.PP
+\fIdata\fR
+.RS 4
+Returns the pixel data\&.
+.RE
+.SH "DESCRIPTION"
+.PP
+
+\fBglReadPixels\fR
+returns pixel data from the frame buffer, starting with the pixel whose lower left corner is at location (\fIx\fR,
+\fIy\fR), into client memory starting at location
+\fIdata\fR\&. Several parameters control the processing of the pixel data before it is placed into client memory\&. These parameters are set with
+\fBglPixelStore\fR()\&. This reference page describes the effects on
+\fBglReadPixels\fR
+of most, but not all of the parameters specified by these three commands\&.
+.PP
+If a non\-zero named buffer object is bound to the
+\fBGL_PIXEL_PACK_BUFFER\fR
+target (see
+\fBglBindBuffer\fR()) while a block of pixels is requested,
+\fIdata\fR
+is treated as a byte offset into the buffer object\*(Aqs data store rather than a pointer to client memory\&.
+.PP
+
+\fBglReadPixels\fR
+returns values from each pixel with lower left corner at
+x + i y + j
+for
+0 <= i < width
+and
+0 <= j < height\&. This pixel is said to be the
+ith pixel in the
+jth row\&. Pixels are returned in row order from the lowest to the highest row, left to right in each row\&.
+.PP
+
+\fIformat\fR
+specifies the format for the returned pixel values; accepted values are:
+.PP
+\fBGL_STENCIL_INDEX\fR
+.RS 4
+Stencil values are read from the stencil buffer\&. Each index is converted to fixed point, shifted left or right depending on the value and sign of
+\fBGL_INDEX_SHIFT\fR, and added to
+\fBGL_INDEX_OFFSET\fR\&. If
+\fBGL_MAP_STENCIL\fR
+is
+\fBGL_TRUE\fR, indices are replaced by their mappings in the table
+\fBGL_PIXEL_MAP_S_TO_S\fR\&.
+.RE
+.PP
+\fBGL_DEPTH_COMPONENT\fR
+.RS 4
+Depth values are read from the depth buffer\&. Each component is converted to floating point such that the minimum depth value maps to 0 and the maximum value maps to 1\&. Each component is then multiplied by
+\fBGL_DEPTH_SCALE\fR, added to
+\fBGL_DEPTH_BIAS\fR, and finally clamped to the range
+0 1\&.
+.RE
+.PP
+\fBGL_DEPTH_STENCIL\fR
+.RS 4
+Values are taken from both the depth and stencil buffers\&. The
+\fItype\fR
+parameter must be
+\fBGL_UNSIGNED_INT_24_8\fR
+or
+\fBGL_FLOAT_32_UNSIGNED_INT_24_8_REV\fR\&.
+.RE
+.PP
+\fBGL_RED\fR
+.RS 4
+.RE
+.PP
+\fBGL_GREEN\fR
+.RS 4
+.RE
+.PP
+\fBGL_BLUE\fR
+.RS 4
+.RE
+.PP
+\fBGL_RGB\fR
+.RS 4
+.RE
+.PP
+\fBGL_BGR\fR
+.RS 4
+.RE
+.PP
+\fBGL_RGBA\fR
+.RS 4
+.RE
+.PP
+\fBGL_BGRA\fR
+.RS 4
+.RE
+.PP
+Finally, the indices or components are converted to the proper format, as specified by
+\fItype\fR\&. If
+\fIformat\fR
+is
+\fBGL_STENCIL_INDEX\fR
+and
+\fItype\fR
+is not
+\fBGL_FLOAT\fR, each index is masked with the mask value given in the following table\&. If
+\fItype\fR
+is
+\fBGL_FLOAT\fR, then each integer index is converted to single\-precision floating\-point format\&.
+.PP
+If
+\fIformat\fR
+is
+\fBGL_RED\fR,
+\fBGL_GREEN\fR,
+\fBGL_BLUE\fR,
+\fBGL_RGB\fR,
+\fBGL_BGR\fR,
+\fBGL_RGBA\fR, or
+\fBGL_BGRA\fR
+and
+\fItype\fR
+is not
+\fBGL_FLOAT\fR, each component is multiplied by the multiplier shown in the following table\&. If type is
+\fBGL_FLOAT\fR, then each component is passed as is (or converted to the client\*(Aqs single\-precision floating\-point format if it is different from the one used by the GL)\&.
+.PP
+.TS
+allbox tab(:);
+lB cB cB.
+T{
+\fItype\fR
+T}:T{
+\fB
+                        Index Mask
+                        \fR
+T}:T{
+\fB
+                        Component Conversion
+                        \fR
+T}
+.T&
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c c
+l c l
+l c l
+l c c.
+T{
+\fBGL_UNSIGNED_BYTE\fR
+T}:T{
+2
+                                8
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        8
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_BYTE\fR
+T}:T{
+2
+                                7
+                                
+                                \-
+                                1
+T}:T{
+2
+                                                8
+                                                
+                                                \-
+                                                1
+                                            
+                                        
+                                        ⁢
+                                        c
+                                        \-
+                                        1
+                                    
+                                
+                                2
+T}
+T{
+\fBGL_UNSIGNED_SHORT\fR
+T}:T{
+2
+                                16
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        16
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_SHORT\fR
+T}:T{
+2
+                                15
+                                
+                                \-
+                                1
+T}:T{
+2
+                                                16
+                                                
+                                                \-
+                                                1
+                                            
+                                        
+                                        ⁢
+                                        c
+                                        \-
+                                        1
+                                    
+                                
+                                2
+T}
+T{
+\fBGL_UNSIGNED_INT\fR
+T}:T{
+2
+                                32
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        32
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_INT\fR
+T}:T{
+2
+                                31
+                                
+                                \-
+                                1
+T}:T{
+2
+                                                32
+                                                
+                                                \-
+                                                1
+                                            
+                                        
+                                        ⁢
+                                        c
+                                        \-
+                                        1
+                                    
+                                
+                                2
+T}
+T{
+\fBGL_HALF_FLOAT\fR
+T}:T{
+none
+T}:T{
+c
+T}
+T{
+\fBGL_FLOAT\fR
+T}:T{
+none
+T}:T{
+c
+T}
+T{
+\fBGL_UNSIGNED_BYTE_3_3_2\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_BYTE_2_3_3_REV\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_SHORT_5_6_5\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_SHORT_5_6_5_REV\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_SHORT_4_4_4_4\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_SHORT_4_4_4_4_REV\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_SHORT_5_5_5_1\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_SHORT_1_5_5_5_REV\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_INT_8_8_8_8\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_INT_8_8_8_8_REV\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_INT_10_10_10_2\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_INT_2_10_10_10_REV\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_INT_24_8\fR
+T}:T{
+2
+                                N
+                                
+                                \-
+                                1
+T}:T{
+2
+                                        N
+                                        
+                                        \-
+                                        1
+                                    
+                                
+                                ⁢
+                                c
+T}
+T{
+\fBGL_UNSIGNED_INT_10F_11F_11F_REV\fR
+T}:T{
+\-\-
+T}:T{
+Special
+T}
+T{
+\fBGL_UNSIGNED_INT_5_9_9_9_REV\fR
+T}:T{
+\-\-
+T}:T{
+Special
+T}
+T{
+\fBGL_FLOAT_32_UNSIGNED_INT_24_8_REV\fR
+T}:T{
+none
+T}:T{
+c (Depth Only)
+T}
+.TE
+.sp 1
+.PP
+Return values are placed in memory as follows\&. If
+\fIformat\fR
+is
+\fBGL_STENCIL_INDEX\fR,
+\fBGL_DEPTH_COMPONENT\fR,
+\fBGL_RED\fR,
+\fBGL_GREEN\fR, or
+\fBGL_BLUE\fR, a single value is returned and the data for the
+ith pixel in the
+jth row is placed in location
+j ⁢ width + i\&.
+\fBGL_RGB\fR
+and
+\fBGL_BGR\fR
+return three values,
+\fBGL_RGBA\fR
+and
+\fBGL_BGRA\fR
+return four values for each pixel, with all values corresponding to a single pixel occupying contiguous space in
+\fIdata\fR\&. Storage parameters set by
+\fBglPixelStore\fR(), such as
+\fBGL_PACK_LSB_FIRST\fR
+and
+\fBGL_PACK_SWAP_BYTES\fR, affect the way that data is written into memory\&. See
+\fBglPixelStore\fR()
+for a description\&.
+.SH "NOTES"
+.PP
+Values for pixels that lie outside the window connected to the current GL context are undefined\&.
+.PP
+If an error is generated, no change is made to the contents of
+\fIdata\fR\&.
+.SH "ERRORS"
+.PP
+
+\fBGL_INVALID_ENUM\fR
+is generated if
+\fIformat\fR
+or
+\fItype\fR
+is not an accepted value\&.
+.PP
+
+\fBGL_INVALID_VALUE\fR
+is generated if either
+\fIwidth\fR
+or
+\fIheight\fR
+is negative\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fIformat\fR
+is
+\fBGL_STENCIL_INDEX\fR
+and there is no stencil buffer\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fIformat\fR
+is
+\fBGL_DEPTH_COMPONENT\fR
+and there is no depth buffer\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fIformat\fR
+is
+\fBGL_DEPTH_STENCIL\fR
+and there is no depth buffer or if there is no stencil buffer\&.
+.PP
+
+\fBGL_INVALID_ENUM\fR
+is generated if
+\fIformat\fR
+is
+\fBGL_DEPTH_STENCIL\fR
+and
+\fItype\fR
+is not
+\fBGL_UNSIGNED_INT_24_8\fR
+or
+\fBGL_FLOAT_32_UNSIGNED_INT_24_8_REV\fR\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fItype\fR
+is one of
+\fBGL_UNSIGNED_BYTE_3_3_2\fR,
+\fBGL_UNSIGNED_BYTE_2_3_3_REV\fR,
+\fBGL_UNSIGNED_SHORT_5_6_5\fR, or
+\fBGL_UNSIGNED_SHORT_5_6_5_REV\fR
+and
+\fIformat\fR
+is not
+\fBGL_RGB\fR\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fItype\fR
+is one of
+\fBGL_UNSIGNED_SHORT_4_4_4_4\fR,
+\fBGL_UNSIGNED_SHORT_4_4_4_4_REV\fR,
+\fBGL_UNSIGNED_SHORT_5_5_5_1\fR,
+\fBGL_UNSIGNED_SHORT_1_5_5_5_REV\fR,
+\fBGL_UNSIGNED_INT_8_8_8_8\fR,
+\fBGL_UNSIGNED_INT_8_8_8_8_REV\fR,
+\fBGL_UNSIGNED_INT_10_10_10_2\fR, or
+\fBGL_UNSIGNED_INT_2_10_10_10_REV\fR
+and
+\fIformat\fR
+is neither
+\fBGL_RGBA\fR
+nor
+\fBGL_BGRA\fR\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if a non\-zero buffer object name is bound to the
+\fBGL_PIXEL_PACK_BUFFER\fR
+target and the buffer object\*(Aqs data store is currently mapped\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if a non\-zero buffer object name is bound to the
+\fBGL_PIXEL_PACK_BUFFER\fR
+target and the data would be packed to the buffer object such that the memory writes required would exceed the data store size\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if a non\-zero buffer object name is bound to the
+\fBGL_PIXEL_PACK_BUFFER\fR
+target and
+\fIdata\fR
+is not evenly divisible into the number of bytes needed to store in memory a datum indicated by
+\fItype\fR\&.
+.PP
+
+\fBGL_INVALID_OPERATION\fR
+is generated if
+\fBGL_READ_FRAMEBUFFER_BINDING\fR
+is non\-zero, the read framebuffer is complete, and the value of
+\fBGL_SAMPLE_BUFFERS\fR
+for the read framebuffer is greater than zero\&.
+.SH "ASSOCIATED GETS"
+.PP
+
+\fBglGet\fR()
+with argument
+\fBGL_INDEX_MODE\fR
+.PP
+
+\fBglGet\fR()
+with argument
+\fBGL_PIXEL_PACK_BUFFER_BINDING\fR
+.SH "SEE ALSO"
+.PP
+
+\fBglPixelStore\fR(),
+\fBglReadBuffer\fR()
+.SH "COPYRIGHT"
+.PP
+Copyright
+\(co
+1991\-2006 Silicon Graphics, Inc\&. This document is licensed under the SGI Free Software B License\&. For details, see
+\m[blue]\fBhttp://oss\&.sgi\&.com/projects/FreeB/\fR\m[]\&.

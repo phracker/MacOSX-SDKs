@@ -1,0 +1,74 @@
+.TH "<MPSHandle>" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+<MPSHandle>
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <MPSNNGraphNodes\&.h>\fP
+.SH "Detailed Description"
+.PP 
+\fBMPSNNGraphNodes\&.h\fP  MetalPerformanceShaders
+.PP
+Created by Ian Ollmann on 10/19/16\&. 
+.PP
+\fBCopyright:\fP
+.RS 4
+Copyright © 2016 Apple\&. All rights reserved\&.
+.RE
+.PP
+This header describes building blocks to prepare a graph of MPS images, kernels and state objects\&. You should prepare your graph by creating a \fBMPSNNImageNode\fP for each of the graph input textures\&. These are then used as inputs to \fBMPSNNFilterNode\fP subclasses\&. These in turn produce more image nodes as results, which can be linked to more MPSNNFilterNodes as inputs\&. When the graph representation is complete, make a \fBMPSNNGraph\fP object to interpret and optimize the graph\&. The \fBMPSNNGraph\fP may be used to encode the entire graph on a MTLCommandBuffer\&.
+.PP
+Objects presented here are generally light weight\&. They do not have a MTLDevice reference, and so can not create MTLResource objects\&. In the few cases when data is expected to be large (e\&.g\&. convolution weights), the nodes are designed to defer allocation of storage, preferring to leave them on disk or network or other persistent storage to hold the data until it is actually needed to initialize a \fBMPSKernel\fP object\&. Not until the \fBMPSNNGraph\fP is constructed does the heavy lifting begin\&. MPSNNGraphs in contrast can be extremely heavy\&. \fBA\fP large graph may use most of the memory available to your system! Nearly all of this is due to convolution weights\&. Construct your <MPSCNNConvolutionDataSource> to only load data when it is needed\&.
+.PP
+MPS resource identification  Most of the time, there is only one image and one or fewer states needed as input to a graph, so the order of the images and states passed to [\fBMPSNNGraph\fP encodeToCommandBuffer:sourceImages:] or [\fBMPSNNGraph\fP encodeToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:] is clear\&. There is only one order\&. However, sometimes graphs have more than one input image or state\&. What order should they appear in the NSArray passed to these methods?
+.PP
+Each \fBMPSNNImageNode\fP or \fBMPSNNStateNode\fP can be tagged with a \fBMPSHandle\fP\&. \fBMPSNNGraph\fP keeps track of these\&. You can request that the \fBMPSNNGraph\fP return them to you in an array in the same order as needed to encode the \fBMPSNNGraph\fP, using \fBMPSNNGraph\&.sourceImageHandles\fP and \fBMPSNNGraph\&.sourceStateHandles\fP\&.
+.PP
+Example: 
+.PP
+.nf
+@interface MyHandle : NSObject <MPSHandle>
+    // Add a method for my use to get the image needed based on the handle to it\&.
+    // This isn't part of the MPSHandle protocol, but we need it for MyEncodeGraph
+    // below\&. Since it is my code calling my object, we can add whatever we want like this\&.
+    -(MPSImage*__nonnull) image;    // return the MPSImage corresponding to the handle
+
+    // required by MPSHandle protocol
+    -(NSString * __nullable) label;
+
+    // MPSHandle implies NSSecureCoding too
+    +(BOOL) supportsSecureCoding;
+    - (void)encodeWithCoder:(NSCoder * __nonnull )aCoder;
+    - (nullable instancetype)initWithCoder:(NSCoder * __nonnull )aDecoder; // NS_DESIGNATED_INITIALIZER
+@end
+
+// Encode a graph to cmdBuf using handles for images
+// Here we assume that the MPSNNImageNodes that are graph inputs (not produced 
+// by the graph) are tagged with a unique instance of MyHandle that can be used 
+// to get the appropriate image for that node\&.
+static void MyEncodeGraph( MPSNNGraph * graph, id <MTLCommandBuffer> cmdBuf )
+{
+    @autoreleasepool{
+        // prepare an array of source images, using the handles
+        NSArray<MyHandle*> * handles = graph\&.sourceImageHandles;
+        unsigned long count = handles\&.count;
+        NSMutableArray<MPSImage*> * __nonnull images = [NSMutableArray arrayWithCapacity: count];
+        for( unsigned long i = 0; i < count; i++ )
+            images[i] = handles[i]\&.image;
+
+        // encode the graph using the array
+        [ graph encodeToCommandBuffer: cmdBuf
+                         sourceImages: images ];
+    }
+}
+
+.fi
+.PP
+ 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

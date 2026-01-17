@@ -1,0 +1,72 @@
+.\" Copyright (c) 2011 Apple Inc. All rights reserved.
+.Dd 1 July, 2011
+.Dt xpc_abort 3
+.Os Darwin
+.Sh NAME
+.Nm xpc_abort
+.Nd conditions which cause XPC to abort
+.Sh DESCRIPTION
+The XPC API will aggressively defend itself against perceived misuse. Wherever 
+XPC can definitively detect misuse of its APIs or data corruption, it will
+abort. For example, if the retain count of an object underflows by calling
+.Xr xpc_release 3
+on it too many times, XPC will abort the process.
+.Pp
+Many frameworks opt to keep the program limping along in such a state (and will
+perhaps print a warning message to the system log), but aborting upon detection
+provides unmistakable warning that there is a bug present in the application
+which should be fixed before shipping.
+.Pp
+When XPC aborts a process, it will place information about the condition which
+triggered the abort in the
+.Em Application Specific Information
+section of the crash report. The message will be human-readable, prefixed with
+"XPC API Misuse:", and the crash report will indicate the stack trace which
+caused the abort.
+.Pp
+XPC will also abort if it detects unrecoverable data corruption in its internal
+state. The messages for these conditions will be prefixd with "Bug in libxpc:".
+If you come across such a crash, please file a bug and include the generated
+crash log, system log and steps to reproduce (if there are any identifiable
+steps).
+.Pp
+Currently, the manner in which XPC aborts the process will result in termination
+due to SIGILL (illegal instruction). The exact signal raised may change from
+release to release (or platform to platform). But on OS X Lion, SIGILL may be
+used as a hint that the process was terminated intentionally.
+.Sh DEBUGGING
+When debugging in Xcode or at the gdb command prompt, the debugger acts as the
+exception handler for the process being debugged. As a result, if the process
+is aborted by XPC, no crash report will be generated, and thus it may not be
+obvious why the program was terminated.
+.Pp
+As mentioned before, SIGILL is an indication that the process was terminated
+intentionally. If you observe the last frame in the crashing stack to be
+.Fn _xpc_api_misuse ,
+you may use the
+.Fn xpc_debugger_api_misuse_info
+API from within the debugger to obtain a human-readable string describing why
+the process was aborted. For example:
+.Pp
+.Bd -literal -offset indent
+Program received signal EXC_BAD_INSTRUCTION, Illegal instruction/operand.
+0x000000010012b25e in _xpc_api_misuse ()
+(gdb) p (char *)xpc_debugger_api_misuse_info()
+$1 = 0x7fff5fbff908 "XPC API Misuse: Over-release of object."
+(gdb)
+.Ed
+.Pp
+This message indicates that
+.Xr xpc_release 3
+was called too many times on an object.
+.Pp
+.Em IMPORTANT :
+The
+.Fn xpc_debugger_api_misuse_info
+API can ONLY be called from within a debugger. It is not meant to be called
+directly from the program. Do not call it directly from your code, and do not
+rely on the address of the result for any reason.
+.Sh SEE ALSO
+.Xr xpc 3 ,
+.Xr xpc_object 3 ,
+.Xr xpc_objects 3

@@ -1,0 +1,398 @@
+'\"
+'\"Steve Ball'\" Copyright (c) 2002 Zveno Pty Ltd
+'\"
+'\"
+'\" 
+'\" RCS: @(#) $Id: tclxslt.diff,v 1.2 2004/08/20 18:39:36 tpeterso Exp $
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: tclxslt.diff,v 1.2 2004/08/20 18:39:36 tpeterso Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH TclXSLT n  Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+::xslt::compile \- 
+.SH SYNOPSIS
+\fBpackage require xslt\fP
+.sp
+\fBxslt\fR\fB2.5\fR\fP
+.sp
+\fB::xslt\fR\fP
+.sp
+\fB::xslt::compile\fI \fIdoc\fR\fP
+.sp
+\fB\fIssheet\fR\fI \fImethod\fR ?\fI option\fI value ... ? ?\fI args ... ?
+.sp
+\fB::xslt::extension\fBadd\fR\fI \fInsuri\fR\fI \fItcl-namespace\fR\fP
+.BE
+
+.SH DESCRIPTION
+
+.PP
+TclXSLT is a wrapper for the  that allows an application to perform XSL transformations (XSLT).  The package also provides a binding to the XSLT extension mechanism so that XSLT extension may be implemented using Tcl scripts.
+
+.PP
+Transformation only works with documents created by TclDOM/libxml2.
+
+.PP
+The TclXSLT package makes extensive use of Tcl objects.  Compiled XSL stylesheets are stored as the internal representation of a Tcl object.  Source and result documents are accessed via TclDOM's C interface as Tcl objects.  This allows the application to cache parsed XML documents and compiled XSL stylesheets for better runtime performance.
+
+.SH PACKAGES AND NAMESPACES
+
+.PP
+The TclXSLT package defines the  package and also a Tcl namespace using that name.
+
+.SH COMMANDS
+.TP
+\fB::xslt::compile\fR
+
+.PP
+The \fB::xslt::compile\fR command pre-compiles a stylesheet document.  It returns a compiled stylesheet object and also defines a Tcl command to access the stylesheet.  This Tcl command may be used to transform XML documents.
+
+.PP
+NB.  It is advisable to use the \fI -baseuri\fR option when parsing the source and stylesheet documents to allow external resources to be resolved.
+
+.RS
+
+.RE
+.TP
+Stylesheet Command
+
+.PP
+The stylesheet command created by \fB::xslt::compile\fR command accesses a compiled stylesheet.
+
+.PP
+Following is an example of how to use the \fB\fIstylesheet\fR transform\fR method.
+
+.RS
+.TP
+Command Methods
+
+.PP
+The following command methods may be used:
+
+.TP
+.RS
+.TP
+\fI\fB\fI cget\fI \fIoption\fR\fR\fP 
+.PP
+Returns the value of an option.  See below for the list of valid options.
+
+.TP
+\fI\fB\fI configure\fI \fIoption\fR\fIvalue\fR\fR\fP 
+.PP
+Sets the value of an option.  Available options are as follows:
+.TP
+\fI\fP 
+
+.TP
+\fI\fB\fI transform\fI \fIsource\fR ?\fI \fIname\fR\fI \fIvalue\fR?\fR\fP 
+.PP
+Performs an XSL transformation on the given source document.  Stylesheet parameters may be specified as name-value pairs.  The return result is the DOM token for the result document.
+
+.RE
+.TP
+Stylesheet Parameters
+
+.PP
+Any number of name-value pairs may be specified as arguments to the \fB\fIstylesheet\fR transform\fR method.  These are passed as values for parameters in the stylesheet.   interprets the values as XPath expressions, where the context node is the root node for the source document.  To pass a value as a string it must be XPath-quoted, for example
+.PP
+.CS
+
+set library "Gnome libxslt"
+$ssheet transform $source_doc \
+	library '$library' \
+	author "'Daniel Veillard'" \
+	node {/*/Element[3]}
+
+.CE
+
+.RE
+.TP
+\fB::xslt::extension\fR
+
+.PP
+The \fB::xslt::extension\fR command is used to manage extensions of the  library.  The \fBadd\fR is used to register an extension.  The \fBremove\fR is used to unregister an extension.  See  for more detail.
+
+.RS
+
+.RE
+
+.SH EXTENSIONS
+
+.PP
+The TclXSLT package allows an application to bind Tcl scripts to the extension mechanism of .  This means that Tcl scripts may provide the implementation of an XSLT extension element or function.  The binding is achieved to associating a Tcl namespace with an XML namespace.
+.TP
+Implementing An Extension
+
+.PP
+The Tcl application uses the \fB::xslt::extension add\fR command to register an extension.  An XML Namespace for the extension is specified as an argument, along with a Tcl namespace that will provide implementations of extension elements and functions.  For example,
+
+.PP
+Everytime the \fB::xslt::transform\fR command is executed, a newly-created XSLT engine is initialized.  For each registered extension, every procedure in the associated Tcl namespace is defined in the XSLT engine as either an extension element or an extension function.  The procedure is defined as an extension function if it has a variable argument list, otherwise it is defined as an extension element.  The procedure name is used as the local part of the extension name.  For example,
+
+.PP
+"myfunc" is defined as an extension function and "myelement" is defined as an extension element.
+
+.RS
+.TP
+Extension Functions
+
+.PP
+The arguments to an extension function are converted to a string value and then passed as parameters to the Tcl procedure.
+
+.PP
+The return result of the Tcl procedure becomes the return value of the extension function.  The type of the result is preserved where possible, otherwise it is converted to a string value.
+.TP
+Extension Elements
+
+.PP
+Extension elements have not been implemented in TclXSLT v1.1.
+
+.RE
+.TP
+Using An Extension
+
+.PP
+To invoke an extension in an XSL stylesheet, use the normal XSLT extension mechanism.  The XML Namespace matches the extension to the registered Tcl namespace (NB. the stylesheet author is free to choose any prefix for the extension namespace).  For example,
+
+.PP
+This stylesheet would result in the following Tcl script being evaluated:
+
+.RS
+
+.RE

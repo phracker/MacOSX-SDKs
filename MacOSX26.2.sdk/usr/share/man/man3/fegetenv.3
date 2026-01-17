@@ -1,0 +1,82 @@
+.\" Copyright (c) 2011, Apple Inc.
+.Dd May 9, 2011
+.Dt FEGETENV 3
+.Os
+.Sh NAME
+.Nm fegetenv, feholdexcept, fesetenv, feupdateenv
+.Nd functions providing access to the floating-point environment.
+.Sh SYNOPSIS
+.Fd #include <fenv.h>
+.Fd #pragma STDC FENV_ACCESS ON
+.Ft int
+.Fn fegetenv "fenv_t *envp"
+.Ft int
+.Fn feholdexcept "fenvt_t *envp"
+.Ft int
+.Fn fesetenv "fenv_t *envp"
+.Ft int
+.Fn feupdateenv "fenv_t *envp"
+.Sh DESCRIPTION
+These functions provide the means to manage the entire floating-point
+environment--including both status flags and control modes--as a single entity.
+.Pp
+The
+.Fn fegetenv
+function attempts to store the current floating-point environment in the object
+pointed to by
+.Fa envp .
+It returns zero if the environment was successfully stored, and a nonzero value
+otherwise.
+.Pp
+The
+.Fn feholdexcept
+function saves the current floating-point environment in the object pointed to
+by
+.Fa envp ,
+clears the floating-point status flags, and then installs a "non-stop" mode, if
+available, under which no traps are taken for floating-point exceptions (as is
+the case in default IEEE-754 floating-point execution).  It returns zero if and
+only if such a mode was successfully installed.
+.Pp
+The
+.Fn fesetenv
+function attempts to establish the floating-point environment represented by
+the object pointed to by
+.Fa envp .
+This object shall have been set by a call to
+.Fn fegetenv 
+or
+.Fn feholdexcept ,
+or be equal to a floating-point environment macro defined in <fenv.h>.  Note
+that this function merely installs the floating-point status flags represented
+by its argument, and does not raise the corresponding floating-point exceptions.
+It returns zero if and only if the environment pointed to by 
+.Fa envp
+was successfully installed.
+.Pp
+The
+.Fn feupdateenv
+function attempts to save the currently raised floating-point flags, install 
+the floating-point environment represented by 
+.Fa *envp ,
+and then raise the floating-point exceptions corresponding to the saved flags.
+The object pointed to by
+.Fa envp
+shall have been set by a call to
+.Fn fegetenv 
+or
+.Fn feholdexcept ,
+or be equal to a floating-point environment macro defined in <fenv.h>.  It
+returns zero if and only if all of the specified actions were successfully
+carried out.
+.Sh SEE ALSO
+.Xr fenv 3 ,
+.Xr feclearexcept 3 ,
+.Xr fegetexceptflag 3 ,
+.Xr fegetround 3 ,
+.Xr feraiseexcept 3 ,
+.Xr fesetexceptflag 3 ,
+.Xr fesetround 3 ,
+.Xr feraiseexcept 3
+.Sh STANDARDS
+These functions conform to ISO/IEC 9899:TC3.

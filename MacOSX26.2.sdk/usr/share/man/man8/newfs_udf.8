@@ -1,0 +1,182 @@
+.\" Copyright (c) 1993, 1994
+.\"     The Regents of the University of California.  All rights reserved.
+.\" All rights reserved.
+.\"
+.\" This code is derived from software donated to Berkeley by
+.\" Christopher G. Demetriou.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"     @(#)newfs_udf
+.Dd July 12, 2005
+.Dt NEWFS_UDF 8
+.Os Mac OS X
+.Sh NAME
+.Nm newfs_udf
+.Nd construct a new UDF file system.
+.Sh SYNOPSIS
+.Nm newfs_udf
+.Op Fl Ndeouw
+.Op Fl b Ar block-size
+.Op Fl D Ar defect-file-name
+.Op Fl -dup-meta-part-file
+.Op Fl E Ar ecc-in-blks
+.Op Fl -enc Ar encoding-name
+.Op Fl v Ar vol-name
+.Op Fl m Ar media-type
+.Op Fl -meta-part-alloc-unit Ar n
+.Op Fl -meta-part-align-unit Ar n
+.Op Fl -meta-part-init-size Ar n
+.Op Fl p Ar packet-size
+.Op Fl r Ar rev
+.Op Fl s Ar size
+.Op Fl S Ar start-block-address
+.Op Fl -spare-blks Ar n
+.Op Fl t Ar access-type
+.Op Fl -unalloc-spc Ar blk-addr num-blks
+.Op Fl -wipefs Ar yes|no
+.Op Fl -userid Ar uid
+.Op Fl U Ar uid
+.Op Fl -groupid Ar gid
+.Op Fl G Ar gid
+.Ar special
+.Pp
+.Sh DESCRIPTION
+The
+.Nm newfs_udf
+command builds the UDF filesystem on the specified special device.
+.Pp
+The options are as follows:
+.Pp
+General options:
+.Bl -tag -width indent
+.It Fl N
+Causes the file system parameters to be printed out without really creating the file system.
+.It Fl w
+Stop processing on warnings, default: no
+.It Fl -wipefs Ar yes|no
+Whether wipe existing file systems on the volume before formatting it.  Default: wipe existing
+file systems when media-type is block device (blk), access-type is overwrite (ow), and the Keep Disc Open
+option (-o) is not specified; do not wipe existing file systems by default in all other cases.
+.It Fl -largesparse
+Format the volume to use a non UDF-compliant format to efficiently support very large sparse files (up to 2^63 - 1, or 9,223,372,036,854,775,807 bytes).  Sparse files on this volume that has holes larger than 1GB cannot be accessed by
+other UDF implementations.
+.Pp
+.El
+Disc properties:
+.Bl -tag -width indent
+.Pp
+.It Fl b Ar block-size
+The block size of the file system, in bytes, default: the native block size of the device, or 2048 for an image file
+.It Fl d
+The file system manages defects by creating a sparable partition, default: no
+.It Fl e
+Use extended file entry instead of file entry, default: no
+.It Fl E Ar ecc-in-blks
+ECC block size in number of blocks
+.It Fl m Ar media-type
+The type of the media, can be blk (block device), var-packet (varible size packet writing), fix-packet (fixed size
+packet writing), or pow (pseudo overwrite), default: blk
+.It Fl t Ar access-type
+The access type of the partition, can be wo (writeonce), ow (overwrite), or pow (pseudo overwrite), default: ow
+.It Fl o
+Keep the disc as open by only writing the first AVDP (e.g., background formating haven't finish, so the write of the
+last two AVDPs is not possible), default: close the disc for overwrite media, and keep it open for write once media
+.It Fl p Ar packet-size
+The size of a packet in number of blocks, default: 1
+.It Fl s Ar size
+Size of the file system in blocks, default: size of the device
+.Pp
+.El
+UDF parameters:
+.Pp
+General:
+.Bl -tag -width indent
+.It Fl r Ar rev
+UDF version number, can be 1.02, 1.50, 2.00, 2.01, 2.50, or 2.60, default: 2.01
+.It Fl u
+Creates unique id table (or unique id stream), default: no
+.It Fl -unalloc-spc Ar blk-addr num-blks
+Unallocated space recorded in unallocated space descriptor, default: no unallocated spc
+.It Fl v Ar vol-name
+Volume identifier, max 127 ascii or 63 unicode chars, default: "Untitled UDF Volume"
+.It Fl -enc Ar encoding-name
+The character encoding of the volume name, can be "utf8" or "utf16", default: utf8
+.Pp
+.El
+Virtual partitions (for CD-R, DVD-R SL/DL, DVD+R SL/DL, and HD DVD-R SL/DL):
+.Bl -tag -width indent
+.Pp
+.It Fl S Ar start-block-address
+The start block address of the last session.  Newfs_udf will search for this value for optical media
+.Pp
+.El
+Sparable partitions (for CD-RW, DVD-RW, and DVD+RW):
+.Bl -tag -width indent
+.Pp
+.It Fl -spare-blks Ar n
+Total number of sparing blocks (2 sparing tables are always used), default: 128
+.It Fl D Ar defect-file-name
+The name of the file containing all defect blocks.  This file is a text file, contains the physical block address of the
+media that has defects.  When one block of a packet is defective, the whole packet is marked as defective.  The block
+numbers in the file is delimited by space.  Multiple numbers can be on the same line. 
+.Pp
+.El
+Metadata partitions (for BD-R with POW, BD-RE and other overwritable media with UDF 2.50 or higher ):
+.Bl -tag -width indent
+.Pp
+.It Fl -dup-meta-part-file
+Duplicate the content of the metadata file in the metadata mirror file, default: no
+.It Fl -meta-part-alloc-unit Ar n
+The allocation unit size of the metadata partition in number of blocks, default: max(32, eccSizeInBlks, packetSize)
+.It Fl -meta-part-align-unit Ar n
+The alignment unit size of the metadata partition in number of blocks, default: max(eccSizeInBlks, packetSize)
+.It Fl -meta-part-init-size Ar n
+The initial size of the metadata partition in number of blocks, default: 32
+.It Fl -userid Ar uid
+or
+.It Fl U Ar uid
+Use the specified
+.Ar uid
+(numeric value only) as the owner of the root directory.
+.It Fl -groupid Ar gid
+or
+.It Fl G Ar gid
+Use the specified
+.Ar gid
+(numeric value only) as the group of the root directory.
+.El
+.Sh SEE ALSO
+.Xr newfs 8
+.Sh BUGS
+Unallocated space is not supported yet.
+.Sh HISTORY
+The
+.Nm newfs_udf
+utility first appeared in Mac OS X Leopard (10.5.0).

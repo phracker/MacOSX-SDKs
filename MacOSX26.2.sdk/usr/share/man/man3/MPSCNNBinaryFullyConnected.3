@@ -1,0 +1,128 @@
+.TH "MPSCNNBinaryFullyConnected" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNBinaryFullyConnected
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNConvolution\&.h>\fP
+.PP
+Inherits \fBMPSCNNBinaryConvolution\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:convolutionData:scaleValue:type:flags:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  The \fBMPSCNNBinaryFullyConnected\fP specifies a fully connected convolution layer with binary weights and optionally binarized input image\&. See \fBMPSCNNFullyConnected\fP for details on the fully connected layer and \fBMPSCNNBinaryConvolution\fP for binary convolutions\&.
+.PP
+The default padding policy for \fBMPSCNNBinaryConvolution\fP is different from most filters\&. It uses MPSNNPaddingMethodSizeValidOnly instead of MPSNNPaddingMethodSizeSame\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use initWithCoder:device instead\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSKernel\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryConvolution\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryConvolution\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(nonnull id< \fBMPSCNNConvolutionDataSource\fP >) convolutionData(const float *__nullable) outputBiasTerms(const float *__nullable) outputScaleTerms(const float *__nullable) inputBiasTerms(const float *__nullable) inputScaleTerms(\fBMPSCNNBinaryConvolutionType\fP) type(\fBMPSCNNBinaryConvolutionFlags\fP) flags"
+Initializes a binary fully connected kernel with binary weights as well as both pre and post scaling terms\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this \fBMPSCNNBinaryFullyConnected\fP filter will be used 
+.br
+\fIconvolutionData\fP \fBA\fP pointer to a object that conforms to the \fBMPSCNNConvolutionDataSource\fP protocol\&. The \fBMPSCNNConvolutionDataSource\fP protocol declares the methods that an instance of \fBMPSCNNBinaryFullyConnected\fP uses to obtain the weights and the convolution descriptor\&. Each entry in the convolutionData:weights array is a 32-bit unsigned integer value and each bit represents one filter weight (given in machine byte order)\&. The featurechannel indices increase from the least significant bit within the 32-bits\&. The number of entries is = ceil( inputFeatureChannels/32\&.0 ) * outputFeatureChannels * kernelHeight * kernelWidth The layout of filter weight is so that it can be reinterpreted as a 4D tensor (array) weight[ outputChannels ][ kernelHeight ][ kernelWidth ][ ceil( inputChannels / 32\&.0 ) ] (The ordering of the reduction from 4D tensor to 1D is per C convention\&. The index based on inputchannels varies most rapidly, followed by kernelWidth, then kernelHeight and finally outputChannels varies least rapidly\&.)
+.br
+\fIoutputBiasTerms\fP \fBA\fP pointer to bias terms to be applied to the convolution output\&. Each entry is a float value\&. The number of entries is = numberOfOutputFeatureMaps\&. If nil then 0\&.0 is used for bias\&. The values stored in the pointer are copied in and the array can be freed after this function returns\&. 
+.br
+\fIoutputScaleTerms\fP \fBA\fP pointer to scale terms to be applied to binary convolution results per output feature channel\&. Each entry is a float value\&. The number of entries is = numberOfOutputFeatureMaps\&. If nil then 1\&.0 is used\&. The values stored in the pointer are copied in and the array can be freed after this function returns\&. 
+.br
+\fIinputBiasTerms\fP \fBA\fP pointer to offset terms to be applied to the input before convolution and before input scaling\&. Each entry is a float value\&. The number of entries is 'inputFeatureChannels'\&. If NULL then 0\&.0 is used for bias\&. The values stored in the pointer are copied in and the array can be freed after this function returns\&. 
+.br
+\fIinputScaleTerms\fP \fBA\fP pointer to scale terms to be applied to the input before convolution, but after input biasing\&. Each entry is a float value\&. The number of entries is 'inputFeatureChannels'\&. If nil then 1\&.0 is used\&. The values stored in the pointer are copied in and the array can be freed after this function returns\&. 
+.br
+\fItype\fP What kind of binarization strategy is to be used\&. 
+.br
+\fIflags\fP See documentation above and documentation of MPSCNNBinaryConvolutionFlags\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSCNNBinaryFullyConnected\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryConvolution\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(nonnull id< \fBMPSCNNConvolutionDataSource\fP >) convolutionData(float) scaleValue(\fBMPSCNNBinaryConvolutionType\fP) type(\fBMPSCNNBinaryConvolutionFlags\fP) flags"
+Initializes a binary fully connected kernel with binary weights and a single scaling term\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this \fBMPSCNNBinaryFullyConnected\fP filter will be used 
+.br
+\fIconvolutionData\fP \fBA\fP pointer to a object that conforms to the \fBMPSCNNConvolutionDataSource\fP protocol\&. The \fBMPSCNNConvolutionDataSource\fP protocol declares the methods that an instance of \fBMPSCNNBinaryFullyConnected\fP uses to obtain the weights and bias terms as well as the convolution descriptor\&. Each entry in the convolutionData:weights array is a 32-bit unsigned integer value and each bit represents one filter weight (given in machine byte order)\&. The featurechannel indices increase from the least significant bit within the 32-bits\&. The number of entries is = ceil( inputFeatureChannels/32\&.0 ) * outputFeatureChannels * kernelHeight * kernelWidth The layout of filter weight is so that it can be reinterpreted as a 4D tensor (array) weight[ outputChannels ][ kernelHeight ][ kernelWidth ][ ceil( inputChannels / 32\&.0 ) ] (The ordering of the reduction from 4D tensor to 1D is per C convention\&. The index based on inputchannels varies most rapidly, followed by kernelWidth, then kernelHeight and finally outputChannels varies least rapidly\&.) 
+.br
+\fIscaleValue\fP \fBA\fP single floating point value used to scale the entire convolution\&. Each entry is a float value\&. The number of entries is 'inputFeatureChannels'\&. If nil then 1\&.0 is used\&. 
+.br
+\fItype\fP What kind of binarization strategy is to be used\&. 
+.br
+\fIflags\fP See documentation above and documentation of MPSCNNBinaryConvolutionFlags\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSCNNBinaryFullyConnected\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNBinaryConvolution\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

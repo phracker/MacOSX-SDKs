@@ -1,0 +1,166 @@
+.Dd 2 April, 2021
+.Dt cryptexctl-create 1
+.Os Darwin
+.Sh NAME
+.Nm cryptexctl create
+.Nd create a cryptex from a disk image
+.Sh SYNOPSIS
+.Nm cryptexctl create
+.Op Fl -replace
+.Fl -identifier Ar IDENTIFIER
+.Fl -version Ar VERSION
+.Fl -variant Ar VARIANT
+.Ar PATH-TO-DMG
+\" Host form...
+.Nm cryptexctl create
+.Op Fl -host-identity
+.Op Fl -replace
+.Fl -identifier Ar IDENTIFIER
+.Fl -version Ar VERSION
+.Ar PATH-TO-DMG
+\" Long form...
+.Nm cryptexctl create
+.Op Fl -identity Ar IDENTITY-PLIST
+.Op Fl -replace
+.Op Fl -BORD Ar BOARD-ID
+.Op Fl -CHIP Ar CHIP-ID
+.Op Fl -SDOM Ar SDOM
+.Fl -identifier Ar IDENTIFIER
+.Fl -version Ar VERSION
+.Fl -variant Ar VARIANT
+.Ar PATH-TO-DMG
+.Sh DESCRIPTION
+.Nm cryptexctl create
+creates a new
+.Xr cryptex 5
+from a disk image.
+The disk image must encapsulate an HFS+ or HFSX filesystem with a
+hierarchy as described in
+.Xr cryptex 5 .
+The result will be a directory with a
+.Qq cxbd
+file name extension.
+The cryptex bundle has the same structure with a restore bundle,
+and has the following structure and assets:
+.Bd -literal
+    ./Restore
+    ./Restore/BuildManifest.plist
+    ./Restore/Cryptex
+    ./Restore/Cryptex/<Cryptex Name>
+    ./Restore/Cryptex/<Cryptex Name>/c411
+    ./Restore/Cryptex/<Cryptex Name>/pdmg
+    ./Restore/Cryptex/<Cryptex Name>/ltrs
+    
+.Ed
+Together, these objects comprise the cryptex bundle. They are not
+independently useful.
+.Pp
+In most cases the device identity will be retrieved by
+.Nm cryptexctl create
+from either the host, if the host is running a
+.Xr cryptexd 8
+daemon, or from a connected device
+.Po
+See the
+.Fl -udid
+option on the root
+.Xr cryptexctl 1
+command.
+.Pc
+.Pp
+If the device cannot be connected directly the identity can be specified
+on the command line directly.
+.Sh OPTIONS
+A list of options with their descriptions. See
+.Sx DEVICE IDENTIFIERS
+for the identity arguments.
+.Pp
+Required:
+.Bl -tag
+.It Fl i | Fl -identifier Ar IDENTIFIER
+A reverse-ICANN identitifer for the cryptex
+.It Fl v | Fl -version Ar VERSION
+The CFBundleVersion-style version number for the cryptex
+.It Fl V | Fl -variant Ar VARIANT
+The name of the cryptex
+.It Ar PATH-TO-DMG
+The path to the disk image file from which the cryptex will be
+created -- the disk image must encapsulate an HFS+ or HFSX file
+system containing a
+.Xr cryptex 5
+filesystem hierarchy.
+.El
+.Pp
+Optional:
+.Bl -tag
+.It Fl o | Fl -output-directory Ar OUTPUT-DIRECTORY
+The directory to which the cryptex should be written. Upon successful
+completion, this directory will contain a directory named for the given
+.Ar IDENTIFIER ,
+which will contain the cryptex's constituent personalized objects
+.Bq default: the current working directory
+.It Fl r | Fl -replace
+Replace the cryptex in
+.Ar OUTPUT-DIRECTORY
+if it already exists. The old directory will be rename(2)ed into a temporary
+directory rather than being deleted
+outright.
+.It Fl H | Fl -host-identity
+Use the host's identity for the personalization; if specified all other
+identifiers are ignored
+.It Fl z | -research
+Cryptex will be created as a research cryptex with the cpxd tag.
+.El
+.Sh DEVICE IDENTIFIERS
+These tags can be retrieved from a device with
+.Xr cryptexctl-identity 1
+for offline personalization or retrieved automatically for the host or a
+connected device.
+.Pp
+The following components comprise a host identity for cryptex creation.
+For more information about these tags and the personalization process, see
+.Xr cryptex-image4 7 .
+.Pp
+.Bl -tag -width "CPRO" -compact
+.It Sy BORD
+The board identifier of the target device
+.It Sy CHIP
+The chip identifier of the target device
+.It Sy SDOM
+The security domain of the target device
+.Bq default: 0x1
+.Xr cryptexctl-nonce 1 .
+.Bq default: all zeros
+.El
+.Sh ENVIRONMENT
+.Bl -tag
+.It Ev CRYPTEXCTL_UDID
+Read by the base
+.Xr cryptexctl 1
+command to select the device on which to operate when the
+.Fl -udid
+option is not specified and there is no
+.Xr cryptexd 8
+daemon on the host. See
+.Xr cryptexctl 1
+for more information about
+.Ev CRYPTEXCTL_UDID .
+.El
+.Sh EXAMPLES
+Create a cryptex bundle using host identity:
+.Pp
+.Dl $ cryptexctl create -i com.apple.cryptex-http -v 0.0.1 -V CryptexHTTP -H /path/to/cryptex-http.dmg
+.Pp
+Create a cryptex bundle and specify build identify on command line:
+.Pp
+.Dl $ cryptexctl create -i com.apple.cryptex-http -v 0.0.1 -V CryptexHTTP -B 0x4 -C 0x8030 -D 0x1 /path/to/cryptex-http.dmg
+.Pp
+.Sh SEE ALSO
+.Xr cryptexctl 1 ,
+.Xr cryptexctl-identity 1 ,
+.Xr cryptexctl-personalize 1 ,
+.Xr cryptexctl-install 1 ,
+.Xr cryptexctl-nonce 1 ,
+.Xr cryptex 5
+.Sh HISTORY
+Introduced in macOS 11.0

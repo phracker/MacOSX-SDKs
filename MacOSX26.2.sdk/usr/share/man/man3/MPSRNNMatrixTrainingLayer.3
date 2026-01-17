@@ -1,0 +1,460 @@
+.TH "MPSRNNMatrixTrainingLayer" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSRNNMatrixTrainingLayer
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSRNNLayer\&.h>\fP
+.PP
+Inherits \fBMPSKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:rnnDescriptor:trainableWeights:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBcreateWeightGradientMatrices:dataType:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBcreateTemporaryWeightGradientMatrices:dataType:commandBuffer:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBcreateWeightMatrices:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeCopyWeightsToCommandBuffer:weights:matrixId:matrix:copyFromWeightsToMatrix:matrixOffset:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeForwardSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:trainingStates:recurrentInputState:recurrentOutputStates:weights:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeForwardSequenceToCommandBuffer:sourceMatrices:destinationMatrices:trainingStates:weights:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeGradientSequenceToCommandBuffer:forwardSources:forwardSourceOffsets:sourceGradients:sourceGradientOffsets:destinationGradients:destinationOffsets:weightGradients:trainingStates:recurrentInputState:recurrentOutputStates:weights:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeGradientSequenceToCommandBuffer:forwardSources:sourceGradients:destinationGradients:weightGradients:trainingStates:weights:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBinputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBoutputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "BOOL \fBstoreAllIntermediateStates\fP"
+.br
+.ti -1c
+.RI "BOOL \fBrecurrentOutputIsTemporary\fP"
+.br
+.ti -1c
+.RI "BOOL \fBtrainingStateIsTemporary\fP"
+.br
+.ti -1c
+.RI "BOOL \fBaccumulateWeightGradients\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  The \fBMPSRNNMatrixTrainingLayer\fP specifies a recurrent neural network layer for training on MPSMatrices\&. 
+.PP
+.nf
+        A MPSRNNMatrixTrainingLayer is initialized using a @ref MPSRNNLayerDescriptor, which further specifies the
+        recurrent network layer.
+        The input and output vectors in encode calls are stored as rows of the input and output matrices and
+        MPSRNNMatrixTrainingLayer supports matrices with decreasing number of rows: The row-indices identify the different
+        sequences that may be of different lengths - for example if we have three sequences:
+            ( x1, x2, x3 ), ( y1, y2, y3, y4 ) and ( z1, z2 )
+        of vectors xi, yi and zi, then these can be inserted together as a batch to the sequence encoding kernel by
+        using the matrices:
+
+.fi
+.PP
+ 
+.PP
+.nf
+     ( y1 )        ( y2 )        ( y3 )        ( y4 )
+m1 = ( x1 ),  m2 = ( x2 ),  m3 = ( x3 ),  m4 =
+     ( z1 )        ( z2 )
+
+.fi
+.PP
+ The gradient computation pass is then achieved by passing the corresponding gradient sequence from the previous layer ( dx1, dx2, dx3 ), ( dy1, dy2, dy3, dy4 ) and ( dz1, dz2 ) as matrices 
+.PP
+.nf
+      ( dy1 )         ( dy2 )         ( dy3 )         ( dy4 )
+dm1 = ( dx1 ),  dm2 = ( dx2 ),  dm3 = ( dx3 ),  dm4 =
+      ( dz1 )         ( dz2 )
+
+.fi
+.PP
+.PP
+The mathematical operation described in the linear transformations of \fBMPSRNNSingleGateDescriptor\fP \fBMPSLSTMDescriptor\fP and \fBMPSGRUDescriptor\fP are y^T = W x^T <=> y = x W^T, where x is the matrix containing the input vectors as rows, y is the matrix containing the output vectors as rows and W is the weight matrix\&. 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device"
+Make a copy of this kernel for a new device - 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSKernel\fP 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP The NSZone in which to allocate the object 
+.br
+\fIdevice\fP The device for the new \fBMPSKernel\fP\&. If nil, then use self\&.device\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to a copy of this \fBMPSKernel\fP\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (void) createTemporaryWeightGradientMatrices: (NSMutableArray< \fBMPSMatrix\fP * > *__nonnull) matricesOut(\fBMPSDataType\fP) dataType(nonnull id< MTLCommandBuffer >) commandBuffer"
+As \fBcreateWeightGradientMatrices\fP, but the matrices will be temporary with readCount = 1, which means that they become invalid after the first encode call that reads them\&. Note also that as the matrices are temporary, their storage mode will be private which means that you can only access the data using a kernel on the GPU\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fImatricesOut\fP An array where the newly created matrices will be stored, will be initialized to zero\&. 
+.br
+\fIdataType\fP Datatype for the entries - currently MPSDataTypeFloat32 and MPSDataTypeFloat16 are supported\&. 
+.br
+\fIcommandBuffer\fP The command buffer that the temporary matrices will live on\&. 
+.RE
+.PP
+
+.SS "\- (void) createWeightGradientMatrices: (NSMutableArray< \fBMPSMatrix\fP * > *__nonnull) matricesOut(\fBMPSDataType\fP) dataType"
+Initializes a set of matrices that can be used in training for weight and bias gradient outputs in 
+.PP
+\fBSee also:\fP
+.RS 4
+encodeBackwardSequenceToCommandBuffer\&. Can be also used to easily create auxiliary matrices for example for ADAM and other advanced optimization schemes\&. The layout and number of matrices is the same as for the outputs of 
+.PP
+initWithDevice, but the data type may differ\&. NOTE: These matrices cannot be used as weight matrices in the forward and backward encode calls, but matrices from initWithDevice() or createWeightMatrices() should be used instead\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fImatricesOut\fP An array where the newly created matrices will be stored, will be initialized to zero\&. 
+.br
+\fIdataType\fP Datatype for the entries - currently MPSDataTypeFloat32 and MPSDataTypeFloat16 are supported\&. 
+.RE
+.PP
+
+.SS "\- (void) createWeightMatrices: (NSMutableArray< \fBMPSMatrix\fP * > *__nonnull) matricesOut"
+Initializes a set of matrices that can be used in training for weight and bias matrices in the forward and backward passes\&. The layout, datatype and number of matrices is the same as for the outputs of 
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fImatricesOut\fP An array where the newly created matrices will be stored, will be initialized to zero\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeCopyWeightsToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSMatrix\fP * > *__nonnull) weights(\fBMPSRNNMatrixId\fP) matrixId(\fBMPSMatrix\fP *__nonnull) matrix(BOOL) copyFromWeightsToMatrix(MTLOrigin) matrixOffset"
+Encode a copy kernel that copies one matrix from the trainable weight set to a matrix with standard layout, where the column index is the input feature channel index (in forward direction) and row index is the output feature channel index\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIweights\fP An array weights from 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice or 
+.PP
+createWeightMatrices\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fImatrixId\fP Which matrix to copy - has to be a valid Id based on inputs defined in the rnnDescriptor of 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fImatrix\fP The destination or source matrix that is used in the copy\&. 
+.br
+\fIcopyFromWeightsToMatrix\fP If YES then the copy direction is from the set of trainable 'weights' to 'matrix', otherwise the copy is done from 'matrix' to 'weights'\&. 
+.br
+\fImatrixOffset\fP \fBA\fP (valid) offset into matrix to be applied to the copy operation\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeForwardSequenceToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSMatrix\fP * > *__nonnull) sourceMatrices(NSArray< \fBMPSMatrix\fP * > *__nonnull) destinationMatrices(NSMutableArray< \fBMPSRNNMatrixTrainingState\fP * > *__nonnull) trainingStates(NSArray< \fBMPSMatrix\fP * > *__nonnull) weights"
+Encode an \fBMPSRNNMatrixTrainingLayer\fP forward pass kernel for a sequence of inputs into a command buffer\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceMatrices\fP An array of valid \fBMPSMatrix\fP objects containing the sequence of source matrices\&. 
+.br
+\fIdestinationMatrices\fP An array valid MPSMatrices to be overwritten by result matrix sequence\&. destinationMatrices may not alias sourceMatrices\&. 
+.br
+\fItrainingStates\fP An array containing the training states to be passed to the gradient computation encode function\&. 
+.br
+\fIweights\fP An array of valid \fBMPSMatrix\fP objects containing the weights, should be the array that was produced either by 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice or 
+.PP
+createWeightMatrices\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeForwardSequenceToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSMatrix\fP * > *__nonnull) sourceMatrices(NSUInteger *__nullable) sourceOffsets(NSArray< \fBMPSMatrix\fP * > *__nonnull) destinationMatrices(NSUInteger *__nullable) destinationOffsets(NSMutableArray< \fBMPSRNNMatrixTrainingState\fP * > *__nonnull) trainingStates(\fBMPSRNNRecurrentMatrixState\fP *__nullable) recurrentInputState(NSMutableArray< \fBMPSRNNRecurrentMatrixState\fP * > *__nullable) recurrentOutputStates(NSArray< \fBMPSMatrix\fP * > *__nonnull) weights"
+Encode an \fBMPSRNNMatrixTrainingLayer\fP forward pass kernel for a sequence of inputs into a command buffer\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceMatrices\fP An array of valid \fBMPSMatrix\fP objects containing the sequence of source matrices\&. 
+.br
+\fIsourceOffsets\fP An array of byte-offsets into the sourceMatrices, if nil zeros are assumed and if not nil must contain offset for every matrix in sourceMatrices\&. 
+.br
+\fIdestinationMatrices\fP An array valid MPSMatrices to be overwritten by result matrix sequence\&. destinationMatrices may not alias sourceMatrices\&. 
+.br
+\fIdestinationOffsets\fP An array of byte-offsets into the destinationMatrices, if nil zeros are assumed and if not nil must contain offset for every matrix in destinationMatrices\&. 
+.br
+\fItrainingStates\fP An array containing the training states to be passed to the gradient computation encode function\&. 
+.br
+\fIrecurrentInputState\fP An optional state containing the output matrices and memory cells (for LSTMs) of the layer obtained from the previous input matrices in a sequence of inputs\&. Has to be the output of a previous call to this function or nil (assumed zero)\&. 
+.br
+\fIrecurrentOutputStates\fP An array that will be appended with the recurrent output states\&. May not be nil\&. If recurrentOutputIsTemporary is YES and then all returned recurrent states will be temporary\&. 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSState\fP:isTemporary\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIweights\fP An array of valid \fBMPSMatrix\fP objects containing the weights, should be the array that was produced either by 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice or 
+.PP
+createWeightMatrices\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeGradientSequenceToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSMatrix\fP * > *__nonnull) forwardSources(NSUInteger *__nullable) forwardSourceOffsets(NSArray< \fBMPSMatrix\fP * > *__nonnull) sourceGradients(NSUInteger *__nullable) sourceGradientOffsets(NSArray< \fBMPSMatrix\fP * > *__nullable) destinationGradients(NSUInteger *__nullable) destinationOffsets(NSArray< \fBMPSMatrix\fP * > *__nullable) weightGradients(NSArray< \fBMPSRNNMatrixTrainingState\fP * > *__nonnull) trainingStates(\fBMPSRNNRecurrentMatrixState\fP *__nullable) recurrentInputState(NSMutableArray< \fBMPSRNNRecurrentMatrixState\fP * > *__nullable) recurrentOutputStates(NSArray< \fBMPSMatrix\fP * > *__nonnull) weights"
+Encode an \fBMPSRNNMatrixTrainingLayer\fP gradient pass kernel for a sequence of input gradients into a command buffer\&. NOTE: The time sequence indexing follows the array indexing in the inputs: sourceGradients[0] has to contain the gradients corresponding to the first matrix in the forward pass corresponding to the current subsequence, which is typically sourceMatrices[0]\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIforwardSources\fP An array of \fBMPSMatrix\fP objects containing the sequence of source matrices of the forward pass\&. 
+.br
+\fIforwardSourceOffsets\fP An array of byte-offsets into the forwardSources, if nil zeros are assumed and if not nil must contain offset for every matrix in forwardSources\&. 
+.br
+\fIsourceGradients\fP An array of valid \fBMPSMatrix\fP objects containing the sequence of source gradient matrices\&. 
+.br
+\fIsourceGradientOffsets\fP An array of byte-offsets into the sourceGradients, if nil zeros are assumed and if not nil must contain offset for every matrix in sourceGradients\&. 
+.br
+\fIdestinationGradients\fP An array valid \fBMPSMatrix\fP objects that will receive the backpropagated gradients, may be nil if not needed (for example first layer in graph)\&. 
+.br
+\fIdestinationOffsets\fP An array of byte-offsets into the destinationGradients, if nil zeros are assumed and if not nil must contain offset for every matrix in destinationGradients\&. 
+.br
+\fIweightGradients\fP An array of valid \fBMPSMatrix\fP objects that will receive the gradient wrt\&. weights and biases of the layer - should be the array that was produced either by 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice or 
+.PP
+createWeightMatrices\&. May be nil in which case the gradients for the weights are not computed\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fItrainingStates\fP An array containing the training states from the forward pass - the array must contain the states corresponding to the input gradients is sourceGradients\&. 
+.br
+\fIrecurrentInputState\fP An optional state containing the output matrices and memory cells (for LSTMs) of the layer obtained from the previous input gradients in a sequence of inputs\&. Has to be the output of a previous call to this function or nil (assumed zero)\&. 
+.br
+\fIrecurrentOutputStates\fP An array that will be appended with the recurrent output states\&. Can be nil\&. If recurrentOutputIsTemporary is YES and then all returned recurrent states will be temporary\&. 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSState\fP:isTemporary\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIweights\fP An array of valid \fBMPSMatrix\fP objects containing the weights, should be the array that was produced either by 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice or 
+.PP
+createWeightMatrices\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeGradientSequenceToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(NSArray< \fBMPSMatrix\fP * > *__nonnull) forwardSources(NSArray< \fBMPSMatrix\fP * > *__nonnull) sourceGradients(NSArray< \fBMPSMatrix\fP * > *__nullable) destinationGradients(NSArray< \fBMPSMatrix\fP * > *__nullable) weightGradients(NSArray< \fBMPSRNNMatrixTrainingState\fP * > *__nonnull) trainingStates(NSArray< \fBMPSMatrix\fP * > *__nonnull) weights"
+Encode an \fBMPSRNNMatrixTrainingLayer\fP gradient pass kernel for a sequence of input gradients into a command buffer\&. NOTE: The time sequence indexing follows the array indexing in the inputs: sourceGradients[0] has to contain the gradients corresponding to the first matrix in the forward pass corresponding to the current subsequence, which is typically sourceMatrices[0]\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIforwardSources\fP An array of \fBMPSMatrix\fP objects containing the sequence of source matrices of the forward pass\&. 
+.br
+\fIsourceGradients\fP An array of \fBMPSMatrix\fP objects containing the sequence of source gradient matrices\&. 
+.br
+\fIdestinationGradients\fP An array valid \fBMPSMatrix\fP objects that will receive the backpropagated gradients, may be nil if not needed (for example first layer in graph)\&. 
+.br
+\fIweightGradients\fP An array valid \fBMPSMatrix\fP objects that will receive the gradient wrt\&. weights and biases of the layer - should be the array that was produced either by 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice or 
+.PP
+createWeightMatrices\&. May be nil in which case the gradients for the weights are not computed\&. NOTE: The weight gradients are accumulated on top of existing values so
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fItrainingStates\fP An array containing the training states from the forward pass - the array must contain the states corresponding to the input gradients is sourceGradients\&. 
+.br
+\fIweights\fP An array of valid \fBMPSMatrix\fP objects containing the weights, should be the array that was produced either by 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+initWithDevice or 
+.PP
+createWeightMatrices\&. 
+.RE
+.PP
+
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  See \fBMPSKernel::initWithCoder\fP\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSRNNMatrixTrainingLayer\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSRNNMatrixTrainingLayer\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSRNNMatrixTrainingLayer\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(nonnull const \fBMPSRNNDescriptor\fP *) rnnDescriptor(NSMutableArray< \fBMPSMatrix\fP * > *__nonnull) trainableWeights"
+Initializes a linear (fully connected) RNN kernel for training 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this MPSRNNMatrixLayer filter will be used 
+.br
+\fIrnnDescriptor\fP The descriptor that defines the RNN layer 
+.br
+\fItrainableWeights\fP An array where to store the weights of the layer as MPSMatrices\&. NOTE: The exact layout and number of matrices may vary between platforms and therefore you should not save out these weights directly, but instead use the function encodeCopyWeightsToCommandBuffer to identify the weights and biases for serialization\&. Typically you should pass here an initialized but empty NSMutableArray and when this function returns the array will have been populated with the weight matrices needed in the encode-calls, by using initial values from the datasources in rnnDescriptor\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSRNNMatrixTrainingLayer\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- accumulateWeightGradients\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+If yes then the computed weight gradients are accumulated on top of existing values in calls to the gradient computation functions: encodeGradientSequenceToCommandBuffer\&. Defaults to NO\&. 
+.SS "\- inputFeatureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels input vector/matrix\&. 
+.SS "\- outputFeatureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels in the output vector/matrix\&. 
+.SS "\- recurrentOutputIsTemporary\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+How recurrent output states from \fBencodeForwardSequenceToCommandBuffer\fP and encodeGradientSequenceToCommandBuffer are constructed\&. Defaults to NO\&. For reference 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSState\fP\&. 
+.RE
+.PP
+
+.SS "\- storeAllIntermediateStates\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+If YES then calls to functions \fBencodeForwardSequenceToCommandBuffer\fP and \fBencodeGradientSequenceToCommandBuffer\fP return every recurrent state in the array: recurrentOutputStates\&. Defaults to NO\&. 
+.SS "\- trainingStateIsTemporary\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+How training output states from \fBencodeForwardSequenceToCommandBuffer\fP are constructed\&. Defaults to NO\&. For reference 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSState\fP\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

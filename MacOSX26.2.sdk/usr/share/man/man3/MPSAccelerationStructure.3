@@ -1,0 +1,185 @@
+.TH "MPSAccelerationStructure" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSAccelerationStructure
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSAccelerationStructure\&.h>\fP
+.PP
+Inherits \fBMPSKernel\fP, <NSSecureCoding>, and <NSCopying>\&.
+.PP
+Inherited by \fBMPSInstanceAccelerationStructure\fP, and \fBMPSTriangleAccelerationStructure\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinit\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.RI "Initialize the acceleration structure with a Metal device\&. "
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.RI "Initialize the acceleration structure with an NSCoder and a Metal device\&. Buffer properties such as the vertex buffer, instance buffer, etc\&. are set to nil\&. Encode and decode these buffers along with the acceleration structure instead\&. "
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithGroup:\fP"
+.br
+.RI "Initialize the acceleration structure with an acceleration structure group, if the acceleration structure will be used in an instance hierarchy\&. "
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:group:\fP"
+.br
+.RI "Initialize the acceleration structure with an NSCoder and an acceleration structure group, if the acceleration structure will be used in an instance hierarchy\&. All acceleration structures in the instance hierarchy must share the same group\&. Buffer properties such as the vertex buffer, instance buffer, etc\&. are set to nil\&. Encode and decode these buffers along with the acceleration structure instead\&. "
+.ti -1c
+.RI "(void) \- \fBrebuild\fP"
+.br
+.RI "Rebuild the acceleration structure\&. "
+.ti -1c
+.RI "(void) \- \fBrebuildWithCompletionHandler:\fP"
+.br
+.RI "Rebuild the acceleration structure asynchronously\&. "
+.ti -1c
+.RI "(void) \- \fBencodeRefitToCommandBuffer:\fP"
+.br
+.RI "Refit the existing acceleration structure to new data\&. "
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.RI "Create a a copy of this acceleration structure\&. "
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:group:\fP"
+.br
+.RI "Create a a copy of this acceleration structure\&. "
+.ti -1c
+.RI "(void) \- \fBencodeWithCoder:\fP"
+.br
+.RI "Encode the acceleration structure with an NSCoder\&. "
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "\fBMPSAccelerationStructureGroup\fP *_Nonnull \fBgroup\fP"
+.br
+.RI "The group this acceleration structure was created with\&. "
+.ti -1c
+.RI "\fBMPSAxisAlignedBoundingBox\fP \fBboundingBox\fP"
+.br
+.RI "The bounding box fully enclosing the geometry this acceleration structure was built over\&. "
+.ti -1c
+.RI "MPSAccelerationStructureStatus \fBstatus\fP"
+.br
+.RI "Status indicating whether the acceleration structure has finished building\&. "
+.ti -1c
+.RI "MPSAccelerationStructureUsage \fBusage\fP"
+.br
+.RI "Acceleration structure usage options\&. Changes to this property require rebuilding the acceleration structure\&. Defaults to MPSAccelerationStructureUsageNone\&. "
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device"
+
+.PP
+Create a a copy of this acceleration structure\&. The acceleration structure may be copied to a different Metal device\&. Buffer properties of the acceleration structure such as the vertex buffer, instance, buffer, etc\&. are set to nil\&. Copy these buffers to new Metal device and assign them to the new acceleration structure instead\&. Do not copy the acceleration structure until any prior refit or rebuild operations have completed\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP This parameter is ignored\&. Memory zones are no longer used by Objective-C\&. 
+.br
+\fIdevice\fP New Metal device 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) copyWithZone: (nullable NSZone *) zone(nonnull \fBMPSAccelerationStructureGroup\fP *) group"
+
+.PP
+Create a a copy of this acceleration structure\&. The acceleration structure may be copied with a different acceleration structure group\&. Buffer properties of the acceleration structure such as the vertex buffer, instance buffer, etc\&. are set to nil\&. Copy these buffers with the new Metal device and assign them to the new acceleration structure instead\&. Do not copy the acceleration structure until any prior refit or rebuild operations have completed\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP This parameter is ignored\&. Memory zones are no longer used by Objective-C\&. 
+.br
+\fIgroup\fP New acceleration structure group 
+.RE
+.PP
+
+.SS "\- (void) encodeRefitToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer"
+
+.PP
+Refit the existing acceleration structure to new data\&. This method is used to refit the acceleration structure to new vertex data, index data, instance data, etc\&. while preserving the existing acceleration structure topology\&. This is typically much faster than a full rebuild of the acceleration structure\&. Refitting can also be pipelined with other GPU work such as ray intersection\&.
+.PP
+Until the command buffer has completed, the acceleration structure cannot be copied, encoded with \fBNSSecureCoding\fP, or rebuilt\&. Changes to properties such as the triangle count or instance might not be reflected\&. These changes require that the acceleration structure be rebuilt instead\&. The acceleration structure must be rebuilt at least once before this method can be called\&. 
+.SS "\- (void) encodeWithCoder: (NSCoder *__nonnull) coder"
+
+.PP
+Encode the acceleration structure with an NSCoder\&. Buffer properties such as the vertex buffer, index buffer, etc\&. are not be encoded\&. Encode and decode these buffers along with the acceleration structure instead\&. Do not encode the acceleration structure until any prior refit or rebuild operations have completed\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcoder\fP An archiver object 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) init "
+
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+
+.PP
+Initialize the acceleration structure with an NSCoder and a Metal device\&. Buffer properties such as the vertex buffer, instance buffer, etc\&. are set to nil\&. Encode and decode these buffers along with the acceleration structure instead\&. 
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull \fBMPSAccelerationStructureGroup\fP *) group"
+
+.PP
+Initialize the acceleration structure with an NSCoder and an acceleration structure group, if the acceleration structure will be used in an instance hierarchy\&. All acceleration structures in the instance hierarchy must share the same group\&. Buffer properties such as the vertex buffer, instance buffer, etc\&. are set to nil\&. Encode and decode these buffers along with the acceleration structure instead\&. 
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+
+.PP
+Initialize the acceleration structure with a Metal device\&. 
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithGroup: (\fBMPSAccelerationStructureGroup\fP *_Nonnull) group"
+
+.PP
+Initialize the acceleration structure with an acceleration structure group, if the acceleration structure will be used in an instance hierarchy\&. The Metal device is determined from the acceleration structure group\&. All acceleration structures in the instance hierarchy must share the same group\&. 
+.SS "\- (void) rebuild "
+
+.PP
+Rebuild the acceleration structure\&. This method must be called before any intersection tests can be scheduled with this acceleration structure\&. Before calling this method, fill out the properties of the acceleration structure such as vertex buffer, instance buffer, etc\&. The acceleration structure should be rebuilt when its contents (e\&.g\&. vertices in a triangle acceleration structure) have been modified significantly and must be rebuilt when properties such as triangle count, vertex stride, etc\&. have changed\&. When the contents of the acceleration structure have only been modified slightly, it may be cheaper to refit the acceleration structure instead\&.
+.PP
+This method blocks until the acceleration structure has been rebuilt\&. Until the rebuild has completed, the acceleration structure cannot be copied, encoded with \fBNSSecureCoding\fP, rebuilt, or refit\&. Before this method can be called, any pending GPU writes to the vertex buffer, index buffer, etc\&. must be completed (and, for managed buffers, synchronized)\&. Any prior intersection tests must also be completed before the acceleration structure can be rebuilt\&. 
+.SS "\- (void) rebuildWithCompletionHandler: (nonnull \fBMPSAccelerationStructureCompletionHandler\fP) completionHandler"
+
+.PP
+Rebuild the acceleration structure asynchronously\&. This method must be called before any intersection tests can be scheduled with this acceleration structure\&. Before calling this method, fill out the properties of the acceleration structure such as vertex buffer, instance buffer, etc\&. The acceleration structure should be rebuilt when its contents (e\&.g\&. vertices in a triangle acceleration structure) have been modified significantly and must be rebuilt when properties such as triangle count, vertex stride, etc\&. have changed\&. When the contents of the acceleration structure have only been modified slightly, it may be cheaper to refit the acceleration structure instead\&.
+.PP
+Until the rebuild has completed, the acceleration structure cannot be copied, encoded with \fBNSSecureCoding\fP, rebuilt, or refit\&. Before this method can be called, any pending GPU writes to the vertex buffer, index buffer, etc\&. must be completed (and, for managed buffers, synchronized)\&. Any prior intersection tests must also be completed before the acceleration structure can be rebuilt\&. 
+.SH "Property Documentation"
+.PP 
+.SS "\- (\fBMPSAxisAlignedBoundingBox\fP) boundingBox\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.PP
+The bounding box fully enclosing the geometry this acceleration structure was built over\&. The value of this property is not available until the acceleration structure has finished rebuilding or refitting 
+.SS "\- (\fBMPSAccelerationStructureGroup\fP* _Nonnull) group\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.PP
+The group this acceleration structure was created with\&. 
+.SS "\- (MPSAccelerationStructureStatus) status\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.PP
+Status indicating whether the acceleration structure has finished building\&. 
+.SS "\- (MPSAccelerationStructureUsage) usage\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+
+.PP
+Acceleration structure usage options\&. Changes to this property require rebuilding the acceleration structure\&. Defaults to MPSAccelerationStructureUsageNone\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

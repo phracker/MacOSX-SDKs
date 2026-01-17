@@ -1,0 +1,197 @@
+.Dd 28 Feb 2013
+.Os Darwin
+.Dt AUTHOPEN 1
+.Pp
+.Sh NAME
+.Nm authopen
+.Nd open file with authorization
+.Sh SYNOPSIS
+.Nm authopen
+.Op Fl stdoutpipe
+.Op Fl extauth
+.Ar filename
+.Nm
+.Op Fl stdoutpipe
+.Op Fl extauth
+.Fl w
+.Op Fl a
+.Ar filename
+.Nm
+.Op Fl stdoutpipe
+.Op Fl extauth
+.Fl c Op Fl x Fl m Ar mode Fl w
+.Ar filename
+.Nm
+.Op Fl stdoutpipe
+.Op Fl extauth
+.Fl o Ar flags
+.Ar filename
+.Nm
+.Fl h
+.\".Nm authopen
+.\".Fl daemon
+.\".Op Ar pipename
+.\".Nm authopen
+.\".Fl namedpipe
+.\".Ar pipename
+.Sh DESCRIPTION
+.Nm
+provides authorization-based file opening services.  In its simplest form,
+.Nm
+verifies that it is allowed to open
+.Ar filename
+(using an appropriate
+.Em sys.openfile.*
+authorization right) and then writes the file to stdout.  If
+.Fl w
+is specified,
+.Nm
+will read from
+.Em stdin
+and write to the file.
+.Pp
+.Nm
+is designed to be used both from the command line and programmatically.
+The
+.Fl stdoutpipe
+flag allows a parent process to receive an open file descriptor pointing to
+the file in question.
+.\"and the
+.\".Fl daemon
+.\"flag allows the process to run (either standalone or as a helper process)
+.\"as an "open server" which will take requests for files to open and return
+.\"open file descriptors to those files.
+.Pp
+Before opening
+.Ar filename ,
+.Nm
+will make an authorization request for a right of the form:
+.Pp
+.Em sys.openfile.[readonly|readwrite|readwritecreate]./fully/qualified/path
+.Sq .readonly
+rights only allow for read-only file descriptors.
+.Sq .readwrite
+rights allow for read/write file descriptors.
+.Sq .readwritecreate
+rights allow for read/write descriptors and the creation of new files.
+.Pp
+The
+.Fl extauth
+option can be used to provide an AuthorizationRef constructed by
+the client.  This generally prevents
+.Nm
+from presenting an authorization dialog containing its own name.
+.Sh OPTIONS
+.Bl -hang -offset
+.It Fl stdoutpipe
+specifies that STDOUT_FILENO has been dup2()'d onto a pipe to a
+parent process and that an open file descriptor to
+.Ar filename
+.Pq with the appropriate access mode
+should be sent back across it using the SCM_RIGHTS extension to
+.Xr sendmsg 2
+rather than
+having the file itself written to or read from
+.Em stdin
+/
+.Em stdout.
+.It Fl extauth
+specifies that
+.Nm
+should read one AuthorizationExternalForm structure from
+.Em stdin ,
+convert it to an AuthorizationRef, and attempt to use it to authorize
+the
+.Xr open 2
+operation.  The authorization should refer to the 
+.Em sys.apenfile
+right corresponding to the requested operation.  The authorization
+data will be read before any additional data supplied on
+.Em stdin ,
+and will not be included in data written with 
+.Fl w .
+.It Fl w
+instructs
+.Nm
+to open
+.Ar filename
+read/write and truncate it.  If
+.Fl stdoutpipe
+has not been specified,
+.Nm
+will then copy
+.Em stdin
+to
+.Ar filename
+until
+.Em stdin
+is closed.
+.It Fl a
+append to
+.Ar filename
+rather than truncating it (truncating is the default).
+.It Fl c
+create the file if it doesn't exist.
+.Fl m
+requires
+.Fl c Ns .
+.It Fl m Ar mode
+specify the mode bits if a file is created.
+.It Fl o Ar flags
+numerically specify the flags that should be passed to
+.Xr "open" "2" .
+.It Fl x
+require that the file being created not exist.
+.\".It Fl daemon
+.\"means
+.\".Nm
+.\"should assume that either standard input or the named path will be a socket
+.\"across which
+.\"Steven's simple
+.\".Em opend
+.\"protocol will be run.
+.\".Fl daemon
+.\"is not implemented.
+.El
+.Pp
+.Sh EXAMPLES
+To replace /etc/hostconfig (assuming
+.Em sys.openfile.readwrite./etc/hostconfig
+or better can be obtained):
+.Pp
+.Dl $ cat tmpdata | authopen -w /etc/hostconfig
+.Sh ERRORS
+.Nm
+will fail if an appropriate
+.Em "sys.openfile.readonly.*",
+.Em sys.openfile.readwrite.*,
+or
+.Em "sys.openfile.readwritecreate.*"
+right cannot be obtained or if the named path does not exist.
+.Sh BUGS
+.Nm
+should support prefix path authentication such that the right
+.Em sys.openfile.*./dev/
+could give access to all /dev entries and
+.Em sys.openfile.*./dev/disk1
+could give access to all disk1-related /dev entries.
+.Pp
+.Nm
+should use
+.Xr getopt 3 .
+.Sh LOCATION
+.Pa /usr/libexec/authopen
+.Sh SEE ALSO
+.Xr open 2 ,
+.Em Security/Authorization.h ,
+.\" .Ns Xr authopen 3 ,
+.Xr realpath 3 ,
+.Xr recvmsg 2 .
+.Rs
+.%A W. Richard Stevens
+.%T Passing File Descriptors
+.%B Advanced Programming in the Tn UNIX Environment
+.Re
+.Sh HISTORY
+.Nm
+appeared in Mac OS X 10.1 to assist with the manipulation of disk devices.

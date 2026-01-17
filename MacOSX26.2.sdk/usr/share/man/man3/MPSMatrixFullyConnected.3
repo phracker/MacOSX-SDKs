@@ -1,0 +1,197 @@
+.TH "MPSMatrixFullyConnected" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSMatrixFullyConnected
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSMatrixFullyConnected\&.h>\fP
+.PP
+Inherits \fBMPSMatrixBinaryKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(void) \- \fBsetNeuronType:parameterA:parameterB:parameterC:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSCNNNeuronType\fP) \- \fBneuronType\fP"
+.br
+.ti -1c
+.RI "(float) \- \fBneuronParameterA\fP"
+.br
+.ti -1c
+.RI "(float) \- \fBneuronParameterB\fP"
+.br
+.ti -1c
+.RI "(float) \- \fBneuronParameterC\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:inputMatrix:weightMatrix:biasVector:resultMatrix:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBcopyWithZone:device:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBsourceNumberOfFeatureVectors\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBsourceInputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "NSUInteger \fBsourceOutputFeatureChannels\fP"
+.br
+.ti -1c
+.RI "double \fBalpha\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework\&.
+.PP
+Applies a fully connected neural network layer by performing a a matrix multiplication, adding a bias vector, scaling, and applying a neuron activation function\&.
+.PP
+\fBA\fP \fBMPSMatrixFullyConnected\fP object computes: 
+.PP
+.nf
+            y = neuron(alpha * x * W + bias)
+
+        y is the output matrix, x and W are input matrices corresponding
+        to a collection of input vectors and weights respectively, and bias
+        is a vector which is broadcast and accumulated to each row
+        of the product.  alpha is a scale factor applied to the product.
+
+        neuron() is a pointwise function applied to the intermediate result.
+.fi
+.PP
+ 
+.SH "Method Documentation"
+.PP 
+.SS "\- (nonnull instancetype) copyWithZone: (nullable NSZone *) zone(nullable id< MTLDevice >) device"
+Make a copy of this kernel for a new device - 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMPSKernel\fP 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIzone\fP The NSZone in which to allocate the object 
+.br
+\fIdevice\fP The device for the new \fBMPSKernel\fP\&. If nil, then use self\&.device\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP pointer to a copy of this \fBMPSKernel\fP\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSMatrix\fP *__nonnull) inputMatrix(\fBMPSMatrix\fP *__nonnull) weightMatrix(\fBMPSVector\fP *__nullable) biasVector(\fBMPSMatrix\fP *__nonnull) resultMatrix"
+Encode a \fBMPSMatrixFullyConnected\fP object to a command buffer\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded kernel\&.
+.br
+\fIinputMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the input array\&.
+.br
+\fIweightMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the weight array\&.
+.br
+\fIbiasVector\fP \fBA\fP valid \fBMPSVector\fP object which specifies the bias values, or a null object to indicate that no bias is to be applied\&.
+.br
+\fIresultMatrix\fP \fBA\fP valid \fBMPSMatrix\fP object which specifies the output array\&.
+.RE
+.PP
+Encodes the operation to the specified command buffer\&. resultMatrix must be large enough to hold a MIN(sourceNumberOfInputs, inputMatrix\&.rows - primarySourceMatrixOrigin\&.x) x MIN(sourceOutputFeatureChannels, weightMatrix\&.columns - secondarySourceMatrixOrigin\&.y) array\&.
+.PP
+The bias vector must contain at least MIN(sourceOutputFeatureChannels, weightMatrix\&.columns - secondarySourceMatrixOrigin\&.y) elements\&. 
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  See \fBMPSKernel::initWithCoder\fP\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSMatrixFullyConnected\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSMatrixFullyConnected\fP object\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSMatrixFullyConnected\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Standard init with default properties per filter type 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The device that the filter will be used on\&. May not be NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a pointer to the newly initialized object\&. This will fail, returning nil if the device is not supported\&. Devices must be MTLFeatureSet_iOS_GPUFamily2_v1 or later\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSKernel\fP\&.
+.SS "\- (float) neuronParameterA "
+Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method 
+.SS "\- (float) neuronParameterB "
+Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method 
+.SS "\- (float) neuronParameterC "
+Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method 
+.SS "\- (\fBMPSCNNNeuronType\fP) neuronType "
+Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method 
+.SS "\- (void) setNeuronType: (\fBMPSCNNNeuronType\fP) neuronType(float) parameterA(float) parameterB(float) parameterC"
+Specifies a neuron activation function to be used\&.
+.PP
+This method can be used to add a neuron activation funtion of given type with associated scalar parameters \fBA\fP, B, and C that are shared across all output values\&. Note that this method can only be used to specify neurons which are specified by three (or fewer) parameters shared across all output values (or channels, in CNN nomenclature)\&. It is an error to call this method for neuron activation functions like MPSCNNNeuronTypePReLU, which require per-channel parameter values\&. For those kind of neuron activation functions, use appropriate setter functions\&. An \fBMPSMatrixFullyConnected\fP kernel is initialized with a default neuron function of MPSCNNNeuronTypeNone\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIneuronType\fP Type of neuron activation function\&. For full list see \fBMPSCNNNeuronType\&.h\fP 
+.br
+\fIparameterA\fP parameterA of neuron activation that is shared across all output values\&. 
+.br
+\fIparameterB\fP parameterB of neuron activation that is shared across all output values\&. 
+.br
+\fIparameterC\fP parameterC of neuron activation that is shared across all output values\&. 
+.RE
+.PP
+
+.SH "Property Documentation"
+.PP 
+.SS "\- alpha\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The scale factor to apply to the product\&. Specified in double precision\&. Will be converted to the appropriate precision in the implementation subject to rounding and/or clamping as necessary\&. Defaults to 1\&.0 at initialization time\&. 
+.SS "\- sourceInputFeatureChannels\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The input size to to use in the operation\&. This is equivalent to the number of columns and the number of rows in the primary (input array) and secondary (weight array) source matrices respectively\&. This property is modifiable and defaults to NSUIntegerMax\&. At encode time the larger of this property or the available input size is used\&. The value of NSUIntegerMax thus indicates that all available columns in the input array (beginning at primarySourceMatrixOrigin\&.y) and all available rows in the weight array (beginning at secondarySourceMatrixOrigin\&.x) should be considered\&. Note: The value used in the operation will be MIN(MIN(inputMatrix\&.columns - primarySourceMatrixOrigin\&.y, weightMatrix\&.rows - secondarySourceMatrixOrigin\&.x), sourceInputFeatureChannels) 
+.SS "\- sourceNumberOfFeatureVectors\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of input vectors which make up the input array\&. This is equivalent to the number of rows to consider from the primary source matrix\&. This property is modifiable and defaults to NSUIntegerMax\&. At encode time the larger of this property or the available number of inputs is used\&. The value of NSUIntegerMax thus indicates that all available input rows (beginning at primarySourceMatrixOrigin\&.x) should be considered\&. 
+.SS "\- sourceOutputFeatureChannels\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The output size to to use in the operation\&. This is equivalent to the number of columns to consider in the weight array, or the secondary source matrix\&. This property is modifiable and defaults to NSUIntegerMax\&. At encode time the larger of this property or the available output size is used\&. The value of NSUIntegerMax thus indicates that all available columns in the weight array (beginning at secondarySourceMatrixOrigin\&.y) should be considered\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

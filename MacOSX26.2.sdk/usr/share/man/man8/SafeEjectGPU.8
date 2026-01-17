@@ -1,0 +1,189 @@
+.\""Copyright (c) 2018 Apple Computer, Inc. All Rights Reserved.
+.Dd January 22, 2018
+.Dt SafeEjectGPU 8          
+.Os "Mac OS X"
+.Sh NAME                  
+.Nm SafeEjectGPU
+.Nd Facilitate safe eject/disconnect of eGPU(s) from system
+.\"																				SYNOPSIS 
+.Sh SYNOPSIS             
+.Nm 
+.Op Ar gpuid Ar <gpuid>
+.Op Ar gpuids Ar <gpuid1>,<gpuid2>,...
+.Op Ar gpus
+.Op Ar apps
+.Op Ar status
+.Op Ar Eject
+.Op Ar Initiate
+.Op Ar Relaunch
+.Op Ar Finalize
+.Op Ar Cancel
+.Op Ar RelaunchPID Ar <PID>
+.Ar ...
+.\"																				DESCRIPTION 
+.Sh DESCRIPTION
+The 
+.Nm 
+command
+is used to prepare for safe eject/disconnect of eGPUs from the system.  This involves interacting with apps to migrate off of ejecting eGPU(s), and triggering the eject itself.  This tool can also be used to view what GPUs are attached to the system, their eject status, and what apps hold references to each.
+.Pp
+A list of commands and their descriptions - note that commands affecting state are capitalized, and that multiple (including repeated) commands can occupy the same command line:
+.Bl -tag -width "RelaunchPID <PID>"
+.It Ar gpus
+Lists attributes of GPUs currently attached to system (gpuid, vendor/model, flags)
+.It Ar gpuid <gpuid>
+Specifies which GPU(s) subsequent commands apply to.  The default (0x0000) means all eGPUs.  See output of
+.Ar gpus
+command for valid
+.Ar <gpuid>
+values (of the form 0x7005) to use.
+.It Ar gpuids <gpuid1>,...
+Comma seperated list of GPU(s) for the app to select from. See output of
+.Ar gpus
+command for valid
+.Ar <gpuid>
+values (of the form 0x7005) to use.
+.It Ar apps
+Lists apps holding references to specified GPU - and app attributes/properties like PID, RPID, USER, PROCESS, APIS (Metal, GL/CL, GVA), BUNDLE_IDENTIFIER, PATH, GPUEjectPolicy and GPUSelectionPolicy where specified.
+.It Ar status
+Shows eject state of specified eGPU(s) (Present, Initiated, Finalized).
+.It Ar Eject
+Performs the full Eject sequence (
+.Ar Initiate
++
+.Ar Relaunch
++
+.Ar Finalize
+) of specified GPU(s).
+.It Ar Initiate
+Initiates eject of specified eGPU(s).  These eGPUs are temporarily hidden from API instantiations.
+.It Ar Relaunch
+Interacts with apps that hold references to specified eGPU(s) - to facilitate migration to remaining GPUs.
+.It Ar Finalize
+Finalizes eject of specified eGPU(s) - must be physically unplugged before they can be used again.
+.It Ar Cancel
+Cancels initiated eject of specified GPU(s) - instead of
+.Ar Finalized.
+.It Ar RelaunchPID <PID>
+Apply relaunch stimulus to one particular PID - for app relaunch stimulus testing.
+.It Ar RelaunchPIDOnGPU <PID>
+Apply relaunch stimulus to one particular PID with set of limited GPUs to select from, use
+.Ar gpuids
+to limit the GPUs seen by an app.
+.It Ar LaunchOnGPU <path>
+Launch application from given bundle path with set of limited GPUs, use
+.Ar gpuids
+to limit the GPUs seen by an app. If the instance of an app is already running, this command has no effect.
+.El
+.Pp
+.\"																				EXAMPLES 
+.Sh EXAMPLES
+$ 
+.Nm
+gpus
+.br
+List eGPUs.  Output is useful for cut-n-paste of example specified
+.Ar gpuid
+values used below
+$ 
+.Nm
+gpus apps status
+.br
+List all eGPUs and Apps on all eGPUs along with eject status of all eGPUs
+.Pp
+$ 
+.Nm
+Eject
+.br
+Perform full Eject sequence on all eGPUs
+.Pp
+$ 
+.Nm
+gpuid 0x7005 Eject
+.br
+Perform full Eject sequence on specified eGPU
+.Pp
+$ 
+.Nm
+gpus apps gpuid 0x7153 apps
+.br
+Lists all eGPUs and apps on all eGPUs and on integrated GPU as well
+.Pp
+$ 
+.Nm
+Initiate RelaunchPID 12345 Cancel
+.br
+Hide eGPUs and send relaunch stimulus to PID without doing full eject
+.Pp
+$
+.Nm
+gpuids 0x7005,0x7153 RelaunchPIDOnGPU <pid>
+.br
+Limits GPU selection for PID to either eGPU or Integrated GPU on relaunch
+.Pp
+$
+.Nm
+gpuids 0x7005 LaunchOnGPU /Applications/Calculator.app
+.br
+Launches calculator app on specified eGPU
+\"																				PLIST PROPERTIES
+.Sh PLIST PROPERTIES      
+The following properties are generally inferred.  Some values can be specified in the app's Info.plist.  They affect eGPU eject and API selection behaviors.  Generally, these properties won't need to be specified:
+.Bl -tag -width indent 
+.It Ar "GPUEjectPolicy"
+Inferred/Settable
+.Ar GPUEjectPolicy
+values for dealing with apps that needs to drop references to ejecting eGPU.  Establisehd in app bundle's Info.plist.
+Possible values:
+.Bl -tag -width "wrelaunch"
+.It Ar relaunch
+Send AppKit quit-with-save event followed by open-with-restore (relaunch app using alternate GPU(s)).
+.It Ar wait
+Just wait for GPU references to drop (without sending events or signals).
+.It Ar kill
+Use sigKill to force app exit (for apps that will relaunch via launchd - using alternate GPU(s)).
+.It Ar ignore
+Ignore - necessary for some internal GPU/display components - working to eliminate its use.
+.El
+.sp 1
+Inferred-Only
+.Ar GPUEjectPolicy
+values (you can't specify these values, but you'll see them as defaulted/inferred policies in
+.Ar apps
+output):
+.Bl -tag -width "wrelaunch"
+.It Ar wrelaunch
+Wait momentarily for processing of Metal GPU change notifications before resorting to
+.Ar relaunch
+ (as necessary).
+.It Ar jrelaunch
+Just
+.Ar relaunch
+ without waiting (since OpenGL/OpenCL are in use).
+.It Ar rwait
+When a process is subordinate to another, "responsible", process (see
+.Ar RPID
+column), Eject actions apply to the responsible process, who in turn deals with subordinates to eliminate their ejecting eGPU references.
+.El
+.El
+.Bl -tag -width -indent
+.It Ar "GPUSelectionPolicy"
+Settable values that affect instantiation of Metal and OpenGL/CL contexts (wrt eGPU use).  Established in app bundle's Info.plist.
+Possible values:
+.Bl -tag -width "preferRemovable"
+.It Ar avoidRemovable
+Avoid creation of MTLCommandQueues, and OpenGL/CL contexts on eGPUs.
+.It Ar preferRemovable
+Prefer creation of MTLCommandQueues, and OpenGL/CL contexts on eGPUs.
+.El
+.El
+.\"																				SEE ALSO 
+.Sh SEE ALSO 
+.Xr plist 5
+.Xr sudo 8
+.Xr launchd 8
+.\"																				HISTORY 
+.Sh HISTORY
+The command line
+.Nm
+tool first appeared in the 10.13.4 release of Mac OS X.

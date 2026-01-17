@@ -1,0 +1,537 @@
+'\"
+'\" Copyright (c) 1993 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\" Copyright (c) 2000 Scriptics Corporation.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: scan.n,v 1.24 2007/12/13 15:22:33 dgp Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH scan n 8.4 Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+scan \- Parse string using conversion specifiers in the style of sscanf
+.SH SYNOPSIS
+\fBscan \fIstring format \fR?\fIvarName varName ...\fR?
+.BE
+.SH INTRODUCTION
+.PP
+This command parses substrings from an input string in a fashion similar
+to the ANSI C \fBsscanf\fR procedure and returns a count of the number of
+conversions performed, or -1 if the end of the input string is reached
+before any conversions have been performed.  \fIString\fR gives the input
+to be parsed and \fIformat\fR indicates how to parse it, using \fB%\fR
+conversion specifiers as in \fBsscanf\fR.  Each \fIvarName\fR gives the
+name of a variable; when a substring is scanned from \fIstring\fR that
+matches a conversion specifier, the substring is assigned to the
+corresponding variable.
+If no \fIvarName\fR variables are specified, then \fBscan\fR works in an
+inline manner, returning the data that would otherwise be stored in the
+variables as a list.  In the inline case, an empty string is returned when
+the end of the input string is reached before any conversions have been
+performed.
+.SH "DETAILS ON SCANNING"
+.PP
+\fBScan\fR operates by scanning \fIstring\fR and \fIformat\fR together.
+If the next character in \fIformat\fR is a blank or tab then it
+matches any number of white space characters in \fIstring\fR (including
+zero).
+Otherwise, if it is not a \fB%\fR character then it 
+must match the next character of \fIstring\fR.
+When a \fB%\fR is encountered in \fIformat\fR, it indicates
+the start of a conversion specifier.
+A conversion specifier contains up to four fields after the \fB%\fR:
+a XPG3 position specifier (or a \fB*\fR to indicate the converted
+value is to be discarded instead of assigned to any variable); a number
+indicating a maximum substring width; a size modifier; and a
+conversion character.
+All of these fields are optional except for the conversion character.
+The fields that are present must appear in the order given above.
+.PP
+When \fBscan\fR finds a conversion specifier in \fIformat\fR, it
+first skips any white-space characters in \fIstring\fR (unless the
+conversion character is \fB[\fR or \fBc\fR).
+Then it converts the next input characters according to the 
+conversion specifier and stores the result in the variable given
+by the next argument to \fBscan\fR.
+.PP
+If the \fB%\fR is followed by a decimal number and a \fB$\fR, as in
+.QW \fB%2$d\fR ,
+then the variable to use is not taken from the next
+sequential argument.  Instead, it is taken from the argument indicated
+by the number, where 1 corresponds to the first \fIvarName\fR.  If
+there are any positional specifiers in \fIformat\fR then all of the
+specifiers must be positional.  Every \fIvarName\fR on the argument
+list must correspond to exactly one conversion specifier or an error
+is generated, or in the inline case, any position can be specified
+at most once and the empty positions will be filled in with empty strings.
+.PP
+.VS 8.5
+The size modifier field is used only when scanning a substring into
+one of Tcl's integer values.  The size modifier field dictates the
+integer range acceptable to be stored in a variable, or, for the inline
+case, in a position in the result list.
+The syntactically valid values for the size modifier are \fBh\fR, \fBL\fR,
+\fBl\fR, and \fBll\fR.  The \fBh\fR size modifier value is equivalent
+to the absence of a size modifier in the the conversion specifier.
+Either one indicates the integer range to be stored is limited to
+the same range produced by the \fBint()\fR function of the \fBexpr\fR
+command.  The \fBL\fR size modifier is equivalent to the \fBl\fR size
+modifier. Either one indicates the integer range to be stored is
+limited to the same range produced by the \fBwide()\fR function of
+the \fBexpr\fR command.  The \fBll\fR size modifier indicates that
+the integer range to be stored is unlimited.
+.VE 8.5
+.PP
+The following conversion characters are supported:
+.TP 10
+\fBd\fR
+The input substring must be a decimal integer.
+It is read in and the integer value is stored in the variable,
+truncated as required by the size modifier value.
+.TP 10
+\fBo\fR
+The input substring must be an octal integer. It is read in and the 
+integer value is stored in the variable,
+truncated as required by the size modifier value.
+.TP 10
+\fBx\fR
+The input substring must be a hexadecimal integer.
+It is read in and the integer value is stored in the variable,
+truncated as required by the size modifier value.
+.TP 10
+\fBu\fR
+The input substring must be a decimal integer.
+The integer value is truncated as required by the size modifier
+value, and the corresponding unsigned value for that truncated
+range is computed and stored in the variable as a decimal string.
+The conversion makes no sense without reference to a truncation range,
+so the size modifier \fBll\fR is not permitted in combination
+with conversion character \fBu\fR.
+.TP 10
+\fBi\fR 
+The input substring must be an integer.  The base (i.e. decimal, binary,
+octal, or hexadecimal) is determined in the same fashion as described in
+\fBexpr\fR.  The integer value is stored in the variable,
+truncated as required by the size modifier value.
+.TP 10
+\fBc\fR
+A single character is read in and its Unicode value is stored in 
+the variable as an integer value.
+Initial white space is not skipped in this case, so the input
+substring may be a white-space character.
+.TP 10
+\fBs\fR
+The input substring consists of all the characters up to the next 
+white-space character; the characters are copied to the variable.
+.TP 10
+\fBe\fR or \fBf\fR or \fBg\fR
+The input substring must be a floating-point number consisting 
+of an optional sign, a string of decimal digits possibly
+containing a decimal point, and an optional exponent consisting 
+of an \fBe\fR or \fBE\fR followed by an optional sign and a string of 
+decimal digits.
+It is read in and stored in the variable as a floating-point value.
+.TP 10
+\fB[\fIchars\fB]\fR
+The input substring consists of one or more characters in \fIchars\fR.
+The matching string is stored in the variable.
+If the first character between the brackets is a \fB]\fR then
+it is treated as part of \fIchars\fR rather than the closing
+bracket for the set.
+If \fIchars\fR
+contains a sequence of the form \fIa\fB\-\fIb\fR then any
+character between \fIa\fR and \fIb\fR (inclusive) will match.
+If the first or last character between the brackets is a \fB\-\fR, then
+it is treated as part of \fIchars\fR rather than indicating a range.
+.TP 10
+\fB[^\fIchars\fB]\fR
+The input substring consists of one or more characters not in \fIchars\fR.
+The matching string is stored in the variable.
+If the character immediately following the \fB^\fR is a \fB]\fR then it is 
+treated as part of the set rather than the closing bracket for 
+the set.
+If \fIchars\fR
+contains a sequence of the form \fIa\fB\-\fIb\fR then any
+character between \fIa\fR and \fIb\fR (inclusive) will be excluded
+from the set.
+If the first or last character between the brackets is a \fB\-\fR, then
+it is treated as part of \fIchars\fR rather than indicating a range value.
+.TP 10
+\fBn\fR
+No input is consumed from the input string.  Instead, the total number
+of characters scanned from the input string so far is stored in the variable.
+.LP
+The number of characters read from the input for a conversion is the
+largest number that makes sense for that particular conversion (e.g.
+as many decimal digits as possible for \fB%d\fR, as 
+many octal digits as possible for \fB%o\fR, and so on).
+The input substring for a given conversion terminates either when a
+white-space character is encountered or when the maximum substring 
+width has been reached, whichever comes first.
+If a \fB*\fR is present in the conversion specifier 
+then no variable is assigned and the next scan argument is not consumed.
+.SH "DIFFERENCES FROM ANSI SSCANF"
+.PP
+The behavior of the \fBscan\fR command is the same as the behavior of
+the ANSI C \fBsscanf\fR procedure except for the following differences:
+.IP [1]
+\fB%p\fR conversion specifier is not supported.
+.IP [2]
+For \fB%c\fR conversions a single character value is
+converted to a decimal string, which is then assigned to the
+corresponding \fIvarName\fR;
+no substring width may be specified for this conversion.
+.IP [3]
+The \fBh\fR modifier is always ignored and the \fBl\fR and \fBL\fR
+modifiers are ignored when converting real values (i.e. type
+\fBdouble\fR is used for the internal representation).  The \fBll\fR
+modifier has no \fBsscanf\fR counterpart.
+.IP [4]
+If the end of the input string is reached before any conversions have been
+performed and no variables are given, an empty string is returned.
+.SH EXAMPLES
+Convert a UNICODE character to its numeric value:
+.CS
+set char "x"
+set value [\fBscan\fR $char %c]
+.CE
+.PP
+Parse a simple color specification of the form \fI#RRGGBB\fR using
+hexadecimal conversions with substring sizes:
+.CS
+set string "#08D03F"
+\fBscan\fR $string "#%2x%2x%2x" r g b
+.CE
+.PP
+Parse a \fIHH:MM\fR time string, noting that this avoids problems with
+octal numbers by forcing interpretation as decimals (if we did not
+care, we would use the \fB%i\fR conversion instead):
+.CS
+set string "08:08"   ;# *Not* octal!
+if {[\fBscan\fR $string "%d:%d" hours minutes] != 2} {
+   error "not a valid time string"
+}
+# We have to understand numeric ranges ourselves...
+if {$minutes < 0 || $minutes > 59} {
+   error "invalid number of minutes"
+}
+.CE
+.PP
+Break a string up into sequences of non-whitespace characters (note
+the use of the \fB%n\fR conversion so that we get skipping over
+leading whitespace correct):
+.CS
+set string " a string {with braced words} + leading space "
+set words {}
+while {[\fBscan\fR $string %s%n word length] == 2} {
+   lappend words $word
+   set string [string range $string $length end]
+}
+.CE
+.PP
+Parse a simple coordinate string, checking that it is complete by
+looking for the terminating character explicitly:
+.CS
+set string "(5.2,-4e-2)"
+# Note that the spaces before the literal parts of
+# the scan pattern are significant, and that ")" is
+# the Unicode character \eu0029
+if {
+   [\fBscan\fR $string " (%f ,%f %c" x y last] != 3
+   || $last != 0x0029
+} then {
+   error "invalid coordinate string"
+}
+puts "X=$x, Y=$y"
+.CE
+.PP
+.VS 8.5
+An interactive session demonstrating the truncation of integer
+values determined by size modifiers:
+.CS
+% set tcl_platform(wordSize)
+4
+% scan 20000000000000000000 %d
+2147483647
+% scan 20000000000000000000 %ld
+9223372036854775807
+% scan 20000000000000000000 %lld
+20000000000000000000
+.CE
+.VE 8.5
+.SH "SEE ALSO"
+format(n), sscanf(3)
+.SH KEYWORDS
+conversion specifier, parse, scan

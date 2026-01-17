@@ -1,0 +1,184 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:45
+.ds Dm 4 May 22 14:
+.ds Xs 32277     7
+.TH GLEVALMESH 3G
+.SH NAME
+.B "glEvalMesh1, glEvalMesh2
+\- compute a one- or two-dimensional grid of points or lines
+
+.SH C SPECIFICATION
+void \f3glEvalMesh1\fP(
+GLenum \fImode\fP,
+.nf
+.ta \w'\f3void \fPglEvalMesh1( 'u
+	GLint \fIi1\fP,
+	GLint \fIi2\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\f2mode\fP\ \ 'u 
+\f2mode\fP
+In \%\f3glEvalMesh1\fP, specifies whether to compute a one-dimensional mesh of points or lines.
+Symbolic constants
+\%\f3GL_POINT\fP and
+\%\f3GL_LINE\fP are accepted.
+.TP
+\f2i1\fP, \f2i2\fP
+Specify the first and last integer values for grid domain variable i.
+.SH C SPECIFICATION
+void \f3glEvalMesh2\fP(
+GLenum \fImode\fP,
+.nf
+.ta \w'\f3void \fPglEvalMesh2( 'u
+	GLint \fIi1\fP,
+	GLint \fIi2\fP,
+	GLint \fIj1\fP,
+	GLint \fIj2\fP )
+.fi
+
+.SH PARAMETERS
+.TP
+\f2mode\fP
+In \%\f3glEvalMesh2\fP, specifies whether to compute a two-dimensional mesh of points, lines,
+or polygons.
+Symbolic constants
+\%\f3GL_POINT\fP,
+\%\f3GL_LINE\fP, and
+\%\f3GL_FILL\fP are accepted.
+.TP
+\f2i1\fP, \f2i2\fP
+Specify the first and last integer values for grid domain variable i.
+.TP
+\f2j1\fP, \f2j2\fP
+Specify the first and last integer values for grid domain variable j.
+.SH DESCRIPTION
+\%\f3glMapGrid\fP and \%\f3glEvalMesh\fP are used in tandem to efficiently
+generate and evaluate a series of evenly-spaced map domain values.
+\%\f3glEvalMesh\fP steps through the integer domain of a one- or two-dimensional grid,
+whose range is the domain of the evaluation maps specified by
+\%\f3glMap1\fP and \%\f3glMap2\fP.
+\f2mode\fP determines whether the resulting vertices are connected as
+points,
+lines,
+or filled polygons.
+.P
+In the one-dimensional case,
+\%\f3glEvalMesh1\fP,
+the mesh is generated as if the following code fragment were executed:
+.nf
+.IP
+\f7
+glBegin( \f2type\f7 );
+for ( i = \f2i1\fP; i <= \f2i2\fP; i += 1 )
+   glEvalCoord1( i dot DELTA u + u1 );
+glEnd();
+\fP
+.RE
+.fi
+where
+.sp
+.in
+DELTA(u) = (u2 - u1 ) / n
+.sp
+.in 0
+.P
+and n, u1, and u2 are the arguments to the most recent
+\%\f3glMapGrid1\fP command.
+\f2type\fP is \%\f3GL_POINTS\fP if \f2mode\fP is \%\f3GL_POINT\fP,
+or \%\f3GL_LINES\fP if \f2mode\fP is \%\f3GL_LINE\fP.
+.P
+The one absolute numeric requirement is that if i = n, then the
+value computed from i dot DELTA(u) + u1 is exactly u2.
+.P
+In the two-dimensional case, \%\f3glEvalMesh2\fP, let 
+.nf
+.IP
+DELTA(u) = ( u2 - u1 ) / n
+.sp
+DELTA(v) = ( v2 - v1 ) / m,
+.fi
+.RE
+.P
+where n, u1, u2, m, v1, and v2 are the
+arguments to the most recent \%\f3glMapGrid2\fP command.  Then, if
+\f2mode\fP is \%\f3GL_FILL\fP, the \%\f3glEvalMesh2\fP command is equivalent
+to:
+.nf
+.IP
+\f7
+for ( j = \f2j1\fP; j < \f2j2\fP; j += 1 ) {
+   glBegin( GL_QUAD_STRIP );
+   for ( i = \f2i1\fP; i <= \f2i2\fP; i += 1 ) {
+      glEvalCoord2( i dot DELTA(u) + u1, j dot DELTA(v) + v1 );
+      glEvalCoord2( i dot DELTA(u) + u1, (j+1) dot DELTA(v) + v1 );
+   }
+   glEnd();
+}
+\fP
+.RE
+.fi
+.P
+If \f2mode\fP is \%\f3GL_LINE\fP, then a call to \%\f3glEvalMesh2\fP is equivalent to:
+.nf
+.IP
+\f7
+for ( j = \f2j1\fP; j <= \f2j2\fP; j += 1 ) {
+   glBegin( GL_LINE_STRIP );
+   for ( i = \f2i1\fP; i <= \f2i2\fP; i += 1 )
+      glEvalCoord2( i dot DELTA(u) + u1, j dot DELTA(v) + v1 );
+   glEnd();
+}
+.sp
+for ( i = \f2i1\fP;  i <= \f2i2\fP; i += 1 ) {
+   glBegin( GL_LINE_STRIP );
+   for ( j = \f2j1\fP; j <= \f2j1\fP; j += 1 )
+      glEvalCoord2( i dot DELTA(u) + u1, j dot v + v1 );
+   glEnd();
+}
+\fP
+.RE
+.fi
+.P
+And finally, if \f2mode\fP is \%\f3GL_POINT\fP, then a call to
+\%\f3glEvalMesh2\fP is equivalent to:
+.nf
+.IP
+\f7
+glBegin( GL_POINTS );
+for ( j = \f2j1\fP; j <= \f2j2\fP; j += 1 )
+   for ( i = \f2i1\fP; i <= \f2i2\fP; i += 1 )
+      glEvalCoord2( i dot u + u1, j dot DELTA(v) + v1 );
+glEnd();
+\fP
+.RE
+.fi
+.P
+In all three cases, the only absolute numeric requirements are that if i = n,
+then the value computed from i dot DELTA(u) + u1 is exactly u2, and if j = m, then the value computed from
+j dot DELTA(v) + v1 is exactly v2.
+.SH ERRORS
+\%\f3GL_INVALID_ENUM\fP is generated if \f2mode\fP is not an accepted value.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glEvalMesh\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_MAP1_GRID_DOMAIN\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_MAP2_GRID_DOMAIN\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_MAP1_GRID_SEGMENTS\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_MAP2_GRID_SEGMENTS\fP
+.SH SEE ALSO
+\%\f3glBegin\fP,
+\%\f3glEvalCoord\fP,
+\%\f3glEvalPoint\fP,
+\%\f3glMap1\fP,
+\%\f3glMap2\fP,
+\%\f3glMapGrid\fP

@@ -1,0 +1,844 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) tabnotebook.n
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::tabnotebook iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::tabnotebook \- create and manipulate tabnotebook widgets
+.SH SYNOPSIS
+\fBiwidgets::tabnotebook\fR \fIpathName\fR? \fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Tabnotebook
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fB
+background  disabledForeground  foreground  scrollCommand
+cursor      font                height      width\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBangle\fR
+Class:	\fBAngle\fR
+Command-Line Switch:	\fB-angle\fR
+.fi
+.IP
+Specifes the angle of slope from the inner edge to the outer edge of the tab. 
+An angle of 0 specifies square tabs. Valid ranges are 0 to 45 degrees 
+inclusive. Default is 15 degrees. If \fBtabPos\fR is e or w, this option 
+is ignored.
+.LP
+.nf
+Name:	\fBauto\fR
+Class:	\fBAuto\fR
+Command-Line Switch:	\fB-auto\fR
+.fi
+.IP
+Specifies whether to use the automatic packing/unpacking algorithm of the 
+notebook. A value of true indicates that page frames will be unpacked and 
+packed acoording to the algorithm described in the select command. A value 
+of \fBfalse\fR leaves the current page packed and 
+subsequent \fBselects\fR, \fBnext\fR, or \fBprevious\fR commands do not 
+switch pages automatically. In either case the page's associated 
+command (see the \fBadd\fR command's description of the command option) is 
+invoked. The value may have any of the forms accepted by 
+the \fBTcl_GetBoolean\fR, such as \fBtrue\fR, \fBfalse\fR, \fB0\fR, 
+\fB1\fR, \fByes\fR, or \fBno\fR.
+.LP
+.nf
+Name:	\fBbackdrop\fR
+Class:	\fBBackdrop\fR
+Command-Line Switch:	\fB-backdrop\fR
+.fi
+.IP
+Specifies a background color to use when filling in the backdrop area 
+behind the tabs.
+.LP
+.nf
+Name:	\fBbackground\fR
+Class:	\fBBackground\fR
+Command-Line Switch:	\fB-background\fR
+.fi
+.IP
+Specifies a background color to use for displaying a page and its associated 
+tab. This can be thought of as the selected tab background color, since the 
+tab associated with the selected page is the selected tab.
+.LP
+.nf
+Name:	\fBbevelAmount\fR
+Class:	\fBBevelAmount\fR
+Command-Line Switch:	\fB-bevelamount\fR
+.fi
+.IP
+Specifes the size of tab corners. A value of 0 with \fBangle\fR set to 
+0 results in square tabs. A \fBbevelAmount\fR of 4, means that the tab will 
+be drawn with angled corners that cut in 4 pixels from the edge of 
+the tab. The default is 0.
+.LP
+.nf
+Name:	\fBborderWidth\fR
+Class:	\fBBorderWidth\fR
+Command-Line Switch:	\fB-borderwidth\fR
+.fi
+.IP
+Specifies the width of shadowed border to place around the notebook area of 
+the tabnotebook. The default value is 2.
+.LP
+.nf
+Name:	\fBdisabledForeground\fR
+Class:	\fBDisabledForeground\fR
+Command-Line Switch:	\fB-disabledforeground\fR
+.fi
+.IP
+Specifies a foreground color to use for displaying a tab's label when 
+its \fBstate\fR is disabled.
+.LP
+.nf
+Name:	\fBequalTabs\fR
+Class:	\fBEqualTabs\fR
+Command-Line Switch:	\fB-equaltabs\fR
+.fi
+.IP
+Specifies whether to force tabs to be equal sized or not. A value 
+of \fBtrue\fR means constrain tabs to be equal sized. A value 
+of \fBfalse\fR allows each tab to size based on the text label size. The 
+value may have any of the forms accepted by the \fBTcl_GetBoolean\fR, such 
+as \fBtrue\fR, \fBfalse\fR, \fB0\fR, \fB1\fR, \fByes\fR, or \fBno\fR.
+.IP
+For horizontally positioned tabs (\fBtabpos\fR is either \fBs\fR or \fBn\fR),
+\fBtrue\fR forces all tabs to be equal width (the width being equal to 
+the longest label plus any \fBpadX\fR specified). Horizontal tabs are 
+always equal in height. 
+.IP
+For vertically positioned tabs (\fBtabpos\fR is either \fBw\fR or \fBe\fR), 
+\fBtrue\fR forces all tabs to be equal height (the height being equal to the 
+height of the label with the largest font). Vertically oriented tabs 
+are always equal in width.
+.LP
+.nf
+Name:	\fBforeground\fR
+Class:	\fBForeground\fR
+Command-Line Switch:	\fB-foreground\fR
+.fi
+.IP
+Specifies a foreground color to use for displaying a page and its associated 
+tab label. This can be thought of as the selected tab background color, 
+since the tab associated with the selected page is the selected tab.
+.LP
+.nf
+Name:	\fBgap\fR
+Class:	\fBGap\fR
+Command-Line Switch:	\fB-gap\fR
+.fi
+.IP
+Specifies the amount of pixel space to place between each tab. Value may 
+be any pixel offset value. In addition, a special keyword \fBoverlap\fR 
+can be used as the value to achieve a standard overlap of tabs. This value 
+may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBmargin\fR
+Class:	\fBMargin\fR
+Command-Line Switch:	\fB-Bmargin\fR
+.fi
+.IP
+Specifies the amount of space to place between the outside edge of the 
+tabnotebook and the outside edge of its tabs. If \fBtabPos\fR is \fBs\fR, 
+this is the amount of space between the bottom edge of the tabnotebook and 
+the bottom edge of the set of tabs. If \fBtabPos\fR is \fBn\fR, this is 
+the amount of space between the top edge of the tabnotebook and the top 
+edge of the set of tabs. If \fBtabPos\fR is \fBe\fR, this is the amount of 
+space between the right edge of the tabnotebook and the right edge of the 
+set of tabs. If \fBtabPos\fR is \fBw\fR, this is the amount of space 
+between the left edge of the tabnotebook and the left edge of the set 
+of tabs. This value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBpadX\fR
+Class:	\fBPadX\fR
+Command-Line Switch:	\fB-padx\fR
+.fi
+.IP
+Specifies a non-negative value indicating how much extra space to request 
+for a tab around its label in the X-direction. When computing how large 
+a window it needs, the tab will add this amount to the width it would 
+normally need The tab will end up with extra internal space to the left 
+and right of its text label. This value may have any of the forms acceptable 
+to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBpadY\fR
+Class:	\fBPadY\fR
+Command-Line Switch:	\fB-pady\fR
+.fi
+.IP
+Specifies a non-negative value indicating how much extra space to request for 
+a tab around its label in the Y-direction. When computing how large a 
+window it needs, the tab will add this amount to the height it would normally 
+need The tab will end up with extra internal space to the top and bottom of 
+its text label. This value may have any of the forms acceptable 
+to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBraiseSelect\fR
+Class:	\fBRaiseSelect\fR
+Command-Line Switch:	\fB-raiseselect\fR
+.fi
+.IP
+Specifes whether to slightly raise the selected tab from the rest of the 
+tabs. The selected tab is drawn 2 pixels closer to the outside of the 
+tabnotebook than the unselected tabs. A value of \fBtrue\fR says to 
+raise selected tabs, a value of \fBfalse\fR turns this feature off. The 
+default is \fBfalse\fR. The value may have any of the forms accepted 
+by the \fBTcl_GetBoolean\fR, such as \fBtrue\fR, \fBfalse\fR, \fB0\fR, 
+\fB1\fR, \fByes\fR, or \fBno\fR.
+.LP
+.nf
+Name:	\fBstart\fR
+Class:	\fBStart\fR
+Command-Line Switch:	\fB-start\fR
+.fi
+.IP
+Specifies the amount of space to place between the left or top edge of the 
+tabnotebook and the starting edge of its tabs. For horizontally positioned 
+tabs, this is the amount of space between the left edge of the notebook and 
+the left edge of the first tab. For vertically positioned tabs, this is the 
+amount of space between the top of the notebook and the top of the first 
+tab. This value may change if the user performs a MButton-2 scroll on the 
+tabs. This value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.LP
+.nf
+Name:	\fBstate\fR
+Class:	\fBState\fR
+Command-Line Switch:	\fB-state\fR
+.fi
+.IP
+Sets the active state of the tabnotebook. Specifying \fBnormal\fR allows 
+all pages to be selectable. Specifying \fBdisabled\fR disables the notebook 
+causing all page tabs to be drawn in the \fBdisabledForeground\fR color.
+.LP
+.nf
+Name:	\fBtabBackground\fR
+Class:	\fBTabBackground\fR
+Command-Line Switch:	\fB-tabbackground\fR
+.fi
+.IP
+Specifies a background color to use for displaying tab backgrounds when 
+they are in their unselected state. This is the background associated with 
+tabs on all pages other than the selected page.
+.LP
+.nf
+Name:	\fBtabBorders\fR
+Class:	\fBTabBorders\fR
+Command-Line Switch:	\fB-tabborders\fR
+.fi
+.IP
+Specifies whether to draw the borders of tabs that are not selected. 
+Specifying \fBtrue\fR (the default) draws these borders, 
+specifying \fBfalse\fR draws only the border around the selected tab. The 
+value may have any of the forms accepted by the \fBTcl_GetBoolean\fR, 
+such as \fBtrue\fR, \fBfalse\fR, \fB0\fR, \fB1\fR,\fB yes\fR, or \fBno\fR.
+.LP
+.nf
+Name:	\fBtabForeground\fR
+Class:	\fBTabForeground\fR
+Command-Line Switch:	\fB-tabforeground\fR
+.fi
+.IP
+Specifies a foreground color to use for displaying tab labels when they 
+are in their unselected state. This is the foreground associated with tabs 
+on all pages other than the selected page.
+.LP
+.nf
+Name:	\fBtabPos\fR
+Class:	\fBTabPos\fR
+Command-Line Switch:	\fB-tabpos\fR
+.fi
+.IP
+Specifies the location of the set of tabs in relation to the notebook 
+area. Must be n, s, e, or w. Defaults to s.
+.BE
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::tabnotebook\fR command creates a new window (given by the pathName 
+argument) and makes it into a \fBtabnotebook\fR widget. Additional options, 
+described above may be specified on the command line or in the option 
+database to configure aspects of the tabnotebook such as its colors, font, 
+and text. The iwidgets::tabnotebook command returns its pathName argument. At the 
+time this command is invoked, there must not exist a window named 
+pathName, but pathName's parent must exist.
+.PP
+A \fBtabnotebook\fR is a widget that contains a set of tabbed pages. It 
+displays one page from the set as the selected page. A Tab displays the 
+label for the page to which it is attached and serves as a page 
+selector. When a page's tab is selected, the page's contents are displayed 
+in the page area. The selected tab has a three-dimensional effect to make 
+it appear to float above the other tabs. The tabs are displayed as a group 
+along either the left, top, right, or bottom edge. When first created a 
+tabnotebook has no pages. Pages may be added or deleted using widget 
+commands described below.
+.PP
+A special option may be provided to the tabnotebook. The \fB-auto\fR 
+option specifies whether the tabnotebook will automatically handle the 
+unpacking and packing of pages when pages are selected. A value of 
+true signifies that the notebook will automatically manage it. This is the 
+default value. A value of false signifies the notebook will not perform 
+automatic switching of pages.
+.SH NOTEBOOK PAGES
+A tabnotebook's pages area contains a single child site frame. When a 
+new page is created it is a child of this frame. The page's child site 
+frame serves as a geometry container for applications to pack widgets 
+into. It is this frame that is automatically unpacked or packed when 
+the auto option is true. This creates the effect of one page being visible 
+at a time. When a new page is selected, the previously selected page's 
+child site frame is automatically unpacked from the tabnotebook's child 
+site frame and the newly selected page's child site is packed into the 
+tabnotebook's child site frame.
+.PP
+However, sometimes it is desirable to handle page changes in a different 
+manner. By specifying the \fBauto\fR option as \fBfalse\fR, child site 
+packing can be disabled and done differently. For example, all widgets 
+might be packed into the first page's child site \fBframe\fR. Then when 
+a new page is selected, the application can reconfigure the widgets 
+and give the appearance that the page was flipped.
+.PP
+In both cases the command option for a page specifies a Tcl Command 
+to execute when the page is selected. In the case of \fBauto\fR 
+being \fBtrue\fR, it is between the unpacking of the previously selected 
+page and the packing of the newly selected page.
+.PP
+Notebook pages can also be controlled with scroll bars or other widgets 
+that obey the \fBscrollcommand\fR protocol. By giving a scrollbar 
+a \fB-command\fR to call the tabnotebook's \fBselect\fR method, the 
+tabnotebook can be controlled with a scrollbar.
+.PP
+The notebook area is implemented with the notebook mega widget.
+.SH TABS
+Tabs appear along the edge of the notebook area. Tabs are drawn to appear 
+attached to their associated page. When a tab is clicked on, the associated 
+page is selected and the tab is drawn as raised above all other tabs and as 
+a seamless part of its notebook page. Tabs can be controlled in their 
+location along the edges, the angle tab sides are drawn with, gap between 
+tabs, starting margin of tabs, internal padding around text labels in 
+a tab, the font, and its label. 
+.PP
+The Tab area is implemented with the \fBtabset\fR mega widget. 
+See \fBtabset(1)\fR. Tabs may be oriented along either the north, south, 
+east, or west sides with the \fBtabPos\fR option. North and south tabs 
+may appear as angled, square, or bevelled. West and east tabs may appear 
+as square or bevelled. By changing tab gaps, tab angles, bevelling, 
+orientations, colors, fonts, start locations, and margins; tabs may appear 
+in a wide variety of styles. For example, it is possible to implement 
+Microsoft-style tabs, Borland property tab styles, or Borland Delphi 
+style tabs all with the same tabnotebook.
+.SH "WIDGET-SPECIFIC METHODS"
+.PP
+The \fBiwidgets::tabnotebook\fR command creates a new Tcl command whose name 
+is \fIpathName\fR. This command may be used to invoke various operations 
+on the widget. It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIoption\fR and the \fIarg\fRs
+determine the exact behavior of the command.
+.PP
+Many of the widget commands for a notebook take as one argument an 
+indicator of which page of the notebook to operate on. These indicators are 
+called indexes and may be specified in any of the following forms:
+.TP
+\fInumber\fR
+Specifies the page numerically, where 0 corresponds to the first page 
+in the notebook, 1 to the second, and so on.
+.TP
+\fBselect\fR
+Specifies the currently selected page's index. If no page is currently 
+selected, the value -1 is returned.
+.TP
+\fBend\fR
+Specifes the last page in the tabnotebook's index. If the notebook is empty 
+this will return -1.
+.TP
+\fIpattern\fR
+If the index doesn't satisfy any of the above forms, then this form is 
+used. Pattern is pattern-matched against the label of each page in the 
+notebook, in order from the first to the last page, until a matching entry 
+is found. The rules of Tcl_StringMatch are used.
+'.............................................................................
+The following commands are possible for tabnotebook widgets:
+.TP
+\fIpathName\fR \fBadd\fR ?\fIoption\fR \fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+Add a new page at the end of the tabnotebook. A new child site frame is 
+created. Returns the child site pathName. If additional arguments are 
+present, they specify any of the following options:
+.RS
+.TP
+\fB-angle\fR \fIvalue\fR
+Specifes the angle of slope from the inner edge to the outer edge of the 
+tab. An angle of 0 specifies square tabs. Valid ranges are 0 to 45 degrees 
+inclusive. Default is 15 degrees. If this option is specified as an empty 
+string (the default), then the angle option for the overall tabnotebook 
+is used. This is generally only set at the tabnotebook level. Tabs normally 
+will want to share the same angle value.
+.TP
+\fB-background\fR \fIvalue\fR
+Specifies a background color to use for displaying tabs when they are 
+selected and for displaying the current page. If this option is specified 
+as an empty string (the default), then the background option for the 
+overall tabnotebook is used.
+.TP
+\fB-bevelamount\fR \fIvalue\fR
+Specifes the size of tab corners. A value of 0 with angle set to 0 
+results in square tabs. A bevelAmount of 4, means that the tab will be 
+drawn with angled corners that cut in 4 pixels from the edge of the tab. 
+The default is 0. This is generally only set at the tabnotebook level. 
+Tabs normally will want to share the same bevelAmount.
+.TP
+\fB-bitmap\fR \fIvalue\fR
+If label is a non-empty string, specifies a bitmap to display in this 
+page's tab. Bitmap may be of any of the forms accepted by Tk_GetPixmap. 
+.TP
+\fB-command\fR \fIvalue\fR
+Specifies a Tcl command to be executed when this page is selected. This 
+allows the programmer a hook to reconfigure this page's widgets or any 
+other page's widgets.
+.IP
+If the tabnotebook has the auto option set to true, when a page is 
+selected this command will be called immediately after the previously 
+selected page is unpacked and immediately before this page is selected. The 
+index value select is valid during this Tcl command. `index select' will 
+return this page's page number. 
+.IP
+If the auto option is set to false, when a page is selected the unpack 
+and pack calls are bypassed. This Tcl command is still called.
+.TP
+\fB-disabledforeground\fR \fIvalue\fR
+Specifies a foreground color to use for displaying tab labels when tabs 
+are in their disable state. If this option is specified as an empty 
+string (the default), then the disabledforeground option for the overall 
+tabnotebook is used.
+.TP
+\fB-font\fR \fIvalue\fR
+Specifies the font to use when drawing a text label on a page tab. If 
+this option is specified as an empty string then the font option for the 
+overall tabnotebook is used..
+.TP
+\fB-foreground\fR \fIvalue\fR
+Specifies a foreground color to use for displaying tab labels when they are 
+selected. If this option is specified as an empty string (the default), 
+then the foreground option for the overall tabnotebook is used.
+.TP
+\fB-label\fR \fIvalue\fR
+Specifies a string to display as an identifying label for a notebook 
+page. This label serves as an additional identifier used to reference the 
+page. This label may be used for the index value in widget commands.
+.TP
+\fB-tabbackground\fR \fIvalue\fR
+Specifies a background color to use for displaying a tab when it is not 
+elected. If this option is specified as an empty string (the default), then 
+the tabBackground option for the overall tabnotebook is used.
+.TP
+\fB-tabforeground\fR \fIvalue\fR
+Specifies a foreground color to use for displaying the tab's text label 
+when it is not selected. If this option is specified as an empty 
+string (the default), then the tabForeground option for the overall 
+tabnotebook is used.
+.TP
+\fB-padx\fR \fIvalue\fR
+Specifies a non-negative value indicating how much extra space to request 
+for a tab around its label in the X-direction. When computing how large a 
+window it needs, the tab will add this amount to the width it would 
+normally need The tab will end up with extra internal space to the 
+left and right of its text label. This value may have any of the forms 
+acceptable to Tk_GetPixels. If this option is specified as an empty 
+string (the default), then the padX option for the overall tabnotebook is used
+.TP
+\fB-pady\fR \fIvalue\fR
+Specifies a non-negative value indicating how much extra space to request 
+for a tab around its label in the Y-direction. When computing how large 
+a window it needs, the tab will add this amount to the height it would 
+normally need The tab will end up with extra internal space to the top and 
+bottom of its text label. This value may have any of the forms acceptable 
+to Tk_GetPixels. If this option is specified as an empty string (the 
+default), then the padY option for the overall tabnotebook is used
+.TP
+\fB-state\fR \fIvalue\fR
+Specifies one of two states for the page: normal or disabled. In normal state 
+unselected tabs are displayed using the tabforeground and tabbackground 
+option from the tabnotebook or the page. Selected tabs and pages are 
+displayed using the foreground and background option from the tabnotebook or 
+the page. The disabled state means that the page and its tab is 
+insensitive: it doesn't respond to mouse button presses or releases. In this 
+state the entry is displayed according to its disabledForeground option for 
+the tabnotebook and the background/tabbackground option from the page or 
+the tabnotebook.
+.RE
+.TP
+'>>>>>>>>>>
+\fIpathName\fR \fBchildSite\fR ?\fIindex\fR?
+If passed no arguments, returns a list of pathNames for all the pages 
+in the tabnotebook. If the tab notebook is empty, an empty list is returned
+.IP
+If \fIindex\fR is passed, it returns the \fIpathName\fR for the page's 
+child site \fBframe\fR specified by \fIindex\fR. Widgets that are created 
+with this \fIpathName\fR will be displayed when the associated page is 
+selected. If \fIindex\fR is not a valid index, an empty string is returned. 
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+Query or modify the configuration options of the widget. If no \fIoption\fR 
+is specified, returns a list describing all of the available options 
+for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for information on the 
+format of this list). If option is specified with no value, then the 
+command returns a list describing the one named option (this list will be 
+identical to the corresponding sublist of the value returned if no option 
+is specified). If one or more option-value pairs are specified, then the 
+command modifies the given widget option(s) to have the given value(s); in 
+this case the command returns an empty string. \fIOption\fR may have any 
+of the values accepted by the iwidgets::tabnotebook command.
+.TP
+\fIpathName\fR \fBdelete\fR \fIindex1\fR ?\fIindex2\fR?
+Delete all of the pages between \fIindex1\fR and \fIindex2\fR inclusive. 
+If \fIindex2\fR is omitted then it defaults to \fIindex1\fR. Returns an 
+empty string.
+.TP
+\fIpathName\fR \fBindex\fR \fIindex\fR
+Returns the numerical index corresponding to \fIindex\fR.
+.TP
+\fIpathName\fR \fBinsert\fR \fIindex\fR ?\fIoption\fR \fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+Insert a new page in the tabnotebook before the page specified 
+by \fIindex\fR. A new child site \fBframe\fR is created. The additional 
+arguments are the same as for the \fBadd\fR command. Returns the 
+child site \fIpathName\fR.
+.TP
+\fIpathName\fR \fBnext\fR
+Advances the selected page to the next page (order is determined by 
+insertion order). If the currently selected page is the last page in 
+the notebook, the selection wraps around to the first page in the 
+notebook. It behaves as if the user selected the new page.
+.IP
+For notebooks with \fBauto\fR set to \fBtrue\fR the current page's 
+child site is unpacked from the notebook's child site frame. Then the next 
+page's child site is packed into the notebook's child site frame. The 
+Tcl command given with the command option will be invoked between these 
+two operations.
+.IP
+For notebooks with \fBauto\fR set to \fBfalse\fR the Tcl command given 
+with the command option will be invoked.
+.TP
+\fIpathName\fR \fBpageconfigure\fR \fIindex\fR ?\fIoption\fR? ?\fIvalue\fR \fIoption\fR \fIvalue\fR ...?
+This command is similar to the \fBconfigure\fR command, except that it 
+applies to the options for an individual page, whereas configure applies 
+to the options for the tabnotebook as a whole. \fIOptions\fR may have 
+any of the values accepted by the add widget command. If options are 
+specified, options are modified as indicated in the command and the 
+command returns an empty string. If no options are specified, returns a 
+list describing the current options for page index (see \fBTk_ConfigureInfo\fR
+for information on the format of this list).
+.TP
+\fIpathName\fR \fBprev\fR
+Moves the selected page to the previous page (order is determined by 
+insertion order). If the currently selected page is the first page in 
+the notebook, the selection wraps around to the last page in the notebook. It 
+behaves as if the user selected the new page.
+.IP
+For notebooks with \fBauto\fR set to \fBtrue\fR the current page's 
+child site is unpacked from the notebook's child site \fBframe\fR. Then the 
+previous page's child site is packed into the notebook's child site frame. 
+The Tcl command given with the command option will be invoked between these 
+two operations.
+.IP
+For notebooks with \fBauto\fR set to \fBfalse\fR the Tcl command given 
+with the command option will be invoked.
+.TP
+\fIpathName\fR \fBselect\fR \fIindex\fR
+Selects the page specified by \fIindex\fR as the currently selected page. 
+It behaves as if the user selected the new page.
+.IP
+For notebooks with \fBauto\fR set to \fBtrue\fR the current page's child 
+site is unpacked from the notebook's child site frame. Then the \fIindex\fR 
+page's child site is packed into the notebook's child site frame. The 
+Tcl command given with the command option will be invoked between these two 
+operations.
+.IP
+For notebooks with \fBauto\fR set to \fBfalse\fR the Tcl command given 
+with the command option will be invoked.
+.TP
+\fIpathName\fR \fBview\fR
+Returns the currently selected page. This command is for compatibility with 
+the \fBscrollbar\fR widget.
+.TP
+\fIpathName\fR \fBview\fR \fIindex\fR
+Selects the page specified by \fIindex\fR as the currently selected page. 
+This command is for compatibility with the \fBscrollbar\fR widget.
+.TP
+\fIpathName\fR \fBview\fR \fBmoveto\fR \fIfraction\fR
+Uses the \fIfraction\fR value to determine the corresponding page to move to. 
+This command is for compatibility with the \fBscrollbar\fR widget.
+.TP
+\fIpathName\fR \fBview\fR \fBscroll\fR \fInum\fR \fIwhat\fR
+Uses the \fInum\fR value to determine how many pages to move forward or 
+backward (\fInum\fR can be negative or positive). The \fIwhat\fR argument 
+is ignored. This command is for compatibility with the \fBscrollbar\fR widget.
+.SH "COMPONENTS"
+.LP
+Generally all behavior of the internal components, \fBtabset\fR 
+and \fBnotebook\fR are controlled via the \fBpageconfigure\fR method. 
+The following section documents these two components.
+.LP
+.nf
+Name:   \fBtabset\fR
+Class:  \fBTabset\fR
+.fi
+.IP
+This is the tabset component. It implements the tabs that are associated 
+with the notebook component.
+.IP
+See the "\fBTabset\fR" widget manual entry for details on 
+the \fBtabset\fR component item.
+.LP
+.nf
+Name:   \fBnotebook\fR
+Class:  \fBNotebook\fR
+.fi
+.IP
+This is the notebook component. It implements the notebook that contains the 
+pages of the tabnotebook.
+.IP
+See the "\fBNotebook\fR" widget manual entry for details on 
+the \fBnotebook\fR component item.
+.fi
+.SH EXAMPLE
+.PP
+Following is an example that creates a tabnotebook with two pages.
+.PP
+.nf
+.IP
+.ta 2c 8c 12c
+package require Iwidgets 4.0
+# Create the tabnotebook widget and pack it.
+  iwidgets::tabnotebook .tn -width 100 -height 100
+  pack .tn \\
+	-anchor nw \\
+	-fill both \\
+	-expand yes \\
+	-side left \\
+	-padx 10 \\
+	-pady 10
+.IP
+# Add two pages to the tabnotebook, 
+# labelled "Page One" and "Page Two"
+  .tn add -label "Page One"
+  .tn add -label "Page Two"
+.IP
+# Get the child site frames of these two pages.
+  set page1CS [.tn childsite 0]
+  set page2CS [.tn childsite "Page Two"]
+.IP
+# Create buttons on each page of the tabnotebook.
+  button $page1CS.b -text "Button One"
+  pack $page1CS.b
+  button $page2CS.b -text "Button Two"
+  pack $page2CS.b
+.IP
+# Select the first page of the tabnotebook.
+  .tn select 0
+.fi
+.SH AUTHOR
+Bill W. Scott
+.SH KEYWORDS
+tab tabset notebook tabnotebook page

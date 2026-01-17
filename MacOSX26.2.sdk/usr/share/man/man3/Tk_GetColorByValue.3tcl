@@ -1,0 +1,446 @@
+'\"
+'\" Copyright (c) 1990-1991 The Regents of the University of California.
+'\" Copyright (c) 1994-1998 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id$
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tk_AllocColorFromObj 3 8.1 Tk "Tk Library Procedures"
+.BS
+.SH NAME
+Tk_AllocColorFromObj, Tk_GetColor, Tk_GetColorFromObj, Tk_GetColorByValue, Tk_NameOfColor, Tk_FreeColorFromObj, Tk_FreeColor \- maintain database of colors
+.SH SYNOPSIS
+.nf
+\fB#include <tk.h>\fR
+.sp
+XColor *
+\fBTk_AllocColorFromObj(\fIinterp, tkwin, objPtr\fB)\fR
+.sp
+XColor *
+\fBTk_GetColor(\fIinterp, tkwin, name\fB)\fR
+.sp
+XColor *
+\fBTk_GetColorFromObj(\fItkwin, objPtr\fB)\fR
+.sp
+XColor *
+\fBTk_GetColorByValue(\fItkwin, prefPtr\fB)\fR
+.sp
+const char *
+\fBTk_NameOfColor(\fIcolorPtr\fB)\fR
+.sp
+GC
+\fBTk_GCForColor(\fIcolorPtr, drawable\fB)\fR
+.sp
+\fBTk_FreeColorFromObj(\fItkwin, objPtr\fB)\fR
+.sp
+\fBTk_FreeColor(\fIcolorPtr\fB)\fR
+.SH ARGUMENTS
+.AS "Tcl_Interp" *colorPtr
+.AP Tcl_Interp *interp in
+Interpreter to use for error reporting.
+.AP Tk_Window tkwin in
+Token for window in which color will be used.
+.AP Tcl_Obj *objPtr in/out
+String value describes desired color; internal rep will be
+modified to cache pointer to corresponding (XColor *).
+.AP char *name in
+Same as \fIobjPtr\fR except description of color is passed as a string and
+resulting (XColor *) is not cached.
+.AP XColor *prefPtr in
+Indicates red, green, and blue intensities of desired
+color.
+.AP XColor *colorPtr in
+Pointer to X color information.  Must have been allocated by previous
+call to \fBTk_AllocColorFromObj\fR, \fBTk_GetColor\fR or
+\fBTk_GetColorByValue\fR, except when passed to \fBTk_NameOfColor\fR.
+.AP Drawable drawable in
+Drawable in which the result graphics context will be used.  Must have
+same screen and depth as the window for which the color was allocated.
+.BE
+
+.SH DESCRIPTION
+.PP
+These procedures manage the colors being used by a Tk application.
+They allow colors to be shared whenever possible, so that colormap
+space is preserved, and they pick closest available colors when
+colormap space is exhausted.
+.PP
+Given a textual description of a color, \fBTk_AllocColorFromObj\fR
+locates a pixel value that may be used to render the color
+in a particular window.  The desired color is specified with an
+object whose string value must have one of the following forms:
+.TP 20
+\fIcolorname\fR
+Any of the valid textual names for a color defined in the
+server's color database file, such as \fBred\fR or \fBPeachPuff\fR.
+.TP 20
+\fB#\fIRGB\fR
+.TP 20
+\fB#\fIRRGGBB\fR
+.TP 20
+\fB#\fIRRRGGGBBB\fR
+.TP 20
+\fB#\fIRRRRGGGGBBBB\fR
+A numeric specification of the red, green, and blue intensities
+to use to display the color.  Each \fIR\fR, \fIG\fR, or \fIB\fR
+represents a single hexadecimal digit.  The four forms permit
+colors to be specified with 4-bit, 8-bit, 12-bit or 16-bit values.
+When fewer than 16 bits are provided for each color, they represent
+the most significant bits of the color.  For example, #3a7 is the
+same as #3000a0007000.
+.PP
+\fBTk_AllocColorFromObj\fR returns a pointer to
+an XColor structure;  the structure indicates the exact intensities of
+the allocated color (which may differ slightly from those requested,
+depending on the limitations of the screen) and a pixel value
+that may be used to draw with the color in \fItkwin\fR.
+If an error occurs in \fBTk_AllocColorFromObj\fR (such as an unknown
+color name) then NULL is returned and an error message is stored in
+\fIinterp\fR's result if \fIinterp\fR is not NULL.
+If the colormap for \fItkwin\fR is full, \fBTk_AllocColorFromObj\fR
+will use the closest existing color in the colormap.
+\fBTk_AllocColorFromObj\fR caches information about
+the return value in \fIobjPtr\fR, which speeds up future calls to procedures
+such as \fBTk_AllocColorFromObj\fR and \fBTk_GetColorFromObj\fR.
+.PP
+\fBTk_GetColor\fR is identical to \fBTk_AllocColorFromObj\fR except
+that the description of the color is specified with a string instead
+of an object.  This prevents \fBTk_GetColor\fR from caching the
+return value, so \fBTk_GetColor\fR is less efficient than
+\fBTk_AllocColorFromObj\fR.
+.PP
+\fBTk_GetColorFromObj\fR returns the token for an existing color, given
+the window and description used to create the color.
+\fBTk_GetColorFromObj\fR does not actually create the color; the color
+must already have been created with a previous call to
+\fBTk_AllocColorFromObj\fR or \fBTk_GetColor\fR.  The return
+value is cached in \fIobjPtr\fR, which speeds up
+future calls to \fBTk_GetColorFromObj\fR with the same \fIobjPtr\fR
+and \fItkwin\fR.
+.PP
+\fBTk_GetColorByValue\fR is similar to \fBTk_GetColor\fR except that
+the desired color is indicated with the \fIred\fR, \fIgreen\fR, and
+\fIblue\fR fields of the structure pointed to by \fIcolorPtr\fR.
+.PP
+This package maintains a database
+of all the colors currently in use.
+If the same color is requested multiple times from
+\fBTk_GetColor\fR or \fBTk_AllocColorFromObj\fR (e.g. by different
+windows), or if the 
+same intensities are requested multiple times from
+\fBTk_GetColorByValue\fR, then existing pixel values will
+be re-used.  Re-using an existing pixel avoids any interaction
+with the window server, which makes the allocation much more
+efficient.  These procedures also provide a portable interface that
+works across all platforms.  For this reason, you should generally use
+\fBTk_AllocColorFromObj\fR, \fBTk_GetColor\fR, or \fBTk_GetColorByValue\fR
+instead of lower level procedures like \fBXAllocColor\fR.
+.PP
+Since different calls to this package
+may return the same shared
+pixel value, callers should never change the color of a pixel
+returned by the procedures.
+If you need to change a color value dynamically, you should use
+\fBXAllocColorCells\fR to allocate the pixel value for the color.
+.PP
+The procedure \fBTk_NameOfColor\fR is roughly the inverse of
+\fBTk_GetColor\fR.  If its \fIcolorPtr\fR argument was created
+by \fBTk_AllocColorFromObj\fR or \fBTk_GetColor\fR then the return value
+is the string that was used to create the
+color.  If \fIcolorPtr\fR was created by a call to \fBTk_GetColorByValue\fR,
+or by any other mechanism, then the return value is a string
+that could be passed to \fBTk_GetColor\fR to return the same
+color.  Note:  the string returned by \fBTk_NameOfColor\fR is
+only guaranteed to persist until the next call to
+\fBTk_NameOfColor\fR.
+.PP
+\fBTk_GCForColor\fR returns a graphics context whose \fBforeground\fR
+field is the pixel allocated for \fIcolorPtr\fR and whose other fields
+all have default values.
+This provides an easy way to do basic drawing with a color.
+The graphics context is cached with the color and will exist only as
+long as \fIcolorPtr\fR exists;  it is freed when the last reference
+to \fIcolorPtr\fR is freed by calling \fBTk_FreeColor\fR.
+.PP
+When a color is no longer needed \fBTk_FreeColorFromObj\fR or
+\fBTk_FreeColor\fR should be called to release it.
+For \fBTk_FreeColorFromObj\fR the color to release is specified
+with the same information used to create it; for
+\fBTk_FreeColor\fR the color to release is specified
+with a pointer to its XColor structure.
+There should be exactly one call to \fBTk_FreeColorFromObj\fR
+or \fBTk_FreeColor\fR for each call to \fBTk_AllocColorFromObj\fR,
+\fBTk_GetColor\fR, or \fBTk_GetColorByValue\fR.
+.SH KEYWORDS
+color, intensity, object, pixel value

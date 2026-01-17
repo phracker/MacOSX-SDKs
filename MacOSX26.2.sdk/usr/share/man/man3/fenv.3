@@ -1,0 +1,139 @@
+.\" Copyright (c) 2011, Apple Inc.
+.Dd May 9, 2011
+.Dt FENV 3
+.Os OS X
+.Sh NAME
+.Nm fenv
+.Nd functions providing access to the floating-point environment
+.Sh SYNOPSIS
+.Fd #include <fenv.h>
+.Fd #pragma STDC FENV_ACCESS ON
+.Sh DESCRIPTION
+The header <fenv.h> declares types, macros, and functions to provide access
+to the floating-point environment, consisting of any floating-point status
+flags and control modes supported by the implementation.  A floating-point
+status flag is a variable whose value is set (but not cleared) when a
+floating-point exception is raised, which occurs as a side effect of
+floating-point arithmetic when an exceptional condition is encountered. A
+floating-point control mode is a variable whose value may be set by the
+user to affect the subsequent behavior of floating-point arithmetic.
+.Pp
+Certain conventions are expected as part of the intended model for
+interaction with the floating-point environment:
+.Bl -bullet -offset indent -compact
+.It
+A function does not alter its caller's floating-point control modes,
+clear its caller's floating-point status flags, nor depend on the state of
+its caller's floating-point status flags unless the function is so
+documented.
+.It
+A function is assumed to require default floating-point control modes
+unless its documentation promises otherwise.
+.It
+A function is assumed to have the potential for raising floating-point
+exceptions unless its documentation promises otherwise.
+.El
+Programmers should adhere to these guidelines in their usage of the
+functions defined in <fenv.h>.  Failure to do so may result in bugs which
+are extraordinarily hard to diagnose.
+.Pp
+Note that any usage of the functions provided by <fenv.h> should occur
+within the scope of
+.Pp
+.D1 #pragma STDC FENV_ACCESS ON
+.Pp
+The
+.Dv FENV_ACCESS
+pragma provides a means to inform the compiler that the program might access
+the floating-point environment to test status flags or change the control
+modes.  The pragma shall occur either outside external declarations (i.e.
+at file scope) or preceeding all explicit declarations and statements inside
+a compound statement.  If part of a program tests floating-point status flags
+or sets control modes, but was translated with FENV_ACCESS "off", the behavior
+of that program is undefined.
+.Pp
+The types
+.Dv fenv_t
+and
+.Dv fexcept_t 
+represent the entire floating-point environment and the floating-point
+status flags, respectively.  These should be treated as opaque types, and
+be manipulated only via the functions defined in <fenv.h>.
+.Pp
+The macros
+.Dv FE_INVALID ,
+.Dv FE_DIVBYZERO ,
+.Dv FE_OVERFLOW ,
+.Dv FE_UNDERFLOW ,
+and
+.Dv FE_INEXACT
+expand to integer constant expressions such that bitwise ORs of any
+combination of the macros result in distinct values and bitwise ANDs of
+any combinations of the macros results in zero.  These macros are used
+in functions defined in <fenv.h> to represent floating-point
+exceptions and status flags.  Additionally, the macro
+.Dv FE_ALL_EXCEPT
+is defined to be the bitwise OR of all floating-point exception macros
+defined by the implementation.
+.Pp
+The macros
+.Dv FE_TONEAREST ,
+.Dv FE_TOWARDZERO ,
+.Dv FE_DOWNWARD ,
+and
+.Dv FE_UPWARD
+expand to integer constant expressions whose values are distinct
+nonnegative numbers.  These are intended for use with the
+.Fn fesetround
+and
+.Fn fegetround
+functions for control of the floating-point rounding modes.
+.Pp
+The macro
+.Dv FE_DFL_ENV
+represents the default floating-point environment--the one installed at program
+startup--and expands to a pointer to a const
+.Dv fenv_t
+object.  It can be used as an argument to <fenv.h> functions that manage the
+floating-point environment.
+.Pp
+The 
+.Fn feclearexcept ,
+.Fn feraiseexcept ,
+.Fn fetestexcept ,
+.Fn fegetexceptflag ,
+and
+.Fn fesetexceptflag
+functions provide access to the floating-point status flags.
+.Pp
+The
+.Fn fegetround 
+and
+.Fn fesetround
+functions provide control of rounding direction modes.
+.Pp
+The
+.Fn fegetenv ,
+.Fn feholdexcept ,
+.Fn fesetenv ,
+and
+.Fn feupdateenv
+functions provide control of the entire floating-point environment as an
+abstract object.
+.Pp
+Further documentation for all of these functions is available in their
+respective manpages, and also in section 7.6 of the C standard.
+.Sh SEE ALSO
+.Xr feclearexcept 3 ,
+.Xr fegetenv 3 ,
+.Xr fegetround 3 ,
+.Xr fegetexceptflag 3 ,
+.Xr feholdexcept 3 ,
+.Xr fesetenv 3 ,
+.Xr fesetround 3 ,
+.Xr feraiseexcept 3 ,
+.Xr fesetexceptflag 3 ,
+.Xr feraiseexcept 3 ,
+.Xr feupdateenv 3
+.Sh STANDARDS
+These functions conform to ISO/IEC 9899:TC3.

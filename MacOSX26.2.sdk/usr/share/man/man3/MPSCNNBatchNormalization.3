@@ -1,0 +1,318 @@
+.TH "MPSCNNBatchNormalization" 3 "Mon Jul 9 2018" "Version MetalPerformanceShaders-119.3" "MetalPerformanceShaders.framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+MPSCNNBatchNormalization
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#import <MPSCNNBatchNormalization\&.h>\fP
+.PP
+Inherits \fBMPSCNNKernel\fP\&.
+.SS "Instance Methods"
+
+.in +1c
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:dataSource:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:dataSource:fusedNeuronDescriptor:\fP"
+.br
+.ti -1c
+.RI "(nonnull instancetype) \- \fBinitWithDevice:\fP"
+.br
+.ti -1c
+.RI "(nullable instancetype) \- \fBinitWithCoder:device:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceImage:batchNormalizationState:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeBatchToCommandBuffer:sourceImages:batchNormalizationState:destinationImages:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeToCommandBuffer:sourceImage:destinationState:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImage\fP *__nonnull) \- \fBencodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBencodeBatchToCommandBuffer:sourceImages:destinationStates:destinationImages:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSImageBatch\fP *__nonnull) \- \fBencodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSCNNBatchNormalizationState\fP *__nullable) \- \fBresultStateForSourceImage:sourceStates:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(\fBMPSCNNBatchNormalizationState\fP *__nullable) \- \fBtemporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreloadDataSource:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreloadGammaAndBetaFromDataSource\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreloadMeanAndVarianceFromDataSource\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreloadGammaAndBetaWithCommandBuffer:gammaAndBetaState:\fP"
+.br
+.ti -1c
+.RI "(void) \- \fBreloadMeanAndVarianceWithCommandBuffer:meanAndVarianceState:\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "NSUInteger \fBnumberOfFeatureChannels\fP"
+.br
+.ti -1c
+.RI "float \fBepsilon\fP"
+.br
+.ti -1c
+.RI "id< \fBMPSCNNBatchNormalizationDataSource\fP > \fBdataSource\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+This depends on Metal\&.framework  \fBMPSCNNBatchNormalization\fP normalizes input images using per-channel means and variances\&.
+.PP
+for (c = 0; c < numberOfFeatureChannels; ++c) { input_image = in(:,:,c,:); output_image = (input_image - mean[c]) * gamma[c] / sqrt(variance[c] + epsilon) + beta[c]; out(:,:,c,:) = output_image; } 
+.SH "Method Documentation"
+.PP 
+.SS "\- (void) encodeBatchToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) sourceImages(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState(\fBMPSImageBatch\fP *__nonnull) destinationImages"
+Encode this kernel to a command buffer for a batch of images using a batch normalization state\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid command buffer to receive the kernel\&. 
+.br
+\fIsourceImages\fP The batch of source images\&. 
+.br
+\fIbatchNormalizationState\fP \fBA\fP \fBMPSCNNBatchNormalizationState\fP containing weights and/or statistics to use for the batch normalization\&. If the state is temporary its read count will be decremented\&. 
+.br
+\fIdestinationImages\fP The batch of images to contain the normalized and scaled result images\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeBatchToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) sourceImages(\fBMPSStateBatch\fP *__nullable) destinationStates(\fBMPSImageBatch\fP *__nonnull) destinationImages"
+Encode a \fBMPSCNNKernel\fP with a destination state into a command Buffer\&.  This is typically used during training\&. The state is commonly a \fBMPSNNGradientState\fP\&. Please see -resultStateForSourceImages:SourceStates:destinationImage and batch+temporary variants\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceImages\fP \fBA\fP valid \fBMPSImage\fP object containing the source images\&. 
+.br
+\fIdestinationStates\fP \fBA\fP list of states to be overwritten by results 
+.br
+\fIdestinationImages\fP \fBA\fP valid \fBMPSImage\fP to be overwritten by result images\&. destinationImages may not alias sourceImages, even at different indices\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (\fBMPSImageBatch\fP * __nonnull) encodeBatchToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImageBatch\fP *__nonnull) sourceImages(__autoreleasing \fBMPSStateBatch\fP *__nullable *__nonnull) outStates(BOOL) isTemporary"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. Create a MPSImageBatch and MPSStateBatch to hold the results and return them\&.  In the first iteration on this method, encodeToCommandBuffer:sourceImage:destinationImage: some work was left for the developer to do in the form of correctly setting the offset property and sizing the result buffer\&. With the introduction of the padding policy (see padding property) the filter can do this work itself\&. If you would like to have some input into what sort of \fBMPSImage\fP (e\&.g\&. temporary vs\&. regular) or what size it is or where it is allocated, you may set the destinationImageAllocator to allocate the image yourself\&.
+.PP
+This method uses the \fBMPSNNPadding\fP padding property to figure out how to size the result image and to set the offset property\&. See discussion in \fBMPSNeuralNetworkTypes\&.h\fP\&. All images in a batch must have \fBMPSImage\&.numberOfImages\fP = 1\&.
+.PP
+Usage: 
+.PP
+.nf
+MPSStateBatch * outStates = nil;    // autoreleased
+MPSImageBatch * result = [k encodeBatchToCommandBuffer: cmdBuf
+                                          sourceImages: sourceImages
+                                     destinationStates: &outStates ];
+
+.fi
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer 
+.br
+\fIsourceImages\fP \fBA\fP MPSImages to use as the source images for the filter\&. 
+.br
+\fIoutStates\fP \fBA\fP pointer to storage to hold a MPSStateBatch* where output states are returned 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+An array of MPSImages or MPSTemporaryImages allocated per the destinationImageAllocator containing the output of the graph\&. The offset property will be adjusted to reflect the offset used during the encode\&. The returned images will be automatically released when the command buffer completes\&. If you want to keep them around for longer, retain the images\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceImage(\fBMPSCNNBatchNormalizationState\fP *__nonnull) batchNormalizationState(\fBMPSImage\fP *__nonnull) destinationImage"
+Encode this kernel to a command buffer for a single image using a batch normalization state\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid command buffer to receive the kernel\&. 
+.br
+\fIsourceImage\fP The source \fBMPSImage\fP\&. 
+.br
+\fIbatchNormalizationState\fP \fBA\fP \fBMPSCNNBatchNormalizationState\fP containing weights and/or statistics to use for the batch normalization\&. If the state is temporary its read count will be decremented\&. 
+.br
+\fIdestinationImage\fP An \fBMPSImage\fP to contain the resulting normalized and scaled image\&. 
+.RE
+.PP
+
+.SS "\- (void) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceImage(\fBMPSState\fP *__nonnull) destinationState(\fBMPSImage\fP *__nonnull) destinationImage"
+Encode a \fBMPSCNNKernel\fP with a destination state into a command Buffer\&.  This is typically used during training\&. The state is commonly a \fBMPSNNGradientState\fP\&. Please see -resultStateForSourceImages:SourceStates: and batch+temporary variants\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP \fBA\fP valid MTLCommandBuffer to receive the encoded filter 
+.br
+\fIsourceImage\fP \fBA\fP valid \fBMPSImage\fP object containing the source image\&. 
+.br
+\fIdestinationState\fP \fBA\fP state to be overwritten by additional state information\&. 
+.br
+\fIdestinationImage\fP \fBA\fP valid \fBMPSImage\fP to be overwritten by result image\&. destinationImage may not alias sourceImage\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (\fBMPSImage\fP * __nonnull) encodeToCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceImage(__autoreleasing \fBMPSState\fP *__nullable *__nonnull) outState(BOOL) isTemporary"
+Encode a \fBMPSCNNKernel\fP into a command Buffer\&. Create a texture and state to hold the results and return them\&.  In the first iteration on this method, encodeToCommandBuffer:sourceImage:destinationState:destinationImage: some work was left for the developer to do in the form of correctly setting the offset property and sizing the result buffer\&. With the introduction of the padding policy (see padding property) the filter can do this work itself\&. If you would like to have some input into what sort of \fBMPSImage\fP (e\&.g\&. temporary vs\&. regular) or what size it is or where it is allocated, you may set the destinationImageAllocator to allocate the image yourself\&.
+.PP
+This method uses the \fBMPSNNPadding\fP padding property to figure out how to size the result image and to set the offset property\&. See discussion in \fBMPSNeuralNetworkTypes\&.h\fP\&. All images in a batch must have \fBMPSImage\&.numberOfImages\fP = 1\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer 
+.br
+\fIsourceImage\fP \fBA\fP \fBMPSImage\fP to use as the source images for the filter\&. 
+.br
+\fIoutState\fP \fBA\fP new state object is returned here\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP \fBMPSImage\fP or \fBMPSTemporaryImage\fP allocated per the destinationImageAllocator containing the output of the graph\&. The offset property will be adjusted to reflect the offset used during the encode\&. The returned image will be automatically released when the command buffer completes\&. If you want to keep it around for longer, retain the image\&. (ARC will do this for you if you use it later\&.) 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (nullable instancetype) \fBinitWithCoder:\fP (NSCoder *__nonnull) aDecoder(nonnull id< MTLDevice >) device"
+\fBNSSecureCoding\fP compatability  While the standard NSSecureCoding/NSCoding method -initWithCoder: should work, since the file can't know which device your data is allocated on, we have to guess and may guess incorrectly\&. To avoid that problem, use a subclass of NSCoder that implements the <MPSDeviceProvider> protocol to tell MPS the MTLDevice to use\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIaDecoder\fP The NSCoder subclass with your serialized \fBMPSKernel\fP 
+.br
+\fIdevice\fP The MTLDevice on which to make the \fBMPSKernel\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP new \fBMPSCNNBatchNormalization\fP object, or nil if failure\&. 
+.RE
+.PP
+
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (nonnull instancetype) initWithDevice: (nonnull id< MTLDevice >) device"
+Use initWithDevice:dataSource instead 
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(nonnull id< \fBMPSCNNBatchNormalizationDataSource\fP >) dataSource"
+Initializes a batch normalization kernel using a data source\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this filter will be used 
+.br
+\fIdataSource\fP \fBA\fP pointer to a object that conforms to the \fBMPSCNNBatchNormalizationDataSource\fP protocol\&. The data source provides filter weights and bias terms and, optionally, image statistics which may be used to perform the normalization\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSCNNBatchNormalization\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (nonnull instancetype) \fBinitWithDevice:\fP (nonnull id< MTLDevice >) device(nonnull id< \fBMPSCNNBatchNormalizationDataSource\fP >) dataSource(\fBMPSNNNeuronDescriptor\fP *__nullable) fusedNeuronDescriptor"
+Initializes a batch normalization kernel using a data source and a neuron descriptor\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdevice\fP The MTLDevice on which this filter will be used 
+.br
+\fIdataSource\fP \fBA\fP pointer to a object that conforms to the \fBMPSCNNBatchNormalizationDataSource\fP protocol\&. The data source provides filter weights and bias terms and, optionally, image statistics which may be used to perform the normalization\&. 
+.br
+\fIfusedNeuronDescriptor\fP \fBA\fP \fBMPSNNNeuronDescriptor\fP object which specifies a neuron activation function to be applied to the result of the batch normalization\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fBA\fP valid \fBMPSCNNBatchNormalization\fP object or nil, if failure\&. 
+.RE
+.PP
+
+.SS "\- (void) reloadDataSource: (__nonnull id< \fBMPSCNNBatchNormalizationDataSource\fP >) dataSource"
+Reinitialize the filter using a data source\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdataSource\fP The data source which will provide the weights and, optionally, the image batch statistics with which to normalize\&. 
+.RE
+.PP
+
+.SS "\- (void) reloadGammaAndBetaFromDataSource "
+Reinitialize the filter's gamma and beta values using the data source provided at kernel initialization\&. 
+.SS "\- (void) reloadGammaAndBetaWithCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNNormalizationGammaAndBetaState\fP *__nonnull) gammaAndBetaState"
+Reload data using new gamma and beta terms contained within an \fBMPSCNNNormalizationGammaAndBetaState\fP object\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer on which to encode the reload\&.
+.br
+\fIgammaAndBetaState\fP The state containing the updated weights which are to be reloaded\&. 
+.RE
+.PP
+
+.SS "\- (void) reloadMeanAndVarianceFromDataSource "
+Reinitialize the filter's mean and variance values using the data source provided at kernel initialization\&. 
+.SS "\- (void) reloadMeanAndVarianceWithCommandBuffer: (__nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSCNNNormalizationMeanAndVarianceState\fP *__nonnull) meanAndVarianceState"
+Reload data using new mean and variance terms contained within an \fBMPSCNNNormalizationMeanAndVarianceState\fP object\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcommandBuffer\fP The command buffer on which to encode the reload\&.
+.br
+\fImeanAndVarianceState\fP The state containing the updated statistics which are to be reloaded\&. 
+.RE
+.PP
+
+.SS "\- (\fBMPSCNNBatchNormalizationState\fP * __nullable) resultStateForSourceImage: (\fBMPSImage\fP *__nonnull) sourceImage(NSArray< \fBMPSState\fP * > *__nullable) sourceStates(\fBMPSImage\fP *__nonnull) destinationImage"
+Return an \fBMPSCNNBatchNormalizationState\fP object which may be used with a \fBMPSCNNBatchNormalization\fP filter\&. 
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SS "\- (\fBMPSCNNBatchNormalizationState\fP * __nullable) temporaryResultStateForCommandBuffer: (nonnull id< MTLCommandBuffer >) commandBuffer(\fBMPSImage\fP *__nonnull) sourceImage(NSArray< \fBMPSState\fP * > *__nullable) sourceStates(\fBMPSImage\fP *__nonnull) destinationImage"
+Return a temporary \fBMPSCNNBatchNormalizationState\fP object which may be used with a \fBMPSCNNBatchNormalization\fP filter\&. 
+.PP
+Reimplemented from \fBMPSCNNKernel\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "\- (id<\fBMPSCNNBatchNormalizationDataSource\fP>) dataSource\fC [read]\fP, \fC [nonatomic]\fP, \fC [retain]\fP"
+The data source the batch normalization was initialized with 
+.SS "\- epsilon\fC [read]\fP, \fC [write]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The epsilon value used in the batch normalization formula to bias the variance when normalizing\&. 
+.SS "\- numberOfFeatureChannels\fC [read]\fP, \fC [nonatomic]\fP, \fC [assign]\fP"
+The number of feature channels in an image to be normalized\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MetalPerformanceShaders\&.framework from the source code\&.

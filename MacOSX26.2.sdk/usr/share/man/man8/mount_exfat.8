@@ -1,0 +1,103 @@
+.\" Copyright (c) 2009-2010 Apple Inc.  All rights reserved.
+.\"
+.Dd January 19, 2010
+.Dt MOUNT_EXFAT 8
+.Os Darwin
+.Sh NAME
+.Nm mount_exfat
+.Nd mount an ExFAT file system
+.Sh SYNOPSIS
+.Nm mount_exfat
+.Op Fl o Ar options
+.Op Fl u Ar uid
+.Op Fl g Ar gid
+.Op Fl m Ar mask
+.Pa device
+.Pa directory
+.Sh DESCRIPTION
+The
+.Nm
+command mounts the ExFAT filesystem from the device
+.Pa device
+onto the directory given by
+.Pa directory .
+This command is normally invoked by
+.Xr diskarbitrationd 8
+as the result of detecting a device with a file system recognized as ExFAT.
+It can also be invoked indirectly by executing the
+.Xr mount 8
+command with the
+.Fl t Cm exfat
+option.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl o Ar options
+Use the specified mount
+.Ar options ,
+as described in
+.Xr mount 8 .
+.It Fl u Ar uid
+Set the owner of the files in the file system to
+.Ar uid .
+The default owner is the owner of the directory
+on which the file system is being mounted.
+.It Fl g Ar gid
+Set the group of the files in the file system to
+.Ar gid .
+The default group is the group of the directory
+on which the file system is being mounted.
+.It Fl m Ar mask
+Specify the maximum file permissions for files
+in the file system.
+(For example, a
+.Ar mask
+of
+.Li 755
+specifies that, by default, the owner should have
+read, write, and execute permissions for files, but
+others should only have read and execute permissions.
+See
+.Xr chmod 1
+for more information about octal file modes.)
+Only the nine low-order bits of
+.Ar mask
+are used.
+The default
+.Ar mask
+is taken from the
+directory on which the file system is being mounted.
+.El
+.Pp
+If none of the
+.Fl u ,
+.Fl g ,
+or
+.Fl m
+options are given, the volume will be mounted with the MNT_UNKNOWNPERMISSIONS
+flag (equivalent to the
+.Fl o Cm noowners
+option).
+.Pp
+If the device is internal and not removable, the volume will be mounted with
+the MNT_ASYNC flag (equivalent to the
+.Fl o Cm async
+option) by default.
+That default can be overridden with the
+.Fl o Cm noasync
+option.
+When mounted with the
+.Fl o Cm noasync
+option, metadata updates are synced to disk frequently (by default, 50ms after
+the system call that changed the metadata returns to its caller).
+.Sh SEE ALSO
+.Xr fsck_exfat 8 ,
+.Xr exfat.util 8 ,
+.Xr mount 2 ,
+.Xr unmount 2 ,
+.Xr fstab 5 ,
+.Xr mount 8
+.Sh HISTORY
+The
+.Nm
+utility first appeared in Mac OS X 10.6.3.

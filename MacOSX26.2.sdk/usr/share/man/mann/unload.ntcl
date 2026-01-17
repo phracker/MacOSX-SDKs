@@ -1,0 +1,432 @@
+'\"
+'\" Copyright (c) 2003 George Petasis <petasis@iit.demokritos.gr>.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" RCS: @(#) $Id: unload.n,v 1.11 2008/03/26 14:51:42 dkf Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH unload n 8.5 Tcl "Tcl Built-In Commands"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+unload \- Unload machine code
+.SH SYNOPSIS
+\fBunload \fR?\fIswitches\fR? \fIfileName\fR
+.br
+\fBunload \fR?\fIswitches\fR? \fIfileName packageName\fR
+.br
+\fBunload \fR?\fIswitches\fR? \fIfileName packageName interp\fR
+.BE
+.SH DESCRIPTION
+.PP
+This command tries to unload shared libraries previously loaded
+with \fBload\fR from the application's address space.  \fIfileName\fR
+is the name of the file containing the library file to be unload;  it
+must be the same as the filename provided to \fBload\fR for
+loading the library.
+The \fIpackageName\fR argument is the name of the package (as
+determined by or passed to \fBload\fR), and is used to
+compute the name of the unload procedure; if not supplied, it is
+computed from \fIfileName\fR in the same manner as \fBload\fR.
+The \fIinterp\fR argument is the path name of the interpreter from
+which to unload the package (see the \fBinterp\fR manual entry for
+details); if \fIinterp\fR is omitted, it defaults to the
+interpreter in which the \fBunload\fR command was invoked.
+.PP
+If the initial arguments to \fBunload\fR start with \fB\-\fR then
+they are treated as switches.  The following switches are
+currently supported:
+.TP
+\fB\-nocomplain\fR
+.
+Suppresses all error messages. If this switch is given, \fBunload\fR will
+never report an error.
+.TP
+\fB\-keeplibrary\fR
+.
+This switch will prevent \fBunload\fR from issuing the operating system call
+that will unload the library from the process. 
+.TP
+\fB\-\|\-\fR
+.
+Marks the end of switches.  The argument following this one will
+be treated as a \fIfileName\fR even if it starts with a \fB\-\fR.
+.SS "UNLOAD OPERATION"
+.PP
+When a file containing a shared library is loaded through the
+\fBload\fR command, Tcl associates two reference counts to the library
+file. The first counter shows how many times the library has been
+loaded into normal (trusted) interpreters while the second describes how many
+times the library has been loaded into safe interpreters. As a file containing
+a shared library can be loaded only once by Tcl (with the first \fBload\fR
+call on the file), these counters track how many interpreters use the library.
+Each subsequent call to \fBload\fR after the first simply increments the
+proper reference count.
+.PP
+\fBunload\fR works in the opposite direction. As a first step, \fBunload\fR
+will check whether the library is unloadable: an unloadable library exports
+a special unload procedure. The name of the unload procedure is determined by
+\fIpackageName\fR and whether or not the target interpreter
+is a safe one.  For normal interpreters the name of the initialization
+procedure will have the form \fIpkg\fB_Unload\fR, where \fIpkg\fR
+is the same as \fIpackageName\fR except that the first letter is
+converted to upper case and all other letters
+are converted to lower case.  For example, if \fIpackageName\fR is
+\fBfoo\fR or \fBFOo\fR, the initialization procedure's name will
+be \fBFoo_Unload\fR.
+If the target interpreter is a safe interpreter, then the name
+of the initialization procedure will be \fIpkg\fB_SafeUnload\fR
+instead of \fIpkg\fB_Unload\fR.
+.PP
+If \fBunload\fR determines that a library is not unloadable (or unload
+functionality has been disabled during compilation), an error will be returned.
+If the library is unloadable, then \fBunload\fR will call the unload
+procedure. If the unload procedure returns \fBTCL_OK\fR, \fBunload\fR will proceed
+and decrease the proper reference count (depending on the target interpreter
+type). When both reference counts have reached 0, the library will be
+detached from the process.
+.SS "UNLOAD HOOK PROTOTYPE"
+.PP
+The unload procedure must match the following prototype:
+.CS
+typedef int Tcl_PackageUnloadProc(Tcl_Interp *\fIinterp\fR, int \fIflags\fR);
+.CE
+.PP
+The \fIinterp\fR argument identifies the interpreter from which the
+library is to be unloaded.  The unload procedure must return
+\fBTCL_OK\fR or \fBTCL_ERROR\fR to indicate whether or not it completed
+successfully;  in the event of an error it should set the interpreter's result
+to point to an error message.  In this case, the result of the
+\fBunload\fR command will be the result returned by the unload procedure.
+.PP
+The \fIflags\fR argument can be either \fBTCL_UNLOAD_DETACH_FROM_INTERPRETER\fR
+or \fBTCL_UNLOAD_DETACH_FROM_PROCESS\fR. In case the library will remain
+attached to the process after the unload procedure returns (i.e. because
+the library is used by other interpreters),
+\fBTCL_UNLOAD_DETACH_FROM_INTERPRETER\fR will be defined. However, if the
+library is used only by the target interpreter and the library will be
+detached from the application as soon as the unload procedure returns,
+the \fIflags\fR argument will be set to \fBTCL_UNLOAD_DETACH_FROM_PROCESS\fR. 
+.SS NOTES
+.PP
+The \fBunload\fR command cannot unload libraries that are statically
+linked with the application.
+If \fIfileName\fR is an empty string, then the \fIpackageName\fR argument must
+be specified.
+.PP
+If \fIpackageName\fR is omitted or specified as an empty string,
+Tcl tries to guess the name of the package.
+This may be done differently on different platforms.
+The default guess, which is used on most UNIX platforms, is to
+take the last element of \fIfileName\fR, strip off the first
+three characters if they are \fBlib\fR, and use any following
+alphabetic and underline characters as the module name.
+For example, the command \fBunload libxyz4.2.so\fR uses the module
+name \fBxyz\fR and the command \fBunload bin/last.so {}\fR uses the
+module name \fBlast\fR.
+.SH "PORTABILITY ISSUES"
+.TP
+\fBUnix\fR\0\0\0\0\0
+.
+Not all unix operating systems support library unloading. Under such
+an operating system \fBunload\fR returns an error (unless \fB\-nocomplain\fR
+has been specified).
+.SH BUGS
+.PP
+If the same file is \fBload\fRed by different \fIfileName\fRs, it will
+be loaded into the process's address space multiple times.  The
+behavior of this varies from system to system (some systems may
+detect the redundant loads, others may not). In case a library has been
+silently detached by the operating system (and as a result Tcl thinks the
+library is still loaded), it may be dangerous to use
+\fBunload\fR on such a library (as the library will be completely detached
+from the application while some interpreters will continue to use it).
+.SH EXAMPLE
+If an unloadable module in the file \fBfoobar.dll\fR had been loaded
+using the \fBload\fR command like this (on Windows):
+.CS
+load c:/some/dir/foobar.dll
+.CE
+then it would be unloaded like this:
+.CS
+\fBunload\fR c:/some/dir/foobar.dll
+.CE
+.PP
+This allows a C code module to be installed temporarily into a
+long-running Tcl program and then removed again (either because it is
+no longer needed or because it is being updated with a new version)
+without having to shut down the overall Tcl process.
+.SH "SEE ALSO"
+info sharedlibextension, load(n), safe(n)
+.SH KEYWORDS
+binary code, unloading, safe interpreter, shared library

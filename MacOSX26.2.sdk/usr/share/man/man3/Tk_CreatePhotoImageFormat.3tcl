@@ -1,0 +1,544 @@
+'\"
+'\" Copyright (c) 1994 The Australian National University
+'\" Copyright (c) 1994-1997 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" Author: Paul Mackerras (paulus@cs.anu.edu.au),
+'\"	    Department of Computer Science,
+'\"	    Australian National University.
+'\"
+'\" RCS: @(#) $Id$
+'\"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH Tk_CreatePhotoImageFormat 3 8.5 Tk "Tk Library Procedures"
+.BS
+.SH NAME
+Tk_CreatePhotoImageFormat \- define new file format for photo images
+.SH SYNOPSIS
+.nf
+\fB#include <tk.h>\fR
+.sp
+\fBTk_CreatePhotoImageFormat\fR(\fIformatPtr\fR)
+.SH ARGUMENTS
+.AS Tk_PhotoImageFormat *formatPtr
+.AP Tk_PhotoImageFormat *formatPtr in
+Structure that defines the new file format.
+.BE
+
+.SH DESCRIPTION
+.PP
+\fBTk_CreatePhotoImageFormat\fR is invoked to define a new file format
+for image data for use with photo images.  The code that implements an
+image file format is called an image file format handler, or
+handler for short.  The photo image code
+maintains a list of handlers that can be used to read and
+write data to or from a file.  Some handlers may also
+support reading image data from a string or converting image data to a
+string format.
+The user can specify which handler to use with the \fB\-format\fR
+image configuration option or the \fB\-format\fR option to the
+\fBread\fR and \fBwrite\fR photo image subcommands.
+.PP
+An image file format handler consists of a collection of procedures
+plus a Tk_PhotoImageFormat structure, which contains the name of the
+image file format and pointers to six procedures provided by the
+handler to deal with files and strings in this format.  The
+Tk_PhotoImageFormat structure contains the following fields:
+.CS
+typedef struct Tk_PhotoImageFormat {
+    char *\fIname\fR;
+    Tk_ImageFileMatchProc *\fIfileMatchProc\fR;
+    Tk_ImageStringMatchProc *\fIstringMatchProc\fR;
+    Tk_ImageFileReadProc *\fIfileReadProc\fR;
+    Tk_ImageStringReadProc *\fIstringReadProc\fR;
+    Tk_ImageFileWriteProc *\fIfileWriteProc\fR;
+    Tk_ImageStringWriteProc *\fIstringWriteProc\fR;
+} Tk_PhotoImageFormat;
+.CE
+.PP
+The handler need not provide implementations of all six procedures.
+For example, the procedures that handle string data would not be
+provided for a format in which the image data are stored in binary,
+and could therefore contain null characters.  If any procedure is not
+implemented, the corresponding pointer in the Tk_PhotoImageFormat
+structure should be set to NULL.  The handler must provide the
+\fIfileMatchProc\fR procedure if it provides the \fIfileReadProc\fR
+procedure, and the \fIstringMatchProc\fR procedure if it provides the
+\fIstringReadProc\fR procedure.
+
+.SH NAME
+.PP
+\fIformatPtr->name\fR provides a name for the image type.
+Once \fBTk_CreatePhotoImageFormat\fR returns, this name may be used
+in the \fB\-format\fR photo image configuration and subcommand option.
+The manual page for the photo image (photo(n)) describes how image
+file formats are chosen based on their names and the value given to
+the \fB\-format\fR option. The first character of \fIformatPtr->name\fR
+must not be an uppercase character from the ASCII character set
+(that is, one of the characters \fBA\fR-\fBZ\fR).  Such names are used
+only for legacy interface support (see below).
+
+.SH FILEMATCHPROC
+\fIformatPtr->fileMatchProc\fR provides the address of a procedure for
+Tk to call when it is searching for an image file format handler
+suitable for reading data in a given file.
+\fIformatPtr->fileMatchProc\fR must match the following prototype:
+.CS
+typedef int Tk_ImageFileMatchProc(
+    Tcl_Channel \fIchan\fR,
+    const char *\fIfileName\fR,
+    Tcl_Obj *\fIformat\fR,
+    int *\fIwidthPtr\fR,
+    int *\fIheightPtr\fR,
+    Tcl_Interp *\fIinterp\fR);
+.CE
+The \fIfileName\fR argument is the name of the file containing the
+image data, which is open for reading as \fIchan\fR.  The
+\fIformat\fR argument contains the value given for the
+\fB\-format\fR option, or NULL if the option was not specified.
+If the data in the file appears to be in the format supported by this
+handler, the \fIformatPtr->fileMatchProc\fR procedure should store the
+width and height of the image in *\fIwidthPtr\fR and *\fIheightPtr\fR
+respectively, and return 1.  Otherwise it should return 0.
+
+.SH STRINGMATCHPROC
+\fIformatPtr->stringMatchProc\fR provides the address of a procedure for
+Tk to call when it is searching for an image file format handler for
+suitable for reading data from a given string.
+\fIformatPtr->stringMatchProc\fR must match the following prototype:
+.CS
+typedef int Tk_ImageStringMatchProc(
+    Tcl_Obj *\fIdata\fR,
+    Tcl_Obj *\fIformat\fR,
+    int *\fIwidthPtr\fR,
+    int *\fIheightPtr\fR,
+    Tcl_Interp *\fIinterp\fR);
+.CE
+The \fIdata\fR argument points to the object containing the image
+data.  The \fIformat\fR argument contains the value given for
+the \fB\-format\fR option, or NULL if the option was not specified.
+If the data in the string appears to be in the format supported by
+this handler, the \fIformatPtr->stringMatchProc\fR procedure should
+store the width and height of the image in *\fIwidthPtr\fR and
+*\fIheightPtr\fR respectively, and return 1.  Otherwise it should
+return 0.
+
+.SH FILEREADPROC
+\fIformatPtr->fileReadProc\fR provides the address of a procedure for
+Tk to call to read data from an image file into a photo image.
+\fIformatPtr->fileReadProc\fR must match the following prototype:
+.CS
+typedef int Tk_ImageFileReadProc(
+    Tcl_Interp *\fIinterp\fR,
+    Tcl_Channel \fIchan\fR,
+    const char *\fIfileName\fR,
+    Tcl_Obj *\fIformat\fR,
+    PhotoHandle \fIimageHandle\fR,
+    int \fIdestX\fR, int \fIdestY\fR,
+    int \fIwidth\fR, int \fIheight\fR,
+    int \fIsrcX\fR, int \fIsrcY\fR);
+.CE
+The \fIinterp\fR argument is the interpreter in which the command was
+invoked to read the image; it should be used for reporting errors.
+The image data is in the file named \fIfileName\fR, which is open for
+reading as \fIchan\fR.  The \fIformat\fR argument contains the
+value given for the \fB\-format\fR option, or NULL if the option was
+not specified.  The image data in the file, or a subimage of it, is to
+be read into the photo image identified by the handle
+\fIimageHandle\fR.  The subimage of the data in the file is of
+dimensions \fIwidth\fR x \fIheight\fR and has its top-left corner at
+coordinates (\fIsrcX\fR,\fIsrcY\fR).  It is to be stored in the photo
+image with its top-left corner at coordinates
+(\fIdestX\fR,\fIdestY\fR) using the \fBTk_PhotoPutBlock\fR procedure.
+The return value is a standard Tcl return value.
+
+.SH STRINGREADPROC
+\fIformatPtr->stringReadProc\fR provides the address of a procedure for
+Tk to call to read data from a string into a photo image.
+\fIformatPtr->stringReadProc\fR must match the following prototype:
+.CS
+typedef int Tk_ImageStringReadProc(
+    Tcl_Interp *\fIinterp\fR,
+    Tcl_Obj *\fIdata\fR,
+    Tcl_Obj *\fIformat\fR,
+    PhotoHandle \fIimageHandle\fR,
+    int \fIdestX\fR, int \fIdestY\fR,
+    int \fIwidth\fR, int \fIheight\fR,
+    int \fIsrcX\fR, int \fIsrcY\fR);
+.CE
+The \fIinterp\fR argument is the interpreter in which the command was
+invoked to read the image; it should be used for reporting errors.
+The \fIdata\fR argument points to the image data in object form.
+The \fIformat\fR argument contains the
+value given for the \fB\-format\fR option, or NULL if the option was
+not specified.  The image data in the string, or a subimage of it, is to
+be read into the photo image identified by the handle
+\fIimageHandle\fR.  The subimage of the data in the string is of
+dimensions \fIwidth\fR x \fIheight\fR and has its top-left corner at
+coordinates (\fIsrcX\fR,\fIsrcY\fR).  It is to be stored in the photo
+image with its top-left corner at coordinates
+(\fIdestX\fR,\fIdestY\fR) using the \fBTk_PhotoPutBlock\fR procedure.
+The return value is a standard Tcl return value.
+
+.SH FILEWRITEPROC
+\fIformatPtr->fileWriteProc\fR provides the address of a procedure for
+Tk to call to write data from a photo image to a file.
+\fIformatPtr->fileWriteProc\fR must match the following prototype:
+.CS
+typedef int Tk_ImageFileWriteProc(
+    Tcl_Interp *\fIinterp\fR,
+    const char *\fIfileName\fR,
+    Tcl_Obj *\fIformat\fR,
+    Tk_PhotoImageBlock *\fIblockPtr\fR);
+.CE
+The \fIinterp\fR argument is the interpreter in which the command was
+invoked to write the image; it should be used for reporting errors.
+The image data to be written are in memory and are described by the
+Tk_PhotoImageBlock structure pointed to by \fIblockPtr\fR; see the
+manual page FindPhoto(3) for details.  The \fIfileName\fR argument
+points to the string giving the name of the file in which to write the
+image data.  The \fIformat\fR argument contains the
+value given for the \fB\-format\fR option, or NULL if the option was
+not specified.  The format string can contain extra characters
+after the name of the format.  If appropriate, the
+\fIformatPtr->fileWriteProc\fR procedure may interpret these
+characters to specify further details about the image file.
+The return value is a standard Tcl return value.
+
+.SH STRINGWRITEPROC
+\fIformatPtr->stringWriteProc\fR provides the address of a procedure for
+Tk to call to translate image data from a photo image into a string.
+\fIformatPtr->stringWriteProc\fR must match the following prototype:
+.CS
+typedef int Tk_ImageStringWriteProc(
+    Tcl_Interp *\fIinterp\fR,
+    Tcl_Obj *\fIformat\fR,
+    Tk_PhotoImageBlock *\fIblockPtr\fR);
+.CE
+The \fIinterp\fR argument is the interpreter in which the command was
+invoked to convert the image; it should be used for reporting errors.
+The image data to be converted are in memory and are described by the
+Tk_PhotoImageBlock structure pointed to by \fIblockPtr\fR; see the
+manual page FindPhoto(3) for details.  The data for the string
+should be put in the interpreter \fIinterp\fR result.
+The \fIformat\fR argument contains the
+value given for the \fB\-format\fR option, or NULL if the option was
+not specified.  The format string can contain extra characters
+after the name of the format.  If appropriate, the
+\fIformatPtr->stringWriteProc\fR procedure may interpret these
+characters to specify further details about the image file.
+The return value is a standard Tcl return value.
+
+.SH "LEGACY INTERFACE SUPPORT"
+In Tk 8.2 and earlier, the definition of all the function pointer
+types stored in fields of a \fBTk_PhotoImageFormat\fR struct were
+incompatibly different.  Legacy programs and libraries dating from
+those days may still contain code that defines extended Tk photo image
+formats using the old interface.  The Tk header file will still support
+this legacy interface if the code is compiled with the
+macro \fBUSE_OLD_IMAGE\fR defined.  Alternatively, the legacy interfaces
+are used if the first character of \fIformatPtr->name\fR is an
+uppercase ASCII character (\fBA\fR-\fBZ\fR), and explicit casts
+are used to forgive the type mismatch.  For example,
+.CS
+static Tk_PhotoImageFormat myFormat = {
+    "MyFormat",
+    (Tk_ImageFileMatchProc *) FileMatch,
+    NULL,
+    (Tk_ImageFileReadProc *) FileRead,
+    NULL,
+    NULL,
+    NULL
+};
+.CE
+would define a minimal \fBTk_PhotoImageFormat\fR that operates provide
+only file reading capability, where \fBFileMatch\fR and \fBFileRead\fR
+are written according to the legacy interfaces of Tk 8.2 or earlier.
+.PP
+Any stub-enabled extension providing an extended photo image format
+via the legacy interface enabled by the \fBUSE_OLD_IMAGE\fR macro
+that is compiled against Tk 8.5 headers and linked against the
+Tk 8.5 stub library will produce a file that can be loaded only
+into interps with Tk 8.5 or later; that is, the normal stub-compatibility
+rules.  If a developer needs to generate from such code a file
+that is loadable into interps with Tk 8.4 or earlier, they must
+use Tk 8.4 headers and stub libraries to do so.
+.PP
+Any new code written today should not make use of the legacy
+interfaces.  Expect their support to go away in Tk 9.
+
+.SH "SEE ALSO"
+Tk_FindPhoto, Tk_PhotoPutBlock
+
+.SH KEYWORDS
+photo image, image file

@@ -1,0 +1,158 @@
+.\"     $Id: mkpassdb.8,v 1.18 2006/03/15 20:07:43 snsimon Exp $
+.\"
+.\" Copyright (c) 2002 Apple Computer, Inc., all rights reserved.
+.\" Distributed only as part of Mac OS X Server
+.Dd 21 February 2002
+.Dt mkpassdb 8
+.Os "Mac OS X Server"
+.Sh NAME
+.Nm mkpassdb
+.Nd Mac OS X Server Password Server database creation tool
+.Sh SYNOPSIS
+.Pp
+.Nm
+.Fl deleteslot Ar slot-ID
+.Nm
+.Fl dump Op -v
+.Nm
+.Fl dump Op slot-ID
+.Nm
+.Fl header
+.Nm
+.Fl kerberize
+.Nm
+.Fl key
+.Nm
+.Fl list
+.Nm
+.Fl mergedb Ar path
+.Nm
+.Fl mergeparent Ar path
+.Nm
+.Fl setadmin Ar slot-ID Op admin-class (0-7)
+.Nm
+.Fl setglobalpolicy
+"policy1=value1 policy2=value2 etc."
+.Nm
+.Fl setkerberos Ar slot-ID Ar KerberosRealm
+.Nm
+.Fl setkeyagent Ar slot-ID
+.Nm
+.Fl setcomputeraccount Op off
+.Nm
+.Fl setrealm Ar realm
+.Nm
+.Fl getreplicationinterval
+.Nm
+.Fl setreplicationinterval Ar seconds Op policy
+.Nm
+.Fl rekeydb Op key-size-in-bits
+.Nm
+.Op Fl u Ar user
+.Op Fl m Ar mech
+.Op Fl a
+.Op Fl b
+.Op Fl e Ar count
+.Op Fl n Ar replica-name
+.Op Fl o
+.Op Fl p
+.Op Fl q 
+.Sh DESCRIPTION
+.Nm
+creates or modifies the password server database directly.
+.Pp
+.Nm
+must be run as root; it will exit otherwise. The
+.Fl list
+command is the only exception.
+.Pp
+This tool's purpose is to create and manage the password server database. It performs operations that are not supported by the password server protocol because of security concerns. These operations include the creation and destruction of the database itself, the creation of the RSA security keys that establish the identity of the password server, the trusted mechanism list, and the genesis of administrator accounts. It also allows the root account to make some password server changes on the local system.
+.Pp
+.Bl -tag -width fixedspacingstrlen123456 -compact
+.It Fl deleteslot
+Invalidates a slot ID in the database.
+.It Fl dump
+Outputs all of the User IDs and their corresponding user names. If a slot-ID is specified, it prints out more detailed
+information for a single slot. If the [-v] option is used, additional columns are included.
+.It Fl header
+Outputs the database header information.
+.It Fl kerberize
+Attempts to add kerberos principals for all non-kerberos accounts in password server.
+.It Fl key
+Outputs the RSA public key stored in the database.
+.It Fl list
+Outputs all of the SASL mechanisms available to the password server.
+.It Fl mergedb
+This command is a low-level command that is invoked by a higher-level tool in normal usage. Refer to the restoredb command in the slapconfig man page.
+This command merges a snapshot of the password server database into the current database whether or not the daemon is running.  This command takes existing LDAP users, looks for their data in the specified db file, and merges their db information.  If there is data in the db without a corresponding LDAP user or computer, it is not merged.
+The identity elements of the password server, including RSA keys and replica name, are changed to the snapshot's contents.
+.It Fl mergeparent
+This command is a low-level command that is invoked by a higher-level tool in normal usage. Refer to the mergedb command in the slapconfig man page.
+This command merges a snapshot of the password server database into the current database whether or not the daemon is running.  This command takes existing LDAP
+ users, looks for their data in the specified db file, and merges their db information.  If there is data in the db without a corresponding LDAP user or compute
+r, it is not merged.
+The current identity of the password server is preserved.
+.It Fl setadmin
+Promotes a slot-ID to have administrator privileges for the password server. By default, administrators set with
+mkpassdb receive the most priveleged rank (0).
+.It Fl setglobalpolicy
+Sets the default policies for all users.
+.It Fl setkerberos
+Assigns a Kerberos realm to a password server account.
+.It Fl setkeyagent
+Promotes a slot-ID to have enough administrator privileges to retrieve session keys on behalf of other accounts.
+.It Fl setcomputeraccount
+Informs the password server that the account belongs to a computer rather than a user. Computer accounts are not subject
+to policies and do not expire. Using the optional "off" argument changes the state back to a user account.
+.It Fl setrealm
+Sets the password server's SASL realm.
+.It Fl getreplicationinterval
+Gets the number of seconds between replication attempts.
+.It Fl setreplicationinterval
+Sets the number of seconds between replication attempts.
+.It Fl rekeydb
+Generates a new RSA public/private key pair for the database. Valid sizes are 1024, 2048, or 3072.
+This command should be invoked by a higher-level tool. If run from the command line, existing users
+will not be able to authenticate. The PasswordService daemon must be turned off
+with, "NeST -stoppasswordserver" before this command can be used.
+.El
+.Sh OPTIONS
+The following options are available:
+.Bl -tag -width flag
+.It Fl a
+add a new administrator to an existing database.
+.It Fl b
+add a new non-administrative user to an existing database.
+.It Fl e
+expand the database to a fixed number of records. If the number is greater than the current size of the database, then
+the database is expanded; otherwise, no action is performed. This option is used by other setup tools when establishing
+a replica database. There is no reason to use it from the command line.
+.It Fl m Ar mech
+establishes a mechanism as weak. If a mechanism is considered weak, then it can be used to verify passwords but the password server will not allow write operations to its database. The mechanisms SMB-NT, SMB-LAN-MANAGER, CRYPT, and APOP are always in the weak list. Directory Services uses DHX to perform write operations to the password server.
+.It Fl n Ar name
+Assign a name to a replica
+.It Fl o
+overwrite an existing database. Replacing an existing database is extremely destructive and should not be done unless all password server users have been removed from the directory system.
+.It Fl p
+prompt for a password
+.It Fl q
+quiet
+.It Fl u Ar user
+Add this user name to the database.
+.El
+.Sh USAGE
+In typical usage,
+.Nm
+is invoked by another tool. It is used directly on rare occasion.
+.Sh FILES & FOLDERS
+.nf
+/Library/Preferences/com.apple.passwordserver.plist - the PasswordService preferences file
+/usr/sbin/PasswordService - the password service daemon
+/var/db/authserver/authservermain - password database (guard this)
+/var/db/authserver/authserverfree - list of free (reusable) slots in the database
+/var/db/authserver/authserverreplicas - table of password server replicas
+.fi
+.Sh SEE ALSO
+.Xr NeST 8
+.Xr PasswordService 8
+.Xr slapconfig 8

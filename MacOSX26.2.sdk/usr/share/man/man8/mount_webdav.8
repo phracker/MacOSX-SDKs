@@ -1,0 +1,189 @@
+.\" 
+.\" Copyright (c) 2001-2005 Apple Computer, Inc. All rights reserved.
+.\" 
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" This file contains Original Code and/or Modifications of Original Code
+.\" as defined in and that are subject to the Apple Public Source License
+.\" Version 2.0 (the 'License'). You may not use this file except in
+.\" compliance with the License. Please obtain a copy of the License at
+.\" http://www.opensource.apple.com/apsl/ and read it before using this
+.\" file.
+.\" 
+.\" The Original Code and all software distributed under the License are
+.\" distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+.\" Please see the License for the specific language governing rights and
+.\" limitations under the License.
+.\"
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.\" ********************************************************************
+.\" *
+.\" *  mount_webdav [-s] [-S] [-i] [-o options] [-v volume_name] [scheme://]host[:port][/path] node
+.\" *
+.\" ********************************************************************
+.\"
+.\" ********************************************************************
+.\" *  Required macros
+.\" ********************************************************************
+.Dd October 27, 2008
+.Os Mac\ OS\ X
+.Dt MOUNT_WEBDAV 8
+.\"
+.\" ********************************************************************
+.\" *  NAME section
+.\" ********************************************************************
+.Sh NAME
+.Nm mount_webdav
+.Nd mount a WebDAV filesystem
+.\"
+.\" ********************************************************************
+.\" *  SYNOPSIS section
+.\" ********************************************************************
+.Sh SYNOPSIS
+.Nm
+.Op Fl s
+.Op Fl S
+.Op Fl i
+.Op Fl v Ar volume_name
+.Op Fl o Ar options
+.Ar [scheme://]host[:port][/path]
+.Ar node
+.\"
+.\" ********************************************************************
+.\" *  DESCRIPTION section
+.\" ********************************************************************
+.Sh DESCRIPTION
+The
+.Nm
+command mounts the WebDAV-enabled server directory at
+.Ar [scheme://]host[:port][/path]
+at the mount point indicated by
+.Ar node .
+.Pp
+The user and group IDs for all files and directories are set to unknown,
+and the permissions default to read, write and execute for user, group
+and other.
+.Pp
+The arguments and options are:
+.Bl -tag -width indent
+.It Fl s
+Require that authentication credentials be sent securely to the server.
+Note: If this option is not set, sending authentication credentials insecurely
+to the server will be allowed but will be logged.
+.It Fl S
+Suppresses all user interface including the authentication dialogs and the
+non-responsive ("disconnect") server dialogs. If the server connection becomes
+non-responsive, the file system is immediately unmounted when this option has
+been used.
+.It Fl i
+Interactive mode, you are prompted for the username and password.
+.It Fl o
+Options passed to
+.Xr mount 2
+are specified with the
+.Fl o
+option followed by a comma-separated string of options. See the
+.Xr mount 8
+man page for possible options and their meanings. If connecting to a
+Class 1 compliant WebDAV server, the rdonly option will be set even if
+it was not specified because mount_webdav will not allow files to be
+opened with write access on servers which do not support the DAV LOCK
+method.
+.It Fl v Ar volume_name
+Allows the volume_name attribute (ATTR_VOL_NAME) returned by
+.Xr getattrlist 2
+to be specified. If the volume_name is not specified, the last path
+component name of the
+.Ar node
+path is used as the volume_name.
+.It Ar [scheme://]host[:port][/path]
+The WebDAV-enabled server directory (collection resource) to mount as a volume.
+The scheme, if specified, must be "http://" or "https://". If the scheme is not
+specified, then "http://" is used.
+If the port is not specified, then port 80 is used when the scheme is "http://" or
+port 443 is used when the scheme is "https://".
+If the path is not specified, then the path "/" is used.
+.It Ar node
+Path to mount point. Note: The mount point directory must be created or exist before issuing the
+.Nm
+command.
+.El
+.\"
+.\" ********************************************************************
+.\" *  EXAMPLES section
+.\" ********************************************************************
+.Sh EXAMPLES
+The following example illustrates how to mount the WebDAV-enabled server
+directory
+.Pa http://idisk.mac.com/membername/
+at the mount point
+.Pa /Volumes/mntpnt/ .
+Note: The mountpoint directory
+.Pa /Volumes/mntpnt/
+must be created before issuing the
+.Nm
+command.
+.Bd -literal -offset indent
+mount_webdav http://idisk.mac.com/membername/ /Volumes/mntpnt/
+.Ed
+.\"
+.\" ********************************************************************
+.\" * DIAGNOSTICS section
+.\" ********************************************************************
+.Sh DIAGNOSTICS
+.Ex -std
+Here is a list of common results (other error results not listed may be returned):
+.Bl -tag -width Er
+.It 0
+.Nm
+successfully mounted the server directory. 
+.It Bq Er ENOENT
+The server directory could not be mounted by
+.Nm
+because the node path is invalid.
+.It Bq Er ENODEV
+The server directory could not be mounted by
+.Nm
+because it is not WebDAV-enabled or because it does not exist, or
+because node does not have proper access.
+.It Bq Er ECANCELED
+The server directory could not be mounted by
+.Nm
+because the user did not provide proper authentication credentials.
+.El
+.\"
+.\" ********************************************************************
+.\" *  COMPATIBILITY section
+.\" ********************************************************************
+.Sh COMPATIBILITY
+As noted above, the
+.Fl a Ns Ar fd
+option is considered deprecated in Mac OS X 10.4 and may not be supported in
+future releases. Use the FSMountServerVolumeSync() and FSMountServerVolumeAsync()
+APIs in CarbonCore/Files.h instead.
+.\"
+.\" ********************************************************************
+.\" *  SEE ALSO section
+.\" ********************************************************************
+.Sh SEE ALSO
+.Xr mount 2 ,
+.Xr unmount 2 ,
+.Xr mount 8
+.Xr getattrlist 2
+.\"
+.\" ********************************************************************
+.\" *  HISTORY section
+.\" ********************************************************************
+.Sh HISTORY
+The
+.Nm
+command first appeared Mac OS X Version 10.0. Support for HTTP Digest Access
+authentication was added in Mac OS X Version 10.1.1. Support for the https
+URL scheme, and for additional authentication methods and proxies supported by
+the CFNetwork framework were added in Mac OS X Version 10.4.
+.\"
+.\" ********************************************************************

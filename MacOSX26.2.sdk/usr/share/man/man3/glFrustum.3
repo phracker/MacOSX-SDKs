@@ -1,0 +1,122 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:45
+.ds Dm 3 May 22 14:
+.ds Xs 13962     6
+.TH GLFRUSTUM 3G
+.SH NAME
+.B "glFrustum
+\- multiply the current matrix by a perspective matrix
+
+.SH C SPECIFICATION
+void \f3glFrustum\fP(
+GLdouble \fIleft\fP,
+.nf
+.ta \w'\f3void \fPglFrustum( 'u
+	GLdouble \fIright\fP,
+	GLdouble \fIbottom\fP,
+	GLdouble \fItop\fP,
+	GLdouble \fIzNear\fP,
+	GLdouble \fIzFar\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\f2left\fP\ \f2right\fP\ \ 'u 
+\f2left\fP, \f2right\fP
+Specify the coordinates for the left and right vertical clipping planes.
+.TP
+\f2bottom\fP, \f2top\fP
+Specify the coordinates for the bottom and top horizontal clipping planes.
+.TP
+\f2zNear\fP, \f2zFar\fP
+Specify the distances to the near and far depth clipping planes.
+Both distances must be positive.
+.SH DESCRIPTION
+\%\f3glFrustum\fP describes a perspective matrix that produces a perspective projection.
+The current matrix (see \%\f3glMatrixMode\fP) is multiplied by this matrix
+and the result replaces the current matrix, as if
+\%\f3glMultMatrix\fP were called with the following matrix
+as its argument:
+.P
+.sp 5
+
+.Bd -literal
+   2 zNear
+ ------------       0              A              0
+ right - left
+
+                 2 zNear
+     0         ------------        B              0
+               top - bottom
+
+
+
+     0              0              C              D
+
+
+     0              0              -1             0
+
+.Ed
+.ce
+A = (right + left) / (right - left)
+
+.ce
+B = (top + bottom) / (top - bottom)
+
+.ce
+C = - (zFar + zNear) / (zFar - zNear)
+
+.ce
+D = - (2 zFar zNear) / (zFar - zNear)
+
+.Pp
+Typically, the matrix mode is \%\f3GL_PROJECTION\fP, and
+(\f2left\fP, \f2bottom\fP, \-\f2zNear\fP) and (\f2right\fP, \f2top\fP,  \-\f2zNear\fP)
+specify the points on the near clipping plane that are mapped
+to the lower left and upper right corners of the window,
+assuming that the eye is located at (0, 0, 0).
+\-\f2zFar\fP specifies the location of the far clipping plane.
+Both \f2zNear\fP and \f2zFar\fP must be positive.
+.P
+Use \%\f3glPushMatrix\fP and \%\f3glPopMatrix\fP to save and restore
+the current matrix stack.
+.SH NOTES
+Depth buffer precision is affected by the values specified for
+\f2zNear\fP and \f2zFar\fP.
+The greater the ratio of \f2zFar\fP to \f2zNear\fP is,
+the less effective the depth buffer will be at distinguishing between
+surfaces that are near each other.
+If 
+.sp
+.ce
+r = zFar / zNear
+.sp
+roughly log2(r) bits of depth buffer precision are lost.
+Because r approaches infinity as \f2zNear\fP approaches 0,
+\f2zNear\fP must never be set to 0.
+.SH ERRORS
+\%\f3GL_INVALID_VALUE\fP is generated if \f2zNear\fP or \f2zFar\fP is not
+positive, or if \f2left\fP = \f2right\fP, or \f2bottom\fP = \f2top\fP.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glFrustum\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_MATRIX_MODE\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_MODELVIEW_MATRIX\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_PROJECTION_MATRIX\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_TEXTURE_MATRIX\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_COLOR_MATRIX\fP
+.SH SEE ALSO
+\%\f3glOrtho\fP,
+\%\f3glMatrixMode\fP,
+\%\f3glMultMatrix\fP, 
+\%\f3glPushMatrix\fP,
+\%\f3glViewport\fP

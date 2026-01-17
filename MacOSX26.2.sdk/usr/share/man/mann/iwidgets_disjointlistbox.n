@@ -1,0 +1,475 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) disjointlistbox.n 1.21 94/12/17 16:04:44
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::disjointlistbox iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::disjointlistbox \- Create and manipulate a disjointlistbox widget
+.SH SYNOPSIS
+\fBiwidgets::disjointlistbox\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::Disjointlistbox
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fB
+activeBackground    selectBorderWidth   selectForeground
+activeForeground    activeRelief        background
+borderWidth         buttonPlacement     clientData
+cursor              foreground          highlightColor
+highlightThickness  disabledForeground  elementBorderWidth\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "ASSOCIATED OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBlhsButtonLabel\fR \fBrhsButtonLabel\fR
+.fi
+.LP
+See the "button" widget manual entry for details on the above
+associated options.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBlabelFont\fR \fBlhsLabelText\fR \fBrhsLabelText\fR
+.fi
+.LP
+See the "label" widget manual entry for details on the above
+associated options.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBjump\fR \fBtroughColor\fR
+.fi
+.LP
+See the "scrollbar" widget class manual entry for details on the above
+associated options.
+.LP
+.nf
+.ta 4c 8c 12c
+\fBtextBackground\fR \fBtextFont\fR
+\fBlhsItems\fR \fBrhsItems\fR
+.fi
+.LP
+See the "scrolledlistbox" widget manual entry for details on the above
+associated options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.LP
+.nf
+Name:	\fBbuttonPlacement\fR
+Class:	\fBButtonPlacement\fR
+Command-Line Switch:	\fB-buttonplacement\fR
+.fi
+.IP
+Specifies the placement of the insertion and removal buttons relative to the
+scrolledlistbox widgets\fBn\fR, 
+\fBbottom\fR, or \fBcenter\fR.  The default is bottom.
+.LP
+.nf
+Name:	\fBlhsLabelText\fR
+Class:	\fBLabelText\fR
+Command-Line Switch:	\fB-lhslabeltext\fR
+.fi
+.IP
+Specifies the text for the label of the lhs scrolledlistbox.
+The default is "Available".
+.LP
+.nf
+Name:	\fBrhsLabelText\fR
+Class:	\fBLabelText\fR
+Command-Line Switch:	\fB-rhslabeltext\fR
+.fi
+.IP
+Specifies the text for the label of the rhs scrolledlistbox.
+The default is "Available".
+.LP
+.nf
+Name:	\fBlhsButtonLabel\fR
+Class:	\fBLabelText\fR
+Command-Line Switch:	\fB-lhsbuttonlabel\fR
+.fi
+.IP
+Specifies the text for the button of the lhs scrolledlistbox.
+The default is "Insert >>".
+.LP
+.nf
+Name:	\fBrhsButtonLabel\fR
+Class:	\fBLabelText\fR
+Command-Line Switch:	\fB-rhsbuttonlabel\fR
+.fi
+.IP
+Specifies the text for the button of the rhs scrolledlistbox.
+The default is "<< Remove".
+.LP
+.nf
+Name:	\fBlhsSortOption\fR
+Class:	\fBLhsSortOption\fR
+Command-Line Switch:	\fB-lhssortoption\fR
+.fi
+.IP
+Specifies the sort function to be applied to the lhs scrolledlistbox
+after items are inserted. Accepts the same sort options as the scrolledlistbox
+sort method (Tcl's lsort command). If "none" is specified, the inserted
+items are appended to the end of the list, and no sorting is performed.
+The default is "increasing".
+.LP
+.nf
+Name:	\fBrhsSortOption\fR
+Class:	\fBRhsSortOption\fR
+Command-Line Switch:	\fB-rhssortoption\fR
+.fi
+.IP
+Specifies the sort function to be applied to the rhs scrolledlistbox
+after items are inserted. Accepts the same sort options as the scrolledlistbox
+sort method (Tcl's lsort command). If "none" is specified, the inserted
+items are appended to the end of the list, and no sorting is performed.
+The default is "increasing".
+.LP
+.BE
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::disjointlistbox\fR command creates a disjoint pair of listboxs
+similar to the OSF/Motif "Book" printing dialog of the "FrameMaker"
+program.  It is implementation constists of a two Scrolledlistboxs,
+2 buttons, and 2 labels.
+
+The disjoint behavior of this widget exists between the interaction of
+the two Scrolledlistboxes with one another.  That is, a given instance
+of a Disjointlistbox will never exist, without the aid of a hack magician,
+which has Scrolledlistbox widgets with items in common.  That means the
+relationship between the two is maintained similar to that of disjoint sets.
+
+Users may transfer items between the two Listbox widgets using the
+the two buttons.
+
+Options exists which include the ability to configure the "items" displayed by
+the 2 Scrolledlistboxes and to control the placement of the insertion and
+removal buttons.
+.SH "METHODS"
+.PP
+The \fBiwidgets::disjointlistbox\fR command creates a new Tcl command whose
+name is \fIpathName\fR.  This command may be used to invoke various
+operations on the widget.  It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command.  The following
+commands are possible for disjointlistbox widgets:
+
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::disjointlistbox\fR
+command.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::disjointlistbox\fR
+command.
+.TP
+\fIpathName \fBsetlhs\fR
+Set the current contents of the left-most Scrolledlistbox with the input list
+of items.  Removes all (if any) items from the right-most Scrolledlistbox
+which exist in the input list option to maintain the disjoint property
+between the two
+.TP
+\fIpathName \fBsetrhs\fR
+Set the current contents of the right-most Scrolledlistbox with the input list
+of items.  Removes all (if any) items from the left-most Scrolledlistbox
+which exist in the input list option to maintain the disjoint property
+between the two
+.TP
+\fIpathName \fBgetlhs\fR
+Returns the current contents of the left-most Scrolledlistbox
+.TP
+\fIpathName \fBgetrhs\fR
+Returns the current contents of the right-most Scrolledlistbox
+.TP
+\fIpathName \fBinsertlhs\fR
+Add the input list of items to the current contents of the left-most
+Scrolledlistbox.  Removes all (if any) items from the right-most Scrolledlistbox
+which exist in the input list option to maintain the disjoint property
+between the two
+.TP
+\fIpathName \fBinsertrhs\fR
+Add the input list of items to the current contents of the right-most
+Scrolledlistbox.  Removes all (if any) items from the left-most Scrolledlistbox
+which exist in the input list option to maintain the disjoint property
+between the two.
+.TP
+.SH "COMPONENTS"
+.LP
+.nf
+Name:	\fBlhs\fR
+Class:	\fBScrolledlistbox\fR
+.fi
+.IP
+The lhs component is the scrolledlistbox for the rhs button.
+See the "scrolledlistbox" widget manual entry for details on the lhs 
+component item.
+.LP
+.nf
+Name:	\fBrhs\fR
+Class:	\fBScrolledlistbox\fR
+.fi
+.IP
+The rhs component is the scrolledlistbox for the rhs button.
+See the "scrolledlistbox" widget manual entry for details on the rhs
+component item.
+.LP
+.nf
+Name:	\fBlhsbutton\fR
+Class:	\fButton\fR
+.fi
+.IP
+The lhsbutton component is the button for users to remove selected items
+from the lhs Scrolledlistbox.
+See the "button" widget manual entry for details  on the lhs button component.
+.LP
+.nf
+Name:	\fBrhsbutton\fR
+Class:	\fBButton\fR
+.fi
+.IP
+The rhsbutton component is the button for users to remove selected items
+from the rhs Scrolledlistbox.
+See the "button" widget manual entry for details  on the rhs button component.
+.LP
+.nf
+Name:	\fBlhsCount\fR
+Class:	\fBLabel\fR
+.fi
+.IP
+The lhsCount component is the label for displaying a count of the current items in
+the Scrolledlistbox.
+See the "Label" widget manual entry for details  on the lhsCount label component.
+.LP
+.nf
+Name:	\fBrhsCount\fR
+Class:	\fBLabel\fR
+.fi
+.IP
+The rhsCount component is the label for displaying a count of the current items in
+the Scrolledlistbox.
+See the "Label" widget manual entry for details  on the rhsCount label component.
+.fi
+.IP
+.SH EXAMPLE
+.DS
+package require Iwidgets 4.0
+iwidgets::disjointlistbox .dlb
+pack .dlb -padx 10 -pady 10 -fill both -expand yes 
+.DE
+.SH AUTHOR(S)
+John A. Tucker
+.DE
+Anthony Parent
+.SH KEYWORDS
+disjointlistbox, widget

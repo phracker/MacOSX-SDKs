@@ -1,0 +1,80 @@
+.Dd December 3, 2003       \" DATE 
+.Dt db_archive 1       \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm db_archive
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl adlsVv
+.Op Fl h Ar home
+.Op Fl P Ar password
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+The
+.Nm
+utility writes the pathnames of log files that are no longer in use (for example, no longer involved in active transactions), to the standard output, one pathname per line. These log files should be written to backup media to provide for recovery in the case of catastrophic failure (which also requires a snapshot of the database files), but they may then be deleted from the system to reclaim disk space.
+.Pp
+The options are as follows:
+.Bl -tag -width
+.It Fl a
+Write all pathnames as absolute pathnames, instead of relative to the database home directories.
+.It Fl d
+Remove log files that are no longer needed; no filenames are written. Automatic log file removal is likely to make catastrophic recovery impossible.
+.It Fl h
+Specify a home directory for the database environment; by default, the current working directory is used.
+.It Fl l
+Write out the pathnames of all the database log files, whether or not they are involved in active transactions.
+.It Fl P
+Specify an environment password. Although Berkeley DB utilities overwrite password strings as soon as possible, be aware there may be a window of vulnerability on systems where unprivileged users can see command-line arguments or where utilities are not able to overwrite the memory containing the command-line arguments.
+.It Fl s
+Write the pathnames of all the database files that need to be archived in order to recover the database from catastrophic failure. If any of the database files have not been accessed during the lifetime of the current log files, db_archive will not include them in this output.
+.Pp
+It is possible that some of the files to which the log refers have since been deleted from the system. In this case, db_archive will ignore them. When db_recover is run, any files to which the log refers that are not present during recovery are assumed to have been deleted and will not be recovered.
+.It Fl V
+Write the library version number to the standard output, and exit.
+.It Fl v
+Run in verbose mode, listing the checkpoints in the log files as they are reviewed.
+.El
+.Pp
+Log cursor handles (returned by the DB_ENV->log_cursor method) may have open file descriptors for log files in the database environment. Also, the Berkeley DB interfaces to the database environment logging subsystem (for example, DB_ENV->log_put and DB_TXN->abort) may allocate log cursors and have open file descriptors for log files as well. On operating systems where filesystem related system calls (for example, rename and unlink on Windows/NT) can fail if a process has an open file descriptor for the affected file, attempting to move or remove the log files listed by db_archive may fail. All Berkeley DB internal use of log cursors operates on active log files only and furthermore, is short-lived in nature. So, an application seeing such a failure should be restructured to close any open log cursors it may have, and otherwise to retry the operation until it succeeds. (Although the latter is not likely to be necessary; it is hard to imagine a reason to move or rename a log file in which transactions are being logged or aborted.)
+.Pp
+The db_archive utility uses a Berkeley DB environment (as described for the -h option, the environment variable DB_HOME, or because the utility was run in a directory containing a Berkeley DB environment). In order to avoid environment corruption when using a Berkeley DB environment, db_archive should always be given the chance to detach from the environment and exit gracefully. To cause db_archive to release all environment resources and exit cleanly, send it an interrupt signal (SIGINT).
+.Pp
+The DB_ENV->log_archive method is the underlying method used by the db_archive utility. See the db_archive utility source code for an example of using DB_ENV->log_archive in a IEEE/ANSI Std 1003.1 (POSIX) environment.
+.Pp
+The 
+.Nm
+utility exits 0 on success, and >0 if an error occurs.
+.Pp
+.Sh ENVIRONMENT      \" May not be needed
+.Bl -tag -width "DB_HOME" \" ENV_VAR_1 is width of the string ENV_VAR_1
+.It Ev DB_HOME
+If the -h option is not specified and the environment variable DB_HOME is set, it is used as the path of the database home, as described in DB_ENV->open.
+.El                      
+.\" .Sh FILES                \" File used or created by the topic of the man page
+.\" .Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.\" .It Pa /usr/share/file_name
+.\" FILE_1description
+.\" .It Pa /Users/joeuser/Library/really_long_file_name
+.\" FILE_2 description
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.Xr db_checkpoint 1 ,
+.Xr db_deadlock 1 ,
+.Xr db_dump 1 ,
+.Xr db_load 1 ,
+.Xr db_printlog 1 ,
+.Xr db_recover 1 ,
+.Xr db_stat 1 ,
+.Xr db_upgrade 1 ,
+.Xr db_verify 1
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

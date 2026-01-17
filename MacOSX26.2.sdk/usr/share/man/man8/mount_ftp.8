@@ -1,0 +1,154 @@
+.\" 
+.\" Copyright (c) 2001-2002 Apple Computer, Inc. All rights reserved.
+.\" 
+.\" @APPLE_LICENSE_HEADER_START@
+.\" 
+.\" The contents of this file constitute Original Code as defined in and
+.\" are subject to the Apple Public Source License Version 1.1 (the
+.\" "License").  You may not use this file except in compliance with the
+.\" License.  Please obtain a copy of the License at
+.\" http://www.apple.com/publicsource and read it before using this file.
+.\" 
+.\" This Original Code and all software distributed under the License are
+.\" distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+.\" EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+.\" INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+.\" License for the specific language governing rights and limitations
+.\" under the License.
+.\"
+.\" @APPLE_LICENSE_HEADER_END@
+.\"
+.\" ********************************************************************
+.\" *
+.\" *  mount_ftp [-i] [-o options] host[:port][/path] node
+.\" *
+.\" ********************************************************************
+.\"
+.\" ********************************************************************
+.\" *  Required macros
+.\" ********************************************************************
+.Dd June 6, 2003
+.Dt MOUNT_FTP 8
+.Os Mac\ OS\ X
+.\"
+.\" ********************************************************************
+.\" *  NAME section
+.\" ********************************************************************
+.Sh NAME
+.Nm mount_ftp
+.Nd mount a FTP filesystem
+.\"
+.\" ********************************************************************
+.\" *  SYNOPSIS section
+.\" ********************************************************************
+.Sh SYNOPSIS
+.Nm
+.Op Fl i
+.Op Fl o Ar options
+.Ar ftp://host[:port][/path]
+.Ar node
+.\"
+.\" ********************************************************************
+.\" *  DESCRIPTION section
+.\" ********************************************************************
+.Sh DESCRIPTION
+The
+.Nm
+command mounts a FTP-enabled server directory at
+.Ar ftp://host[:port][/path]
+at the mount point indicated by
+.Ar node.
+.Pp
+If the -i option is not used, all the required information to
+establish a login to the remote server must be available in the ftp URL,
+including username & password if needed.
+.Pp
+The user ID for all files and folders is set to the user's real user
+ID. The group ID for all files and directories is set to unknown,
+and the permissions default to read and execute for user, group
+and other.
+.Pp
+The options are:
+.Bl -tag -width indent
+.It Fl i
+Interactive mode, you are prompted for the username and password if
+you did not supply one in the url.
+.It Fl o
+Options passed to
+.Xr mount 2
+are specified with the
+.Fl o
+option followed by a comma separated string of options. See the
+.Xr mount 8
+man page for possible options and their meanings. The rdonly option
+will be set even if it was not specified because mount_ftp does not
+allow files to be opened with write access on servers.
+.It Ar ftp://host[:port][/path]
+The FTP-enabled server directory to mount as a volume. If port is not
+specified, then port 21 is used. If path is not specified, then the path
+"/" is used.
+.It Ar node
+Path to mount point.
+.El
+.\"
+.\" ********************************************************************
+.\" *  EXAMPLES section
+.\" ********************************************************************
+.Sh EXAMPLES
+The following example illustrates how to mount the FTP-enabled server
+directory
+.Pa ftp.apple.com/
+at the mount point
+.Pa /Volumes/mntpnt/
+.Bd -literal -offset indent
+mount_ftp ftp://ftp.apple.com/ /Volumes/mntpnt/
+.Ed
+.\"
+.\" ********************************************************************
+.\" *  SEE ALSO section
+.\" ********************************************************************
+.Sh SEE ALSO
+.Xr mount 2 ,
+.Xr unmount 2 ,
+.Xr mount 8
+.\"
+.\" ********************************************************************
+.\" *  HISTORY section
+.\" ********************************************************************
+.Sh HISTORY
+The
+.Nm
+command first appeared Mac OS X Version 10.2.
+.\"
+.\" ********************************************************************
+.\" * RETURN VALUES section
+.\" ********************************************************************
+.Sh RETURN VALUES
+.Bl -tag -width Er
+.It 0
+.Nm
+successfully mounted the server directory. 
+.It Bq Er ENOENT
+The server directory could not be mounted by
+.Nm
+because the node path is invalid.
+.It Bq Er ENODEV
+The server directory could not be mounted by
+.Nm
+because it is not FTP-enabled or because it does not exist, or
+because node does not have proper access.
+.It Bq Er ECANCELED
+The server directory could not be mounted by
+.Nm
+because the user did not provide proper authentication credentials.
+.El
+.\" ********************************************************************
+.\" * BUGS section
+.\" ********************************************************************
+.Sh BUGS
+.Nm
+only supports mounting read-only.
+.\" .El
+.\"
+.\" ********************************************************************

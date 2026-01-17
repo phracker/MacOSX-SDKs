@@ -1,0 +1,374 @@
+'\"
+'\" Copyright (c) 1995 DSC Technologies Corporation
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" @(#) buttonbox.n 1.21 94/12/17 16:04:44
+'\" 
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .HS name section [date [version]]
+'\"	Replacement for .TH in other man pages.  See below for valid
+'\"	section names.
+'\"
+'\" .AP type name in/out [indent]
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS [type [name]]
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .VS
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" @(#) man.macros 1.1 94/08/09 13:07:19
+.\"
+'\"	# Heading for Tcl/Tk man pages
+.de HS
+.ds ^3 \\0
+.if !"\\$3"" .ds ^3 \\$3
+.if '\\$2'cmds'      .TH "\\$1" 1 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'lib'       .TH "\\$1" 3 "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'ncmds'     .TH "\\$1" n "\\*(^3" "\\$4" "\\$5"
+.if '\\$2'tcl'       .TH "\\$1" n "\\*(^3"  Tcl   "Tcl Built-In Commands"
+.if '\\$2'tk'        .TH "\\$1" n "\\*(^3"  Tk    "Tk Commands"
+.if '\\$2'tclc'      .TH "\\$1" 3 "\\*(^3"  Tcl   "Tcl Library Procedures"
+.if '\\$2'tkc'       .TH "\\$1" 3 "\\*(^3"  Tk    "Tk Library Procedures"
+.if '\\$2'tclcmds'   .TH "\\$1" 1 "\\*(^3"  Tk    "Tcl Applications"
+.if '\\$2'tkcmds'    .TH "\\$1" 1 "\\*(^3"  Tk    "Tk Applications"
+.if '\\$2'iwid'      .TH "\\$1" 1 "\\*(^3"  Tk    "[incr Widgets]"
+.if t .wh -1.3i ^B
+.nr ^l \\n(.l
+.ad b
+..
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ie !"\\$3"" \{\
+.ta \\n()Au \\n()Bu
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.HS iwidgets::buttonbox iwid
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+iwidgets::buttonbox \- Create and manipulate a manager widget for buttons
+.SH SYNOPSIS
+\fBiwidgets::buttonbox\fI \fIpathName \fR?\fIoptions\fR?
+.SH "INHERITANCE"
+itk::Widget <- iwidgets::buttonbox
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+\fBbackground\fR	\fBcursor\fR
+.fi
+.LP
+See the "options" manual entry for details on the standard options.
+.SH "WIDGET-SPECIFIC OPTIONS"
+.ta 4c 8c 12c
+.LP
+.nf
+Name:	\fBorient\fR
+Class:	\fBOrient\fR
+Command-Line Switch:	\fB-orient\fR
+.fi
+.IP
+Orientation of the button box: \fBhorizontal\fR or \fBvertical\fR.  The default
+is horizontal.
+.LP
+.nf
+Name:	\fBpadX\fR
+Class:	\fBPadX\fR
+Command-Line Switch:	\fB-padx\fR
+.fi
+.IP
+Specifies a non-negative padding distance to leave between the button group and
+the outer edge of the button box in the x direction.  The value may be 
+given in any of the forms acceptable to \fBTk_GetPixels\fR.  The default 
+is 5 pixels.
+.LP
+.nf
+Name:	\fBpadY\fR
+Class:	\fBPadY\fR
+Command-Line Switch:	\fB-pady\fR
+.fi
+.IP
+Specifies a non-negative padding distance to leave between the button group and
+the outer edge of the button box in the y direction.  The value may be given 
+in any of the forms acceptable to \fBTk_GetPixels\fR.  The default is 5 pixels.
+.LP
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBiwidgets::buttonbox\fR command creates a manager widget for controlling
+buttons.  The button box also supports the display and invocation
+of a default button.  The button box can be configured either horizontally
+or vertically.  
+
+.SH "METHODS"
+.PP
+The \fBiwidgets::buttonbox\fR command creates a new Tcl command whose
+name is \fIpathName\fR.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+.DS C
+\fIpathName option \fR?\fIarg arg ...\fR?
+.DE
+\fIOption\fR and the \fIarg\fRs
+determine the exact behavior of the command. 
+.PP
+Many of the widget commands for the buttonbox take as one argument an
+indicator of which button of the button box to operate on.  These 
+indicators are called \fIindexes\fR and allow reference and manipulation 
+of buttons regardless of their current map state.  buttonbox indexes 
+may be specified in any of the following forms:
+.TP 12
+\fInumber\fR
+Specifies the button numerically, where 0 corresponds to the 
+left/top-most button of the button box. 
+.TP 12
+\fBend\fR
+Indicates the right/bottom-most button of the button box.
+.TP 12
+\fBdefault\fR
+Indicates the current default button of the button box.  This is the
+button with the default ring displayed.
+.TP 12
+\fIpattern\fR
+If the index doesn't satisfy one of the above forms then this
+form is used.  \fIPattern\fR is pattern-matched against the tag of
+each button in the button box, in order from left/top to right/left,
+until a matching entry is found.  The rules of \fBTcl_StringMatch\fR
+are used.
+
+.SH "WIDGET-SPECIFIC METHODS"
+.TP
+\fIpathName \fBadd\fR \fItag\fR \fIargs\fR
+Add a button distinguished by \fItag\fR to the end of the button box.
+If additional arguments are present they specify options to be applied
+to the button.  See \fBPushButton\fR for information on the options
+available.
+.TP
+\fIpathName \fBbuttonconfigure\fR \fIindex\fR ?\fIoptions\fR?
+This command is similar to the \fBconfigure\fR command, except that
+it applies to the options for an individual button, 
+whereas \fBconfigure\fR applies to the options for the button box as a whole.
+\fIOptions\fR may have any of the values accepted by the \fBPushButton\fR
+command.  If \fIoptions\fR are specified, options are modified
+as indicated in the command and the command returns an empty string.
+If no \fIoptions\fR are specified, returns a list describing
+the current options for entry \fIindex\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).
+.TP
+\fIpathName \fBcget\fR \fIoption\fR
+Returns the current value of the configuration option given
+by \fIoption\fR.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::buttonbox\fR
+command.
+.TP
+\fIpathName\fR \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+Query or modify the configuration options of the widget.
+If no \fIoption\fR is specified, returns a list describing all of
+the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBiwidgets::buttonbox\fR
+command.
+.TP
+\fIpathName \fBdefault\fR \fIindex\fR
+Sets the default button to the button given by \fIindex\fR.  This causes
+the default ring to appear arround the specified button.
+.TP
+\fIpathName \fBdelete\fR \fIindex\fR
+Deletes the button given by \fIindex\fR from the button box.
+.TP
+\fIpathName \fBhide\fR \fIindex\fR
+Hides the button denoted by \fIindex\fR.  This doesn't remove the button 
+permanently, just inhibits its display.  
+.TP
+\fIpathName \fBindex \fIindex\fR
+Returns the numerical index corresponding to \fIindex\fR.
+.TP
+\fIpathName \fBinsert \fIindex\fR \fItag\fR ?\fIoption value option value ...\fR?
+Same as the \fBadd\fR command except that it inserts the new
+button just before the one given by \fIindex\fR, instead of appending
+to the end of the button box.  The \fIoption\fR, and \fIvalue\fR
+arguments have the same interpretation as for the \fBadd\fR widget
+command.  
+.TP
+\fIpathName \fBinvoke\fR \fI?index?\fR
+Invoke the command associated with a button.  If no arguments
+are given then the current default button is invoked, otherwise the argument
+is expected to be a button \fIindex\fR.
+.TP
+\fIpathName \fBshow\fR \fIindex\fR
+Display a previously hidden button denoted by \fIindex\fR.
+.SH EXAMPLE
+.DS
+ package require Iwidgets 4.0
+ iwidgets::buttonbox .bb
+
+ .bb add Yes -text Yes -command "puts Yes" 
+ .bb add No -text No -command "puts No"
+ .bb add Maybe -text Maybe -command "puts Maybe"
+ .bb default Yes
+
+ pack .bb -expand yes -fill both
+.DE
+.SH AUTHOR
+Bret A. Schuhmacher
+.DE
+Mark L. Ulferts
+.SH KEYWORDS
+buttonbox, pushbutton, button, widget

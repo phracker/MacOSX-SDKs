@@ -1,0 +1,477 @@
+'\"
+'\" Copyright (c) 1997 Sun Microsystems, Inc.
+'\" Copyright (c) 2002 ActiveState Corporation.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\"
+'\" RCS: @(#) $Id: registry.n,v 1.22 2008/01/18 15:59:22 dkf Exp $
+'\" 
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\" RCS: @(#) $Id: man.macros,v 1.9 2008/01/29 15:32:33 dkf Exp $
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.TH registry n 1.1 registry "Tcl Bundled Packages"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+registry \- Manipulate the Windows registry
+.SH SYNOPSIS
+.sp
+\fBpackage require registry 1.1\fR
+.sp
+\fBregistry \fIoption\fR \fIkeyName\fR ?\fIarg arg ...\fR?
+.BE
+.SH DESCRIPTION
+.PP
+The \fBregistry\fR package provides a general set of operations for
+manipulating the Windows registry.  The package implements the
+\fBregistry\fR Tcl command.  This command is only supported on the
+Windows platform.  Warning: this command should be used with caution
+as a corrupted registry can leave your system in an unusable state.
+.PP
+\fIKeyName\fR is the name of a registry key.  Registry keys must be
+one of the following forms:
+.RS
+.PP
+\fB\e\e\fIhostname\fB\e\fIrootname\fB\e\fIkeypath\fR
+.PP
+\fIrootname\fB\e\fIkeypath\fR
+.PP
+\fIrootname\fR
+.RE
+.PP
+\fIHostname\fR specifies the name of any valid Windows
+host that exports its registry.  The \fIrootname\fR component must be
+one of \fBHKEY_LOCAL_MACHINE\fR, \fBHKEY_USERS\fR,
+\fBHKEY_CLASSES_ROOT\fR, \fBHKEY_CURRENT_USER\fR,
+\fBHKEY_CURRENT_CONFIG\fR, \fBHKEY_PERFORMANCE_DATA\fR, or
+\fBHKEY_DYN_DATA\fR.  The \fIkeypath\fR can be one or more
+registry key names separated by backslash (\fB\e\fR) characters.
+.PP
+\fIOption\fR indicates what to do with the registry key name.  Any
+unique abbreviation for \fIoption\fR is acceptable.  The valid options
+are:
+.TP
+\fBregistry broadcast \fIkeyName\fR ?\fB\-timeout \fImilliseconds\fR?
+.
+Sends a broadcast message to the system and running programs to notify them
+of certain updates.  This is necessary to propagate changes to key registry
+keys like Environment.  The timeout specifies the amount of time, in
+milliseconds, to wait for applications to respond to the broadcast message.
+It defaults to 3000.  The following example demonstrates how to add a path
+to the global Environment and notify applications of the change without
+requiring a logoff/logon step (assumes admin privileges):
+.RS
+.PP
+.CS
+set regPath [join {
+    HKEY_LOCAL_MACHINE
+    SYSTEM
+    CurrentControlSet
+    Control
+    {Session Manager}
+    Environment
+} "\e\e"]
+set curPath [\fBregistry get\fR $regPath "Path"]
+\fBregistry set\fR $regPath "Path" "$curPath;$addPath"
+\fBregistry broadcast\fR "Environment"
+.CE
+.RE
+.TP
+\fBregistry delete \fIkeyName\fR ?\fIvalueName\fR?
+.
+If the optional \fIvalueName\fR argument is present, the specified
+value under \fIkeyName\fR will be deleted from the registry.  If the
+optional \fIvalueName\fR is omitted, the specified key and any subkeys
+or values beneath it in the registry hierarchy will be deleted.  If
+the key could not be deleted then an error is generated.  If the key
+did not exist, the command has no effect.
+.TP
+\fBregistry get \fIkeyName valueName\fR
+.
+Returns the data associated with the value \fIvalueName\fR under the key
+\fIkeyName\fR.  If either the key or the value does not exist, then an
+error is generated.  For more details on the format of the returned
+data, see \fBSUPPORTED TYPES\fR, below.
+.TP
+\fBregistry keys \fIkeyName\fR ?\fIpattern\fR?
+.
+If \fIpattern\fR is not specified, returns a list of names of all the
+subkeys of \fIkeyName\fR.  If \fIpattern\fR is specified, only those
+names matching \fIpattern\fR are returned.  Matching is determined
+using the same rules as for \fBstring\fR \fBmatch\fR.  If the
+specified \fIkeyName\fR does not exist, then an error is generated.
+.TP
+\fBregistry set \fIkeyName\fR ?\fIvalueName data \fR?\fItype\fR??
+.
+If \fIvalueName\fR is not specified, creates the key \fIkeyName\fR if
+it does not already exist.  If \fIvalueName\fR is specified, creates
+the key \fIkeyName\fR and value \fIvalueName\fR if necessary.  The
+contents of \fIvalueName\fR are set to \fIdata\fR with the type
+indicated by \fItype\fR.  If \fItype\fR is not specified, the type
+\fBsz\fR is assumed.  For more details on the data and type arguments,
+see \fBSUPPORTED TYPES\fR below.
+.TP
+\fBregistry type \fIkeyName valueName\fR
+.
+Returns the type of the value \fIvalueName\fR in the key
+\fIkeyName\fR.  For more information on the possible types, see
+\fBSUPPORTED TYPES\fR, below.
+.TP
+\fBregistry values \fIkeyName\fR ?\fIpattern\fR?
+.
+If \fIpattern\fR is not specified, returns a list of names of all the
+values of \fIkeyName\fR.  If \fIpattern\fR is specified, only those
+names matching \fIpattern\fR are returned.  Matching is determined
+using the same rules as for \fBstring\fR \fBmatch\fR.
+.SH "SUPPORTED TYPES"
+Each value under a key in the registry contains some data of a
+particular type in a type-specific representation.  The \fBregistry\fR
+command converts between this internal representation and one that can
+be manipulated by Tcl scripts.  In most cases, the data is simply
+returned as a Tcl string.  The type indicates the intended use for the
+data, but does not actually change the representation.  For some
+types, the \fBregistry\fR command returns the data in a different form to
+make it easier to manipulate.  The following types are recognized by the
+registry command:
+.TP 17
+\fBbinary\fR
+.
+The registry value contains arbitrary binary data.  The data is represented
+exactly in Tcl, including any embedded nulls.
+.TP
+\fBnone\fR
+.
+The registry value contains arbitrary binary data with no defined
+type.  The data is represented exactly in Tcl, including any embedded
+nulls.
+.TP
+\fBsz\fR
+.
+The registry value contains a null-terminated string.  The data is 
+represented in Tcl as a string.
+.TP
+\fBexpand_sz\fR
+.
+The registry value contains a null-terminated string that contains
+unexpanded references to environment variables in the normal Windows
+style (for example,
+.QW %PATH% ).
+The data is represented in Tcl as a string.
+.TP
+\fBdword\fR
+.
+The registry value contains a little-endian 32-bit number.  The data is
+represented in Tcl as a decimal string.
+.TP
+\fBdword_big_endian\fR
+.
+The registry value contains a big-endian 32-bit number.  The data is
+represented in Tcl as a decimal string.
+.TP
+\fBlink\fR
+.
+The registry value contains a symbolic link.  The data is represented
+exactly in Tcl, including any embedded nulls.
+.TP
+\fBmulti_sz\fR
+.
+The registry value contains an array of null-terminated strings.  The
+data is represented in Tcl as a list of strings.
+.TP
+\fBresource_list\fR
+.
+The registry value contains a device-driver resource list.  The data
+is represented exactly in Tcl, including any embedded nulls.
+.PP
+In addition to the symbolically named types listed above, unknown
+types are identified using a 32-bit integer that corresponds to the
+type code returned by the system interfaces.  In this case, the data
+is represented exactly in Tcl, including any embedded nulls.
+.SH "PORTABILITY ISSUES"
+The registry command is only available on Windows.
+.SH EXAMPLE
+Print out how double-clicking on a Tcl script file will invoke a Tcl
+interpreter:
+.PP
+.CS
+package require registry
+set ext .tcl
+
+# Read the type name
+set type [\fBregistry get\fR HKEY_CLASSES_ROOT\e\e$ext {}]
+# Work out where to look for the command
+set path HKEY_CLASSES_ROOT\e\e$type\e\eShell\e\eOpen\e\ecommand
+# Read the command!
+set command [\fBregistry get\fR $path {}]
+
+puts "$ext opens with $command"
+.CE
+.SH KEYWORDS
+registry

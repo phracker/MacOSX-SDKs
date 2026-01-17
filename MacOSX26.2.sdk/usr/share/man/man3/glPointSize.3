@@ -1,0 +1,121 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 24 September 1999
+.ds Re Release 1.2.1
+.ds Dp May 22 14:46
+.ds Dm 8 May 22 14:
+.ds Xs 46128     6
+.TH GLPOINTSIZE 3G
+.SH NAME
+.B "glPointSize
+\- specify the diameter of rasterized points
+
+.SH C SPECIFICATION
+void \f3glPointSize\fP(
+GLfloat \fIsize\fP )
+.nf
+.fi
+
+.SH PARAMETERS
+.TP \w'\f2size\fP\ \ 'u 
+\f2size\fP
+Specifies the diameter of rasterized points.
+The initial value is 1.
+.SH DESCRIPTION
+\%\f3glPointSize\fP specifies the rasterized diameter of both aliased and antialiased
+points.
+Using a point size other than 1 has different effects,
+depending on whether point antialiasing is enabled.
+To enable and disable point antialiasing, call 
+\%\f3glEnable\fP and \%\f3glDisable\fP
+with argument \%\f3GL_POINT_SMOOTH\fP. Point antialiasing is initially disabled.
+.P
+If point antialiasing is disabled,
+the actual size is determined by rounding the supplied size
+to the nearest integer.
+(If the rounding results in the value 0,
+it is as if the point size were 1.)
+If the rounded size is odd,
+then the center point
+( x ,  y )
+of the pixel fragment that represents the point is computed as
+
+.ce
+(xw + .5, yw + .5)
+
+where w subscripts indicate window coordinates.
+All pixels that lie within the square grid of the rounded size centered at
+( x ,  y )
+make up the fragment.
+If the size is even,
+the center point is
+
+.ce
+(xw + .5, yw + .5)
+
+and the rasterized fragment's centers are the half-integer window coordinates
+within the square of the rounded size centered at
+( x ,  y ).
+All pixel fragments produced in rasterizing a nonantialiased point are
+assigned the same associated data,
+that of the vertex corresponding to the point.
+.P
+If antialiasing is enabled,
+then point rasterization produces a fragment for each pixel square
+that intersects the region lying within the circle having diameter
+equal to the current point size and centered at the point's
+( xw , yw).
+The coverage value for each fragment is the window coordinate area
+of the intersection of the circular region with the corresponding pixel square.
+This value is saved and used in the final rasterization step. 
+The data associated with each fragment is the data associated with 
+the point being rasterized.
+.P
+Not all sizes are supported when point antialiasing is enabled. 
+If an unsupported size is requested,
+the nearest supported size is used.
+Only size 1 is guaranteed to be supported;
+others depend on the implementation.
+To query the range of supported sizes and the size difference between
+supported sizes within the range, call
+\%\f3glGet\fP with arguments
+\%\f3GL_SMOOTH_POINT_SIZE_RANGE\fP and
+\%\f3GL_SMOOTH_POINT_SIZE_GRANULARITY\fP.
+For aliased points, query the supported range with
+\%\f3glGet\fP with arguments
+\%\f3GL_ALIASED_POINT_SIZE_RANGE\fP and
+.SH NOTES
+The point size specified by \%\f3glPointSize\fP is always returned when \%\f3GL_POINT_SIZE\fP
+is queried.
+Clamping and rounding for aliased and antialiased points have no effect
+on the specified value.
+.P
+A non-antialiased point size may be clamped to an implementation-dependent
+maximum.
+Although this maximum cannot be queried,
+it must be no less than the maximum value for antialiased points,
+rounded to the nearest integer value.
+.P
+\%\f3GL_POINT_SIZE_RANGE\fP and \%\f3GL_POINT_SIZE_GRANULARITY\fP are
+deprecated in GL versions 1.2 and greater.  Their functionality has been 
+replaced by \%\f3GL_SMOOTH_POINT_SIZE_RANGE\fP and 
+\%\f3GL_SMOOTH_POINT_SIZE_GRANULARITY\fP.
+.SH ERRORS
+\%\f3GL_INVALID_VALUE\fP is generated if \f2size\fP is less than or equal to 0.
+.P
+\%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glPointSize\fP
+is executed between the execution of \%\f3glBegin\fP
+and the corresponding execution of \%\f3glEnd\fP.
+.SH ASSOCIATED GETS
+\%\f3glGet\fP with argument \%\f3GL_POINT_SIZE\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_ALIASED_POINT_SIZE_RANGE\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_SMOOTH_POINT_SIZE_RANGE\fP
+.br
+\%\f3glGet\fP with argument \%\f3GL_SMOOTH_POINT_SIZE_GRANULARITY\fP
+.br
+\%\f3glIsEnabled\fP with argument \%\f3GL_POINT_SMOOTH\fP
+.SH SEE ALSO
+\%\f3glEnable\fP

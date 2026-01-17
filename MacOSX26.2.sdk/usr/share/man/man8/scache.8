@@ -1,0 +1,172 @@
+.TH SCACHE 8 
+.ad
+.fi
+.SH NAME
+scache
+\-
+Postfix shared connection cache server
+.SH "SYNOPSIS"
+.na
+.nf
+\fBscache\fR [generic Postfix daemon options]
+.SH DESCRIPTION
+.ad
+.fi
+The \fBscache\fR(8) server maintains a shared multi\-connection
+cache. This information can be used by, for example, Postfix
+SMTP clients or other Postfix delivery agents.
+
+The connection cache is organized into logical destination
+names, physical endpoint names, and connections.
+
+As a specific example, logical SMTP destinations specify
+(transport, domain, port), and physical SMTP endpoints
+specify (transport, IP address, port).  An SMTP connection
+may be saved after a successful mail transaction.
+
+In the general case, one logical destination may refer to
+zero or more physical endpoints, one physical endpoint may
+be referenced by zero or more logical destinations, and
+one endpoint may refer to zero or more connections.
+
+The exact syntax of a logical destination or endpoint name
+is application dependent; the \fBscache\fR(8) server does
+not care.  A connection is stored as a file descriptor together
+with application\-dependent information that is needed to
+re\-activate a connection object. Again, the \fBscache\fR(8)
+server is completely unaware of the details of that
+information.
+
+All information is stored with a finite time to live (ttl).
+The connection cache daemon terminates when no client is
+connected for \fBmax_idle\fR time units.
+
+This server implements the following requests:
+.IP "\fBsave_endp\fI ttl endpoint endpoint_properties file_descriptor\fR"
+Save the specified file descriptor and connection property data
+under the specified endpoint name. The endpoint properties
+are used by the client to re\-activate a passivated connection
+object.
+.IP "\fBfind_endp\fI endpoint\fR"
+Look up cached properties and a cached file descriptor for the
+specified endpoint.
+.IP "\fBsave_dest\fI ttl destination destination_properties endpoint\fR"
+Save the binding between a logical destination and an
+endpoint under the destination name, together with destination
+specific connection properties. The destination properties
+are used by the client to re\-activate a passivated connection
+object.
+.IP "\fBfind_dest\fI destination\fR"
+Look up cached destination properties, cached endpoint properties,
+and a cached file descriptor for the specified logical destination.
+.SH "SECURITY"
+.na
+.nf
+.ad
+.fi
+The \fBscache\fR(8) server is not security\-sensitive. It does not
+talk to the network, and it does not talk to local users.
+The \fBscache\fR(8) server can run chrooted at fixed low privilege.
+
+The \fBscache\fR(8) server is not a trusted process. It must
+not be used to store information that is security sensitive.
+.SH DIAGNOSTICS
+.ad
+.fi
+Problems and transactions are logged to \fBsyslogd\fR(8).
+.SH BUGS
+.ad
+.fi
+The session cache cannot be shared among multiple machines.
+
+When a connection expires from the cache, it is closed without
+the appropriate protocol specific handshake.
+.SH "CONFIGURATION PARAMETERS"
+.na
+.nf
+.ad
+.fi
+Changes to \fBmain.cf\fR are picked up automatically as \fBscache\fR(8)
+processes run for only a limited amount of time. Use the command
+"\fBpostfix reload\fR" to speed up a change.
+
+The text below provides only a parameter summary. See
+\fBpostconf\fR(5) for more details including examples.
+.SH "RESOURCE CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconnection_cache_ttl_limit (2s)\fR"
+The maximal time\-to\-live value that the \fBscache\fR(8) connection
+cache server
+allows.
+.IP "\fBconnection_cache_status_update_time (600s)\fR"
+How frequently the \fBscache\fR(8) server logs usage statistics with
+connection cache hit and miss rates for logical destinations and for
+physical endpoints.
+.SH "MISCELLANEOUS CONTROLS"
+.na
+.nf
+.ad
+.fi
+.IP "\fBconfig_directory (see 'postconf -d' output)\fR"
+The default location of the Postfix main.cf and master.cf
+configuration files.
+.IP "\fBdaemon_timeout (18000s)\fR"
+How much time a Postfix daemon process may take to handle a
+request before it is terminated by a built\-in watchdog timer.
+.IP "\fBipc_timeout (3600s)\fR"
+The time limit for sending or receiving information over an internal
+communication channel.
+.IP "\fBmax_idle (100s)\fR"
+The maximum amount of time that an idle Postfix daemon process waits
+for an incoming connection before terminating voluntarily.
+.IP "\fBprocess_id (read\-only)\fR"
+The process ID of a Postfix command or daemon process.
+.IP "\fBprocess_name (read\-only)\fR"
+The process name of a Postfix command or daemon process.
+.IP "\fBsyslog_facility (mail)\fR"
+The syslog facility of Postfix logging.
+.IP "\fBsyslog_name (see 'postconf -d' output)\fR"
+A prefix that is prepended to the process name in syslog
+records, so that, for example, "smtpd" becomes "prefix/smtpd".
+.SH "SEE ALSO"
+.na
+.nf
+smtp(8), SMTP client
+postconf(5), configuration parameters
+master(8), process manager
+syslogd(8), system logging
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+CONNECTION_CACHE_README, Postfix connection cache
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+This service was introduced with Postfix version 2.2.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA

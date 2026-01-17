@@ -1,0 +1,112 @@
+.\"	$Id: vpnd.8,v 1.3 2003/08/23 02:21:18 callie Exp $
+.\"
+.\" Copyright (c) 2000-2003 Apple Computer, Inc., all rights reserved.
+.\" 
+.Dd 21 August 2003
+.Dt vpnd 8
+.Os "Mac OS X"
+.sp
+.Sh NAME
+.Nm vpnd
+.Nd Mac OS X VPN service daemon
+.Sh SYNOPSIS
+.Nm
+.Op Fl d | Fl n | Fl x
+.Op Fl i Ar server_id
+.Nm vpnd
+.Op Fl h
+.sp
+.Sh DESCRIPTION
+.Nm
+allows external hosts to tunnel via L2TP over IPSec or via PPTP from
+an insecure external network (such as the Internet) into a "secure"
+internal network, such as a corporate network.  All traffic through
+the tunnel is encrypted to provide secure communications, with L2TP/IPSec
+providing a higher level of security than PPTP.
+.Pp
+.Nm
+listens for incoming connections, pairs each one with an available
+internal IP address, and passes the connection to
+.Xr pppd 8
+with appropriate parameters.  Parameters for
+.Nm
+are specified in a system configuration (plist) file in XML format.  This
+file contains a dictionary of configurations each identified by a key referred to
+as a server_id.  Parameters include the tunneling protocol, IP addresses
+to be assigned to clients, PPP parameters etc.
+.Pp
+.Nm 
+is launched for a particular configuration by using the -i option
+which takes the server_id to be run as an argument.
+.Nm
+can also be run without the -i option.  In this case it will check the
+configuration file for a special array which contains a list of
+configurations to be run and will fork and exec a copy of
+.Nm
+for each server_id to be run.  Running multiple
+.Nm
+processes simultaneously for a particular protocol is not allowed.
+.Pp
+.Nm
+will be launched during the boot process by a
+startup item if the field
+.Sy VPNSERVER
+is defined in
+.Pa /etc/hostconfig
+with the value 
+.Sy -YES- .
+Typically, in this case it will be launched without the
+-i option and will check the configuration file to determine which
+configuration(s) are to be run.
+.Pp
+.Nm
+logs items of interest to the system log.  A different log path can be specified
+in the configuration file.
+.sp
+.Sh OPTIONS
+The following options are available:
+.Bl -tag -width flag
+.It Fl d
+Do not move to background and print log strings to the terminal.
+.It Fl h
+Print usage summary and exit.
+.It Fl i
+Server_id in the plist file that defines the configuration to be run.
+.It Fl n
+Do not move to background, print log information to the terminal,
+and quit after validating the argument list.
+.It Fl x
+Do not move to background.
+.El
+.sp
+.Sh EXAMPLES
+.Pp
+The default invocation,
+.Bd -ragged -offset indent
+.Nm
+.Ed
+.sp
+will read the list of configurations to run from the configuration
+file and launch them.  This default configuration may be enabled
+at startup by defining
+.Sy VPNSERVER
+to
+.Sy -YES- .
+.Pp
+To specify a particular configuration to run use
+.Bd -ragged -offset indent
+.Nm
+-i server_id
+.Ed
+.sp
+.Sh FILES & FOLDERS
+.nf
+/usr/sbin/vpnd
+/etc/hostconfig
+/System/Library/StartupItems/NetworkExtensions
+/Library/Preferences/SystemConfiguration/com.apple.RemoteAccessServers.plist
+.fi
+.sp
+.Sh SEE ALSO
+.Xr pppd 8
+.Xr vpnd 5

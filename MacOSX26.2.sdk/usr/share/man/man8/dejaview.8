@@ -1,0 +1,228 @@
+.\" Manpage for DejaView.
+.\" File radars against Darwin | Tools
+
+.TH DejaView 1 "01 Aug 2019" "1.0" "BSD General Commands Manual"
+
+.SH NAME
+\fBDejaView\fR \-- reconstruct state in a log archive at a given time.
+
+.SH SYNOPSIS
+\fBdejaview\fR [\fIoptions\fR] <\fIarchive\fR> <\fIconfig\fR> <\fIdate/time\fR>
+
+.SH DESCRIPTION
+DejaView is a versatile tool used to reconstruct state of an identifier at a
+given time in a log archive.
+
+Arguments descriptions:
+
+.I archive
+.RS 5
+The file path to a log archive. The archive must be a valid log archive bundle
+with the suffix \fB.logarchive\fR.
+.RE
+
+.I config
+.RS 5
+The file path to a configuration file with which DejaView will use to
+search the log archive. This is where you will list log lines you are interested
+in viewing. See config file setup below for more information.
+.RE
+
+.I date/time
+.RS 5
+The time that DejaView should reconstruct state.
+The following date/time formats are accepted:
+
+\'YYYY-MM-DD HH:MM:SS+ffff'
+.br
+\'YYYY-MM-DD HH:MM:SS'
+.br
+\'HH:MM:SS'
+
+Time must have single or double quotes surrounding it.
+.RE
+
+.SH CONFIG FILE SETUP
+Essentially, the file should contain a section header, which contains keys
+with values. Sections are led by a [section] header, followed by key/value
+entries separated by a specific string ('=' or ':'). Key names are not case
+sensitive. Leading and trailing whitespace are removed from keys and values.
+
+Lines beginning with '#' or ';' are ignored and may be used to provide comments.
+
+ [Simple Values]
+.br
+ key=value
+.br
+ spaces in keys=allowed
+.br
+ spaces around the delimiter = allowed
+.br
+ you can also use : to delimit keys from values
+
+ [You can use comments]
+.br
+ # like this
+.br
+ ; or this
+
+.B KEYS
+.RS 5
+.I Required:
+.br
+.TP 0
+.B 'start'
+When the tool encounters the corresponding log message for
+this key, it will create a new object for data to be aggregated under.
+The object will be named and identified by one of the words in the log message.
+You must specify which word that will be by encapsulating it with double curly
+brackets '{{ }}' in your configuration file. See config file examples below.
+.br
+.TP
+.B 'end'
+When the tool encounters the corresponding log message for this
+key, it will delete an object from the list of tracked objects. The object
+deleted from the list will be identified by one of the words in the log line.
+You must specify which word that will be by encapsulating it with double curly
+brackets '{{ }}' in your configuration file. \'start' and 'end' must
+have matching object identifiers to properly remove it from the list of tracked
+objects.
+.TP
+.I Optional:
+.br
+.TP
+.B 'subobject start'
+When the tool ecounters the corresponding log message for this key, it will create
+a new subobject to be aggregated under a main object. The subobject will be named
+and identified by one of the words in the log message. You must specify which
+word that will be by encapsulating it with '${ }$' in your configuration file.
+See config file examples below.
+.br
+.TP
+.B 'subobject end'/'subobject end2'
+When the tool encounters the corresponding log message for this key, it will
+delete a subobject from the associated main object. The subobject deleted from
+the list will be identified by one of the words in the log line. You must
+specify which word that will be by encapsulating it with '${ }$' in your configuration
+file. \'subobject start' and 'subobject end' must have matching object identifiers
+to properly remove it from the list of tracked objects. \'subobject end2' may be
+used if there are two log lines that signal when a subobject should be removed.
+.br
+.TP
+.B 'reboot'
+When the tool encounters the corresponding log message for a system reboot, it
+will delete all objects being tracked.
+.br
+.TP
+.B 'subsystem'
+Filters log messages based on the specified subsystem
+(e.g. com.apple.runningboard).
+.RE
+
+
+.B VALUES
+.RS 5
+Values must match log event messages exactly; the pattern within the message
+text of a log/trace entry. However, text that is subject to change within that
+event message will be replaced with format specifiers.
+
+.RS 2
+format specifiers:
+.RS 2
+formed by an initial percentage sign '%' indicates a format specifier, which is
+used to specify the type and format of the data to be retrived from the
+log/trace entry and stored into the locations of the format specifier.
+.RE
+
+.RS 1
+ %s -- matches at least one character equal to
+.RS 6
+ [a-z][A-Z][0-9][._-]
+.RE
+ %d -- matches at least one digit equal to
+.RS 6
+ [0-9]
+.RE
+.RE
+
+format specifiers encapsulated with double curly brackets '{{ }}' signifies a
+special word that will be used as an object identifier.
+
+format specifers encapsulated with double veritical lines '|| ||' signifies
+a special word that will used as return data stored in the corresponding key.
+If no return data is specified, a timestamp for the event message will be
+returned by default.
+
+Values support marcos. This means values can contain format strings
+which refer to other values in the same section.
+
+ [Paths]
+.br
+ home_dir: /Users
+.br
+ my_dir: %(home_dir)s/Documents
+.br
+ my_pictures: %(my_dir)s/Pictures
+
+In the example above, %(home_dir)s would resolve to the value of home_dir (/Users
+in this case) and %(my_dir)s would resolve to /Users/Documents
+
+
+.SH CONFIG FILE EXAMPLES
+
+This example is specific to runningboard and encorporates all required and
+optional key words. It also includes examples of using the vertical bars as
+return data and using the curly brackets to aggregate data under process names.
+
+ [runningboard]
+ start: Now tracking process [%s<{{%s}}>:%d]
+ role: [%s<{{%s}}>:%d] Set darwin role to ||%s||
+ state: [%s<{{%s}}>:%d] ||%s|| task.
+ end: [%s<{{%s}}>:%d] Death sentinel fired!
+ reboot: Battlecruiser operational.
+ subsystem: com.apple.runningboard
+
+ [runningboard again]
+ start: Now tracking process [%s<{{%s}}>:%d]
+ role: [%s<{{%s}}>:%d] Set darwin role to ||%s||
+ state: [%s<{{%s}}>:%d] ||%s|| task.
+ end: [%s<{{%s}}>:%d] Death sentinel fired!
+ subobject start: Assertion ${%s}$ (%s:%s<{{%s}}>) will be created as ||active||
+ subobject end: Invalidating assertion ${%s}$ (%s:%s<{{%s}}>) from originator %d
+ subobject end2: Assertion did invalidate due to timeout: ${%s}$ (%s:%s<{{%s}}>)
+ reboot: Battlecruiser operational.
+ subsystem: com.apple.runningboard
+
+
+.SH OUTPUT EXAMPLES
+
+Output will only contain information that the DejaView encountered while
+reading the log archive. If an event message was not found before the tool
+reaches the user specified time, it will not be included in the output.
+
+com.apple.runningboardd
+.br
+	start: 2019-07-05 12:27:55.121296
+
+com.apple.backboardd
+.br
+	start: 2019-07-05 12:27:55.649434
+
+com.apple.Carousel
+.br
+	start: 2019-07-05 12:27:55.694207
+.br
+	role: UserInteractiveNonFocal
+
+com.apple.mediaserverd
+.br
+	start: 2019-07-05 12:27:57.811533
+
+.SH OPTIONS
+\fB--help\fR, \fB-h\fR General help.
+
+.SH SEE ALSO
+os_log(3), os_trace(3), log(1)
+
+.SH RADARS
+File radars against Darwin | Tools

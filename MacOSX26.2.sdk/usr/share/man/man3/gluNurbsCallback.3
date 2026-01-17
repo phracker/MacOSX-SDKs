@@ -1,0 +1,224 @@
+'\" e  
+'\"macro stdmacro
+.ds Vn Version 1.2
+.ds Dt 6 March 1997
+.ds Re Release 1.2.0
+.ds Dp May 22 14:54
+.ds Dm 3 May 22 14:
+.ds Xs 14092    10
+.TH GLUNURBSCALLBACK 3G
+.SH NAME
+.B "gluNurbsCallback
+\- define a callback for a NURBS object
+
+.SH C SPECIFICATION
+void \f3gluNurbsCallback\fP(
+GLUnurbs* \fInurb\fP,
+.nf
+.ta \w'\f3void \fPgluNurbsCallback( 'u
+	GLenum \fIwhich\fP,
+	GLvoid * \fICallBackFunc\fP )
+.fi
+
+.SH PARAMETERS
+.TP \w'\fICallBackFunc\fP\ \ 'u 
+\f2nurb\fP
+Specifies the NURBS object (created with \%\f3gluNewNurbsRenderer\fP).
+.TP
+\f2which\fP
+Specifies the callback being defined. 
+Valid values are \%\f3GLU_NURBS_BEGIN\fP, \%\f3GLU_NURBS_VERTEX\fP, \%\f3GLU_NURBS_NORMAL\fP, \%\f3GLU_NURBS_COLOR\fP, \%\f3GLU_NURBS_TEXTURE_COORD\fP, \%\f3GLU_NURBS_END\fP, \%\f3GLU_NURBS_BEGIN_DATA\fP, \%\f3GLU_NURBS_VERTEX_DATA\fP, \%\f3GLU_NURBS_NORMAL_DATA\fP, \%\f3GLU_NURBS_COLOR_DATA\fP, \%\f3GLU_NURBS_TEXTURE_COORD_DATA\fP, \%\f3GLU_NURBS_END_DATA\fP, and \%\f3GLU_NURBS_ERROR\fP.
+.TP
+\f2CallBackFunc\fP
+Specifies the function that the callback calls.
+.SH DESCRIPTION
+\%\f3gluNurbsCallback\fP is used to define a callback to be used by a NURBS 
+object.
+If the specified callback is already defined, then it is replaced.  If 
+\f2CallBackFunc\fP is NULL, then this callback will not get
+invoked and the related data, if any, will be lost.
+.P
+Except the error callback, these callbacks are used by NURBS tessellator (when \%\f3GLU_NURBS_MODE\fP is set to be \%\f3GLU_NURBS_TESSELLATOR\fP) to return back the OpenGL
+polygon primitives resulting from the tessellation. Note that there are two
+versions of each callback: one with a user data pointer and one without. If both versions for a particular callback are specified then the callback with 
+the user data pointer will be used. Note that ``userData'' is a copy of the pointer that was specified at the last call to \%\f3gluNurbsCallbackData\fP.
+.P
+The error callback function is effective no matter which value that
+\%\f3GLU_NURBS_MODE\fP is set to.
+All other callback functions are effective only when \%\f3GLU_NURBS_MODE\fP
+is set to \%\f3GLU_NURBS_TESSELLATOR\fP.
+.P
+The legal callbacks are as follows:
+.TP 10
+\%\f3GLU_NURBS_BEGIN\fP
+The begin callback indicates the start of a primitive. The function
+takes a single argument of type GLenum, which can be one of 
+\%\f3GL_LINES\fP, \%\f3GL_LINE_STRIP\fP, \%\f3GL_TRIANGLE_FAN\fP, \%\f3GL_TRIANGLE_STRIP\fP, \%\f3GL_TRIANGLES\fP, or \%\f3GL_QUAD_STRIP\fP. The
+default begin callback function is NULL. The function prototype
+for this callback looks like:
+.RS
+.Ex
+void begin ( GLenum type );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_BEGIN_DATA\fP
+The same as the \%\f3GLU_NURBS_BEGIN\fP callback except that it takes an
+additional pointer argument. This pointer is a copy of the pointer that
+was specified at the last call to \%\f3gluNurbsCallbackData\fP.  The
+default callback function is NULL. The function prototype for this
+callback function looks like:
+.RS
+.Ex
+void beginData (GLenum type, void *userData);
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_VERTEX\fP
+The vertex callback indicates a vertex of the primitive. The
+coordinates of the vertex are stored in the parameter ``vertex''. All
+the generated vertices have dimension 3, that is, homogeneous
+coordinates have been transformed into affine coordinates. The default
+vertex callback function is NULL. The function prototype for this
+callback function looks like:
+.RS
+.Ex
+void vertex ( GLfloat *vertex );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_VERTEX_DATA\fP
+This is the same as the \%\f3GLU_NURBS_VERTEX\fP callback, except that
+it takes an additional pointer argument. This pointer is a copy of the
+pointer that was specified at the last call to
+\%\f3gluNurbsCallbackData\fP.  The default callback function is NULL. The
+function prototype for this callback function looks like:
+.RS
+.Ex
+void vertexData ( GLfloat *vertex, void *userData );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_NORMAL\fP
+The normal callback is invoked as the vertex normal is generated.
+The components of the normal are stored in the parameter ``normal''.
+In the case of a NURBS curve, the callback function is effective only when 
+the user provides a normal map (\%\f3GL_MAP1_NORMAL\fP).
+In the case of a NURBS surface, if a normal map (\%\f3GL_MAP2_NORMAL\fP) is provided, then the generated normal is computed from the normal map.
+If a normal map is not provided then a surface normal is computed in
+a manner similar to that described for evaluators when \%\f3GL_AUTO_NORMAL\fP
+is enabled. 
+.bp
+The default normal callback function is NULL. The function
+prototype for this callback function looks like:
+.RS
+.Ex
+void normal ( GLfloat *normal );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_NORMAL_DATA\fP
+The same as the \%\f3GLU_NURBS_NORMAL\fP callback except that it
+takes an additional pointer argument. This pointer is a copy of the pointer
+that was specified at the last call to \%\f3gluNurbsCallbackData\fP.  The default callback function is NULL. The function prototype for this callback function looks like:
+.RS
+.Ex
+void normalData ( GLfloat *normal, void *userData );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_COLOR\fP
+The color callback is invoked as the color of a vertex is generated.
+The components of the color are stored in the parameter ``color''.
+This callback is effective only when the user provides a color map
+(\%\f3GL_MAP1_COLOR_4\fP or \%\f3GL_MAP2_COLOR_4\fP). ``color'' contains four components: R,G,B,A. The default color callback function is NULL. The prototype for
+this callback function looks like:
+.RS
+.Ex
+void color ( GLfloat *color );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_COLOR_DATA\fP
+The same as the \%\f3GLU_NURBS_COLOR\fP callback except that it
+takes an additional pointer argument. This pointer is a copy of the pointer
+that was specified at the last call to \%\f3gluNurbsCallbackData\fP.  The default callback function is NULL. The function prototype for this callback function looks like:
+.RS
+.Ex
+void colorData ( GLfloat *color, void *userData );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_TEXTURE_COORD\fP
+The texture callback is invoked as the texture coordinates 
+of a vertex are generated. These coordinates are stored in the parameter
+``texCoord''. The number of texture coordinates can be 1, 2, 3, or 4 depending
+on which type of texture map is specified 
+(\%\f3GL_MAP1_TEXTURE_COORD_1\fP,
+\%\f3GL_MAP1_TEXTURE_COORD_2\fP,
+\%\f3GL_MAP1_TEXTURE_COORD_3\fP,
+\%\f3GL_MAP1_TEXTURE_COORD_4\fP,
+\%\f3GL_MAP2_TEXTURE_COORD_1\fP,
+\%\f3GL_MAP2_TEXTURE_COORD_2\fP,
+\%\f3GL_MAP2_TEXTURE_COORD_3\fP,
+\%\f3GL_MAP2_TEXTURE_COORD_4\fP).
+If no texture map is specified, this callback function will not be called.
+.bp
+The default texture callback function is NULL. The function prototype
+for this callback function looks like:
+.RS
+.Ex
+void texCoord ( GLfloat *texCoord );
+.Ee
+.RE
+.TP
+ \%\f3GLU_NURBS_TEXTURE_COORD_DATA\fP
+This is the same as the \%\f3GLU_NURBS_TEXTURE_COORD\fP callback, except that it
+takes an additional pointer argument. This pointer is a copy of the pointer
+that was specified at the last call to \%\f3gluNurbsCallbackData\fP.  The default callback function is NULL. The function prototype for this callback function looks like:
+.RS
+.Ex
+void texCoordData (GLfloat *texCoord, void *userData);
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_END\fP
+The end callback is invoked at the end of a primitive. The default end callback function is NULL. The function prototype for this callback function looks like:
+.RS
+.Ex
+void end ( void );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_END_DATA\fP
+This is the same as the \%\f3GLU_NURBS_END\fP callback, except that it
+takes an additional pointer argument. This pointer is a copy of the pointer
+that was specified at the last call to \%\f3gluNurbsCallbackData\fP.  The default callback function is NULL. The function prototype for this callback function looks like:
+.RS
+.Ex
+void endData ( void  *userData );
+.Ee
+.RE
+.TP
+\%\f3GLU_NURBS_ERROR\fP
+The error function is called when an error is encountered.
+Its single argument
+is of type GLenum, and it indicates the specific error that occurred.
+There are 37 errors unique to NURBS named
+\%\f3GLU_NURBS_ERROR1\fP through \%\f3GLU_NURBS_ERROR37\fP. 
+Character strings describing these errors can be retrieved with
+\%\f3gluErrorString\fP.
+.bp
+.SH NOTES
+\%\f3gluNurbsCallback\fP is available only if the GLU version is 1.2 or greater.
+.P
+GLU version 1.2 supports only the \%\f3GLU_ERROR\fP parameter for
+\f2which\fP. The \%\f3GLU_ERROR\fP value is deprecated in GLU version 1.3 in
+favor of \%\f3GLU_NURBS_ERROR\fP.  All other accepted values for \f2CallBackFunc\fP
+are available only if the GLU version is 1.3 or greater.
+.SH SEE ALSO
+\%\f3gluErrorString\fP,
+\%\f3gluNewNurbsRenderer\fP,
+\%\f3gluNurbsCallbackData\fP,
+\%\f3gluNurbsProperty\fP
+

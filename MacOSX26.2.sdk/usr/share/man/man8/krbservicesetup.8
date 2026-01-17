@@ -1,0 +1,163 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.\" test using groff -man krbservicesetup.8 -T ascii | more
+.Dd Tue Mar 11 2003               \" DATE 
+.Dt krbservicesetup 8      \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm krbservicesetup
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Kerberos 
+.Nd Open Directory Single Sign On 
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl r Ar REALM            
+-a 
+.Ar admin_name          
+.Op Fl p Ar password         
+.Op Fl t Ar keytab         
+.Op Fl f Ar setup_file         
+.Op Ar service_type service_principal              
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is used by
+.Ar sso_util
+to configure Kerberized services on the current host. It uses 
+.Ar kadmin
+to add service principals to the KDC database and create the krb5.keytab
+file. And then edits/creates the config files of the given service to use 
+the proper service principal.
+.Nm 
+knows how to configure the FTP, AFP, POP, IMAP, SMTP and SSH services shipped
+by Apple in Mac OS X 10.3
+.Nm
+takes either a service_type, service_principal pair or a plist file
+with a list of services to configure. The plist file also allows more control over
+the options used when creating the principals.
+.Pp                      \" Inserts a space
+.Nm
+arguments:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl x
+Use kadmin.local instead of kadmin.
+.It Fl r Ar REALM                 \"-a flag as a list item
+The Kerberos realm of the server
+.It Fl a Ar admin_name
+Name of an administrator with priveleges to add principals to the KDC
+.It Fl p Ar password
+Password for the above user
+.It Fl t Ar keytab
+The path of the keytab file to write
+.It Fl f Ar setup_file
+The path of the plist file containing the list of services to be configured
+.It Ar service_type service_principal 
+A single service to configure
+.El                      \" Ends the list
+.Pp
+The service_types understood by 
+.Nm
+are:
+.Bl -tag -width -indent  \" Begins a tagged list 
+.It afp               \" Each item preceded by .It macro
+Apple Filing Protocol
+.It ftp
+File Transfer Protocol
+.It imap
+IMAP mail protocol
+.It pop
+POP mail protocol
+.It smtp
+SMTP mail protocol
+.It ssh
+Secure Shell
+.El                      \" Ends the list
+.Pp
+The plist file format used by
+.Nm
+consists of a couple of optional boolean flag items and an array of dictionaries representing the
+services to be configured.
+.Bl -tag -width -indent
+.It	noConfig - Boolean
+Flag indicating that just the service principals should be created in the KDC
+.It	configOnly - Boolean
+Flag indicating that the services need to be configured
+.It	Services - array of dictionaries
+Array of service dictionaries to be configured
+.Bl -tag -width -indent
+.It	serviceType - string
+Type of the service (see above for definitions)
+.It	servicePrincipal - string
+Kerberos principal name for the service
+.It	option - Boolean
+Options passed on to the add_princ command within
+.Ar kadmin
+If the boolean value is true, the option passed to 
+.Ar kadmin
+is the option name with a '+' prepended. If the value is false a '-' is prepended
+.It	option - string
+Options passed on to the add_princ command within
+.Ar kadmin
+If the key is foo and the string value is bar then the option passed in the 
+add_princ command is "-foo bar"
+.El
+.El
+.Pp
+The options for the add_princ command are detailed in the man page for
+.Ar kadmin
+Some of the possibly options are restricted specifically the 
+.Ar pw
+and 
+.Ar needchange 
+commands are ignored. Every service principal is generated with the 
+.Ar randkey 
+option.
+.Pp
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "/Users/joeuser/Library/really" -compact
+.It Pa /etc/krb5.keytab
+The file where Kerberos stores the service principals for the services on this host
+.El
+.Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+You can add -v debug_level to the  
+.Nm
+command. Debug level 1 provides status information, higher levels add progressivly more
+levels of detail.
+.\" .El
+.Sh EXAMPLES
+It is better to use the configure command in 
+.Ar sso_util
+to configure multiple services. Here is an example of using
+.Nm
+to configure a FTP server in the realm FOO.ORG
+.Pp
+.Nm
+-r FOO.ORG -a admin -p password ftp ftp/myhost.foo.org@FOO.ORG
+.Pp
+(the above should be all on one line)
+.Pp
+.Sh NOTES
+The
+.Nm
+tool is used by the Apple Single Sign On system to set up Kerberized services integrated with the rest
+of the Single Sign On components.
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr kadmin 8 ,
+.Xr kdcsetup 8 ,
+.Xr sso_util 8 
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

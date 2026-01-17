@@ -1,0 +1,329 @@
+.\"	$Id: pwpolicy.8,v 1.7 2006/05/02 23:06:14 snsimon Exp $
+.\"
+.\" Copyright (c) 2002-2014 Apple Inc., all rights reserved.
+.Dd 13 November 2002
+.Dt pwpolicy 8
+.Os "Mac OS X"
+.sp
+.Sh NAME
+.Nm pwpolicy
+.Nd gets and sets password policies
+.Sh SYNOPSIS
+.Nm
+.Op Fl h
+.Nm
+.Op Fl v
+.Op Fl a Ar authenticator
+.Op Fl p Ar password
+.Op Fl u Ar username | Fl c Ar computername
+.Op Fl n Ar nodename
+command command-arg
+.Nm
+.Op Fl v
+.Op Fl a Ar authenticator
+.Op Fl p Ar password
+.Op Fl u Ar username | Fl c Ar computername
+.Op Fl n Ar nodename
+command "policy1=value1 policy2=value2 ..."
+.sp
+.Sh DESCRIPTION
+.Nm
+manipulates password policies.
+.Pp
+.Ss Options
+.Bl -tag -width flag
+.It Fl a
+name of the authenticator
+.It Fl c
+name of the computer account to modify
+.It Fl p
+password (omit this option for a secure prompt)
+.It Fl u
+name of the user account to modify
+.It Fl n
+use a specific directory node; the search node is used by default.
+.It Fl v
+verbose
+.It Fl h
+help
+.El
+.Ss Commands
+.Bl -tag -width getglobalpolicystrleneffect -compact
+.It Fl getglobalpolicy
+Get global policies.  DEPRECATED.
+.It Fl setglobalpolicy
+Set global policies.  DEPRECATED.
+.It Fl getpolicy
+Get policies for a user.  DEPRECATED.
+.It Fl -get-effective-policy
+Gets the combination of global and user policies that apply to the user.  DEPRECATED.
+.It Fl setpolicy
+Set policies for a user.  DEPRECATED.
+.It Fl setpassword
+Set a new password for a user. Non-administrators can use this command to change their own passwords.
+.It Fl enableuser
+Enable a user account that was disabled by a password policy event.
+.It Fl disableuser
+Disable a user account.
+.It Fl getglobalhashtypes
+Returns the default list of password hashes stored on disk for this system.
+.It Fl setglobalhashtypes
+Edits the default list of password hashes stored on disk for this system.
+.It Fl gethashtypes
+Returns a list of password hashes stored on disk for a user account.
+.It Fl sethashtypes
+Edits the list of password hashes stored on disk for a user account.
+.It Fl setaccountpolicies
+Sets (replaces) the account polices for the specified user.  If no user is specified, sets the global account policies.
+Takes one argument: the name of the file containing the policies.
+.It Fl getaccountpolicies
+Gets the account policies for the specified user.  If no user is specified, gets the global account policies.
+.It Fl clearaccountpolicies
+Removes all of the account policies for the specified user.  If no user is specified, removes the global account policies.
+.It Fl authentication-allowed
+Determines if the policies allow the user to authenticate
+.El
+.Ss Account Policies
+.Pp
+Account policies are the replacement for the deprecated legacy global and user policies.  Account policies are
+specified as a dictionary containing three keys, one key for each policy category.  Note that the dictionary is
+not required to contain all of the policy categories.  Valid keys for the policy categories are:
+.Pp
+.Bl -tag -width policyCategoryPasswordChangelen -compact
+.It policyCategoryAuthentication
+Controls when a user may login/authenticate.
+.It policyCategoryPasswordChange
+Determines if/when a user is required to change their password
+.It policyCategoryPasswordContent
+Controls the set of allowable characters in a password.
+.El
+.Pp
+Each policy category contains an array of individual policy dictionaries.  Valid keys in the policy dictionary are:
+.Pp
+.Bl -tag -width policyParameterslen
+.It policyIdentifier
+A user-defined unique identifier for the policy.
+.It policyParameters
+An optional key that contains a dictionary of parameters to be used in the policy or used for display purposes.
+.It policyContent
+The actual policy string, from which an NSPredicate can be created. Any valid NSPredicate keyword may be
+used, as well as certain parameters from the user's record and the policy's parameters dictionary.
+.El
+.Pp
+Below is an example account policy dictionary.  Not all policy categories need be present in the dictionary.
+.Bd -literal -compact
+<dict>
+    <key>policyCategoryPasswordAuthentication</key>
+    <array>
+        <dict>
+            <key>policyContent</key>
+            <string>policyAttributeMaximumFailedAuthentications &lt; policyAttributeFailedAuthentications</string>
+            <key>policyIdentifier</key>
+            <string>failed auths</string>
+        </dict>
+    </array>
+    <key>policyCategoryPasswordChange</key>
+    <array>
+        <dict>
+            <key>policyContent</key>
+            <string>policyAttributeCurrentTime &gt; policyAttributeLastPasswordChangeTime + policyAttributeExpiresEveryNDays * DAYS_TO_SECONDS</string>
+            <key>policyIdentifier</key>
+            <string>Change every 30 days</string>
+            <key>policyParameters</key>
+                <dict>
+                <key>policyAttributeExpiresEveryNDays<key>
+                <integer>30</integer>
+       </dict>
+    </array>
+    <key>policyCategoryPasswordContent</key>
+    <array>
+        <dict>
+            <key>policyContent</key>
+            <string>policyAttributePassword matches '.{3,}+'</string>
+            <key>policyIdentifier</key>
+            <string>com.apple.policy.legacy.minChars</string>
+            <key>policyParameters</key>
+            <dict>
+                <key>minimumLength</key>
+                <integer>3</integer>
+            </dict>
+        </dict>
+    </array>
+</dict>
+.Ed
+.Ss Account Policy Keywords
+The following keywords may be used in the policy content.  The values from the user's record will be substitued for the keyword
+when the policy is evaluated.  User-defined keywords may also be used, as long the keyword is present in the policy's parameters dictionary.
+.Pp
+.Bl -tag -width policyAttributeMaximumConsecutiveCharacterslen -compact
+.It policyAttributePassword
+User's new password.
+.It policyAttributePasswordHashes
+Hashes of the new password.  Compared against the history.
+.It policyAttributePasswordHistory
+User's password history.
+.It policyAttributePasswordHistoryDepth
+How much password history to keep.
+.It policyAttributeCurrentDate
+Current date and time as an NSDate.  Use for comparing localized NSDates.
+.It policyAttributeCurrentTime
+Current date and time in seconds.  Used for date/time calculations, i.e. date + interval.
+.It policyAttributeCurrentDayOfWeek
+Current day of the week (integer).
+.It policyAttributeCurrentTimeOfDay
+Current time of day (0000 to 2359).
+.It policyAttributeFailedAuthentications
+Number of consecutive failed authentication attempts.
+.It policyAttributeMaximumFailedAuthentications
+Maximum allowed consecutive failed authentication attempts.
+.It policyAttributeLastFailedAuthenticationTime
+Time of the last failed authentication.
+.It policyAttributeLastAuthenticationTime
+Time of the last successful authentication.
+.It policyAttributeLastPasswordChangeTime
+Time of the last password change.
+.It policyAttributeNewPasswordRequiredTime
+Time when a new password is required.
+.It policyAttributeCreationTime
+Time when the account was created.
+.It policyAttributeConsecutiveCharacters
+Number of consecutive (i.e. run of the same) characters in a password.
+.It policyAttributeMaximumConsecutiveCharacters
+Maximum number of consectuive characters allowed in a password.
+.It policyAttributeSequentialCharacters
+Number of sequention (ascending or descending) characters in a password.
+.It policyAttributeMaximumSequentialCharacters
+Maximum allowed nmber of sequention (ascending or descending) characters in a password.
+.It policyAttributeExpiresEveryNDays
+Expires every n number of days.
+.It policyAttributeDaysUntilExpiration
+Synonym for the above.
+.It policyAttributeEnableOnDate
+Date on which the account is enabled (localized NSDate).
+.It policyAttributeExpiresOnDate
+Date on which the account will expire (localized NSdate).
+.It policyAttributeEnableOnDayOfWeek
+Day of week on which the account is enabled (integer).
+.It policyAttributeExpiresOnDayOfWeek
+Day of week on which the account will expire (integer).
+.It policyAttributeEnableAtTimeOfDay
+Time of day at which the account is enabled (integer, 0000-2359).
+.It policyAttributeExpiresAtTimeOfDay
+Time of day at which the account will expire (integer, 0000-2359).
+.El
+.Ss Legacy Global Policies (DEPRECATED)
+.Bl -tag -width maxMinutesUntilChangePasswordlen -compact
+.It Ev usingHistory
+0 = user can reuse the current password, 1 = user cannot reuse the current password, 2-15 = user cannot reuse the last n passwords.
+.It Ev usingExpirationDate
+If 1, user is required to change password on the date in expirationDateGMT
+.It Ev usingHardExpirationDate
+If 1, user's account is disabled on the date in hardExpireDateGMT
+.It Ev requiresAlpha
+If 1, user's password is required to have a character in [A-Z][a-z].
+.It Ev requiresNumeric
+If 1, user's password is required to have a character in [0-9].
+.It Ev expirationDateGMT
+Date for the password to expire, format must be: mm/dd/yy
+.It Ev hardExpireDateGMT
+Date for the user's account to be disabled, format must be: mm/dd/yy
+.It Ev validAfter
+Date for the user's account to be enabled, format must be: mm/dd/yy
+.It Ev maxMinutesUntilChangePassword
+user is required to change the password at this interval
+.It Ev maxMinutesUntilDisabled
+user's account is disabled after this interval
+.It Ev maxMinutesOfNonUse
+user's account is disabled if it is not accessed by this interval
+.It Ev maxFailedLoginAttempts
+user's account is disabled if the failed login count exceeds this number
+.It Ev minChars
+passwords must contain at least minChars
+.It Ev maxChars
+passwords are limited to maxChars
+.El
+.Ss Additional Legacy User Policies (DEPRECATED)
+.Bl -tag -width canModifyPasswordforSelflen -compact
+.It Ev isDisabled
+If 1, user account is not allowed to authenticate, ever.
+.It Ev isAdminUser
+If 1, this user can administer accounts on the password server.
+.It Ev newPasswordRequired
+If 1, the user will be prompted for a new password at the next authentication. Applications that do not
+support change password will not authenticate.
+.It Ev canModifyPasswordforSelf
+If 1, the user can change the password.
+.El
+.Ss Stored Hash Types
+.Bl -tag -width SALTED-SHA512-PBKDF2 -compact
+.It Ev CRAM-MD5
+Required for IMAP.
+.It Ev RECOVERABLE
+Required for APOP and WebDAV. Only available on Mac OS X Server edition.
+.It Ev SALTED-SHA512-PBKDF2
+The default for loginwindow.
+.It Ev SALTED-SHA512
+Legacy hash for loginwindow.
+.It Ev SMB-NT
+Required for compatibility with Windows NT/XP file sharing.
+.It Ev SALTED-SHA1
+Legacy hash for loginwindow.
+.It Ev SHA1
+Legacy hash for loginwindow.
+.El
+.sp
+.Sh EXAMPLES
+.Pp
+To get global policies:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-getglobalpolicy
+.El
+.Pp
+To set global policies:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-a authenticator -setglobalpolicy "minChars=4 maxFailedLoginAttempts=3"
+.El
+.Pp
+To get policies for a specific user account:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-u user -getpolicy
+.It
+.Nm
+-u user -n /NetInfo/DefaultLocalNode -getpolicy
+.El
+.Pp
+To set policies for a specific user account:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-a authenticator -u user -setpolicy "minChars=4 maxFailedLoginAttempts=3"
+.El
+.Pp
+To change the password for a user:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-a authenticator -u user -setpassword newpassword
+.El
+.Pp
+To set the list of hash types for local accounts:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Nm
+-a authenticator -setglobalhashtypes SMB-LAN-MANAGER off SMB-NT on
+.El
+.sp
+.Sh SEE ALSO
+.Xr PasswordService 8

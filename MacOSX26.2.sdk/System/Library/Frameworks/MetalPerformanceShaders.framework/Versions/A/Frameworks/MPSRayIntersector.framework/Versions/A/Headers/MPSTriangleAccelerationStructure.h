@@ -1,0 +1,32 @@
+/*!
+ *  @header MPSTriangleAccelerationStructure.h
+ *  @framework MPSRayIntersector
+ *  @description  MPSRayIntersector triangle acceleration structure interface.
+ *
+ *  @copyright Copyright (c) 2018 Apple Inc. All rights reserved.
+ */
+
+#ifndef MPSTriangleAccelerationStructure_h
+#define MPSTriangleAccelerationStructure_h
+
+#import <MPSRayIntersector/MPSPolygonAccelerationStructure.h>
+
+/**
+ * @brief An acceleration structure built over triangles
+ *
+ * @discussion See MPSPolygonAccelerationStructure for more information
+ */
+MPS_AVAILABLE_STARTING_BUT_DEPRECATED("Use Metal ray tracing API instead", macos(10.14, 14.0), ios(12.0, 17.0), macCatalyst(13.0, 17.0), tvos(12.0, 17.0))
+@interface MPSTriangleAccelerationStructure : MPSPolygonAccelerationStructure
+
+/**
+ * @brief Number of triangles. Changes to this property require rebuilding the acceleration
+ * structure.
+ *
+ * Note that this property is an alias for the polygonCount property.
+ */
+@property (nonatomic) NSUInteger triangleCount;
+
+@end
+
+#endif

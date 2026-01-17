@@ -1,0 +1,138 @@
+.Dd April 05, 2020
+.Dt AEA 1
+.Os macOS
+.Sh NAME
+.Nm aea
+.Nd Manipulate Apple Encrypted Archives
+.Sh SYNOPSIS
+aea \fBcommand\fR [\fBoptions\fR]
+.Sh DESCRIPTION
+aea creates and manipulates Apple Encrypted Archives (AEA)
+.Sh VERBS
+\fBencrypt\fR\ \ \ \ \ \ \ \ \ \ \ Create a new AEA archive
+.br
+\fBdecrypt\fR\ \ \ \ \ \ \ \ \ \ \ Decrypt an AEA archive
+.br
+\fBsign\fR\ \ \ \ \ \ \ \ \ \ \ \ \ \ Sign an AEA archive
+.br
+\fBappend\fR\ \ \ \ \ \ \ \ \ \ \ \ Append data to an existing AEA archive
+.br
+\fBid\fR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Identify an AEA archive
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl v
+Increase verbosity.
+Default is silent operation.
+.It Fl h
+Print usage and exit.
+.It Fl i \fIinput_file\fR
+Input file.
+Default is \fIstdin\fR.
+.It Fl o \fIoutput_file\fR
+Output file.
+Default is \fIstdout\fR.
+.It Fl profile \fIprofile\fR
+.br
+Archive profile, one of the following (both index and id are allowed):
+.br
+\- 0: hkdf_sha256_hmac__none__ecdsa_p256              \- no encryption, signed
+.br
+\- 1: hkdf_sha256_aesctr_hmac__symmetric__none        \- symmetric key encryption
+.br
+\- 2: hkdf_sha256_aesctr_hmac__symmetric__ecdsa_p256  \- symmetric key encryption, signed
+.br
+\- 3: hkdf_sha256_aesctr_hmac__ecdhe_p256__none       \- ECDHE encryption
+.br
+\- 4: hkdf_sha256_aesctr_hmac__ecdhe_p256__ecdsa_p256 \- ECDHE encryption, signed
+.br
+\- 5: hkdf_sha256_aesctr_hmac__scrypt__none           \- scrypt encryption (password based)
+.It Fl a \fIalgorithm\fR
+Compression algorithm used when creating archives.
+One of \fIlzfse\fR, \fIlzma\fR, \fIlz4\fR, \fIzlib\fR, \fIcopy\fR.
+Default is \fIlzfse\fR.
+.It Fl b \fIblock_size\fR
+Block size used for compression+encryption, a number with optional \fIb\fR, \fIk\fR, \fIm\fR, \fIg\fR suffix (bytes are assumed if no suffix is specified).
+Default is \fI1m\fR.
+.It Fl t \fIworker_threads\fR
+Number of worker threads.
+Default is the number of physical CPU on the running machine.
+.It Fl checksum \fIchecksum_mode\fR
+Block checksum mode, one of \fInone\fR, \fImurmur64\fR, \fIsha256\fR.
+.It Fl key \fIkey_file\fR
+File containing or receiving the symmetric encryption key.
+.It Fl key-value \fI<key>\fR
+Symmetric encryption key, encoded either as \fIhex:...\fR, or \fIbase64:...\fR.
+.It Fl key-gen
+When creating a new archive, generate a new random high entropy symmetric key, and store it in the file specified by \fB-key\fR.
+The new key is stored as \fIhex:...\fR in the file.
+.It Fl password\ \fIpassword_file\fR
+File containing or receiving the encryption password.
+.It Fl -password-value \fI<password>\fR
+Encryption password.
+.It Fl password-gen
+When creating a new archive, generate a new random high entropy password, and store it in the file specified by \fB-password\fR.
+.It Fl -auth-data-key \fI<string>\fR
+Define the key for the next \fI-auth-data\fR or \fI-auth-data-value\fR option.
+If this option is specified at least once,
+the auth data blob in the archive will be stored using the key->value format, and all occurrences of fI-auth-data\fR or
+\fI-auth-data-value\fI must be preceded by a \fI-auth-data-key\fI.
+.It Fl -auth-data \fIdata_file\fR
+Insert the contents of \fIdata_file\fR in the container as authentication data.
+This option can be specified multiple times.
+Authentication data is stored in plain text in the container, and can be used to store public key certificates for example.
+.It Fl -auth-data-value \fI<data>\fR
+Insert the contents of \fIdata\fR (encoded either as \fIhex:...\fR, or \fIbase64:...\fR) in the container as authentication
+data.
+This option can be specified multiple times.
+Authentication data is stored in plain text in the container, and can be
+used to store public key certificates for example.
+.It Fl -sign-pub \fIkey_file\fR
+File containing the signature public key.
+Used to decrypt a signed container, or encrypt a container without signing it.
+.It Fl -sign-priv \fIkey_file\fR
+File containing the signature private key.
+Used to sign a container.
+.It Fl -recipient-pub \fIkey_file\fR
+File containing the recipient public key.
+Used to encrypt a container in the ECDHE modes.
+.It Fl -recipient-priv \fIkey_file\fR
+File containing the recipient private key.
+Used to decrypt a container in the ECDHE modes.
+.It Fl -master-key \fIkey_file\fR
+When creating a new container, if this option is given, the file will receive the container main key,
+needed for future \fBappend\fR operations.
+The main key is only intended to unlock an existing container
+to append new data, and should be kept by the container creator.
+.It Fl -signature-key \fIkey_file\fR
+When creating an new signed container, if this option is given, the file will receive the signature encryption key.
+if only the signature public key is passed with \fB-sign-pub\fR when creating a new signed container, the container
+needs to be signed offline using the \fBsign\fR command.
+This requires both the signature private key \fB-sign-priv\fR,
+and this signature encryption key.
+.El
+.Sh EXAMPLES
+Encrypt \fIfoo\fR into \fIfoo.aea\fR using a new random symmetric key stored in \fIfoo.key\fR
+.Pp
+.Rs
+\  aea encrypt -profile hkdf_sha256_aesctr_hmac__symmetric__none -i foo -o foo.aea -key foo.key
+.Re
+.Pp
+Decrypt \fIfoo.aea\fR into \fIbar\fR
+.Pp
+.Rs
+\  aea decrypt -i foo.aea -o bar -key foo.key
+.Re
+.Pp
+Alice encrypts and signs \fIfoo\fR into \fIfoo.aea\fR, so only Bob can decrypt it.
+.Pp
+.Rs
+\  aea encrypt -profile hkdf_sha256_aesctr_hmac__ecdhe_p256__ecdsa_p256 -i foo -o foo.aea -sign-priv alice.priv -recipient-pub bob.pub
+.Re
+.Pp
+Bob decrypts \fIfoo.aea\fR into \fIbar\fR using his private key, and at the same time verifying Alice signed it.
+.Pp
+.Rs
+\  aea decrypt -i foo.aea -o bar -sign-pub alice.pub -recipient-priv bob.priv
+.Re
+.Sh SEE ALSO
+.Xr aa 1

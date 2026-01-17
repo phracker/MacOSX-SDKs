@@ -1,0 +1,437 @@
+.\"	$OpenBSD: rpcinfo.8,v 1.2 1996/06/26 05:38:44 deraadt Exp $
+.\"	from: @(#)rpcinfo.8c	2.2 88/08/03 4.0 RPCSRC; from 1.24 88/02/25 SMI
+.\"
+.ds Fll \\fB\\-\\-\\$1\\fP
+.ds Fls \\fB\\-\\$1\\fP
+.Dd November 14, 2012
+.Dt RPCINFO 8
+.Os
+.Sh NAME
+.Nm rpcinfo
+.Nd report RPC information
+.Sh SYNOPSIS
+.Nm rpcinfo
+.Op \*[Fll rpcbvers] Ar version
+.Op Fl m \*(Ba Fl s
+.Op Ar host
+.Nm rpcinfo
+.Op \*[Fll rpcbvers] Ar version
+.Fl T Ar netid
+.Ar host
+.Ar program
+.Op Ar version
+.Nm rpcinfo
+.Op \*[Fll rpcbvers] Ar version
+.Fl a Ar "server address"
+.Fl T Ar netid
+.Ar program
+.Op Ar version
+.Nm rpcinfo
+.Op \*[Fll rpcbvers] Ar version
+.Fl b
+.Op Fl T Ar netid
+.Ar program version
+.Nm rpcinfo
+.Op \*[Fll rpcbvers] Ar version
+.Fl d
+.Op Fl T Ar netid
+.Ar program version
+.Nm rpcinfo
+.Fl l
+.Op Fl T Ar netid
+.Op Ar host
+.Ar program version
+.Nm rpcinfo
+.Op \*[Fll rpcbvers] Ar version
+\*[Fll getaddr] 
+.Op Fl T Ar netid
+.Op Ar host
+.Ar program version
+.Nm rpcinfo
+\*[Fll getversaddr] 
+.Op Fl T Ar netid
+.Op Ar host
+.Ar program version
+.Nm rpcinfo
+\*[Fll indirect]
+.Op Fl T Ar netid
+.Op host
+.Ar program version
+.Nm rpcinfo
+.Op \*[Fll rpcbvers] Ar version
+\*[Fll time]
+.Op Fl T Ar netid
+.Op Ar host
+.Nm rpcinfo
+.Bro \*[Fll help] \*(Ba Fl h Brc
+.Nm rpcinfo
+.Fl p
+.Op Ar host
+.Nm rpcinfo
+.Op Fl n Ar portnum
+.Fl u Ar host
+.Ar program
+.Op Ar version
+.Nm rpcinfo
+.Op Fl n Ar portnum
+.Fl t Ar host 
+.Ar program
+.Op Ar version
+.Sh DESCRIPTION
+.Nm rpcinfo
+makes an
+.Tn RPC
+call to an
+.Tn RPC
+server and reports what it finds. Unless otherwise specified or
+noted below the default
+.Nm rpcbind
+protocol version is 3.
+With no or only generic options, call
+the
+.Nm rpcbind
+dump procedure on the specified 
+.Ar host
+or
+.Dq localhost
+if
+.Ar host
+is not specified and display the results.
+For versions 3 and 4 display the program number, 
+the version, the 
+.Dq netid ,
+the universal address that the services is listening on,
+symbolic name of the program if known, and then the 
+owner that registered the 
+.Aq program, version, netid, address
+tuple.
+For version 2 of the protocol list the program, version, protocol, port, and symbolic program name.
+.Em See the \*[Fll summary] option below for a typically more useful output.
+.Nm rpcbind
+defaults the 
+.Ar netid
+to
+.Dq tcp
+for the dump procedure.
+.Pp
+The
+.Ar program
+argument can be either a name or a number.
+.Pp
+If a version is specified, rpcinfo attempts to call that version of the specified program.  Otherwise, if the version is optional
+.Nm rpcinfo
+attempts to find all the registered version numbers for the specified program by calling version 0 (which is presumed not to exist; if it does exist, rpcinfo attempts to obtain this information by calling an extremely high version number instead) and attempts to call each registered version.
+.Pp
+A required transport option is needed for the second and third lines
+of the synopsis which is used to ping, i.e.\&, call the null procedure of the specified program and version. The results will be
+displayed on stdout. If version is not specified each valid version found as described above will be called.
+The third synopsis will use the supplied universal address over the transport specified by
+.Ar netid
+to call the null procedure of the specified
+.Ar program
+in the same manner as above. In addition the last two lines of the synopsis can
+.Dq ping
+the server as described in the 
+.Nm Legacy Options
+section below.
+.Sh GENERIC OPTIONS
+.Bl -tag -width indent
+.It \*[Fll rpcbvers] Ar version
+Attempt to use the supplied
+.Nm rpcbind
+.Ar version.
+Note some options below
+are version specific and this option may be ignored. If specifying version 2
+.Pq Nm portmapper ,
+.Ar netid
+below must be one of 
+.Dq udp 
+or
+.Dq tcp .
+.It Fl T Ar netid
+Specify the netid to use. Supported netids are 
+.Dq udp ,
+.Dq tcp ,
+.Dq udp6 ,
+and
+.Dq tcp6 .
+.It \*[Fll timeout] Ar seconds 
+Timeout used in creating client handles and the client calls
+to
+.Nm rpcbind.
+Current default is 12 seconds.
+.El
+.Pp
+Generic options may be supplied with any of the
+.Nm rpcinfo
+options below, though some options will override their values.
+.Sh LEGACY OPTIONS
+.Pp
+The options below imply version 2
+.Pq Nm portmapper
+.Nm rpcbind
+calls. They are compatible with older versions of 
+.Nm rpcinfo .
+.Bl -tag -width indent
+.It Bro Fl p \*(Ba \*[Fls portmap] Brc Oo Fl T Ar netid Oc Op Ar host
+Probe the portmapper on
+.Ar host ,
+and print a list of all registered
+.Tn RPC
+programs.  If
+.Ar host
+is not specified, it defaults to the value
+.Dq localhost .
+.It Bro Fl u \*(Ba \*[Fls udpping] Brc Ar host Ar program Op Ar version
+Make an
+.Tn RPC
+call to the
+.Tn NULL
+procedure of
+.Ar program
+on the specified
+.Ar host
+using
+.Tn UDP ,
+and report whether a response was received.
+.It Bro Fl t \*(Ba \*[Fls tcpping] Brc Ar host Ar program Op Ar version
+Make an
+.Tn RPC
+call to the
+.Tn NULL
+procedure of
+.Ar program
+on the specified
+.Ar host
+using
+.Tn TCP ,
+and report whether a response was received.
+.It Bro Fl n \*(Ba \*[Fls portnum] Brc Ar portnum
+Use
+.Ar portnum
+as the port number for the
+.Fl t
+and
+.Fl u
+options instead of the port number given by the portmapper.
+.El
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Bro Fl b \*(Ba \*[Fls broadcast] Brc Ar program Ar version
+Make an
+.Tn RPC
+multicast over
+.Tn INET6
+to the 
+.Tn RPCB_MULTICAST_ADDR ,
+.Dq FF02::202 ,
+and broadcast over
+.Tn INET
+using
+.Tn UDP
+to procedure 0 of the specified
+.Ar program
+and
+.Ar version
+and report all hosts that respond.
+.Nm rpcifno
+will first use
+.Tn RPCBIND
+version 3
+and then call the broadcast procedure of the
+.Nm portmapper
+protocol to collect older hosts. There is a reply cache
+kept so duplicates will not be returned unless the cache fills.
+.Pp
+Note that the
+.Fl b
+option by its self is compatible with the older
+.Nm portmapper .
+However, specifying 
+\*[Fll rpcbvers] 2
+will short circuit the
+.Nm rpcbind
+version 3 calls and only call the
+.Nm portmapper .
+.It Bro Fl d \*(Ba \*[Fls delete] Brc Oo Fl T Ar netid Oc Ar program Ar version
+Delete registration for the
+.Tn RPC
+service of the specified
+.Ar program
+and
+.Ar version .
+If the 
+.Ar netid
+is specified, only unregister the 
+.Ar program
+and
+.Ar version
+over that transport.
+This option can be exercised only by the super-user or the user who
+registered the the
+.Tn RPC
+service.
+.It \*[Fll getaddr] Oo Fl T Ar netid Oc Oo Ar host Oc Ar program Ar version
+Get the universal address that the client can use to contact the
+.Ar program
+and
+.Ar version
+from
+.Ar host
+over 
+.Ar netid .
+If host is not specified
+.Ar localhost
+is assumed. If
+.Ar netid
+is not specified
+.Dq udp
+is assumed. If the specified
+.Ar version
+is not available but some other version is,
+return the universal address for one of those versions of the program.
+.It \*[Fll getversaddr] Oo Fl T Ar netid Oc Oo Ar host Oc Ar program Ar version
+Get the universal address that the client can use to contact the 
+.Ar program
+and
+.Ar version
+from
+.Ar host
+over
+.Ar netid .
+If host is not specified 
+.Ar localhost
+is assumed. If
+.Ar netid
+is not specified
+.Dq udp
+is assumed. If the version is not available then that will be indicated. This requires the remote
+.Nm rpcbind
+support version\ 4.
+.It Fl h
+Print out the synopsis of this program.
+.It \*[Fll help]
+Print out the synopsis and an explanation of the options.
+.It \*[Fll indirect] Oo Fl T Ar netid Oc Oo Ar host Oc Ar program Ar version
+Send a indirect call to the null procedure of
+.Ar program
+and
+.Ar version
+on the specified
+.Ar host
+or localhost.
+This requires the remote
+.Nm rpcbind
+to support version\ 4.
+.It Bro  Fl l \*(Ba \*[Fls list] Brc  Oo Fl T Ar netid Oc Oo Ar host Oc Ar program Ar version
+List the transports available over the transport family specified
+by the
+.Ar netid
+for the given
+.Ar program
+and
+.Ar version
+on the optional
+.Ar host
+or localhost if not specified.
+Requires the remote
+.Nm rpcbind
+to support version 4.
+The default transport family is
+.Tn INET .
+.It Bro Fl m \*(Ba \*[Fls metrics] Brc
+Print the metrics of
+.Nm rpcbind
+daemon for the specified
+.Ar host
+or
+.Ar localhost
+if not specified.
+Requires support for
+.Nm rpcbind
+version\ 4 on the remote.
+.It Bro Fl s \*(Ba \*[Fls summary] Brc
+Print a summary of programs registered on
+.Ar host
+or
+.Dq localhost
+if host is not specified.
+For each program registered list any versions followed by any transports supported by that program. Try to list the symbolic name of the transport and the owner that registered the program.
+.It \*[Fll time] Op host
+Return 
+.Nm rpcbind's
+version of time on the specified
+.Ar host.
+.El
+.Sh EXAMPLES
+To show all of the
+.Tn RPC
+services registered on the local machine use:
+.Pp
+.Dl example% rpcinfo
+.Pp
+To show all of the
+.Tn RPC
+services registered on the machine named
+.Ar klaxon
+use:
+.Pp
+.Dl example% rpcinfo klaxon
+.Pp
+More usefully to show the services registered on
+.Ar klaxon
+use:
+.Pp
+.Dl example% rpcinfo -s klaxon
+.Pp
+To show all of the
+.Tn RPC
+services from an older host only running version 2 of 
+.Nm rpcbind
+on a host named
+.Ar horn
+use:
+.Pp
+.Dl example% rpcinfo -p horn
+.Pp
+To show all machines on the local net that are running the NFS
+File service use:
+.Pp
+.Dl example% rpcinfo -b nfs 'version' 
+.Pp
+where 'version' is one of the current nfs versions of interest.
+.Pp
+To delete the registration for version 1 of the
+.Nm rquotad
+service use:
+.Pp
+.Dl example% rpcinfo -d rquotad 1
+.Sh SEE ALSO
+.Xr rpc 5 ,
+.Xr rpcbind 8
+.Rs
+.%T "RPC Programming Guide"
+.Re
+.Rs
+.%T "RFC 1833 Binding Protocols for ONC RPC Version 2"
+.Re
+.Rs
+.%T "RFC 5665 IANA Considerations for Remote Procedure Call (RPC) Network Identifiers and Universal Address Formats"
+.Re
+.Sh BUGS
+In summary mode the maximum number of versions and transports is 16. The first 16 versions and the first 16 transports received from the server are displayed and the rest is silently ignored.
+.Pp
+In the second synopsis line, for 
+a host that is specified as a link-local
+.Tn INET6
+address will always return 
+.Dq no route to host .
+.Pp
+In releases prior to SunOS 3.0, the Network File System (NFS) did not
+register itself with the portmapper;
+.Nm rpcinfo
+cannot be used to make
+.Tn RPC
+calls to the
+.Tn NFS
+server on hosts running such releases.

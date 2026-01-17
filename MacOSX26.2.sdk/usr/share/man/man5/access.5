@@ -1,0 +1,490 @@
+.TH ACCESS 5 
+.ad
+.fi
+.SH NAME
+access
+\-
+Postfix SMTP server access table
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap /etc/postfix/access\fR
+
+\fBpostmap \-q "\fIstring\fB" /etc/postfix/access\fR
+
+\fBpostmap \-q \- /etc/postfix/access <\fIinputfile\fR
+.SH DESCRIPTION
+.ad
+.fi
+This document describes access control on remote SMTP client
+information: host names, network addresses, and envelope
+sender or recipient addresses; it is implemented by the
+Postfix SMTP server.  See \fBheader_checks\fR(5) or
+\fBbody_checks\fR(5) for access control on the content of
+email messages.
+
+Normally, the \fBaccess\fR(5) table is specified as a text file
+that serves as input to the \fBpostmap\fR(1) command.
+The result, an indexed file in \fBdbm\fR or \fBdb\fR format,
+is used for fast searching by the mail system. Execute the
+command "\fBpostmap /etc/postfix/access\fR" to rebuild an
+indexed file after changing the corresponding text file.
+
+When the table is provided via other means such as NIS, LDAP
+or SQL, the same lookups are done as for ordinary indexed files.
+
+Alternatively, the table can be provided as a regular\-expression
+map where patterns are given as regular expressions, or lookups
+can be directed to TCP\-based server. In those cases, the lookups
+are done in a slightly different way as described below under
+"REGULAR EXPRESSION TABLES" or "TCP\-BASED TABLES".
+.SH "CASE FOLDING"
+.na
+.nf
+.ad
+.fi
+The search string is folded to lowercase before database
+lookup. As of Postfix 2.3, the search string is not case
+folded with database types such as regexp: or pcre: whose
+lookup fields can match both upper and lower case.
+.SH "TABLE FORMAT"
+.na
+.nf
+.ad
+.fi
+The input format for the \fBpostmap\fR(1) command is as follows:
+.IP "\fIpattern action\fR"
+When \fIpattern\fR matches a mail address, domain or host address,
+perform the corresponding \fIaction\fR.
+.IP "blank lines and comments"
+Empty lines and whitespace\-only lines are ignored, as
+are lines whose first non\-whitespace character is a `#'.
+.IP "multi\-line text"
+A logical line starts with non\-whitespace text. A line that
+starts with whitespace continues a logical line.
+.SH "EMAIL ADDRESS PATTERNS"
+.na
+.nf
+.ad
+.fi
+With lookups from indexed files such as DB or DBM, or from networked
+tables such as NIS, LDAP or SQL, patterns are tried in the order as
+listed below:
+.IP \fIuser\fR@\fIdomain\fR
+Matches the specified mail address.
+.IP \fIdomain.tld\fR
+Matches \fIdomain.tld\fR as the domain part of an email address.
+.sp
+The pattern \fIdomain.tld\fR also matches subdomains, but only
+when the string \fBsmtpd_access_maps\fR is listed in the Postfix
+\fBparent_domain_matches_subdomains\fR configuration setting.
+.IP \fI.domain.tld\fR
+Matches subdomains of \fIdomain.tld\fR, but only when the
+string \fBsmtpd_access_maps\fR is not listed in the Postfix
+\fBparent_domain_matches_subdomains\fR configuration setting.
+.IP \fIuser\fR@
+Matches all mail addresses with the specified user part.
+.PP
+Note: lookup of the null sender address is not possible with
+some types of lookup table. By default, Postfix uses \fB<>\fR
+as the lookup key for such addresses. The value is specified with
+the \fBsmtpd_null_access_lookup_key\fR parameter in the Postfix
+\fBmain.cf\fR file.
+.SH "EMAIL ADDRESS EXTENSION"
+.na
+.nf
+.fi
+.ad
+When a mail address localpart contains the optional recipient delimiter
+(e.g., \fIuser+foo\fR@\fIdomain\fR), the lookup order becomes:
+\fIuser+foo\fR@\fIdomain\fR, \fIuser\fR@\fIdomain\fR, \fIdomain\fR,
+\fIuser+foo\fR@, and \fIuser\fR@.
+.SH "HOST NAME/ADDRESS PATTERNS"
+.na
+.nf
+.ad
+.fi
+With lookups from indexed files such as DB or DBM, or from networked
+tables such as NIS, LDAP or SQL, the following lookup patterns are
+examined in the order as listed:
+.IP \fIdomain.tld\fR
+Matches \fIdomain.tld\fR.
+.sp
+The pattern \fIdomain.tld\fR also matches subdomains, but only
+when the string \fBsmtpd_access_maps\fR is listed in the Postfix
+\fBparent_domain_matches_subdomains\fR configuration setting.
+.IP \fI.domain.tld\fR
+Matches subdomains of \fIdomain.tld\fR, but only when the
+string \fBsmtpd_access_maps\fR is not listed in the Postfix
+\fBparent_domain_matches_subdomains\fR configuration setting.
+.IP \fInet.work.addr.ess\fR
+.IP \fInet.work.addr\fR
+.IP \fInet.work\fR
+.IP \fInet\fR
+Matches the specified IPv4 host address or subnetwork. An
+IPv4 host address is a sequence of four decimal octets
+separated by ".".
+
+Subnetworks are matched by repeatedly truncating the last
+".octet" from the remote IPv4 host address string until a
+match is found in the access table, or until further
+truncation is not possible.
+
+NOTE 1: The access map lookup key must be in canonical form:
+do not specify unnecessary null characters, and do not
+enclose network address information with "[]" characters.
+
+NOTE 2: use the \fBcidr\fR lookup table type to specify
+network/netmask patterns. See \fBcidr_table\fR(5) for details.
+.IP \fInet:work:addr:ess\fR
+.IP \fInet:work:addr\fR
+.IP \fInet:work\fR
+.IP \fInet\fR
+Matches the specified IPv6 host address or subnetwork. An
+IPv6 host address is a sequence of three to eight hexadecimal
+octet pairs separated by ":".
+
+Subnetworks are matched by repeatedly truncating the last
+":octetpair" from the remote IPv6 host address string until
+a match is found in the access table, or until further
+truncation is not possible.
+
+NOTE 1: the truncation and comparison are done with the
+string representation of the IPv6 host address. Thus, not
+all the ":" subnetworks will be tried.
+
+NOTE 2: The access map lookup key must be in canonical form:
+do not specify unnecessary null characters, and do not
+enclose network address information with "[]" characters.
+
+NOTE 3: use the \fBcidr\fR lookup table type to specify
+network/netmask patterns. See \fBcidr_table\fR(5) for details.
+
+IPv6 support is available in Postfix 2.2 and later.
+.SH "ACCEPT ACTIONS"
+.na
+.nf
+.ad
+.fi
+.IP \fBOK\fR
+Accept the address etc. that matches the pattern.
+.IP \fIall\-numerical\fR
+An all\-numerical result is treated as OK. This format is
+generated by address\-based relay authorization schemes
+such as pop\-before\-smtp.
+.PP
+For other accept actions, see "OTHER ACTIONS" below.
+.SH "REJECT ACTIONS"
+.na
+.nf
+.ad
+.fi
+Postfix version 2.3 and later support enhanced status codes
+as defined in RFC 3463.
+When no code is specified at the beginning of the \fItext\fR
+below, Postfix inserts a default enhanced status code of "5.7.1"
+in the case of reject actions, and "4.7.1" in the case of
+defer actions. See "ENHANCED STATUS CODES" below.
+.IP "\fB4\fINN text\fR"
+.IP "\fB5\fINN text\fR"
+Reject the address etc. that matches the pattern, and respond with
+the numerical three\-digit code and text. \fB4\fINN\fR means "try
+again later", while \fB5\fINN\fR means "do not try again".
+
+The following responses have special meaning for the Postfix
+SMTP server:
+.RS
+.IP "\fB421 \fItext\fR (Postfix 2.3 and later)"
+.IP "\fB521 \fItext\fR (Postfix 2.6 and later)"
+After responding with the numerical three\-digit code and
+text, disconnect immediately from the SMTP client.  This
+frees up SMTP server resources so that they can be made
+available to another SMTP client.
+.IP
+Note: The "521" response should be used only with botnets
+and other malware where interoperability is of no concern.
+The "send 521 and disconnect" behavior is NOT defined in
+the SMTP standard.
+.RE
+.IP "\fBREJECT \fIoptional text...\fR
+Reject the address etc. that matches the pattern. Reply with
+"\fB$access_map_reject_code \fIoptional text...\fR" when the
+optional text is
+specified, otherwise reply with a generic error response message.
+.IP "\fBDEFER \fIoptional text...\fR
+Reject the address etc. that matches the pattern. Reply with
+"\fB$access_map_defer_code \fIoptional text...\fR" when the
+optional text is
+specified, otherwise reply with a generic error response message.
+.sp
+This feature is available in Postfix 2.6 and later.
+.IP "\fBDEFER_IF_REJECT \fIoptional text...\fR
+Defer the request if some later restriction would result in a
+REJECT action. Reply with "\fB$access_map_defer_code 4.7.1
+\fIoptional text...\fR" when the
+optional text is specified, otherwise reply with a generic error
+response message.
+.sp
+Prior to Postfix 2.6, the SMTP reply code is 450.
+.sp
+This feature is available in Postfix 2.1 and later.
+.IP "\fBDEFER_IF_PERMIT \fIoptional text...\fR
+Defer the request if some later restriction would result in a
+an explicit or implicit PERMIT action.
+Reply with "\fB$access_map_defer_code 4.7.1 \fI optional
+text...\fR" when the
+optional text is specified, otherwise reply with a generic error
+response message.
+.sp
+Prior to Postfix 2.6, the SMTP reply code is 450.
+.sp
+This feature is available in Postfix 2.1 and later.
+.PP
+For other reject actions, see "OTHER ACTIONS" below.
+.SH "OTHER ACTIONS"
+.na
+.nf
+.ad
+.fi
+.IP \fIrestriction...\fR
+Apply the named UCE restriction(s) (\fBpermit\fR, \fBreject\fR,
+\fBreject_unauth_destination\fR, and so on).
+.IP "\fBBCC \fIuser@domain\fR"
+Send one copy of the message to the specified recipient.
+.sp
+If multiple BCC actions are specified within the same SMTP
+MAIL transaction, with Postfix 3.0 only the last action
+will be used.
+.sp
+This feature is available in Postfix 3.0 and later.
+.IP "\fBDISCARD \fIoptional text...\fR
+Claim successful delivery and silently discard the message.
+Log the optional text if specified, otherwise log a generic
+message.
+.sp
+Note: this action currently affects all recipients of the message.
+To discard only one recipient without discarding the entire message,
+use the transport(5) table to direct mail to the discard(8) service.
+.sp
+This feature is available in Postfix 2.0 and later.
+.IP \fBDUNNO\fR
+Pretend that the lookup key was not found. This
+prevents Postfix from trying substrings of the lookup key
+(such as a subdomain name, or a network address subnetwork).
+.sp
+This feature is available in Postfix 2.0 and later.
+.IP "\fBFILTER \fItransport:destination\fR"
+After the message is queued, send the entire message through
+the specified external content filter. The \fItransport\fR
+name specifies the first field of a mail delivery agent
+definition in master.cf; the syntax of the next\-hop
+\fIdestination\fR is described in the manual page of the
+corresponding delivery agent.  More information about
+external content filters is in the Postfix FILTER_README
+file.
+.sp
+Note 1: do not use $\fInumber\fR regular expression
+substitutions for \fItransport\fR or \fIdestination\fR
+unless you know that the information has a trusted origin.
+.sp
+Note 2: this action overrides the main.cf \fBcontent_filter\fR
+setting, and affects all recipients of the message. In the
+case that multiple \fBFILTER\fR actions fire, only the last
+one is executed.
+.sp
+Note 3: the purpose of the FILTER command is to override
+message routing.  To override the recipient's \fItransport\fR
+but not the next\-hop \fIdestination\fR, specify an empty
+filter \fIdestination\fR (Postfix 2.7 and later), or specify
+a \fItransport:destination\fR that delivers through a
+different Postfix instance (Postfix 2.6 and earlier). Other
+options are using the recipient\-dependent \fBtrans\%port\%_maps\fR
+or the sen\%der\-dependent
+\fBsender\%_de\%pen\%dent\%_de\%fault\%_trans\%port\%_maps\fR
+features.
+.sp
+This feature is available in Postfix 2.0 and later.
+.IP "\fBHOLD \fIoptional text...\fR"
+Place the message on the \fBhold\fR queue, where it will
+sit until someone either deletes it or releases it for
+delivery.
+Log the optional text if specified, otherwise log a generic
+message.
+
+Mail that is placed on hold can be examined with the
+\fBpostcat\fR(1) command, and can be destroyed or released with
+the \fBpostsuper\fR(1) command.
+.sp
+Note: use "\fBpostsuper \-r\fR" to release mail that was kept on
+hold for a significant fraction of \fB$maximal_queue_lifetime\fR
+or \fB$bounce_queue_lifetime\fR, or longer. Use "\fBpostsuper \-H\fR"
+only for mail that will not expire within a few delivery attempts.
+.sp
+Note: this action currently affects all recipients of the message.
+.sp
+This feature is available in Postfix 2.0 and later.
+.IP "\fBPREPEND \fIheadername: headervalue\fR"
+Prepend the specified message header to the message.
+When more than one PREPEND action executes, the first
+prepended header appears before the second etc. prepended
+header.
+.sp
+Note: this action must execute before the message content
+is received; it cannot execute in the context of
+\fBsmtpd_end_of_data_restrictions\fR.
+.sp
+This feature is available in Postfix 2.1 and later.
+.IP "\fBREDIRECT \fIuser@domain\fR"
+After the message is queued, send the message to the specified
+address instead of the intended recipient(s).  When multiple
+\fBREDIRECT\fR actions fire, only the last one takes effect.
+.sp
+Note: this action overrides the FILTER action, and currently
+overrides all recipients of the message.
+.sp
+This feature is available in Postfix 2.1 and later.
+.IP "\fBINFO \fIoptional text...\fR
+Log an informational record with the optional text, together
+with client information and if available, with helo, sender,
+recipient and protocol information.
+.sp
+This feature is available in Postfix 3.0 and later.
+.IP "\fBWARN \fIoptional text...\fR
+Log a warning with the optional text, together with client information
+and if available, with helo, sender, recipient and protocol information.
+.sp
+This feature is available in Postfix 2.1 and later.
+.SH "ENHANCED STATUS CODES"
+.na
+.nf
+.ad
+.fi
+Postfix version 2.3 and later support enhanced status codes
+as defined in RFC 3463.
+When an enhanced status code is specified in an access
+table, it is subject to modification. The following
+transformations are needed when the same access table is
+used for client, helo, sender, or recipient access restrictions;
+they happen regardless of whether Postfix replies to a MAIL
+FROM, RCPT TO or other SMTP command.
+.IP \(bu
+When a sender address matches a REJECT action, the Postfix
+SMTP server will transform a recipient DSN status (e.g.,
+4.1.1\-4.1.6) into the corresponding sender DSN status, and
+vice versa.
+.IP \(bu
+When non\-address information matches a REJECT action (such
+as the HELO command argument or the client hostname/address),
+the Postfix SMTP server will transform a sender or recipient
+DSN status into a generic non\-address DSN status (e.g.,
+4.0.0).
+.SH "REGULAR EXPRESSION TABLES"
+.na
+.nf
+.ad
+.fi
+This section describes how the table lookups change when the table
+is given in the form of regular expressions. For a description of
+regular expression lookup table syntax, see \fBregexp_table\fR(5)
+or \fBpcre_table\fR(5).
+
+Each pattern is a regular expression that is applied to the entire
+string being looked up. Depending on the application, that string
+is an entire client hostname, an entire client IP address, or an
+entire mail address. Thus, no parent domain or parent network search
+is done, \fIuser@domain\fR mail addresses are not broken up into
+their \fIuser@\fR and \fIdomain\fR constituent parts, nor is
+\fIuser+foo\fR broken up into \fIuser\fR and \fIfoo\fR.
+
+Patterns are applied in the order as specified in the table, until a
+pattern is found that matches the search string.
+
+Actions are the same as with indexed file lookups, with
+the additional feature that parenthesized substrings from the
+pattern can be interpolated as \fB$1\fR, \fB$2\fR and so on.
+.SH "TCP-BASED TABLES"
+.na
+.nf
+.ad
+.fi
+This section describes how the table lookups change when lookups
+are directed to a TCP\-based server. For a description of the TCP
+client/server lookup protocol, see \fBtcp_table\fR(5).
+This feature is not available up to and including Postfix version 2.4.
+
+Each lookup operation uses the entire query string once.
+Depending on the application, that string is an entire client
+hostname, an entire client IP address, or an entire mail address.
+Thus, no parent domain or parent network search is done,
+\fIuser@domain\fR mail addresses are not broken up into
+their \fIuser@\fR and \fIdomain\fR constituent parts, nor is
+\fIuser+foo\fR broken up into \fIuser\fR and \fIfoo\fR.
+
+Actions are the same as with indexed file lookups.
+.SH "EXAMPLE"
+.na
+.nf
+.ad
+.fi
+The following example uses an indexed file, so that the
+order of table entries does not matter. The example permits
+access by the client at address 1.2.3.4 but rejects all
+other clients in 1.2.3.0/24. Instead of \fBhash\fR lookup
+tables, some systems use \fBdbm\fR.  Use the command
+"\fBpostconf \-m\fR" to find out what lookup tables Postfix
+supports on your system.
+
+.nf
+.na
+/etc/postfix/main.cf:
+    smtpd_client_restrictions =
+        check_client_access hash:/etc/postfix/access
+
+/etc/postfix/access:
+    1.2.3   REJECT
+    1.2.3.4 OK
+.fi
+.ad
+
+Execute the command "\fBpostmap /etc/postfix/access\fR" after
+editing the file.
+.SH BUGS
+.ad
+.fi
+The table format does not understand quoting conventions.
+.SH "SEE ALSO"
+.na
+.nf
+postmap(1), Postfix lookup table manager
+smtpd(8), SMTP server
+postconf(5), configuration parameters
+transport(5), transport:nexthop syntax
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+SMTPD_ACCESS_README, built\-in SMTP server access control
+DATABASE_README, Postfix lookup table overview
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH "AUTHOR(S)"
+.na
+.nf
+Wietse Venema
+IBM T.J. Watson Research
+P.O. Box 704
+Yorktown Heights, NY 10598, USA
+
+Wietse Venema
+Google, Inc.
+111 8th Avenue
+New York, NY 10011, USA
